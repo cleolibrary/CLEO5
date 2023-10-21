@@ -2840,6 +2840,20 @@ namespace CLEO {
 		auto cs = reinterpret_cast<CCustomScript*>(thread);
 		DWORD returnParamCount = GetVarArgCount(cs);
 
+		if(cs->SP != 0) // current scope was created with GOSUB
+		{
+			if (returnParamCount > 0)
+			{
+				SHOW_ERROR("GOSUB calls do not support return params! Invalid return in script %s\nScript suspended.", cs->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(cs);
+			}
+
+			// routine return - same as 0050
+			cs->SP -= 1;
+			cs->SetIp(cs->Stack[cs->SP]);
+			return OR_CONTINUE;
+		}
+
 		if (returnParamCount) GetScriptParams(cs, returnParamCount);
 
 		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
