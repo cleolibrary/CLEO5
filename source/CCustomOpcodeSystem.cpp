@@ -121,6 +121,7 @@ namespace CLEO {
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // resolve_filepath
 	OpcodeResult __stdcall opcode_2001(CRunningScript* thread); // get_script_filename
+	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
 
 	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript *script);
 	struct ScriptDeleteDelegate {
@@ -343,6 +344,7 @@ namespace CLEO {
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		CLEO_RegisterOpcode(0x2000, opcode_2000); // resolve_filepath
 		CLEO_RegisterOpcode(0x2001, opcode_2001); // get_script_filename
+		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
 	}
 
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
@@ -2829,6 +2831,33 @@ namespace CLEO {
 			CLEO_WriteStringOpcodeParam(thread, script->GetScriptFileName());
 
 		SetScriptCondResult(thread, true);
+		return OR_CONTINUE;
+	}
+
+	//2002=-1, cleo_return_with ...
+	OpcodeResult __stdcall opcode_2002(CRunningScript* thread)
+	{
+		auto cs = reinterpret_cast<CCustomScript*>(thread);
+		DWORD returnParamCount = GetVarArgCount(cs);
+
+		if (returnParamCount) GetScriptParams(cs, returnParamCount);
+
+		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
+		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
+		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
+		delete scmFunc;
+
+		DWORD returnSlotCount = GetVarArgCount(cs);
+		if(returnSlotCount > returnParamCount)
+		{
+			SHOW_ERROR("Opcode [2002] returned fewer params than expected by function caller in script %s\nScript suspended.", cs->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(cs);
+		}
+
+		if (returnSlotCount) SetScriptParams(cs, returnSlotCount);
+		cs->IncPtr(); // skip var args terminator
+
+		SetScriptCondResult(cs, returnParamCount > 0);
 		return OR_CONTINUE;
 	}
 }
