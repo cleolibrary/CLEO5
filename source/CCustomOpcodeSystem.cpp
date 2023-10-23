@@ -3028,17 +3028,19 @@ extern "C"
 		WriteStringParam(thread, str);
 	}
 
-	char* WINAPI CLEO_ReadParamsFormatted(CLEO::CRunningScript* thread, const char* format, char* buf, int size)
+	char* WINAPI CLEO_ReadParamsFormatted(CLEO::CRunningScript* thread, const char* format, char* buf, int bufSize)
 	{
 		static char internal_buf[MAX_STR_LEN * 4];
-		if (!buf) { buf = internal_buf; size = sizeof(internal_buf); }
-		if (!size) size = MAX_STR_LEN;
-		std::fill(buf, buf + size, '\0');
+		if (!buf) { buf = internal_buf; bufSize = sizeof(internal_buf); }
+		if (!bufSize) bufSize = MAX_STR_LEN;
 
 		if(format != nullptr && strlen(format) > 0)
-			ReadFormattedString(thread, buf, size, format);
+			ReadFormattedString(thread, buf, bufSize, format);
 		else
+		{
 			SkipUnusedVarArgs(thread);
+			if(bufSize > 0) buf[0] = '\0';
+		}
 
 		return buf;
 	}
