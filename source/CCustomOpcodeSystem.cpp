@@ -840,7 +840,7 @@ namespace CLEO {
 					{
 						static const char none[] = "(null)";
 						if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
-						const char *astr = ReadStringParam(thread);
+						const char *astr = ReadStringParam(thread, bufa, sizeof(bufa));
 						const char *striter = astr ? astr : none;
 						while (*striter)
 						{
