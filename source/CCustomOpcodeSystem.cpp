@@ -634,7 +634,15 @@ namespace CLEO {
 				GetScriptParams(thread, 1);
 				char* str = opcodeParams[0].pcParam;
 
-				size_t length = strlen(str);
+				size_t length;
+				if(str != nullptr)
+					length = strlen(str);
+				else
+				{
+					length = 0;
+					LOG_WARNING("Reading string from null pointer in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+				}
+
 				if(bufSize > 0)
 					length = min(length, bufSize - 1); // minus terminator char
 				else
@@ -700,9 +708,27 @@ namespace CLEO {
 	// write output\result string parameter
 	bool WriteStringParam(CRunningScript* thread, const char* str)
 	{
-		size_t len = str == nullptr ? 0 : strlen(str);
-		
+		auto target = GetStringParamWriteBuffer(thread);
+
+		if(target.first != nullptr && target.second > 0)
+		{
+			size_t length = str == nullptr ? 0 : strlen(str);
+			length = min(length, target.second - 1); // and null terminator
+
+			if (length > 0) std::memcpy(target.first, str, length);
+			target.first[length] = '\0';
+
+			return true; // ok
+		}
+
+		return false; // failed
+	}
+
+	std::pair<char*, DWORD> GetStringParamWriteBuffer(CRunningScript* thread)
+	{
 		char* targetBuff;
+		DWORD targetSize;
+
 		auto paramType = CLEO_GetOperandType(thread);
 		switch(paramType)
 		{
@@ -713,38 +739,29 @@ namespace CLEO {
 			case DT_VAR_ARRAY:
 			case DT_LVAR_ARRAY:
 				GetScriptParams(thread, 1);
-				targetBuff = opcodeParams[0].pcParam;
-				break;
+				return { opcodeParams[0].pcParam, 0x7FFFFFFF }; // user allocated memory block can be any size
 
 			// short string variable
 			case DT_VAR_TEXTLABEL:
 			case DT_LVAR_TEXTLABEL:
 			case DT_VAR_TEXTLABEL_ARRAY:
 			case DT_LVAR_TEXTLABEL_ARRAY:
-				targetBuff = (char*)GetScriptParamPointer(thread);
-				len = min(len, 7); // 8 with terminator
-				break;
+				return { (char*)GetScriptParamPointer(thread), 8 };
 
 			// long string variable
 			case DT_VAR_STRING:
 			case DT_LVAR_STRING:
 			case DT_VAR_STRING_ARRAY:
 			case DT_LVAR_STRING_ARRAY:
-				targetBuff = (char*)GetScriptParamPointer(thread);
-				len = min(len, 15); // 16 with terminator
-				break;
+				return { (char*)GetScriptParamPointer(thread), 16 };
 
 			default:
 			{
-				CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
 				SHOW_ERROR("Outputing string into invalid argument type (%02X) in script %s", paramType, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return false;
+				CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
+				return { nullptr, 0 };
 			}
 		}
-
-		if(len > 0) std::memcpy(targetBuff, str, len);
-		targetBuff[len] = '\0';
-		return true; // ok
 	}
 
 	// perform 'sprintf'-operation for parameters, passed through SCM
@@ -2503,12 +2520,20 @@ namespace CLEO {
 	//0AD3=-1,string %1d% format %2d% ...
 	OpcodeResult __stdcall opcode_0AD3(CRunningScript *thread)
 	{
-		char* dst;
-		if (*thread->GetBytePointer() >= 1 && *thread->GetBytePointer() <= 8) *thread >> dst;
-		else dst = &GetScriptParamPointer(thread)->cParam;
+		auto resultArg = GetStringParamWriteBuffer(thread);
 
 		auto format = ReadStringParam(thread);
-		ReadFormattedString(thread, dst, MAX_STR_LEN, format); // TODO: get actual length limit based on target type
+		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
+
+		if (resultArg.first != nullptr && resultArg.second > 0)
+		{
+			size_t length = text == nullptr ? 0 : strlen(text);
+			length = min(length, resultArg.second - 1); // and null terminator
+
+			if (length > 0) std::memcpy(resultArg.first, text, length);
+			resultArg.first[length] = '\0';
+		}
+
 		return OR_CONTINUE;
 	}
 

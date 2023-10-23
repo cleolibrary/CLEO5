@@ -70,6 +70,7 @@ namespace CLEO
     
     char* ReadStringParam(CRunningScript* thread, char* buf = nullptr, DWORD bufSize = 0);
     bool WriteStringParam(CRunningScript* thread, const char* str);
+    std::pair<char*, DWORD> GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
     int ReadFormattedString(CRunningScript* thread, char* buf, DWORD bufSize, const char* format);
     void SkipUnusedVarArgs(CRunningScript* thread); // for var-args opcodes
     DWORD GetVarArgCount(CRunningScript* thread); // for var-args opcodes
