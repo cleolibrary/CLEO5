@@ -2410,7 +2410,7 @@ namespace CLEO {
 	{
 		auto text = ReadStringParam(thread);
 		DWORD time; *thread >> time;
-		DWORD style; *thread >> time;
+		DWORD style; *thread >> style;
 
 		PrintBig(text, time, style);
 		return OR_CONTINUE;
@@ -2451,7 +2451,7 @@ namespace CLEO {
 	{
 		auto format = ReadStringParam(thread);
 		DWORD time; *thread >> time;
-		DWORD style; *thread >> time;
+		DWORD style; *thread >> style;
 		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
 
 		PrintBig(text, time, style);
