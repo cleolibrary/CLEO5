@@ -701,7 +701,6 @@ namespace CLEO {
 	bool WriteStringParam(CRunningScript* thread, const char* str)
 	{
 		size_t len = str == nullptr ? 0 : strlen(str);
-		len = min(len, MAX_STR_LEN - 1); // and terminator char
 		
 		char* targetBuff;
 		auto paramType = CLEO_GetOperandType(thread);
