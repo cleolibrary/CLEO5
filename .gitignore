@@ -42,3 +42,4 @@ ipch/
 */.output
 *.zip
 /.output/*/*.lib
+/third-party/*

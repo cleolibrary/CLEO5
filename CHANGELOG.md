@@ -27,6 +27,7 @@
   - more detailed error messages in some scenarios
   - some errors now cause the script to pause, instead of crashing the game
 - SCM functions **(0AB1)** now keep their own GOSUB's call stack
+- updated Silent's ASI Loader to version 1.3
 
 
 ### Bug Fixes
