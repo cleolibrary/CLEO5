@@ -1,0 +1,4 @@
+Extract here Silent's ASI Loader (used only when packing CLEO release archive)
+
+Can be downloaded at:
+https://cookieplmonster.github.io/mods/gta-sa/

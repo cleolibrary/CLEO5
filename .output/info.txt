@@ -1,0 +1,4 @@
+Files Readme.html and Changelog.html are generated from their *.md version using
+https://codebeautify.org/markdown-to-html
+
+In future these should be generated automatically by some command line tool

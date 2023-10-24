@@ -17,13 +17,20 @@ mkdir pack_tmp\cleo\cleo_text
 %zip% a -tzip %outputFile% ".\pack_tmp\*" -r -bso0
 rmdir /s /q pack_tmp
 
-%zip% a -tzip %outputFile% ".\Changelog.md" -bb2 | findstr "+" 
-%zip% rn %outputFile% "Changelog.md" "cleo_readme\Changelog.txt" -bso0
-
-%zip% a -tzip %outputFile% ".\Readme.md" -bb2 | findstr "+" 
-%zip% rn %outputFile% "Readme.md" "cleo_readme\Readme.txt" -bso0
-
 %zip% a -tzip %outputFile% ".\.output\Release\CLEO.asi" -bb2 | findstr "+"
+%zip% a -tzip %outputFile% ".\third-party\bass\bass.dll" -bb2 | findstr "+"
+%zip% a -tzip %outputFile% ".\third-party\asi_loader\vorbisFile.dll" -bb2 | findstr "+"
+%zip% a -tzip %outputFile% ".\third-party\asi_loader\vorbisHooked.dll" -bb2 | findstr "+"
+
+%zip% a -tzip %outputFile% ".\third-party\asi_loader\ReadMe.txt" -bb2 | findstr "+"
+%zip% rn %outputFile% "ReadMe.txt" "cleo_readme\ASI Loader Readme.txt" -bso0
+
+
+%zip% a -tzip %outputFile% ".\.output\Changelog.html" -bb2 | findstr "+"
+%zip% rn %outputFile% "Changelog.html" "cleo_readme\Changelog.html" -bso0
+
+%zip% a -tzip %outputFile% ".\.output\Readme.html" -bb2 | findstr "+" 
+%zip% rn %outputFile% "Readme.html" "cleo_readme\Readme.html" -bso0
 
 %zip% a -tzip %outputFile% ".\source\cleo_config.ini" -bb2 | findstr "+" 
 %zip% rn %outputFile% "cleo_config.ini" "cleo\.cleo_config.ini" -bso0
