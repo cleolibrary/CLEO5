@@ -1,7 +1,11 @@
-name: GitHub Actions Build
+name: CLEO 5 Release Build
 
 on:
   push:
+    branches:
+      - 'master'
+    paths:
+      - 'VERSION'
 
 jobs:
   build:
@@ -25,6 +29,27 @@ jobs:
       run: |
         set PLUGIN_SDK_DIR=plugin-sdk
         msbuild -m CLEO5.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
+    - name: Prepare archive
+      shell: cmd
+      run: |
+        mkdir .output\Release\cleo
+        mkdir .output\Release\cleo\cleo_modules
+        mkdir .output\Release\cleo\cleo_plugins
+        mkdir .output\Release\cleo\cleo_saves
+        mkdir .output\Release\cleo\cleo_text
+        mkdir .output\Release\cleo_readme
+        copy third-party\bass\bass.dll .output\Release\cleo\bass.dll
+        copy CHANGELOG.md .output\Release\cleo_readme\CHANGELOG.md
+        copy README.md .output\Release\cleo_readme\README.md
+        copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
+        copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
+        copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
+        
+        
+        for /f "tokens=*" %%a in (VERSION) do set version=%%a
+        echo "current_version=%version%" >> "$GITHUB_ENV"
+        echo "release_notes=release" >> "$GITHUB_ENV"
+
     - name: Pack binaries (Main)
       uses: ThirteenAG/zip-release@master
       with:
@@ -37,7 +62,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
-        name: 'name'
-        body: 'test'
-        tag: '0.0.1'
+        name: ${{ github.env.current_version }}
+        body: ${{ github.env.release_notes }}
+        tag: v${{ github.env.current_version }}
         artifacts: CLEO5.zip
