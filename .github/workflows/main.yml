@@ -23,7 +23,7 @@ jobs:
     - name: Configure build
       shell: cmd
       run: |
-        ./premake5.bat
+        set PLUGIN_SDK_DIR=plugin-sdk
     - name: Build
       shell: cmd
       run: |
