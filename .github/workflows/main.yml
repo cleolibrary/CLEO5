@@ -2,67 +2,106 @@ name: CLEO 5 Release Build
 
 on:
   push:
-    branches:
-      - 'master'
-    paths:
-      - 'VERSION'
+    tags:
+      - 'v[5-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build:
     runs-on: windows-2022
     permissions:
       contents: write
-    strategy:
-      matrix:
-        platform: [GTASA]
-        buildtype: [Release]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Add msbuild to PATH
-      uses: microsoft/setup-msbuild@v1.1
-    - uses: actions/checkout@v2
-      with:
-        submodules: 'true'
-    - name: Build
-      shell: cmd
-      run: |
-        set PLUGIN_SDK_DIR=plugin-sdk
-        msbuild -m CLEO5.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
-    - name: Prepare archive
-      shell: cmd
-      run: |
-        mkdir .output\Release\cleo
-        mkdir .output\Release\cleo\cleo_modules
-        mkdir .output\Release\cleo\cleo_plugins
-        mkdir .output\Release\cleo\cleo_saves
-        mkdir .output\Release\cleo\cleo_text
-        mkdir .output\Release\cleo_readme
-        copy third-party\bass\bass.dll .output\Release\cleo\bass.dll
-        copy CHANGELOG.md .output\Release\cleo_readme\CHANGELOG.md
-        copy README.md .output\Release\cleo_readme\README.md
-        copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
-        copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
-        copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
-        
-        
-        for /f "tokens=*" %%a in (VERSION) do set version=%%a
-        echo "current_version=%version%" >> "$GITHUB_ENV"
-        echo "release_notes=release" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v2
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+      - uses: actions/checkout@v2
+        with:
+          submodules: "true"
+      - name: Build
+        shell: cmd
+        run: |
+          set PLUGIN_SDK_DIR=plugin-sdk
+          msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
+          msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
 
-    - name: Pack binaries (Main)
-      uses: ThirteenAG/zip-release@master
-      with:
-        path: ./.output/Release/*
-        type: 'zip'
-        filename: 'CLEO5.zip'
-        exclusions: '*.pdb *.lib *.exp *.map'
-    - name: Upload Release
-      uses: ncipollo/release-action@v1.10.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        allowUpdates: true
-        name: ${{ github.env.current_version }}
-        body: ${{ github.env.release_notes }}
-        tag: v${{ github.env.current_version }}
-        artifacts: CLEO5.zip
+      - name: Prepare archive
+        id: prepare_archive
+        shell: cmd
+        run: |
+          # create output directory
+          mkdir .output\Release\cleo
+          mkdir .output\Release\cleo\cleo_modules
+          mkdir .output\Release\cleo\cleo_plugins
+          mkdir .output\Release\cleo\cleo_saves
+          mkdir .output\Release\cleo\cleo_text
+          mkdir .output\Release\cleo_readme
+
+          # copy files
+          copy third-party\bass\bass.dll .output\Release\bass.dll
+          copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
+          copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
+          copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
+
+          # install Silent's ASI Loader
+          curl https://silent.rockstarvision.com/uploads/silents_asi_loader_13.zip -o silents_asi_loader_13.zip
+          powershell.exe -NoP -NonI -Command "Expand-Archive '.\silents_asi_loader_13.zip' '.\.output\Release'"
+          move .output\Release\ReadMe.txt ".output\Release\cleo_readme\ASI Loader Readme.txt"
+          rmdir /s /q .output\Release\advanced_plugin_management_example
+          rmdir /s /q .output\Release\scripts
+
+          # for /f "tokens=*" %%a in (VERSION) do set version=%%a
+          set version=%GITHUB_REF:refs/tags/v=%
+          echo "current_version=%version%" >> "$GITHUB_OUTPUT"
+          echo "release_notes=release" >> "$GITHUB_OUTPUT"
+
+      - name: Read Changelog
+        id: read_changelog
+        uses: andstor/file-reader-action@v1
+        with:
+          path: "CHANGELOG.md"
+
+      - name: Read Readme
+        id: read_readme
+        uses: andstor/file-reader-action@v1
+        with:
+          path: "README.md"
+
+      - uses: lifepal/markdown-to-html@v1.2
+        id: changelog_to_html
+        with:
+          text: ${{ steps.read_changelog.outputs.contents }}
+
+      - uses: lifepal/markdown-to-html@v1.2
+        id: readme_to_html
+        with:
+          text: ${{ steps.read_readme.outputs.contents }}
+
+      - uses: DamianReeves/write-file-action@master
+        with:
+          path: .output\Release\cleo_readme\CHANGELOG.html
+          contents: ${{ steps.changelog_to_html.outputs.html }}
+          write-mode: overwrite
+
+      - uses: DamianReeves/write-file-action@master
+        with:
+          path: .output\Release\cleo_readme\README.html
+          contents: ${{ steps.read_readme.outputs.html }}
+          write-mode: overwrite
+
+      - name: Pack binaries (Main)
+        uses: ThirteenAG/zip-release@master
+        with:
+          path: ./.output/Release/*
+          type: "zip"
+          filename: "CLEO5.zip"
+          exclusions: "*.pdb *.lib *.exp *.map"
+      - name: Upload Release
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          name: ${{ steps.prepare_archive.outputs.version }}
+          body: ${{ steps.prepare_archive.outputs.release_notes }}
+          tag: ${{ github.ref_name }}
+          artifacts: CLEO5.zip
