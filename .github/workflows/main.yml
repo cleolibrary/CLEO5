@@ -3,7 +3,7 @@ name: CLEO 5 Release Build
 on:
   push:
     tags:
-      - 'v[5-9]+.[0-9]+.[0-9]+'
+      - 'v[5-9]+.[0-9]+.[0-9]+.*'
 
 jobs:
   build:
@@ -50,10 +50,14 @@ jobs:
           rmdir /s /q .output\Release\advanced_plugin_management_example
           rmdir /s /q .output\Release\scripts
 
-          # for /f "tokens=*" %%a in (VERSION) do set version=%%a
-          set version=%GITHUB_REF:refs/tags/v=%
-          echo "current_version=%version%" >> "$GITHUB_OUTPUT"
-          echo "release_notes=release" >> "$GITHUB_OUTPUT"
+      - name: Read Version Tag
+        id: read_version_tag
+        shell: cmd
+        run: |
+           # for /f "tokens=*" %%a in (VERSION) do set version=%%a
+           set version=%GITHUB_REF:refs/tags/v=%
+           echo "current_version=%version%" >> "$GITHUB_OUTPUT"
+           echo "release_notes=release" >> "$GITHUB_OUTPUT"
 
       - name: Read Changelog
         id: read_changelog
@@ -96,12 +100,13 @@ jobs:
           type: "zip"
           filename: "CLEO5.zip"
           exclusions: "*.pdb *.lib *.exp *.map"
+
       - name: Upload Release
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true
-          name: ${{ steps.prepare_archive.outputs.version }}
-          body: ${{ steps.prepare_archive.outputs.release_notes }}
+          name: ${{ steps.read_version_tag.outputs.version }}
+          body: ${{ steps.read_version_tag.outputs.release_notes }}
           tag: ${{ github.ref_name }}
-          artifacts: CLEO5.zip
+          artifacts: "CLEO5.zip"
