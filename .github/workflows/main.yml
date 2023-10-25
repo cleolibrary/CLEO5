@@ -82,7 +82,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ steps.read_version.outputs.version }}
-          body: ${{ steps.read_version.outputs.changes }}
+          bodyFile: 'changes.txt' # generated in read_version
           tag: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           artifacts: "CLEO5.zip"
