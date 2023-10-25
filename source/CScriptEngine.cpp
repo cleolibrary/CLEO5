@@ -253,7 +253,7 @@ namespace CLEO
         {
             if (!pScript->IsMission())
             {
-                TRACE("[004E] Incorrect usage of opcode in script '%s'.", pScript->GetName());
+                TRACE("[004E] Incorrect usage of opcode in script %s.", pScript->GetName());
             }
             else *MissionLoaded = false;
             GetInstance().ScriptEngine.RemoveCustomScript(pScript);
