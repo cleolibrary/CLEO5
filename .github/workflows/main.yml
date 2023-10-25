@@ -21,7 +21,7 @@ jobs:
       - name: Build
         shell: cmd
         run: |
-          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\plugin-sdk
+          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
 
@@ -54,44 +54,22 @@ jobs:
         id: read_version_tag
         shell: cmd
         run: |
-           # for /f "tokens=*" %%a in (VERSION) do set version=%%a
-           set version=%GITHUB_REF:refs/tags/v=%
-           echo "current_version=%version%" >> "$GITHUB_OUTPUT"
-           echo "release_notes=release" >> "$GITHUB_OUTPUT"
+          @REM for /f "tokens=*" %%a in (VERSION) do set version=%%a
+          set version=%GITHUB_REF:refs/tags/v=%
+          echo "current_version=%version%" >> "$GITHUB_OUTPUT"
+          echo "release_notes=release" >> "$GITHUB_OUTPUT"
 
-      - name: Read Changelog
-        id: read_changelog
-        uses: andstor/file-reader-action@v1
+      - uses: actions/setup-node@v3
         with:
-          path: "CHANGELOG.md"
+          node-version: lts
 
-      - name: Read Readme
-        id: read_readme
-        uses: andstor/file-reader-action@v1
-        with:
-          path: "README.md"
-
-      - uses: lifepal/markdown-to-html@v1.2
-        id: changelog_to_html
-        with:
-          text: ${{ steps.read_changelog.outputs.contents }}
-
-      - uses: lifepal/markdown-to-html@v1.2
-        id: readme_to_html
-        with:
-          text: ${{ steps.read_readme.outputs.contents }}
-
-      - uses: DamianReeves/write-file-action@master
-        with:
-          path: .output\Release\cleo_readme\CHANGELOG.html
-          contents: ${{ steps.changelog_to_html.outputs.html }}
-          write-mode: overwrite
-
-      - uses: DamianReeves/write-file-action@master
-        with:
-          path: .output\Release\cleo_readme\README.html
-          contents: ${{ steps.readme_to_html.outputs.html }}
-          write-mode: overwrite
+      - name: Convert Markdown to HTML
+        id: md_to_html
+        run: |
+          npm install showdown
+          node.exe scripts/markdown.js
+          move README.html .output\Release\cleo_readme\README.html
+          move CHANGELOG.html .output\Release\cleo_readme\CHANGELOG.html
 
       - name: Pack binaries (Main)
         uses: ThirteenAG/zip-release@master
@@ -105,8 +83,8 @@ jobs:
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          allowUpdates: true
           name: ${{ steps.read_version_tag.outputs.version }}
           body: ${{ steps.read_version_tag.outputs.release_notes }}
           tag: ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           artifacts: "CLEO5.zip"

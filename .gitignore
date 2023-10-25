@@ -41,3 +41,4 @@ ipch/
 .vs/
 *.zip
 *.lib
+node_modules/
