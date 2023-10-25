@@ -44,7 +44,7 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
-        name: ${{ steps.release_info.outputs.name }}
-        body: ${{ steps.release_info.outputs.body }}
-        tag: ${{ steps.release_info.outputs.tag_name }}
+        name: 'name'
+        body: 'test'
+        tag: '0.0.1'
         artifacts: CLEO5.zip
