@@ -90,7 +90,7 @@ jobs:
       - uses: DamianReeves/write-file-action@master
         with:
           path: .output\Release\cleo_readme\README.html
-          contents: ${{ steps.read_readme.outputs.html }}
+          contents: ${{ steps.readme_to_html.outputs.html }}
           write-mode: overwrite
 
       - name: Pack binaries (Main)
