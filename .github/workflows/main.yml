@@ -20,13 +20,10 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: 'true'
-    - name: Configure build
-      shell: cmd
-      run: |
-        set PLUGIN_SDK_DIR=plugin-sdk
     - name: Build
       shell: cmd
       run: |
+        set PLUGIN_SDK_DIR=plugin-sdk
         msbuild -m CLEO5.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
     - name: Pack binaries (Main)
       uses: ThirteenAG/zip-release@master
