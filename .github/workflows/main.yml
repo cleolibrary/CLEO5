@@ -13,19 +13,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
+
       - uses: actions/checkout@v2
         with:
           submodules: "true"
-      - name: Build
+
+      - name: Build Projects
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
 
-      - name: Prepare archive
+      - name: Prepare Files
         id: prepare_archive
         shell: cmd
         run: |
@@ -50,18 +53,13 @@ jobs:
           rmdir /s /q .output\Release\advanced_plugin_management_example
           rmdir /s /q .output\Release\scripts
 
-      - name: Read Version Tag
-        id: read_version_tag
-        shell: cmd
-        run: |
-          @REM for /f "tokens=*" %%a in (VERSION) do set version=%%a
-          set version=%GITHUB_REF:refs/tags/v=%
-          echo "current_version=%version%" >> "$GITHUB_OUTPUT"
-          echo "release_notes=release" >> "$GITHUB_OUTPUT"
-
       - uses: actions/setup-node@v3
         with:
           node-version: lts/*
+
+      - name: Read Version Tag
+        id: read_version
+        run: node.exe scripts/version.js
 
       - name: Convert Markdown to HTML
         id: md_to_html
@@ -83,8 +81,8 @@ jobs:
         uses: ncipollo/release-action@v1.10.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ steps.read_version_tag.outputs.version }}
-          body: ${{ steps.read_version_tag.outputs.release_notes }}
+          name: ${{ steps.read_version.outputs.version }}
+          body: ${{ steps.read_version.outputs.changes }}
           tag: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           artifacts: "CLEO5.zip"
