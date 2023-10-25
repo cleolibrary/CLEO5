@@ -3,7 +3,7 @@ name: CLEO 5 Release Build
 on:
   push:
     tags:
-      - 'v[5-9]+.[0-9]+.[0-9]+.*'
+      - 'v[0-9]+.[0-9]+.[0-9]+**'
 
 jobs:
   build:
