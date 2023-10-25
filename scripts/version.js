@@ -9,7 +9,7 @@ if (GITHUB_REF_NAME) {
 
 const changelog = readFileSync("CHANGELOG.md", { encoding: "utf-8" });
 const changes = getChanges();
-addOutput("changes", changes.join("\\n"));
+addOutput("changes", changes.join(EOL).replaceAll("%", "%25").replaceAll("\n", "%0A").replaceAll("\r", "%0D"));
 
 function addOutput(key, value) {
   appendFileSync(GITHUB_OUTPUT, `${key}=${value}${EOL}`, { encoding: "utf-8" });
