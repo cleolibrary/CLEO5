@@ -28,7 +28,7 @@ jobs:
     - name: Pack binaries (Main)
       uses: ThirteenAG/zip-release@master
       with:
-        path: ./data/*
+        path: ./.output/Release/*
         type: 'zip'
         filename: 'CLEO5.zip'
         exclusions: '*.pdb *.lib *.exp *.map'
