@@ -61,7 +61,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: lts
+          node-version: lts/*
 
       - name: Convert Markdown to HTML
         id: md_to_html
