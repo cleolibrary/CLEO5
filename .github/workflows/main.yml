@@ -27,7 +27,7 @@ jobs:
     - name: Build
       shell: cmd
       run: |
-        msbuild -m build/CLEO5.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
+        msbuild -m CLEO5.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
     - name: Pack binaries (Main)
       uses: ThirteenAG/zip-release@master
       with:
