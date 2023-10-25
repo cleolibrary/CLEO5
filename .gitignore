@@ -1,5 +1,5 @@
 build/
-.output/
+.output/**/*
 *.APS
 *.VC.db
 *.VC.opendb
@@ -39,6 +39,5 @@ Debug/*
 Release/*
 ipch/
 .vs/
-*/.output
 *.zip
-/.output/*/*.lib
+*.lib

@@ -1,0 +1,53 @@
+name: GitHub Actions Build
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: windows-2022
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        platform: [Win32]
+        buildtype: [Release]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'true'
+    - name: Configure build
+      shell: cmd
+      run: |
+        ./premake5.bat
+    - name: Build
+      shell: cmd
+      run: |
+        msbuild -m build/CLEO5.sln /property:Configuration=${{matrix.buildtype}} /property:Platform=${{matrix.platform}}
+    - name: Pack binaries (Main)
+      uses: ThirteenAG/zip-release@master
+      with:
+        path: ./data/*
+        type: 'zip'
+        filename: 'CLEO5.zip'
+        exclusions: '*.pdb *.lib *.exp *.map'
+    - name: Get release info
+      id: release_info
+      uses: cardinalby/git-get-release-action@1.2.2
+      env:
+       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag: latest
+    - name: Upload Release
+      uses: ncipollo/release-action@v1.10.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        allowUpdates: true
+        name: ${{ steps.release_info.outputs.name }}
+        body: ${{ steps.release_info.outputs.body }}
+        tag: ${{ steps.release_info.outputs.tag_name }}
+        artifacts: CLEO5.zip
