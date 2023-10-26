@@ -62,4 +62,4 @@
 
 
 ## Older
-- to see earlier changes view CLEO4 changelog: https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md
+- to see earlier changes view [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
