@@ -5,7 +5,7 @@ const { GITHUB_OUTPUT, GITHUB_REF_NAME } = process.env;
 if (GITHUB_REF_NAME) {
   const version = GITHUB_REF_NAME.startsWith("v") ? GITHUB_REF_NAME.slice(1) : GITHUB_REF_NAME;
   addOutput("version", version);
-  addOutput("archive_name", `CLEO_${GITHUB_REF_NAME}.zip`);
+  addOutput("archive_name", `SA.CLEO_${GITHUB_REF_NAME}.zip`);
 
   // update cleo.h to replace version
   const cleoH = readFileSync("cleo_sdk/cleo.h", { encoding: "utf-8" });
