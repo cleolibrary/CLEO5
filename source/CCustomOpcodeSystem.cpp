@@ -215,7 +215,7 @@ namespace CLEO {
 
 		// execute registered callbacks
 		OpcodeResult callbackResult = OR_NONE;
-		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptOpcodeProcessed))
+		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptOpcodeProcessFinished))
 		{
 			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
 			auto res = ((callback*)func)(thread, opcode, result);
