@@ -165,10 +165,6 @@ namespace CLEO {
 	// opcode handler for custom opcodes
 	OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript *thread, int dummy, WORD opcode)
 	{
-		/*std::ostringstream ss;
-		ss << thread->GetName() << " opcode " << opcodeToStr(opcode) << std::endl;
-		OutputDebugStringA(ss.str().c_str());//*/
-
 		lastScript = thread;
 		lastOpcode = opcode;
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
@@ -181,7 +177,7 @@ namespace CLEO {
 			result = ((callback*)func)(thread, opcode);
 
 			if(result != OR_NONE)
-				return result; // opcode processed by callback
+				break; // processed
 		}
 
 		if(result == OR_NONE) // opcode not proccessed yet
