@@ -2012,7 +2012,8 @@ namespace CLEO {
 
 			default:
 			{
-				SHOW_ERROR("Invalid first argument type (%02X) of [0AB1] opcode in script %s \nScript suspended.", *thread->GetBytePointer(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid type (%02X) of the first argument in opcode [0AB1] in script %s \nScript suspended.", *thread->GetBytePointer(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
