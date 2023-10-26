@@ -9,7 +9,14 @@ if (GITHUB_REF_NAME) {
 
   // update cleo.h to replace version
   const cleoH = readFileSync("cleo_sdk/cleo.h", { encoding: "utf-8" });
-  const newCleoH = cleoH.replace(/#define CLEO_VERSION_STR .*/, `#define CLEO_VERSION_STR "${version}"`);
+
+  const [, main, major, minor] = version.match(/(\d+)\.(\d+)\.(\d+).*/);
+
+  const newCleoH = cleoH
+    .replace(/#define\s+CLEO_VERSION_MAIN\s+.*/, `#define CLEO_VERSION_MAIN ${main}`)
+    .replace(/#define\s+CLEO_VERSION_MAJOR\s+.*/, `#define CLEO_VERSION_MAJOR ${major}`)
+    .replace(/#define\s+CLEO_VERSION_MINOR\s+.*/, `#define CLEO_VERSION_MINOR ${minor}`)
+    .replace(/#define\s+CLEO_VERSION_STR\s+.*/, `#define CLEO_VERSION_STR "${version}"`);
   writeFileSync("cleo_sdk/cleo.h", newCleoH, { encoding: "utf-8" });
 }
 
