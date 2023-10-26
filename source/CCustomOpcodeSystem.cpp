@@ -2040,7 +2040,7 @@ namespace CLEO {
 			auto scriptRef = GetInstance().ModuleSystem.GetExport(modulePath, strExport);
 			if (!scriptRef.Valid())
 			{
-				SHOW_ERROR("Not found module '%s' export '%s', requested by [0AB1] opcode in script %s", modulePath.c_str(), &str[0], ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), &str[0], ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 			scmFunc->moduleExportRef = scriptRef.base; // to be released on return
