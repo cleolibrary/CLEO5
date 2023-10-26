@@ -2057,7 +2057,8 @@ namespace CLEO {
 		if(*thread->GetBytePointer()) *thread >> nParams;
 		if(nParams > 32)
 		{
-			SHOW_ERROR("Argument count (%d), out of supported range (32) of [0AB1] opcode in script %s", nParams, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			SHOW_ERROR("Argument count (%d), out of supported range (32) of opcode [0AB1] in script %s", nParams, ((CCustomScript*)thread)->GetInfoStr().c_str());
+
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
