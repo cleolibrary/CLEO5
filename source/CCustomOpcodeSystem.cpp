@@ -2026,7 +2026,7 @@ namespace CLEO {
 			auto pos = str.find('@');
 			if (pos == str.npos)
 			{
-				SHOW_ERROR("Invalid module reference '%s' in [0AB1] opcode in script %s \nScript suspended.", moduleTxt, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid module reference '%s' in opcode [0AB1] in script %s \nScript suspended.", moduleTxt, ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 			std::string_view strExport = str.substr(0, pos);
@@ -2683,7 +2683,7 @@ namespace CLEO {
 		*thread >> mi;
 
 		CVehicleModelInfo* model;
-		// if 1.0 US, prefer GetModelInfo function — makes it compatible with fastman92's limit adjuster
+		// if 1.0 US, prefer GetModelInfo function Â— makes it compatible with fastman92's limit adjuster
 		if (CLEO::GetInstance().VersionManager.GetGameVersion() == CLEO::GV_US10) {
 			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(mi);
 		}
@@ -2710,7 +2710,7 @@ namespace CLEO {
 		*thread >> mi;
 
 		CVehicleModelInfo* model;
-		// if 1.0 US, prefer GetModelInfo function — makes it compatible with fastman92's limit adjuster
+		// if 1.0 US, prefer GetModelInfo function Â— makes it compatible with fastman92's limit adjuster
 		if (CLEO::GetInstance().VersionManager.GetGameVersion() == CLEO::GV_US10) {
 			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(mi);
 		}
