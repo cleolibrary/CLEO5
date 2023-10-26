@@ -84,7 +84,9 @@
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
 xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
+if defined GTA_SA_DIR (
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)
  </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -109,7 +111,9 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
 xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
+if defined GTA_SA_DIR (
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)
  </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

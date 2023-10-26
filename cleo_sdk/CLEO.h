@@ -1,5 +1,5 @@
 /*
-	CLEO 5.0.0 header file
+	CLEO 5 header file
 	Copyright (c) 2023 Alien, Deji, Junior_Djjr, Miran, Seemann
 */
 #pragma once

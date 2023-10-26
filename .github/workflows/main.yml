@@ -21,6 +21,14 @@ jobs:
         with:
           submodules: "true"
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+  
+      - name: Read Version Tag
+        id: read_version
+        run: node.exe .github/workflows/version.js
+
       - name: Build Projects
         shell: cmd
         run: |
@@ -53,19 +61,12 @@ jobs:
           rmdir /s /q .output\Release\advanced_plugin_management_example
           rmdir /s /q .output\Release\scripts
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: lts/*
-
-      - name: Read Version Tag
-        id: read_version
-        run: node.exe scripts/version.js
 
       - name: Convert Markdown to HTML
         id: md_to_html
         run: |
           npm install showdown
-          node.exe scripts/markdown.js
+          node.exe .github/workflows/markdown.js
           move README.html .output\Release\cleo_readme\README.html
           move CHANGELOG.html .output\Release\cleo_readme\CHANGELOG.html
 
