@@ -56,10 +56,7 @@
 - project migrated to VS 2022
 - configured game debugging settings
 - plugins moved into single solution
-- updated pack_release.bat script
+- configured automatic releases on GitHub
 - added setup_env.bat script
 
-
-
-## Older
-- to see earlier changes view [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
+For older changes, see [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
