@@ -75,7 +75,7 @@ jobs:
         with:
           path: ./.output/Release/*
           type: "zip"
-          filename: "CLEO5.zip"
+          filename: ${{ steps.read_version.outputs.archive_name }}
           exclusions: "*.pdb *.lib *.exp *.map"
 
       - name: Upload Release
@@ -86,4 +86,4 @@ jobs:
           bodyFile: 'changes.txt' # generated in read_version
           tag: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          artifacts: "CLEO5.zip"
+          artifacts: ${{ steps.read_version.outputs.archive_name }}
