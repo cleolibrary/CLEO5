@@ -131,8 +131,8 @@ enum class eCallbackId : DWORD
 	ScriptRegister, // void WINAPI OnScriptRegister(CRunningScript* pScript); // called after script creation
 	ScriptUnregister, // void WINAPI OnScriptUnregister(CRunningScript* pScript); // called before script deletion
 	ScriptProcess, // bool WINAPI OnScriptProcess(CRunningScript* pScript); // return false to skip this script processing
-	ScriptOpcodeProcess, // OpcodeResult WINAPI ScriptOpcodeProcess(CRunningScript* pScript, DWORD opcode); // return other than OR_NONE to signal that opcode was handled in the callback
-	ScriptOpcodeProcessed, // OpcodeResult WINAPI ScriptOpcodeProcessed(CRunningScript* pScript, DWORD opcode, OpcodeResult result); // return other than OR_NONE to overwrite original result
+	ScriptOpcodeProcess, // OpcodeResult WINAPI OnScriptOpcodeProcess(CRunningScript* pScript, DWORD opcode); // return other than OR_NONE to signal that opcode was handled in the callback
+	ScriptOpcodeProcessed, // OpcodeResult WINAPI OnScriptOpcodeProcessed(CRunningScript* pScript, DWORD opcode, OpcodeResult result); // return other than OR_NONE to overwrite original result
 	ScriptDraw, // void WINAPI OnScriptDraw(bool beforeFade);
 	DrawingFinished, // void WINAPI OnDrawingFinished(); // called after game rendered everything and before presenting screen buffer
 	Log, // void OnLog(eLogLevel level, const char* msg);
