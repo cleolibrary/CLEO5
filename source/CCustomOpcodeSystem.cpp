@@ -173,37 +173,61 @@ namespace CLEO {
 		lastOpcode = opcode;
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
 
-		if(opcode > LastCustomOpcode)
+		// execute registered callbacks
+		OpcodeResult result = OR_NONE;
+		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptOpcodeProcess))
 		{
-			SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return ErrorSuspendScript(thread);
+			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
+			result = ((callback*)func)(thread, opcode);
+
+			if(result != OR_NONE)
+				return result; // opcode processed by callback
 		}
 
-		CustomOpcodeHandler handler = customOpcodeProc[opcode];
-		if(handler != nullptr)
+		if(result == OR_NONE) // opcode not proccessed yet
 		{
-			lastCustomOpcode = opcode;
-			return handler(thread);
+			if(opcode > LastCustomOpcode)
+			{
+				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return ErrorSuspendScript(thread);
+			}
+
+			CustomOpcodeHandler handler = customOpcodeProc[opcode];
+			if(handler != nullptr)
+			{
+				lastCustomOpcode = opcode;
+				return handler(thread);
+			}
+
+			// Not registered as custom opcode. Call game's original handler
+
+			if (opcode > LastOriginalOpcode)
+			{
+				SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return ErrorSuspendScript(thread);
+			}
+
+			size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
+			result = originalOpcodeHandlers[tableIdx](thread, opcode);
+
+			if(result == OR_ERROR)
+			{
+				SHOW_ERROR("Opcode [%04X] not found! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return ErrorSuspendScript(thread);
+			}
 		}
 
-		// Not registered as custom opcode. Call game's original handler
-
-		if (opcode > LastOriginalOpcode)
+		// execute registered callbacks
+		OpcodeResult callbackResult = OR_NONE;
+		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptOpcodeProcessed))
 		{
-			SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return ErrorSuspendScript(thread);
+			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
+			auto res = ((callback*)func)(thread, opcode, result);
+
+			callbackResult = max(res, callbackResult); // store result with highest value from all callbacks
 		}
 
-		size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
-		auto result = originalOpcodeHandlers[tableIdx](thread, opcode);
-
-		if(result == OR_ERROR)
-		{
-			SHOW_ERROR("Opcode [%04X] not found! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return ErrorSuspendScript(thread);
-		}
-
-		return result;
+		return (callbackResult != OR_NONE) ? callbackResult : result;
 	}
 
 	OpcodeResult CCustomOpcodeSystem::ErrorSuspendScript(CRunningScript* thread)
@@ -221,7 +245,7 @@ namespace CLEO {
 
 		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptsFinalize))
 		{
-			typedef void callback(void);
+			typedef void WINAPI callback(void);
 			((callback*)func)();
 		}
 
