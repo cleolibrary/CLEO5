@@ -983,9 +983,10 @@ namespace CLEO
         }
 
         // [game root]\cleo
-        std::string scriptsDir = CFileMgr::ms_rootDirName;
+        /*std::string scriptsDir = CFileMgr::ms_rootDirName;
         if (!scriptsDir.empty() && scriptsDir.back() != '\\') scriptsDir.push_back('\\');
-        scriptsDir += "cleo";
+        scriptsDir += "cleo";*/
+        std::string scriptsDir = "cleo"; // TODO: restore to absolute path when ModLoader is updated to support CLEO5
 
         TRACE("Searching for cleo scripts");
 
