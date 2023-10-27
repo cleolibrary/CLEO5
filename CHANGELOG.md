@@ -14,7 +14,7 @@
   - **2001 ([get_script_filename](https://library.sannybuilder.com/#/sa/CLEO/2001))**
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
-  - opcodes **0AAB**, **0AE4**, **0AE5**, **0AE1**, **0AE2** and **0AE3** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
+  - opcodes **0AAB**, **0AE4**, **0AE5**, **0AE6**, **0AE7** and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 
     - `0:\` for _game root_ directory
