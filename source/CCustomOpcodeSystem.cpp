@@ -3007,9 +3007,20 @@ namespace CLEO {
 
 		if(fullPath != 0)
 		{
-			std::ostringstream ss;
-			ss << script->GetScriptFileDir() << "\\" << script->GetScriptFileName();
-			CLEO_WriteStringOpcodeParam(thread, ss.str().c_str());
+			const size_t len =
+				strlen(script->GetScriptFileDir()) +
+				1 + // path separator
+				strlen(script->GetScriptFileName());
+
+			std::string path;
+			path.reserve(len);
+
+			path = script->GetScriptFileDir();
+			path.push_back('\\');
+			path.append(script->GetScriptFileName());
+			path = script->ResolvePath(path.c_str()); // real absolute path
+
+			CLEO_WriteStringOpcodeParam(thread, path.c_str());
 		}
 		else
 			CLEO_WriteStringOpcodeParam(thread, script->GetScriptFileName());
