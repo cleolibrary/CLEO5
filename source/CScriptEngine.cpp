@@ -990,20 +990,25 @@ namespace CLEO
 
         TRACE("Searching for cleo scripts");
 
-        FilesWalk(scriptsDir.c_str(), cs_ext, [this](const char* fullPath, const char* filename) {
-            auto cs = LoadScript(fullPath);
-            cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
+        CCustomScript* cs = nullptr;
+        FilesWalk(scriptsDir.c_str(), cs_ext, [&](const char* fullPath, const char* filename) {
+            cs = LoadScript(fullPath);
         });
 
-        FilesWalk(scriptsDir.c_str(), cs4_ext, [this](const char* fullPath, const char* filename) {
-            auto cs = LoadScript(fullPath);
+        FilesWalk(scriptsDir.c_str(), cs4_ext, [&](const char* fullPath, const char* filename) {
+            cs = LoadScript(fullPath);
             if (cs) cs->SetCompatibility(CLEO_VER_4);
         });
 
-        FilesWalk(scriptsDir.c_str(), cs3_ext, [this](const char* fullPath, const char* filename) {
-            auto cs = LoadScript(fullPath);
+        FilesWalk(scriptsDir.c_str(), cs3_ext, [&](const char* fullPath, const char* filename) {
+            cs = LoadScript(fullPath);
             if (cs) cs->SetCompatibility(CLEO_VER_3);
         });
+
+        if (cs != nullptr)
+        {
+            cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
+        }
 
         for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptsLoaded))
         {
