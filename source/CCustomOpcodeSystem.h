@@ -29,6 +29,8 @@ namespace CLEO
         static WORD lastOpcode;
         static WORD* lastOpcodePtr;
         static WORD lastCustomOpcode;
+
+        static WORD prevOpcode; // previous
         
         void FinalizeScriptObjects();
 
@@ -36,7 +38,8 @@ namespace CLEO
         virtual void Inject(CCodeInjector& inj);
         ~CCustomOpcodeSystem()
         {
-            TRACE("Last opcode executed %04X", lastOpcode);
+            TRACE("Last opcode executed: %04X", lastOpcode);
+            TRACE("Previous opcode executed: %04X", prevOpcode);
         }
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);

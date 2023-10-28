@@ -1000,7 +1000,7 @@ namespace CLEO
         scriptsDir += "cleo";*/
         std::string scriptsDir = "cleo"; // TODO: restore to absolute path when ModLoader is updated to support CLEO5
 
-        TRACE("Searching for cleo scripts");
+        TRACE("Searching for CLEO scripts");
 
         CCustomScript* cs = nullptr;
         FilesWalk(scriptsDir.c_str(), cs_ext, [&](const char* fullPath, const char* filename) {
@@ -1027,6 +1027,8 @@ namespace CLEO
             typedef void WINAPI callback(void);
             ((callback*)func)();
         }
+
+        TRACE("Scripts search done.");
     }
 
     CCustomScript * CScriptEngine::LoadScript(const char * szFilePath)

@@ -161,10 +161,14 @@ namespace CLEO {
 	WORD CCustomOpcodeSystem::lastOpcode = 0;
 	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
 	WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
+	WORD CCustomOpcodeSystem::prevOpcode = 0;
+
 
 	// opcode handler for custom opcodes
 	OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript *thread, int dummy, WORD opcode)
 	{
+		prevOpcode = lastOpcode;
+
 		lastScript = thread;
 		lastOpcode = opcode;
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start

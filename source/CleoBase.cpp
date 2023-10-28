@@ -50,6 +50,7 @@ namespace CLEO
         CodeInjector.ReplaceFunction(OnDrawingFinished, 0x00734640); // nullsub_63 - originally something like renderDebugStuff?
 
         m_bStarted = true;
+        TRACE("CLEO instance started successfully!");
     }
 
     void CCleoInstance::Stop()
