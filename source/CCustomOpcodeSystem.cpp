@@ -12,7 +12,8 @@
 #define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("ReadStringParam error in script %s \nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); } 
 #define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("WriteStringParam error in script %s \nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); } 
 
-namespace CLEO {
+namespace CLEO 
+{
 	DWORD FUNC_fopen;
 	DWORD FUNC_fclose;
 	DWORD FUNC_fwrite;
@@ -472,7 +473,7 @@ namespace CLEO {
 				break;
 
 			default:
-				LOG_WARNING("Reading integer from invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING("Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -496,7 +497,7 @@ namespace CLEO {
 				break;
 
 			default:
-				LOG_WARNING("Writing integer into invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING("Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].dwParam = uval;
@@ -520,7 +521,7 @@ namespace CLEO {
 				break;
 
 			default:
-				LOG_WARNING("Reading integer from invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING("Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -544,7 +545,7 @@ namespace CLEO {
 				break;
 
 			default:
-				LOG_WARNING("Writing integer into invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING("Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].nParam = nval;
@@ -565,7 +566,7 @@ namespace CLEO {
 				break;
 
 			default:
-				LOG_WARNING("Reading float from invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING("Reading float argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -585,7 +586,7 @@ namespace CLEO {
 				break;
 
 			default:
-				LOG_WARNING("Writing float into invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING("Writing float, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].fParam = fval;
@@ -735,7 +736,7 @@ namespace CLEO {
 
 		// unsupported param type
 		GetScriptParams(thread, 1); // skip unhandled param
-		SHOW_ERROR("Reading string from invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+		SHOW_ERROR("Reading string argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
 		return nullptr;
 	}
 
@@ -776,7 +777,7 @@ namespace CLEO {
 
 				if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 				{
-					LOG_WARNING("Writing string into param with invalid target pointer value (0x%X) in script %s", opcodeParams[0].dwParam, ((CCustomScript*)thread)->GetInfoStr().c_str());
+					LOG_WARNING("Writing string, got target pointer with value (0x%X) in script %s", opcodeParams[0].dwParam, ((CCustomScript*)thread)->GetInfoStr().c_str());
 					return { 0, 0 }; // error
 				}
 				return { opcodeParams[0].pcParam, 0x7FFFFFFF }; // user allocated memory block can be any size
@@ -797,7 +798,7 @@ namespace CLEO {
 
 			default:
 			{
-				SHOW_ERROR("Outputing string into invalid argument type (%s) in script %s", ToString(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Writing string, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
 				return { nullptr, 0 };
 			}
@@ -2078,7 +2079,7 @@ namespace CLEO {
 				break;
 
 			default:
-				SHOW_ERROR("Invalid type (%s) of the first argument in opcode [0AB1] in script %s \nScript suspended.", ToString(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid type (%s) of the first argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
