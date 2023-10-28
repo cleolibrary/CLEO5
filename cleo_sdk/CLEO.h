@@ -85,7 +85,7 @@ static const char* ToString(eDataType v)
 		case DT_VAR_TEXTLABEL_ARRAY: return "GlobVarSTxtArr"; break;
 		case DT_LVAR_TEXTLABEL_ARRAY: return "LocVarSTxtArr"; break;
 		case DT_VARLEN_STRING: return "Txt"; break;
-		case DT_STRING: return "Txt2"; break; // ?
+		case DT_STRING: return "LTxt"; break;
 		case DT_VAR_STRING: return "GlobVarLTxt"; break;
 		case DT_LVAR_STRING: return "LocVarLTxt"; break;
 		case DT_VAR_STRING_ARRAY: return "GlobVarLTxtArr"; break;
