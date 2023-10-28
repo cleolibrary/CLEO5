@@ -66,6 +66,33 @@ enum eDataType : int
 	DT_VAR_STRING_ARRAY,
 	DT_LVAR_STRING_ARRAY
 };
+static const char* ToString(eDataType v)
+{
+	switch (v)
+	{
+		case DT_END: return "VArgEnd"; break;
+		case DT_DWORD: return "Int32"; break;
+		case DT_VAR: return "GlobVar"; break;
+		case DT_LVAR: return "LocVar"; break;
+		case DT_BYTE: return "Int8"; break;
+		case DT_WORD: return "Int16"; break;
+		case DT_FLOAT: return "Float32"; break;
+		case DT_VAR_ARRAY: return "GlobVarArr"; break;
+		case DT_LVAR_ARRAY: return "LocVarArr"; break;
+		case DT_TEXTLABEL: return "STxt"; break;
+		case DT_VAR_TEXTLABEL: return "GlobVarSTxt"; break;
+		case DT_LVAR_TEXTLABEL: return "LocVarSTxt"; break;
+		case DT_VAR_TEXTLABEL_ARRAY: return "GlobVarSTxtArr"; break;
+		case DT_LVAR_TEXTLABEL_ARRAY: return "LocVarSTxtArr"; break;
+		case DT_VARLEN_STRING: return "Txt"; break;
+		case DT_STRING: return "Txt2"; break; // ?
+		case DT_VAR_STRING: return "GlobVarLTxt"; break;
+		case DT_LVAR_STRING: return "LocVarLTxt"; break;
+		case DT_VAR_STRING_ARRAY: return "GlobVarLTxtArr"; break;
+		case DT_LVAR_STRING_ARRAY: return "LocVarLTxtArr"; break;
+		default: return "LocVarLTxtArr";
+	}
+}
 
 const size_t MAX_STR_LEN = 0xff; // max length of string type parameter
 
