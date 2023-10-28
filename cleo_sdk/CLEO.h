@@ -114,11 +114,11 @@ static eLogicalOperation& operator--(eLogicalOperation& o)
 }
 
 // CLEO virtual path prefixes. Expandable with CLEO_ResolvePath
-const char DIR_GAME[] = "0:"; // game root directory
-const char DIR_USER[] = "1:"; // game save directory
-const char DIR_SCRIPT[] = "2:"; // current script directory
-const char DIR_CLEO[] = "3:"; // game\cleo directory
-const char DIR_MODULES[] = "4:"; // game\cleo\modules directory
+const char DIR_GAME[] = "root:"; // game root directory
+const char DIR_USER[] = "userfiles:"; // game save directory
+const char DIR_SCRIPT[] = "."; // current script directory
+const char DIR_CLEO[] = "cleo:"; // game\cleo directory
+const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory
 
 // argument of CLEO_RegisterCallback
 enum class eCallbackId : DWORD

@@ -56,8 +56,7 @@ void FilesWalk(const char* directory, const char* extension, T callback)
             continue; // skip directories
         }
 
-        //auto result = std::filesystem::absolute(std::string(baseDir) + wfd.cFileName);
-        auto result = std::filesystem::path(std::string(baseDir) + wfd.cFileName); // ModLoader supports only relative paths...
+        auto result = std::filesystem::weakly_canonical(std::string(baseDir) + wfd.cFileName); // will use CWD if input path was relative!
         callback(result.string().c_str(), result.filename().string().c_str());
 
     } while (FindNextFile(hSearch, &wfd));

@@ -665,57 +665,69 @@ namespace CLEO
             return {};
         }
 
-        std::string result;
-        if (strlen(path) < 2 || path[1] != ':') // does not start with drive letter
+        try
         {
-            result = (customWorkDir != nullptr) ? customWorkDir : GetWorkDir();
-            if (!result.empty() && result.back() == '\\') result.pop_back();
+            auto fsPath = std::filesystem::path(path);
 
-            if (strlen(path) > 0)
+            // check for virtual path root
+            enum class VPref{ None, Game, User, Script, Cleo, Modules } virtualPrefix = VPref::None;
+            auto root = fsPath.begin();
+            if(root != fsPath.end())
             {
-                if(!result.empty()) result.push_back('\\');
-                result.append(path);
+                if(*root == DIR_GAME) virtualPrefix = VPref::Game;
+                else if (*root == DIR_USER) virtualPrefix = VPref::User;
+                else if (*root == DIR_SCRIPT) virtualPrefix = VPref::Script;
+                else if (*root == DIR_CLEO) virtualPrefix = VPref::Cleo;
+                else if (*root == DIR_MODULES) virtualPrefix = VPref::Modules;
             }
-        }
-        else
-        {
-            result = path;
-        }
 
-        // predefined CLEO paths starting with '[digit]:'
-        if (result.length() < 2 || result[1] != ':' ||
-            result[0] < DIR_GAME[0] || result[0] > DIR_MODULES[0]) // supported range
-        {
-            return result; // not predefined path prefix found
-        }
+            // not virtual
+            if(virtualPrefix == VPref::None)
+            {
+                if(fsPath.is_relative())
+                {
+                    auto workDir = ResolvePath(GetWorkDir());
+                    fsPath = workDir / fsPath;
+                }
 
-        if (result[0] == DIR_USER[0]) // saves/settings location
-        {
-            return std::string(GetUserDirectory()) + &result[2]; // original path without '1:' prefix;
-        }
+                return std::filesystem::weakly_canonical(fsPath).string();
+            }
 
-        if (result[0] == DIR_SCRIPT[0]) // current script location
-        {
-            std::string resolved = ResolvePath(GetScriptFileDir());
-            resolved += &result[2]; // original path without '2:' prefix;
-            return resolved;
-        }
+            // expand virtual paths
+            std::filesystem::path resolved;
 
-        // game root directory
-        std::string resolved = CFileMgr::ms_rootDirName;
-        if(!resolved.empty() && resolved.back() == '\\') resolved.pop_back();
+            if (virtualPrefix == VPref::User) // user files location
+            {
+                resolved = GetUserDirectory();
+            }
+            else
+            if (virtualPrefix == VPref::Script) // this script's source file location
+            {
+                resolved = ResolvePath(GetScriptFileDir());
+            }
+            else
+            {
+                // all remaing variants starts with game root
+                resolved = std::filesystem::path(CFileMgr::ms_rootDirName);
+        
+                switch(virtualPrefix)
+                {
+                    case(VPref::Cleo): resolved /= "cleo"; break;
+                    case(VPref::Modules): resolved /= "cleo\\cleo_modules"; break;
+                }
+            }
 
-        if (result[0] == DIR_CLEO[0]) // cleo directory
-        {
-            resolved += "\\cleo";
-        }
-        else if (result[0] == DIR_MODULES[0]) // cleo modules directory
-        {
-            resolved += "\\cleo\\cleo_modules";
-        }
+            // append all but virtual prefix from original path
+            for(auto it = ++fsPath.begin(); it != fsPath.end(); it++)
+                resolved /= *it;
 
-        resolved += &result[2]; // original path without 'X:' prefix
-        return resolved;
+            return std::filesystem::weakly_canonical(resolved).string(); // collapse "..\" uses
+        }
+        catch (const std::exception& ex)
+        {
+            TRACE("Error while resolving path: %s", ex.what());
+            return {};
+        }
     }
 
     std::string CCustomScript::GetInfoStr(bool currLineInfo) const
@@ -1299,7 +1311,7 @@ namespace CLEO
 
         // store script file directory and name
         std::filesystem::path path = szFileName;
-        path = std::filesystem::absolute(path);
+        path = std::filesystem::weakly_canonical(path);
         scriptFileDir = path.parent_path().string();
         scriptFileName = path.filename().string();
 

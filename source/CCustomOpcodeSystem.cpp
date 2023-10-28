@@ -1485,15 +1485,29 @@ namespace CLEO {
 	OpcodeResult __stdcall opcode_0A99(CRunningScript *thread)
 	{
 		auto paramType = *thread->GetBytePointer();
-		if (paramType >= 1 && paramType <= 8)
+		if (paramType == DT_BYTE ||
+			paramType == DT_WORD ||
+			paramType == DT_DWORD ||
+			paramType == DT_VAR ||
+			paramType == DT_LVAR ||
+			paramType == DT_VAR_ARRAY ||
+			paramType == DT_LVAR_ARRAY)
 		{
 			// numbered predefined paths
-			DWORD param;
-			*thread >> param;
+			DWORD param; *thread >> param;
 
-			std::string path = std::to_string(param);
-			path += ":";
-			reinterpret_cast<CCustomScript*>(thread)->SetWorkDir(path.c_str());
+			const char* path;
+			switch(param)
+			{
+				case 0: path = DIR_GAME; break;
+				case 1: path = DIR_USER; break;
+				case 2: path = DIR_SCRIPT; break;
+				default:
+					LOG_WARNING("Value (%d) not known by opcode [0A99] in script %s", param, ((CCustomScript*)thread)->GetInfoStr().c_str());
+					return OR_CONTINUE;
+			}
+
+			reinterpret_cast<CCustomScript*>(thread)->SetWorkDir(path);
 		}
 		else
 		{
@@ -2032,11 +2046,8 @@ namespace CLEO {
 				break;
 
 			default:
-			{
 				SHOW_ERROR("Invalid type (%02X) of the first argument in opcode [0AB1] in script %s \nScript suspended.", *thread->GetBytePointer(), ((CCustomScript*)thread)->GetInfoStr().c_str());
-
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-			}
 		}
 
 		ScmFunction* scmFunc = new ScmFunction(thread);
