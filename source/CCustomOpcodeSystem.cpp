@@ -652,23 +652,29 @@ namespace CLEO {
 			case DT_LVAR_ARRAY:
 			{
 				GetScriptParams(thread, 1);
-				char* str = opcodeParams[0].pcParam;
 
-				size_t length;
-				if(str != nullptr)
-					length = strlen(str);
+				size_t length = bufSize ? bufSize - 1 : 0; // minus terminator char
+				
+				if (opcodeParams[0].dwParam == 0)
+				{
+					const char* eStr = "(null)";
+					length = min(length, strlen(eStr));
+					if (length) strncpy(buf, eStr, length);
+				}
+				else if(opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
+				{
+					LOG_WARNING("Reading string from argument with invalid pointer value (0x%X) in script %s", opcodeParams[0].dwParam, ((CCustomScript*)thread)->GetInfoStr().c_str());
+					const char* eStr = "(badPtr)";
+					length = min(length, strlen(eStr));
+					if (length) strncpy(buf, eStr, length);
+				}
 				else
 				{
-					length = 0;
-					LOG_WARNING("Reading string from null pointer in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+					char* str = opcodeParams[0].pcParam;
+					length = min(length, strlen(str));
+					if (length) strncpy(buf, str, length);
 				}
 
-				if(bufSize > 0)
-					length = min(length, bufSize - 1); // minus terminator char
-				else
-					length = 0; // no target buffer
-
-				if (length) strncpy(buf, str, length);
 				if (bufSize > 0) buf[length] = '\0'; // string terminator
 				return buf;
 			}
@@ -759,6 +765,10 @@ namespace CLEO {
 			case DT_VAR_ARRAY:
 			case DT_LVAR_ARRAY:
 				GetScriptParams(thread, 1);
+
+				if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress) 
+					LOG_WARNING("Writing string into param with invalid target pointer value (0x%X) in script %s", opcodeParams[0].dwParam, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				
 				return { opcodeParams[0].pcParam, 0x7FFFFFFF }; // user allocated memory block can be any size
 
 			// short string variable

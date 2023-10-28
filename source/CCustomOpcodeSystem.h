@@ -19,6 +19,8 @@ namespace CLEO
     class CCustomOpcodeSystem : public VInjectible
     {
     public:
+        static const size_t MinValidAddress = 0x10000; // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
+
         static const size_t LastOriginalOpcode = 0x0A4E; // GTA SA
         static const size_t LastCustomOpcode = 0x7FFF;
 
