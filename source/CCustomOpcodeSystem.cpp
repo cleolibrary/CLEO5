@@ -650,7 +650,7 @@ namespace CLEO
 	{
 		static char internal_buf[MAX_STR_LEN];
 		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
-		auto length = bufSize ? bufSize - 1 : 0; // max text length (minus terminator char)
+		const auto bufLength = bufSize ? bufSize - 1 : 0; // max text length (minus terminator char)
 
 		lastErrorMsg.clear();
 
@@ -676,12 +676,12 @@ namespace CLEO
 				}
 
 				char* str = opcodeParams[0].pcParam;
-				auto readLength = strlen(str);
+				auto length = strlen(str);
 
-				if(readLength > length)
+				if(length > bufLength)
 				{
-					lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", length, readLength);
-					readLength = length; // clamp to target buffer size
+					lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
+					length = bufLength; // clamp to target buffer size
 				}
 
 				if (length) strncpy(buf, str, length);
@@ -712,16 +712,16 @@ namespace CLEO
 					// prococess here as GetScriptStringParam can not obtain strings with lenght greater than 128
 					thread->IncPtr(1); // already processed paramType
 
-					DWORD readLength = (BYTE)*thread->GetBytePointer(); // as unsigned byte! 
+					DWORD length = (BYTE)*thread->GetBytePointer(); // as unsigned byte! 
 					thread->IncPtr(1); // length info
 
 					char* str = (char*)thread->GetBytePointer();
-					thread->IncPtr(readLength); // text data
+					thread->IncPtr(length); // text data
 
-					if (readLength > length)
+					if (length > bufLength)
 					{
-						lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", length, readLength);
-						readLength = length; // clamp to target buffer size
+						lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
+						length = bufLength; // clamp to target buffer size
 					}
 
 					if (length) strncpy(buf, str, length);
