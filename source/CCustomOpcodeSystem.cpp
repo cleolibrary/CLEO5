@@ -3160,12 +3160,18 @@ extern "C"
 
 	LPSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char *buf, int size)
 	{
-		return ReadStringParam(thread, buf, size);
+		auto result = ReadStringParam(thread, buf, size);
+
+		if (result == nullptr)
+			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+
+		return result;
 	}
 
 	void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
 	{
-		WriteStringParam(thread, str);
+		if(!WriteStringParam(thread, str))
+			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 	}
 
 	char* WINAPI CLEO_ReadParamsFormatted(CLEO::CRunningScript* thread, const char* format, char* buf, int bufSize)
@@ -3174,17 +3180,10 @@ extern "C"
 		if (!buf) { buf = internal_buf; bufSize = sizeof(internal_buf); }
 		if (!bufSize) bufSize = MAX_STR_LEN;
 
-		if(format != nullptr && strlen(format) > 0)
+		if(ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
 		{
-			if(ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
-			{
-				LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			}
-		}
-		else
-		{
-			SkipUnusedVarArgs(thread);
-			if(bufSize > 0) buf[0] = '\0';
+			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return nullptr; // error
 		}
 
 		return buf;
