@@ -7,6 +7,8 @@
 
 const char szLogFileName[] = "cleo.log";
 
+std::string stringPrintf(const char* format, ...);
+
 class CDebug
 {
 public:

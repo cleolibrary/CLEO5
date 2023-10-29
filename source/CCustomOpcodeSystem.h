@@ -29,7 +29,7 @@ namespace CLEO
         static WORD lastOpcode;
         static WORD* lastOpcodePtr;
         static WORD lastCustomOpcode;
-
+        static std::string lastErrorMsg;
         static WORD prevOpcode; // previous
         
         void FinalizeScriptObjects();

@@ -9,8 +9,9 @@
 #include <filesystem>
 #include <sstream>
 
-#define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("ReadStringParam error in script %s \nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); } 
-#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("WriteStringParam error in script %s \nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); } 
+#define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
+#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
+#define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
 
 namespace CLEO 
 {
@@ -165,6 +166,7 @@ namespace CLEO
 	WORD CCustomOpcodeSystem::lastOpcode = 0;
 	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
 	WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
+	std::string lastErrorMsg = {};
 	WORD CCustomOpcodeSystem::prevOpcode = 0;
 
 
@@ -648,6 +650,9 @@ namespace CLEO
 	{
 		static char internal_buf[MAX_STR_LEN];
 		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
+		auto length = bufSize ? bufSize - 1 : 0; // max text length (minus terminator char)
+
+		lastErrorMsg.clear();
 
 		auto paramType = CLEO_GetOperandType(thread);
 		switch(paramType)
@@ -660,29 +665,26 @@ namespace CLEO
 			case DT_LVAR_ARRAY:
 			{
 				GetScriptParams(thread, 1);
-
-				size_t length = bufSize ? bufSize - 1 : 0; // minus terminator char
 				
-				if (opcodeParams[0].dwParam == 0)
+				if(opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 				{
-					const char* eStr = "(null)";
-					length = min(length, strlen(eStr));
-					if (length) strncpy(buf, eStr, length);
+					lastErrorMsg = (opcodeParams[0].dwParam == 0) ?
+						"Reading string from 'null' pointer argument" :
+						stringPrintf("Reading string from invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
+
+					return nullptr; // error, target buffer untouched
 				}
-				else if(opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
+
+				char* str = opcodeParams[0].pcParam;
+				auto readLength = strlen(str);
+
+				if(readLength > length)
 				{
-					LOG_WARNING("Reading string from argument with invalid pointer value (0x%X) in script %s", opcodeParams[0].dwParam, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					const char* eStr = "(badPtr)";
-					length = min(length, strlen(eStr));
-					if (length) strncpy(buf, eStr, length);
-					return nullptr; // error
+					lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", length, readLength);
+					readLength = length; // clamp to target buffer size
 				}
-				else
-				{
-					char* str = opcodeParams[0].pcParam;
-					length = min(length, strlen(str));
-					if (length) strncpy(buf, str, length);
-				}
+
+				if (length) strncpy(buf, str, length);
 
 				if (bufSize > 0) buf[length] = '\0'; // string terminator
 				return buf;
@@ -710,16 +712,17 @@ namespace CLEO
 					// prococess here as GetScriptStringParam can not obtain strings with lenght greater than 128
 					thread->IncPtr(1); // already processed paramType
 
-					DWORD length = (BYTE)*thread->GetBytePointer(); // as unsigned byte! 
+					DWORD readLength = (BYTE)*thread->GetBytePointer(); // as unsigned byte! 
 					thread->IncPtr(1); // length info
 
 					char* str = (char*)thread->GetBytePointer();
-					thread->IncPtr(length); // text data
+					thread->IncPtr(readLength); // text data
 
-					if (bufSize > 0)
-						length = min(length, bufSize - 1); // minus terminator char
-					else
-						length = 0; // no target buffer
+					if (readLength > length)
+					{
+						lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", length, readLength);
+						readLength = length; // clamp to target buffer size
+					}
 
 					if (length) strncpy(buf, str, length);
 					if (bufSize > 0) buf[length] = '\0'; // string terminator
@@ -736,8 +739,8 @@ namespace CLEO
 
 		// unsupported param type
 		GetScriptParams(thread, 1); // skip unhandled param
-		SHOW_ERROR("Reading string argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-		return nullptr;
+		lastErrorMsg = stringPrintf("Reading string argument, got %s", ToKindStr(paramType));
+		return nullptr; // error, target buffer untouched
 	}
 
 	// write output\result string parameter
@@ -764,6 +767,8 @@ namespace CLEO
 		char* targetBuff;
 		DWORD targetSize;
 
+		lastErrorMsg.clear();
+
 		auto paramType = CLEO_GetOperandType(thread);
 		switch(paramType)
 		{
@@ -777,8 +782,8 @@ namespace CLEO
 
 				if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 				{
-					LOG_WARNING("Writing string, got target pointer with value (0x%X) in script %s", opcodeParams[0].dwParam, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return { 0, 0 }; // error
+					lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
+					return { nullptr, 0 }; // error
 				}
 				return { opcodeParams[0].pcParam, 0x7FFFFFFF }; // user allocated memory block can be any size
 
@@ -798,9 +803,9 @@ namespace CLEO
 
 			default:
 			{
-				SHOW_ERROR("Writing string, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				lastErrorMsg = stringPrintf("Writing string, got argument %s", ToKindStr(paramType));
 				CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
-				return { nullptr, 0 };
+				return { nullptr, 0 }; // error
 			}
 		}
 	}
@@ -813,11 +818,14 @@ namespace CLEO
 		char* outIter = outputStr;
 		char bufa[256], fmtbufa[64], *fmta;
 
+		lastErrorMsg.clear();
+
 		// invalid input arguments
-		if(outputStr == nullptr || len == 0) 
+		if(outputStr == nullptr || len == 0)
 		{
+			lastErrorMsg = "Need target buffer to read formatted string";
 			SkipUnusedVarArgs(thread);
-			return -1;
+			return -1; // error
 		}
 
 		if(len > 1 && format != nullptr)
@@ -895,14 +903,29 @@ namespace CLEO
 					{
 					case 's':
 					{
-						static const char none[] = "(null)";
 						if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
-						const char *astr = ReadStringParam(thread, bufa, sizeof(bufa));
-						const char *striter = astr ? astr : none;
-						while (*striter)
+
+						const char* str = ReadStringParam(thread, bufa, sizeof(bufa));
+						if(str == nullptr) // read error
+						{
+							if(lastErrorMsg.find("'null' pointer") != std::string::npos)
+							{
+								static const char none[] = "(null)";
+								str = none;
+							}
+							else
+							{
+								// lastErrorMsg already set by ReadStringParam
+								SkipUnusedVarArgs(thread);
+								outputStr[written] = '\0';
+								return -1; // error
+							}
+						}
+						
+						while (*str)
 						{
 							if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
-							*outIter++ = *striter++;
+							*outIter++ = *str++;
 						}
 						iter++;
 						break;
@@ -962,28 +985,30 @@ namespace CLEO
 
 		if (written >= len)
 		{
-			_ReadFormattedString_OutOfMemory: // jump here on error
-			LOG_WARNING("Read formatted string error: Insufficient output buffer size in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+		_ReadFormattedString_OutOfMemory: // jump here on error
+
+			lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole formatted string", len);
 			SkipUnusedVarArgs(thread);
 			outputStr[len - 1] = '\0';
-			return -1;
+			return -1; // error
 		}
 
 		// still more var-args available
 		if (CLEO_GetOperandType(thread) != DT_END)
 		{
-			LOG_WARNING("Read formatted string: Found more params than format slots in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			lastErrorMsg = "More params than slots in formatted string";
+			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 		}
 		SkipUnusedVarArgs(thread); // skip terminator too
 
 		outputStr[written] = '\0';
 		return (int)written;
 
-		_ReadFormattedString_ArgMissing: // jump here on error
-		LOG_WARNING("Read formatted string: Not enough arguments to fulfill specified format in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+	_ReadFormattedString_ArgMissing: // jump here on error
+		lastErrorMsg = "Less params than slots in formatted string";
 		thread->IncPtr(); // skip vararg terminator
 		outputStr[written] = '\0';
-		return (int)written;
+		return -1; // error
 	}
 
 	// Legacy modes for CLEO 3
@@ -2532,7 +2557,7 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0ACE(CRunningScript *thread)
 	{
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
-		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
+		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
 
 		PrintHelp(text);
 		return OR_CONTINUE;
@@ -2544,7 +2569,7 @@ namespace CLEO
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
 		DWORD time; *thread >> time;
 		DWORD style; *thread >> style;
-		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
+		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
 
 		PrintBig(text, time, style);
 		return OR_CONTINUE;
@@ -2555,7 +2580,7 @@ namespace CLEO
 	{
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
 		DWORD time; *thread >> time;
-		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
+		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
 
 		Print(text, time);
 		return OR_CONTINUE;
@@ -2566,7 +2591,7 @@ namespace CLEO
 	{
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
 		DWORD time; *thread >> time;
-		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
+		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
 
 		PrintNow(text, time);
 		return OR_CONTINUE;
@@ -2598,7 +2623,7 @@ namespace CLEO
 	{
 		auto resultArg = GetStringParamWriteBuffer(thread); OPCODE_VALIDATE_STR_ARG_WRITE(resultArg.first)
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
-		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
+		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
 
 		if (resultArg.first != nullptr && resultArg.second > 0)
 		{
@@ -2708,7 +2733,7 @@ namespace CLEO
 	{
 		DWORD hFile; *thread >> hFile;
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
-		char text[MAX_STR_LEN]; ReadFormattedString(thread, text, sizeof(text), format);
+		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
 		
 		if (FILE * file = convert_handle_to_file(hFile))
 		{
@@ -3150,7 +3175,12 @@ extern "C"
 		if (!bufSize) bufSize = MAX_STR_LEN;
 
 		if(format != nullptr && strlen(format) > 0)
-			ReadFormattedString(thread, buf, bufSize, format);
+		{
+			if(ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
+			{
+				LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			}
+		}
 		else
 		{
 			SkipUnusedVarArgs(thread);

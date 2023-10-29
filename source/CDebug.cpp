@@ -6,6 +6,23 @@
 CDebug Debug;
 using namespace CLEO;
 
+std::string stringPrintf(const char* format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+    auto len = std::vsnprintf(nullptr, 0, format, args) + 1;
+    va_end(args);
+    
+    std::string result(len, '\0');
+
+    va_start(args, format);
+    std::vsnprintf(result.data(), result.length(), format, args);
+    va_end(args);
+
+    return result;
+}
+
 void CDebug::Trace(eLogLevel level, const char* format, ...)
 {
     va_list args;
