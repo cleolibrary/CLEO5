@@ -17,11 +17,11 @@
   - opcodes **0AAB**, **0AE4**, **0AE5**, **0AE6**, **0AE7** and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 
-    - `0:\` for _game root_ directory
-    - `1:\` for _game save files_ directory
-    - `2:\` for _this script file_ directory
-    - `3:\` for _CLEO_ directory
-    - `4:\` for _CLEO\cleo_modules_ directory
+    - `root:\` for _game root_ directory
+    - `userfiles:\` for _game save files_ directory
+    - `.\` for _this script file_ directory
+    - `cleo:\` for _CLEO_ directory
+    - `modules:\` for _CLEO\cleo_modules_ directory
   - rewritten opcode **0A99 (set_current_directory)**. It no longer affects internal game state and other scripts
 - improved error handling
   - more detailed error messages in some scenarios
