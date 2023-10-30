@@ -36,7 +36,7 @@ void FilesWalk(const char* directory, const char* extension, T callback)
     std::string pattern = directory;
     if(!pattern.empty() && pattern.back() != '\\') pattern.push_back('\\');
 
-    std::string_view baseDir = pattern;
+    const size_t baseDirLen = pattern.length();
     
     pattern.push_back('*');
     if (extension != nullptr) pattern.append(extension);
@@ -56,7 +56,7 @@ void FilesWalk(const char* directory, const char* extension, T callback)
             continue; // skip directories
         }
 
-        auto result = std::filesystem::weakly_canonical(std::string(baseDir) + wfd.cFileName); // will use CWD if input path was relative!
+        auto result = std::filesystem::weakly_canonical(pattern.substr(0, baseDirLen) + wfd.cFileName); // will use CWD if input path was relative!
         callback(result.string().c_str(), result.filename().string().c_str());
 
     } while (FindNextFile(hSearch, &wfd));
