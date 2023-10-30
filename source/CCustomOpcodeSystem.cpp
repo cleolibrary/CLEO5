@@ -2261,9 +2261,10 @@ namespace CLEO
 		delete scmFunc;
 
 		DWORD returnSlotCount = GetVarArgCount(thread);
-		if (returnSlotCount > returnParamCount)
+		if(returnParamCount) returnParamCount--; // do not count the 'num args' argument itself
+		if (returnSlotCount != returnParamCount)
 		{
-			SHOW_ERROR("Opcode [0AB2] returned fewer params than expected by function caller in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			SHOW_ERROR("Opcode [0AB2] returned %d params, while function caller expected %d in script %s\nScript suspended.", returnParamCount, returnSlotCount, ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
