@@ -2,11 +2,11 @@
 
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264
 - new [DebugUtils](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/DebugUtils) plugin
-  - new opcode **00C3 ([debug_on](https://library.sannybuilder.com/#/sa/CLEO/00C3))**
-  - new opcode **00C4 ([debug_off](https://library.sannybuilder.com/#/sa/CLEO/00C4))**
-  - new opcode **00CC ([breakpoint](https://library.sannybuilder.com/#/sa/CLEO/00CC))**
-  - new opcode **00CD ([trace](https://library.sannybuilder.com/#/sa/CLEO/00CD))**
-  - new opcode **00CE ([log_to_file](https://library.sannybuilder.com/#/sa/CLEO/00CE))**
+  - new opcode **00C3 ([debug_on](https://library.sannybuilder.com/#/sa/debug/00C3))**
+  - new opcode **00C4 ([debug_off](https://library.sannybuilder.com/#/sa/debug/00C4))**
+  - new opcode **00CC ([breakpoint](https://library.sannybuilder.com/#/sa/debug/00CC))**
+  - new opcode **00CD ([trace](https://library.sannybuilder.com/#/sa/debug/00CD))**
+  - new opcode **00CE ([log_to_file](https://library.sannybuilder.com/#/sa/debug/00CE))**
   - implemented support of opcodes **0662**, **0663** and **0664** (original Rockstar's script debugging opcodes. See DebugUtils.ini)
 - new and updated opcodes
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
