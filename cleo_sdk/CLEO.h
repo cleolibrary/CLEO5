@@ -370,7 +370,7 @@ void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
 void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);
 
 eDataType WINAPI CLEO_GetOperandType(const CRunningScript* thread); // peek parameter data type
-DWORD WINAPI CLEO_GetVarArgCount(CRunningScript* thread); // peek var-args count
+DWORD WINAPI CLEO_GetVarArgCount(CRunningScript* thread); // peek remaining var-args count
 
 extern SCRIPT_VAR* opcodeParams;
 extern SCRIPT_VAR* missionLocals;

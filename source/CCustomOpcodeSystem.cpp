@@ -2228,8 +2228,32 @@ namespace CLEO
 	{
 		ScmFunction *scmFunc = ScmFunction::Store[reinterpret_cast<CCustomScript*>(thread)->GetScmFunction()];
 		
-		DWORD returnParamCount = 0;
-		if (*thread->GetBytePointer()) *thread >> returnParamCount;
+		DWORD returnParamCount = GetVarArgCount(thread);
+		if (returnParamCount)
+		{
+			DWORD declaredParamCount;
+
+			auto paramType = (eDataType)*thread->GetBytePointer();
+			switch (paramType)
+			{
+				// literal integers
+				case DT_BYTE:
+				case DT_WORD:
+				case DT_DWORD:
+					*thread >> declaredParamCount;
+				break;
+
+			default:
+				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
+
+			if(returnParamCount - 1 != declaredParamCount) // minus 'num args' itself
+			{
+				SHOW_ERROR("Opcode [0AB2] declared %d return args, but provided %d in script %s\nScript suspended.", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
+		}
 		if (returnParamCount) GetScriptParams(thread, returnParamCount);
 
 		scmFunc->Return(thread); // jump back to cleo_call, right after last input param. Return slot var args starts here
