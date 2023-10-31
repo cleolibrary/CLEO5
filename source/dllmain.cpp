@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CleoBase.h"
 #include "CDebug.h"
+#include <tlhelp32.h>
 
 class Starter
 {
@@ -44,5 +45,28 @@ Starter Starter::dummy;
 
 extern "C" BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
+    if (fdwReason == DLL_PROCESS_ATTACH)
+    {
+        MODULEENTRY32 module; 
+        module.dwSize = sizeof(MODULEENTRY32);
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
+
+        Module32First(snapshot, &module);
+        if (snapshot != INVALID_HANDLE_VALUE)
+        {
+            do
+            {
+                if (module.hModule != hinstDLL && _strcmpi(module.szModule, "CLEO.asi") == 0)
+                {
+                    CloseHandle(snapshot);
+                    SHOW_ERROR("Another copy of CLEO.asi is already loaded!\nPlease remove duplicated files.");
+                    return FALSE;
+                }
+            } while (Module32Next(snapshot, &module));
+
+            CloseHandle(snapshot);
+        }
+    }
+
     return TRUE;
 }
