@@ -2075,7 +2075,7 @@ namespace CLEO
 		int label = 0;
 
 		char* moduleTxt = nullptr;
-		auto paramType = CLEO_GetOperandType(thread);
+		auto paramType = (eDataType)*thread->GetBytePointer();
 		switch (paramType)
 		{
 			// label of current script
@@ -2104,7 +2104,7 @@ namespace CLEO
 				break;
 
 			default:
-				SHOW_ERROR("Invalid type (%s) of the first argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
@@ -2142,13 +2142,41 @@ namespace CLEO
 			label = scriptRef.offset;
 		}
 
-		DWORD nParams = 0;
-		if(*thread->GetBytePointer()) *thread >> nParams;
-		if(nParams > 32)
+		// "number of input parameters" opcode argument
+		DWORD nParams;
+		paramType = (eDataType)*thread->GetBytePointer();
+		switch (paramType)
 		{
-			SHOW_ERROR("Argument count (%d), out of supported range (32) of opcode [0AB1] in script %s", nParams, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			case DT_END:
+				nParams = 0;
+				break;
 
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			// literal integers
+			case DT_BYTE:
+			case DT_WORD:
+			case DT_DWORD:
+				*thread >> nParams;
+				break;
+
+			default:
+				SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+		if (nParams)
+		{
+			auto nVarArg = GetVarArgCount(thread);
+			if (nParams > nVarArg) // if less it means there are return params too
+			{
+				SHOW_ERROR("Opcode [0AB1] declared %d input args, but provided %d in script %s\nScript suspended.", nParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
+
+			if (nParams > 32)
+			{
+				SHOW_ERROR("Argument count %d is out of supported range (32) of opcode [0AB1] in script %s", nParams, ((CCustomScript*)thread)->GetInfoStr().c_str());
+
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
 		}
 
 		static SCRIPT_VAR arguments[32];
