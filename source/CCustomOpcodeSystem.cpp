@@ -764,9 +764,6 @@ namespace CLEO
 
 	std::pair<char*, DWORD> GetStringParamWriteBuffer(CRunningScript* thread)
 	{
-		char* targetBuff;
-		DWORD targetSize;
-
 		lastErrorMsg.clear();
 
 		auto paramType = CLEO_GetOperandType(thread);
@@ -1278,7 +1275,7 @@ namespace CLEO
 			cs->LogicalOp = eLogicalOperation::NONE;
 			cs->NotFlag = false;
 
-			cs->SetScmFunction(thisScmFunctionId = allocationPlace);
+			cs->SetScmFunction(thisScmFunctionId = (unsigned short)allocationPlace);
 		}
 
 		void Return(CRunningScript *thread)
@@ -1348,13 +1345,13 @@ namespace CLEO
 		switch (size)
 		{
 		default:
-			GetInstance().CodeInjector.MemoryWrite<BYTE>(Address, value, vp, size);
+			GetInstance().CodeInjector.MemoryWrite(Address, (BYTE)value, vp, size);
 			break;
 		case 2:
-			GetInstance().CodeInjector.MemoryWrite<WORD>(Address, value, vp);
+			GetInstance().CodeInjector.MemoryWrite(Address, (WORD)value, vp);
 			break;
 		case 4:
-			GetInstance().CodeInjector.MemoryWrite<DWORD>(Address, value, vp);
+			GetInstance().CodeInjector.MemoryWrite(Address, (DWORD)value, vp);
 			break;
 		}
 		return OR_CONTINUE;
