@@ -6,7 +6,6 @@
 #include "CTextManager.h"
 #include "CModelInfo.h"
 
-#include <filesystem>
 #include <sstream>
 
 #define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
@@ -397,6 +396,7 @@ namespace CLEO
 			customOpcodeHandlers[i] = (_OpcodeHandler)customOpcodeHandler;
 		}
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
+		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
 
 		FUNC_fopen = gvm.TranslateMemoryAddress(MA_FOPEN_FUNCTION);
 		FUNC_fclose = gvm.TranslateMemoryAddress(MA_FCLOSE_FUNCTION);
