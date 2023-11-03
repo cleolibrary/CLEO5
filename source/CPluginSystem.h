@@ -20,7 +20,8 @@ namespace CLEO
 
             TRACE("Loading plugins...");
 
-            FilesWalk("cleo\\cleo_plugins", ".cleo", [&](const char* fullPath, const char* filename)
+            auto path = FS::path(Filepath_Cleo).append("cleo_plugins").string();
+            FilesWalk(path.c_str(), ".cleo", [&](const char* fullPath, const char* filename)
             {
                 std::string name = filename;
                 std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -46,7 +47,7 @@ namespace CLEO
             });
 
             // load plugins from legacy location
-            FilesWalk("cleo", ".cleo", [&](const char* fullPath, const char* filename)
+            FilesWalk(Filepath_Cleo.c_str(), ".cleo", [&](const char* fullPath, const char* filename)
             {
                 std::string name = filename;
                 std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -57,7 +58,7 @@ namespace CLEO
                     HMODULE hlib = LoadLibrary(fullPath);
                     if (!hlib)
                     {
-                        LOG_WARNING("Error loading plugin '%s'", fullPath);
+                        LOG_WARNING("Error while loading plugin '%s'", fullPath);
                     }
                     else
                     {

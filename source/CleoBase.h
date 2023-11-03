@@ -35,8 +35,6 @@ namespace CLEO
         //CLegacy				Legacy;
 
         HWND MainWnd;
-        std::string ConfigFilename;
-
         CCleoInstance();
         virtual ~CCleoInstance();
 

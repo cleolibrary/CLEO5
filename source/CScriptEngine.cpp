@@ -3,7 +3,6 @@
 #include "CFileMgr.h"
 #include "CGame.h"
 
-#include <filesystem>
 #include <sstream>
 
 namespace CLEO
@@ -652,10 +651,15 @@ namespace CLEO
 
     void CCustomScript::SetWorkDir(const char* directory)
     {
+        if(directory == nullptr || strlen(directory) == 0)
+            return;  // Already done. Empty path is relative path starting at current work dir
+
+        auto resolved = ResolvePath(directory);
+
         if (!bIsCustom)
-            GetInstance().ScriptEngine.MainScriptCurWorkDir = directory;
+            GetInstance().ScriptEngine.MainScriptCurWorkDir = resolved;
         else
-            workDir = directory;
+            workDir = resolved;
     }
 
     std::string CCustomScript::ResolvePath(const char* path, const char* customWorkDir) const
@@ -667,7 +671,7 @@ namespace CLEO
 
         try
         {
-            auto fsPath = std::filesystem::path(path);
+            auto fsPath = FS::path(path);
 
             // check for virtual path root
             enum class VPref{ None, Game, User, Script, Cleo, Modules } virtualPrefix = VPref::None;
@@ -686,15 +690,14 @@ namespace CLEO
             {
                 if(fsPath.is_relative())
                 {
-                    auto workDir = ResolvePath(GetWorkDir());
-                    fsPath = workDir / fsPath;
+                    fsPath = GetWorkDir() / fsPath;
                 }
 
-                return std::filesystem::weakly_canonical(fsPath).string();
+                return FS::weakly_canonical(fsPath).string();
             }
 
             // expand virtual paths
-            std::filesystem::path resolved;
+            FS::path resolved;
 
             if (virtualPrefix == VPref::User) // user files location
             {
@@ -703,12 +706,12 @@ namespace CLEO
             else
             if (virtualPrefix == VPref::Script) // this script's source file location
             {
-                resolved = ResolvePath(GetScriptFileDir());
+                resolved = GetScriptFileDir();
             }
             else
             {
                 // all remaing variants starts with game root
-                resolved = std::filesystem::path(CFileMgr::ms_rootDirName);
+                resolved = Filepath_Root;
         
                 switch(virtualPrefix)
                 {
@@ -721,7 +724,7 @@ namespace CLEO
             for(auto it = ++fsPath.begin(); it != fsPath.end(); it++)
                 resolved /= *it;
 
-            return std::filesystem::weakly_canonical(resolved).string(); // collapse "..\" uses
+            return FS::weakly_canonical(resolved).string(); // collapse "..\" uses
         }
         catch (const std::exception& ex)
         {
@@ -924,29 +927,26 @@ namespace CLEO
     {
         if (CGame::bMissionPackGame == 0) // regular main game
         {
-            MainScriptFileDir = std::string(DIR_GAME) + "\\data\\script";
+            MainScriptFileDir = FS::path(Filepath_Cleo).append("data\\script").string();
             MainScriptFileName = "main.scm";
         }
         else // mission pack
         {
-            MainScriptFileDir = std::string(DIR_USER) + "\\MPACK\\MPACK";
-            MainScriptFileDir += std::to_string(CGame::bMissionPackGame);
+            MainScriptFileDir = FS::path(GetUserDirectory()).append(stringPrintf("MPACK\\MPACK%d", CGame::bMissionPackGame)).string();
             MainScriptFileName = "scr.scm";
         }
 
-        NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, GetInstance().ConfigFilename.c_str()) != 0;
-        MainScriptCurWorkDir = DIR_GAME;
+        NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, Filepath_Config.c_str()) != 0;
+        MainScriptCurWorkDir = Filepath_Root;
     }
 
     void CScriptEngine::LoadCustomScripts(bool load_mode)
     {
-        char safe_name[MAX_PATH];
-
         // steam offset is different, so get it manually for now
         CGameVersionManager& gvm = GetInstance().VersionManager;
         int nSlot = gvm.GetGameVersion() != GV_STEAM ? *(BYTE*)&MenuManager->m_nSelectedSaveGame : *((BYTE*)MenuManager + 0x15B);
 
-        sprintf(safe_name, "./cleo/cleo_saves/cs%d.sav", nSlot);
+        auto saveFile = FS::path(Filepath_Cleo).append(stringPrintf("cleo_saves\\cs%d.sav", nSlot)).string();
 
         safe_info = nullptr;
         stopped_info = nullptr;
@@ -957,8 +957,8 @@ namespace CLEO
             // load cleo saving file
             try
             {
-                TRACE("Loading cleo safe %s", safe_name);
-                std::ifstream ss(safe_name, std::ios::binary);
+                TRACE("Loading cleo safe %s", saveFile.c_str());
+                std::ifstream ss(saveFile.c_str(), std::ios::binary);
                 if (ss.is_open())
                 {
                     ss.exceptions(std::ios::eofbit | std::ios::badbit | std::ios::failbit);
@@ -984,7 +984,7 @@ namespace CLEO
             }
             catch (std::exception& ex)
             {
-                TRACE("Loading of cleo safe %s failed: %s", safe_name, ex.what());
+                TRACE("Loading of cleo safe %s failed: %s", saveFile.c_str(), ex.what());
                 safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
                 memset(CleoVariables, 0, sizeof(CleoVariables));
             }
@@ -994,23 +994,18 @@ namespace CLEO
             memset(CleoVariables, 0, sizeof(CleoVariables));
         }
 
-        // [game root]\cleo
-        /*std::string scriptsDir = CFileMgr::ms_rootDirName;
-        if (!scriptsDir.empty() && scriptsDir.back() != '\\') scriptsDir.push_back('\\');
-        scriptsDir += "cleo";*/
-        std::string scriptsDir = "cleo"; // TODO: restore to absolute path when ModLoader is updated to support CLEO5
-
         TRACE("Searching for CLEO scripts");
+        std::string scriptsDir = "cleo"; // TODO: use Filepath_Cleo instead ModLoader is updated to support CLEO5
 
         FilesWalk(scriptsDir.c_str(), cs_ext, [&](const char* fullPath, const char* filename) 
         {
-            if(auto cs = LoadScript(fullPath))
+            if (auto cs = LoadScript(fullPath))
             {
                 cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
             }
         });
 
-        FilesWalk(scriptsDir.c_str(), cs4_ext, [&](const char* fullPath, const char* filename)
+        FilesWalk(scriptsDir.c_str(), cs4_ext, [&](const char* fullPath, const char* filename) 
         {
             if (auto cs = LoadScript(fullPath))
             {
@@ -1019,7 +1014,7 @@ namespace CLEO
             }
         });
 
-        FilesWalk(scriptsDir.c_str(), cs3_ext, [&](const char* fullPath, const char* filename) 
+        FilesWalk(scriptsDir.c_str(), cs3_ext, [&](const char* fullPath, const char* filename)
         {
             if (auto cs = LoadScript(fullPath))
             {
@@ -1034,7 +1029,7 @@ namespace CLEO
             ((callback*)func)();
         }
 
-        TRACE("Scripts search done.");
+        TRACE("Scripts search done");
     }
 
     CCustomScript * CScriptEngine::LoadScript(const char * szFilePath)
@@ -1318,12 +1313,12 @@ namespace CLEO
         TRACE("Loading custom script %s...", szFileName);
 
         // store script file directory and name
-        std::filesystem::path path = szFileName;
-        path = std::filesystem::weakly_canonical(path);
+        FS::path path = szFileName;
+        path = FS::weakly_canonical(path);
         scriptFileDir = path.parent_path().string();
         scriptFileName = path.filename().string();
 
-        workDir = DIR_GAME;
+        workDir = Filepath_Root;
 
         try
         {

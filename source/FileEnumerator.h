@@ -6,7 +6,7 @@ void FilesWalk(const char* directory, const char* extension, T callback)
 {
     /*try
     {
-        for (auto& it : std::filesystem::directory_iterator(directory))
+        for (auto& it : FS::directory_iterator(directory))
         {
             if (it.is_regular_file())
             {
@@ -20,7 +20,7 @@ void FilesWalk(const char* directory, const char* extension, T callback)
                     }
                 }
 
-                auto result = std::filesystem::absolute(filePath);
+                auto result = FS::absolute(filePath);
                 callback(result.string().c_str(), result.filename().string().c_str());
             }
         }
@@ -57,12 +57,12 @@ void FilesWalk(const char* directory, const char* extension, T callback)
         }
 
         std::string path;
-        if (std::filesystem::path(wfd.cFileName).is_absolute())
+        if (FS::path(wfd.cFileName).is_absolute())
             path = wfd.cFileName; // somebody hacked findFirstFile APIs and is providing us absolute path
         else
             path = pattern.substr(0, baseDirLen) + wfd.cFileName; // standard
 
-        auto result = std::filesystem::weakly_canonical(path); // will use CWD if input path was relative!
+        auto result = FS::weakly_canonical(path); // will use CWD if input path was relative!
         callback(result.string().c_str(), result.filename().string().c_str());
 
     } while (FindNextFile(hSearch, &wfd));

@@ -104,7 +104,8 @@ namespace CLEO
     CTextManager::CTextManager() : fxts(1, crc32FromUpcaseStdString)
     {
         // parse FXT files
-        FilesWalk("cleo\\cleo_text", ".fxt", [this](const char* fullPath, const char* filename)
+        auto path = FS::path(Filepath_Cleo).append("cleo_text").string();
+        FilesWalk(path.c_str(), ".fxt", [this](const char* fullPath, const char* filename)
         {
             TRACE("Parsing FXT file %s", fullPath);
             try

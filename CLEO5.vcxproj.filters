@@ -56,7 +56,7 @@
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp">
       <Filter>plugin_sdk</Filter>
-	</ClCompile>
+    </ClCompile>
     <ClCompile Include="source\crc32.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
@@ -157,6 +157,9 @@
     </ClInclude>
     <ClInclude Include="source\resource.h">
       <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Singleton.h">
+      <Filter>source\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

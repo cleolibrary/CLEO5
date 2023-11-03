@@ -3,6 +3,7 @@
 #include "bass.h"
 #include "CDebug.h"
 #include "CleoBase.h"
+#include "Singleton.h"
 #include <windows.h>
 
 namespace CLEO
@@ -28,6 +29,8 @@ namespace CLEO
 
     LRESULT __stdcall HOOK_DefWindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
+        CleoSingletonCheck(); // check once for CLEO.asi duplicates
+
         if (GetInstance().SoundSystem.Initialized())
         {
             // pause streams if the window loses focus, or if SA found any other reason to pause

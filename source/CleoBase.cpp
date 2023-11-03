@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "CleoBase.h"
-#include <filesystem>
 
 
 namespace CLEO
@@ -31,12 +30,18 @@ namespace CLEO
     {
         if (m_bStarted) return; // already started
 
-        ConfigFilename = std::filesystem::current_path().append("cleo\\.cleo_config.ini").string();
+        /*if (FS::current_path() != Filepath_Root)
+        {
+            MessageBox(NULL, "CLEO.asi has to be placed in game's root directory!", "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
+            exit(1); // terminate the game
+        }*/
 
-        CreateDirectory("cleo", NULL);
-        CreateDirectory("cleo/cleo_modules", NULL);
-        CreateDirectory("cleo/cleo_saves", NULL);
-        CreateDirectory("cleo/cleo_text", NULL);
+        FS::create_directory(Filepath_Cleo);
+        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_modules"));
+        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_plugins"));
+        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_saves"));
+        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_text"));
+
         CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
         GameMenu.Inject(CodeInjector);
         DmaFix.Inject(CodeInjector);

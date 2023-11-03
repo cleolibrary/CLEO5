@@ -2,10 +2,12 @@
 #include <Windows.h>
 #include <tlhelp32.h>
 
-class _CleoSingleton
+static bool CleoSingletonChecked = false;
+
+// search for CLEO.asi modules loaded, terminate game if duplicate found
+static void CleoSingletonCheck()
 {
-public:
-    _CleoSingleton()
+    if(!CleoSingletonChecked)
     {
         MODULEENTRY32 module;
         module.dwSize = sizeof(MODULEENTRY32);
@@ -25,7 +27,7 @@ public:
                     {
                         CloseHandle(snapshot);
                         MessageBox(NULL, "Another copy of CLEO.asi is already loaded!\nPlease remove duplicated files.", "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
-                        exit(1);
+                        exit(1); // terminate the game
                         break;
                     }
                 }
@@ -33,6 +35,8 @@ public:
 
             CloseHandle(snapshot);
         }
+
+        CleoSingletonChecked = true;
     }
-} CleoSingleton;
+}
 

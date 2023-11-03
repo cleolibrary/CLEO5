@@ -5,14 +5,12 @@
 #define LOG_WARNING(a,...) {Debug.Trace(CLEO::eLogLevel::Error, a, __VA_ARGS__);}
 #define SHOW_ERROR(a,...) {Debug.Error(a, __VA_ARGS__);}
 
-const char szLogFileName[] = "cleo.log";
-
 std::string stringPrintf(const char* format, ...);
 
 class CDebug
 {
 public:
-    CDebug() : m_hFile(szLogFileName)
+    CDebug() : m_hFile(Filepath_Log)
     {
         Trace(CLEO::eLogLevel::Default, "Log started.");
 

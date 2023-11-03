@@ -2133,8 +2133,8 @@ namespace CLEO
 			}
 			scmFunc->moduleExportRef = scriptRef.base; // to be released on return
 
-			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileDir(std::filesystem::path(modulePath).parent_path().string().c_str());
-			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileName(std::filesystem::path(modulePath).filename().string().c_str());
+			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileDir(FS::path(modulePath).parent_path().string().c_str());
+			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileName(FS::path(modulePath).filename().string().c_str());
 			thread->SetBaseIp(scriptRef.base);
 			label = scriptRef.offset;
 		}

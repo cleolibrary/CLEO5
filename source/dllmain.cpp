@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Singleton.h"
 #include "CleoBase.h"
 #include "CDebug.h"
 

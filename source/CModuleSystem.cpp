@@ -1,11 +1,9 @@
 #include "stdafx.h"
 #include "CleoBase.h"
 #include "CModuleSystem.h"
-#include "CFileMgr.h"
 #include "FileEnumerator.h"
 
 #include <chrono>
-#include <filesystem>
 #include <fstream>
 
 using namespace CLEO;
@@ -70,9 +68,7 @@ bool CModuleSystem::LoadDirectory(const char* path)
 
 bool CModuleSystem::LoadCleoModules()
 {
-	std::string path = CFileMgr::ms_rootDirName;
-	if (!path.empty() && path.back() != '\\') path.push_back('\\');
-	path += "cleo\\cleo_modules";
+	const auto path = FS::path(Filepath_Cleo).append("cleo_modules").string();
 	return LoadDirectory(path.c_str());
 }
 
@@ -123,10 +119,10 @@ void CModuleSystem::CModule::Update()
 	{
 		if (!updateNeeded)
 		{
-			std::filesystem::file_time_type time;
+			FS::file_time_type time;
 			try
 			{
-				time = std::filesystem::last_write_time(filepath);
+				time = FS::last_write_time(filepath);
 			}
 			catch (...)
 			{
@@ -134,7 +130,7 @@ void CModuleSystem::CModule::Update()
 			}
 
 			// file not exists or up to date
-			if (time == std::filesystem::file_time_type{} || time == fileTime)
+			if (time == FS::file_time_type{} || time == fileTime)
 			{
 				// query files once a second
 				for(size_t i = 0; i < 100 && updateActive; i++)
@@ -201,7 +197,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 
 	try
 	{
-		fileTime = std::filesystem::last_write_time(path);
+		fileTime = FS::last_write_time(path);
 	}
 	catch(...)
 	{
