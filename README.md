@@ -45,6 +45,7 @@ Special thanks to:
 - Stanislav Golovin (a.k.a. listener) for his great work in exploration of the GTA series.
 - NTAuthority and LINK/2012 for additional support with CLEO 4.3.
 - mfisto for the alpha-testing of CLEO 4, his support and advices.
+- 123nir for the alpha-testing of CLEO 5.0.0, troubleshooting and valuable bug reports.
 
 The developers have no connection with Take 2 Interactive or Rockstar Games.
 By using this product or any of the additional products included you take your own personal responsibility for any negative consequences should they arise.

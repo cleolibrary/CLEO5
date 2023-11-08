@@ -59,4 +59,8 @@
 - configured automatic releases on GitHub
 - added setup_env.bat script
 
-For older changes, see [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
+#### Special Thanks
+- **123nir** for the alpha-testing, troubleshooting and valuable bug reports
+
+## Older
+For previous changes, see [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
