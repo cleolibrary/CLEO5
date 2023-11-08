@@ -1732,10 +1732,17 @@ namespace CLEO
 	{
 		static char textParams[5][MAX_STR_LEN]; unsigned currTextParam = 0;
 		static SCRIPT_VAR arguments[50] = { 0 };
-		void(*func)();
-		DWORD numParams;
-		DWORD stackAlign;
-		*thread >> func >> numParams >> stackAlign;
+		void(*func)(); *thread >> func;
+		DWORD numParams; *thread >> numParams;
+		DWORD stackAlign; *thread >> stackAlign; // pop
+
+		auto nVarArg = GetVarArgCount(thread);
+		if (numParams != nVarArg)
+		{
+			SHOW_ERROR("Opcode [0AA5] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
 		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
 		stackAlign *= 4;
 		SCRIPT_VAR	*arguments_end = arguments + numParams;
@@ -1792,11 +1799,18 @@ namespace CLEO
 	{
 		static char textParams[5][MAX_STR_LEN]; unsigned currTextParam = 0;
 		static SCRIPT_VAR arguments[50] = { 0 };
-		void(*func)();
-		void *struc;
-		DWORD numParams;
-		DWORD stackAlign;
-		*thread >> func >> struc >> numParams >> stackAlign;
+		void(*func)(); *thread >> func;
+		void* struc; *thread >> struc;
+		DWORD numParams; *thread >> numParams;
+		DWORD stackAlign; *thread >> stackAlign; // pop
+
+		auto nVarArg = GetVarArgCount(thread);
+		if (numParams != nVarArg)
+		{
+			SHOW_ERROR("Opcode [0AA6] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
 		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
 		stackAlign *= 4;
 		SCRIPT_VAR *arguments_end = arguments + numParams;
@@ -1848,19 +1862,26 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AA7=-1,call_function %1d% num_params %2h% pop %3h%
+	//0AA7=-1,call_function_return %1d% num_params %2h% pop %3h%
 	OpcodeResult __stdcall opcode_0AA7(CRunningScript *thread)
 	{
-		static char textParams[5][MAX_STR_LEN];
+		static char textParams[5][MAX_STR_LEN]; DWORD currTextParam = 0;
 		static SCRIPT_VAR arguments[50] = { 0 };
-		DWORD currTextParam = 0;
-		void(*func)();
-		DWORD numParams;
-		DWORD stackAlign;
-		*thread >> func >> numParams >> stackAlign;
+		void(*func)(); *thread >> func;
+		DWORD numParams; *thread >> numParams;
+		DWORD stackAlign; *thread >> stackAlign; // pop
+
+		int nVarArg = GetVarArgCount(thread);
+		if (numParams + 1 != nVarArg) // and return argument
+		{
+			SHOW_ERROR("Opcode [0AA7] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, (int)nVarArg - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
 		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
 		stackAlign *= 4;
 		SCRIPT_VAR	*	arguments_end = arguments + numParams;
+
 		// retrieve parameters
 		for (SCRIPT_VAR *arg = arguments; arg != arguments_end; ++arg)
 		{
@@ -1917,17 +1938,23 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AA8=-1,call_function_method %1d% struct %2d% num_params %3h% pop %4h%
+	//0AA8=-1,call_method_return %1d% struct %2d% num_params %3h% pop %4h%
 	OpcodeResult __stdcall opcode_0AA8(CRunningScript *thread)
 	{
-		static char textParams[5][MAX_STR_LEN];
+		static char textParams[5][MAX_STR_LEN]; DWORD currTextParam = 0;
 		static SCRIPT_VAR arguments[50] = { 0 };
-		DWORD currTextParam = 0;
-		void(*func)();
-		void *struc;
-		DWORD numParams;
-		DWORD stackAlign;
-		*thread >> func >> struc >> numParams >> stackAlign;
+		void(*func)(); *thread >> func;
+		void* struc; *thread >> struc;
+		DWORD numParams; *thread >> numParams;
+		DWORD stackAlign; *thread >> stackAlign; // pop
+
+		int nVarArg = GetVarArgCount(thread);
+		if (numParams + 1 != nVarArg) // and return argument
+		{
+			SHOW_ERROR("Opcode [0AA8] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, (int)nVarArg - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
 		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
 		stackAlign *= 4;
 		SCRIPT_VAR	*arguments_end = arguments + numParams;
