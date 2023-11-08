@@ -1778,7 +1778,8 @@ namespace CLEO
 				add ecx, 0x4
 				jmp loop_0AA5
 				loop_end_0AA5 :
-			call func
+				xor eax, eax
+				call func
 				add esp, stackAlign
 		}
 
@@ -1837,7 +1838,8 @@ namespace CLEO
 				add ecx, 0x4
 				jmp loop_0AA6
 				loop_end_0AA6 :
-			mov ecx, struc
+				mov ecx, struc
+				xor eax, eax
 				call func
 				add esp, stackAlign
 		}
@@ -1904,7 +1906,8 @@ namespace CLEO
 				add ecx, 0x4
 				jmp loop_0AA7
 				loop_end_0AA7 :
-			call func
+				xor eax, eax
+				call func
 				mov result, eax
 				add esp, stackAlign
 		}
@@ -1973,7 +1976,8 @@ namespace CLEO
 				add ecx, 0x4
 				jmp loop_0AA8
 				loop_end_0AA8 :
-			mov ecx, struc
+				mov ecx, struc
+				xor eax, eax
 				call func
 				mov result, eax
 				add esp, stackAlign
