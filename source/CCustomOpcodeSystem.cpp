@@ -475,7 +475,7 @@ namespace CLEO
 				break;
 
 			default:
-				LOG_WARNING("Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -499,7 +499,7 @@ namespace CLEO
 				break;
 
 			default:
-				LOG_WARNING("Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].dwParam = uval;
@@ -523,7 +523,7 @@ namespace CLEO
 				break;
 
 			default:
-				LOG_WARNING("Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -547,7 +547,7 @@ namespace CLEO
 				break;
 
 			default:
-				LOG_WARNING("Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].nParam = nval;
@@ -568,7 +568,7 @@ namespace CLEO
 				break;
 
 			default:
-				LOG_WARNING("Reading float argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(&thread, "Reading float argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -588,7 +588,7 @@ namespace CLEO
 				break;
 
 			default:
-				LOG_WARNING("Writing float, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(&thread, "Writing float, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].fParam = fval;
@@ -994,7 +994,7 @@ namespace CLEO
 		if (CLEO_GetOperandType(thread) != DT_END)
 		{
 			lastErrorMsg = "More params than slots in formatted string";
-			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING_C5(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 		}
 		SkipUnusedVarArgs(thread); // skip terminator too
 
@@ -2063,7 +2063,7 @@ namespace CLEO
 			case 2: stream->Pause();  break;
 			case 3: stream->Resume(); break;
 			default:
-				LOG_WARNING("[0AAD] Unknown audiostream's action (%d) in script %s", action, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(thread, "[0AAD] Unknown audiostream's action (%d) in script %s", action, ((CCustomScript*)thread)->GetInfoStr().c_str());
 			}
 		}
 		return OR_CONTINUE;
@@ -2311,7 +2311,7 @@ namespace CLEO
 			}
 			else if (returnParamCount - 1 > declaredParamCount) // more args than needed, not critical
 			{
-				LOG_WARNING("Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				LOG_WARNING_C5(thread, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
 			}
 		}
 		if (returnParamCount) GetScriptParams(thread, returnParamCount);
@@ -2329,7 +2329,7 @@ namespace CLEO
 		}
 		else if (returnSlotCount < returnParamCount) // more args than needed, not critical
 		{
-			LOG_WARNING("Opcode [0AB2] returned %d params, while function caller expected %d in script %s", returnParamCount, returnSlotCount, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING_C5(thread, "Opcode [0AB2] returned %d params, while function caller expected %d in script %s", returnParamCount, returnSlotCount, ((CCustomScript*)thread)->GetInfoStr().c_str());
 		}
 
 		if (returnSlotCount) SetScriptParams(thread, returnSlotCount);
@@ -3252,7 +3252,7 @@ extern "C"
 		auto result = ReadStringParam(thread, buf, size);
 
 		if (result == nullptr)
-			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING_C5(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 
 		return result;
 	}
@@ -3260,7 +3260,7 @@ extern "C"
 	void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
 	{
 		if(!WriteStringParam(thread, str))
-			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING_C5(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 	}
 
 	char* WINAPI CLEO_ReadParamsFormatted(CLEO::CRunningScript* thread, const char* format, char* buf, int bufSize)
@@ -3271,7 +3271,7 @@ extern "C"
 
 		if(ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
 		{
-			LOG_WARNING("%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING_C5(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return nullptr; // error
 		}
 

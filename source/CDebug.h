@@ -1,11 +1,17 @@
 #pragma once
 #include <mutex>
 
-#define TRACE(a,...) {Debug.Trace(CLEO::eLogLevel::Default, a, __VA_ARGS__);}
-#define LOG_WARNING(a,...) {Debug.Trace(CLEO::eLogLevel::Error, a, __VA_ARGS__);}
+#define TRACE(format,...) {Debug.Trace(CLEO::eLogLevel::Default, format, __VA_ARGS__);}
+#define LOG_WARNING(format,...) {Debug.Trace(CLEO::eLogLevel::Error, format, __VA_ARGS__);}
+#define LOG_WARNING_C5(script, format, ...) {Debug.Trace_CLEO5(script, CLEO::eLogLevel::Error, format, __VA_ARGS__);} // CLEO5+ scripts only
 #define SHOW_ERROR(a,...) {Debug.Error(a, __VA_ARGS__);}
 
 std::string stringPrintf(const char* format, ...);
+
+namespace CLEO
+{
+    class CRunningScript;
+}
 
 class CDebug
 {
@@ -27,6 +33,7 @@ public:
     }
     
     void Trace(CLEO::eLogLevel level, const char* format, ...);
+    void Trace_CLEO5(const CLEO::CRunningScript* thread, CLEO::eLogLevel level, const char* format, ...);
     void Error(const char* format, ...);
     
 private:

@@ -31,6 +31,24 @@ void CDebug::Trace(eLogLevel level, const char* format, ...)
     va_end(args);
 }
 
+void CDebug::Trace_CLEO5(const CLEO::CRunningScript* thread, CLEO::eLogLevel level, const char* format, ...)
+{
+    if(thread != nullptr && thread->IsCustom())
+    {
+        const auto cs = (CCustomScript*)thread;
+
+        if(cs->GetCompatibility() < CLEO_VER_5)
+        {
+            return; // do not log this in older versions
+        }
+    }
+
+    va_list args;
+    va_start(args, format);
+    TraceVArg(level, format, args);
+    va_end(args);
+}
+
 const char* CDebug::TraceVArg(CLEO::eLogLevel level, const char* format, va_list args)
 {
     std::lock_guard<std::mutex> guard(mutex);
