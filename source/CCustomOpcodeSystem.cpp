@@ -6,6 +6,7 @@
 #include "CTextManager.h"
 #include "CModelInfo.h"
 
+#include <tlhelp32.h>
 #include <sstream>
 
 #define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
@@ -131,7 +132,32 @@ namespace CLEO
 		std::vector<FuncScriptDeleteDelegateT> funcs;
 		template<class FuncScriptDeleteDelegateT> void operator+=(FuncScriptDeleteDelegateT mFunc) { funcs.push_back(mFunc); }
 		template<class FuncScriptDeleteDelegateT> void operator-=(FuncScriptDeleteDelegateT mFunc) { funcs.erase(std::remove(funcs.begin(), funcs.end(), mFunc), funcs.end()); }
-		void operator()(CRunningScript *script) { for (auto& f : funcs) f(script); }
+		void operator()(CRunningScript *script)
+		{ 
+			for (auto& f : funcs)
+			{
+				// check if function pointer lays within any of currently loaded modules (.asi or .cleo plugins)
+				void* ptr = f;
+				MODULEENTRY32 module;
+				module.dwSize = sizeof(MODULEENTRY32);
+				HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
+				Module32First(snapshot, &module);
+				if (snapshot != INVALID_HANDLE_VALUE)
+				{
+					size_t count = 0;
+					do
+					{
+						if(ptr >= module.modBaseAddr && ptr <= (module.modBaseAddr + module.modBaseSize))
+						{
+							f(script);
+							break;
+						}
+					} while (Module32Next(snapshot, &module));
+					CloseHandle(snapshot);
+				}
+			}
+			
+		}
 	};
 	ScriptDeleteDelegate scriptDeleteDelegate;
 	void RunScriptDeleteDelegate(CRunningScript *script) { scriptDeleteDelegate(script); }
