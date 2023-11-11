@@ -690,7 +690,10 @@ namespace CLEO
             {
                 if(fsPath.is_relative())
                 {
-                    fsPath = GetWorkDir() / fsPath;
+                    if(customWorkDir != nullptr)
+                        fsPath = ResolvePath(customWorkDir) / fsPath;
+                    else
+                        fsPath = GetWorkDir() / fsPath;
                 }
 
                 return FS::weakly_canonical(fsPath).string();
@@ -737,10 +740,10 @@ namespace CLEO
     {
         std::ostringstream ss;
 
-        auto threadName = GetName();
+        auto threadName = std::string(GetName(), GetName() + 8); // thread name might not be null terminated
         auto fileName = GetScriptFileName();
 
-        if(memcmp(threadName, fileName, strlen(threadName)) != 0) // thread name no longer same as filename (was set with 03A4)
+        if(memcmp(threadName.c_str(), fileName, threadName.length()) != 0) // thread name no longer same as filename (was set with 03A4)
         {
             ss << "'" << threadName << "' from ";
         }
