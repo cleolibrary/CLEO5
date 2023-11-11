@@ -288,7 +288,7 @@ public:
 	bool IsExternal() const { return bIsExternal; }
 	bool IsMission() const { return bIsMission; }
 	bool IsCustom() const { return bIsCustom; } // is this CLEO Script?
-	const char* GetName() const { return Name; }
+	std::string GetName() const { auto str = std::string(Name, Name + 8); str.resize(strlen(str.c_str())); return str; } // make sure it is always null terminated
 	BYTE* GetBasePointer() const { return (BYTE*)BaseIP; }
 	BYTE* GetBytePointer() const { return CurrentIP; }
 	void SetIp(void* ip) { CurrentIP = (BYTE*)ip; }

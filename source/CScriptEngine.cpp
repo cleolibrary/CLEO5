@@ -740,7 +740,7 @@ namespace CLEO
     {
         std::ostringstream ss;
 
-        auto threadName = std::string(GetName(), GetName() + 8); // thread name might not be null terminated
+        auto threadName = GetName();
         auto fileName = GetScriptFileName();
 
         if(memcmp(threadName.c_str(), fileName, threadName.length()) != 0) // thread name no longer same as filename (was set with 03A4)
@@ -1139,7 +1139,7 @@ namespace CLEO
     {
         for (auto script = *activeThreadQueue; script; script = script->GetNext())
         {
-            if (_stricmp(name, script->GetName()) == 0)
+            if (_stricmp(name, script->GetName().c_str()) == 0)
                 return script;
         }
         return nullptr;
@@ -1148,13 +1148,13 @@ namespace CLEO
     {
         if (CustomMission)
         {
-            if (_stricmp(name, CustomMission->Name) == 0) return CustomMission;
+            if (_stricmp(name, CustomMission->GetName().c_str()) == 0) return CustomMission;
         }
 
         for (auto it = CustomScripts.begin(); it != CustomScripts.end(); ++it)
         {
             auto cs = *it;
-            if (_stricmp(name, cs->Name) == 0)
+            if (_stricmp(name, cs->GetName().c_str()) == 0)
                 return cs;
         }
 
@@ -1182,12 +1182,12 @@ namespace CLEO
     {
         if (cs->IsMission())
         {
-            TRACE("Registering custom mission named %s", cs->Name);
+            TRACE("Registering custom mission named %s", cs->GetName().c_str());
             CustomMission = cs;
         }
         else
         {
-            TRACE("Registering custom script named %s", cs->Name);
+            TRACE("Registering custom script named %s", cs->GetName().c_str());
             CustomScripts.push_back(cs);
         }
         AddScriptToQueue(cs, activeThreadQueue);
@@ -1220,7 +1220,7 @@ namespace CLEO
 		}
         if (cs == CustomMission)
         {
-            TRACE("Unregistering custom mission named %s", cs->Name);
+            TRACE("Unregistering custom mission named %s", cs->GetName().c_str());
             RemoveScriptFromQueue(CustomMission, activeThreadQueue);
             ScriptsWaitingForDelete.push_back(cs);
             CustomMission->SetActive(false);
@@ -1232,11 +1232,11 @@ namespace CLEO
             if (cs->bSaveEnabled)
             {
                 InactiveScriptHashes.insert(cs->dwChecksum);
-                TRACE("Stopping custom script named %s", cs->Name);
+                TRACE("Stopping custom script named %s", cs->GetName().c_str());
             }
             else
             {
-                TRACE("Unregistering custom script named %s", cs->Name);
+                TRACE("Unregistering custom script named %s", cs->GetName().c_str());
                 ScriptsWaitingForDelete.push_back(cs);
             }
 
@@ -1257,7 +1257,7 @@ namespace CLEO
     {
         InactiveScriptHashes.clear();
         std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs) {
-            TRACE("Unregistering custom script named %s", cs->Name);
+            TRACE("Unregistering custom script named %s", cs->GetName().c_str());
             RemoveScriptFromQueue(cs, activeThreadQueue);
             //AddScriptToQueue(cs, inactiveThreadQueue);
             //if(cs->GetPrev()) cs->GetPrev()->SetNext(nullptr);
@@ -1268,13 +1268,13 @@ namespace CLEO
         });
         CustomScripts.clear();
         std::for_each(ScriptsWaitingForDelete.begin(), ScriptsWaitingForDelete.end(), [this](CCustomScript *cs) {
-            TRACE("Deleting inactive script named %s", cs->Name);
+            TRACE("Deleting inactive script named %s", cs->GetName().c_str());
             delete cs;
         });
         ScriptsWaitingForDelete.clear();
         if (CustomMission)
         {
-            TRACE("Unregistering custom mission named %s", CustomMission->Name);
+            TRACE("Unregistering custom mission named %s", CustomMission->GetName().c_str());
             RemoveScriptFromQueue(CustomMission, activeThreadQueue);
             CustomMission->SetActive(false);
             delete CustomMission;
