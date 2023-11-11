@@ -15,6 +15,8 @@
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
   - opcodes **0AAB**, **0AE4**, **0AE5**, **0AE6**, **0AE7** and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
+  - SCM functions **(0AB1)** now keep their own GOSUB's call stack
+  - new opcode **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 
     - `root:\` for _game root_ directory
@@ -24,11 +26,9 @@
     - `modules:\` for _CLEO\cleo_modules_ directory
   - rewritten opcode **0A99 (set_current_directory)**. It no longer affects internal game state and other scripts
 - improved error handling
-  - more detailed error messages in some scenarios
+  - more detailed error messages in multiple scenarios
   - some errors now cause the script to pause, instead of crashing the game
-- SCM functions **(0AB1)** now keep their own GOSUB's call stack
 - updated included Silent's ASI Loader to version 1.3
-
 
 ### Bug Fixes
 - fixed error in **004E (terminate_this_script)** allowing to run multiple missions
