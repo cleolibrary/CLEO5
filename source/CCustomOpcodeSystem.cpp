@@ -2304,10 +2304,14 @@ namespace CLEO
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 
-			if(returnParamCount - 1 != declaredParamCount) // minus 'num args' itself
+			if(returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
 			{
 				SHOW_ERROR("Opcode [0AB2] declared %d return args, but provided %d in script %s\nScript suspended.", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
+			else if (returnParamCount - 1 > declaredParamCount) // more args than needed, not critical
+			{
+				LOG_WARNING("Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
 			}
 		}
 		if (returnParamCount) GetScriptParams(thread, returnParamCount);
@@ -2318,10 +2322,14 @@ namespace CLEO
 
 		DWORD returnSlotCount = GetVarArgCount(thread);
 		if(returnParamCount) returnParamCount--; // do not count the 'num args' argument itself
-		if (returnSlotCount != returnParamCount)
+		if (returnSlotCount > returnParamCount)
 		{
 			SHOW_ERROR("Opcode [0AB2] returned %d params, while function caller expected %d in script %s\nScript suspended.", returnParamCount, returnSlotCount, ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+		else if (returnSlotCount < returnParamCount) // more args than needed, not critical
+		{
+			LOG_WARNING("Opcode [0AB2] returned %d params, while function caller expected %d in script %s", returnParamCount, returnSlotCount, ((CCustomScript*)thread)->GetInfoStr().c_str());
 		}
 
 		if (returnSlotCount) SetScriptParams(thread, returnSlotCount);
