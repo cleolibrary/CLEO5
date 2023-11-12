@@ -1319,7 +1319,14 @@ namespace CLEO
         FS::path path = szFileName;
         path = FS::weakly_canonical(path);
 
-        if(parent != nullptr && parent-IsCustom())
+        // deduce compatibility mode from filetype extension
+        if (path.extension() == cs4_ext)
+            CompatVer = CLEO_VER_4;
+        else
+        if (path.extension() == cs3_ext)
+            CompatVer = CLEO_VER_3;
+
+        if(CompatVer == CLEO_VER_CUR && parent != nullptr && parent-IsCustom())
         {
             // inherit compatibility mode from parent
             CompatVer = ((CCustomScript*)parent)->GetCompatibility(); 
@@ -1339,15 +1346,6 @@ namespace CLEO
                 if (FS::is_regular_file(compatPath))
                     path = compatPath;
             }
-        }
-        else
-        {
-            // deduce compatibility mode from provided filename filetype extension 
-            if(path.extension() == cs4_ext)
-                CompatVer = CLEO_VER_4;
-
-            if (path.extension() == cs3_ext)
-                CompatVer = CLEO_VER_3;
         }
 
         scriptFileDir = path.parent_path().string();
