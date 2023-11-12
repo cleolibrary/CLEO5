@@ -1302,7 +1302,7 @@ namespace CLEO
     }
 
 	// TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
-    CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CCustomScript *parent, int label)
+    CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label)
         : CRunningScript(), bSaveEnabled(false), bOK(false),
         LastSearchPed(0), LastSearchCar(0), LastSearchObj(0),
         CompatVer(CLEO_VER_CUR)
@@ -1318,10 +1318,41 @@ namespace CLEO
         // store script file directory and name
         FS::path path = szFileName;
         path = FS::weakly_canonical(path);
+
+        if(parent != nullptr && parent-IsCustom())
+        {
+            // inherit compatibility mode from parent
+            CompatVer = ((CCustomScript*)parent)->GetCompatibility(); 
+            
+            // try loading file with same compatibility mode filetype extension
+            auto compatPath = path;
+            if(CompatVer == CLEO_VER_4)
+            {
+                compatPath.replace_extension(cs4_ext);
+                if(FS::is_regular_file(compatPath))
+                    path = compatPath;
+            }
+            else
+            if (CompatVer == CLEO_VER_3)
+            {
+                compatPath.replace_extension(cs3_ext);
+                if (FS::is_regular_file(compatPath))
+                    path = compatPath;
+            }
+        }
+        else
+        {
+            // deduce compatibility mode from provided filename filetype extension 
+            if(path.extension() == cs4_ext)
+                CompatVer = CLEO_VER_4;
+
+            if (path.extension() == cs3_ext)
+                CompatVer = CLEO_VER_3;
+        }
+
         scriptFileDir = path.parent_path().string();
         scriptFileName = path.filename().string();
-
-        workDir = Filepath_Root;
+        workDir = Filepath_Root; // game root
 
         try
         {
@@ -1331,17 +1362,22 @@ namespace CLEO
 				if (!parent)
 					throw std::logic_error("Trying to create external thread from label without parent thread");
 
-				BaseIP = parent->GetBasePointer();
-				CurrentIP = parent->GetBasePointer() - label;
-				memcpy(Name, parent->Name, sizeof(Name));
-				dwChecksum = parent->dwChecksum;
-				parentThread = parent;
-				parent->childThreads.push_back(this);
+                if (!parent->IsCustom())
+                    throw std::logic_error("Only custom threads can spawn children threads from label");
+
+                auto cs = (CCustomScript*)parent;
+
+				BaseIP = cs->GetBasePointer();
+				CurrentIP = cs->GetBasePointer() - label;
+				memcpy(Name, cs->Name, sizeof(Name));
+				dwChecksum = cs->dwChecksum;
+				parentThread = cs;
+                cs->childThreads.push_back(this);
 			}
 			else
 			{
 				using std::ios;
-				std::ifstream is(szFileName, std::ios::binary);
+				std::ifstream is(path.string().c_str(), std::ios::binary);
 				is.exceptions(std::ios::badbit | std::ios::failbit);
 				std::size_t length;
 				is.seekg(0, std::ios::end);
@@ -1360,23 +1396,26 @@ namespace CLEO
 				}
 				is.read(reinterpret_cast<char *>(BaseIP), length);
 
-				auto fname = strrchr(szFileName, '\\') + 1;
-				if (!fname) fname = strrchr(szFileName, '/') + 1;
-				if (fname < szFileName) fname = szFileName;
-				memcpy(Name, fname, sizeof(Name));
-				Name[7] = '\0';
-				dwChecksum = crc32(reinterpret_cast<BYTE *>(BaseIP), length);
+                dwChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
+
+                // thread name from filename
+                memset(Name, '\0', sizeof(Name));
+                if(!scriptFileName.empty())
+                {
+                    auto len = min(scriptFileName.length(), sizeof(Name) - 1); // and text terminator
+                    memcpy(Name, scriptFileName.c_str(), len);
+                }
 			}
 			lastScriptCreated = this;
             bOK = true;
         }
         catch (std::exception& e)
         {
-            LOG_WARNING(0, "Error during loading of custom script %s occured.\nError message: %s", szFileName, e.what());
+            LOG_WARNING(0, "Error during loading of custom script %s occured.\nError message: %s", path.string().c_str(), e.what());
         }
         catch (...)
         {
-            LOG_WARNING(0, "Unknown error during loading of custom script %s occured.", szFileName);
+            LOG_WARNING(0, "Unknown error during loading of custom script %s occured.", path.string().c_str());
         }
     }
 

@@ -1457,7 +1457,7 @@ namespace CLEO
 		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
 		TRACE("[0A92] Starting new custom script %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
-		auto cs = new CCustomScript(filename.c_str());
+		auto cs = new CCustomScript(filename.c_str(), false, thread);
 		SetScriptCondResult(thread, cs && cs->IsOK());
 		if (cs && cs->IsOK())
 		{
@@ -1498,7 +1498,7 @@ namespace CLEO
 		filename += ".cm"; // add custom mission extension
 		TRACE("[0A94] Starting new custom mission %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
-		auto cs = new CCustomScript(filename.c_str(), true);
+		auto cs = new CCustomScript(filename.c_str(), true, thread);
 		SetScriptCondResult(thread, cs && cs->IsOK());
 		if (cs && cs->IsOK())
 		{
@@ -3415,7 +3415,7 @@ extern "C"
 		}
 
 		// if "label == 0" then "script_name" need to be the file name
-		auto cs = new CCustomScript(script_name, false, reinterpret_cast<CCustomScript*>(fromThread), label);
+		auto cs = new CCustomScript(script_name, false, fromThread, label);
 		if (fromThread) SetScriptCondResult(fromThread, cs && cs->IsOK());
 		if (cs && cs->IsOK())
 		{

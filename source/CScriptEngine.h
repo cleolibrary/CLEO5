@@ -55,7 +55,7 @@ namespace CLEO
         inline DWORD& GetLastSearchPed() { return LastSearchPed; }
         inline DWORD& GetLastSearchVehicle() { return LastSearchCar; }
         inline DWORD& GetLastSearchObject() { return LastSearchObj; }
-		CCustomScript(const char *szFileName, bool bIsMiss = false, CCustomScript *parent = nullptr, int label = 0);
+		CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
         ~CCustomScript();
 
         void Process();
