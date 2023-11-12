@@ -13,7 +13,7 @@ namespace CLEO
 
     HWND OnCreateMainWindow(HINSTANCE hinst)
     {
-        if (HIWORD(BASS_GetVersion()) != BASSVERSION) LOG_WARNING("An incorrect version of bass.dll has been loaded");
+        if (HIWORD(BASS_GetVersion()) != BASSVERSION) LOG_WARNING(0, "An incorrect version of bass.dll has been loaded");
         TRACE("Creating main window...");
         auto mainWnd = CreateMainWindow(hinst);
         if (!GetInstance().SoundSystem.Init(mainWnd)) SHOW_ERROR("CSoundSystem::Init() failed. Error code: %d", BASS_ErrorGetCode());
@@ -132,7 +132,7 @@ namespace CLEO
             BASS_Apply3D();
             return true;
         }
-        LOG_WARNING("Could not initialize BASS sound system");
+        LOG_WARNING(0, "Could not initialize BASS sound system");
         return false;
     }
 
@@ -236,7 +236,7 @@ namespace CLEO
         if (!(streamInternal = BASS_StreamCreateFile(FALSE, src, 0, 0, flags)) &&
             !(streamInternal = BASS_StreamCreateURL(src, 0, flags, 0, nullptr)))
         {
-            LOG_WARNING("Loading audiostream %s failed. Error code: %d", src, BASS_ErrorGetCode());
+            LOG_WARNING(0, "Loading audiostream %s failed. Error code: %d", src, BASS_ErrorGetCode());
         }
         else OK = true;
     }
@@ -254,7 +254,7 @@ namespace CLEO
         if (!(streamInternal = BASS_StreamCreateFile(FALSE, src, 0, 0, flags)) &&
             !(streamInternal = BASS_StreamCreateURL(src, 0, flags, nullptr, nullptr)))
         {
-            LOG_WARNING("Loading 3d-audiostream %s failed. Error code: %d", src, BASS_ErrorGetCode());
+            LOG_WARNING(0, "Loading 3d-audiostream %s failed. Error code: %d", src, BASS_ErrorGetCode());
         }
         else
         {

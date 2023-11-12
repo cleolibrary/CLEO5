@@ -31,7 +31,7 @@ void CDebug::Trace(eLogLevel level, const char* format, ...)
     va_end(args);
 }
 
-void CDebug::Trace_CLEO5(const CLEO::CRunningScript* thread, CLEO::eLogLevel level, const char* format, ...)
+void CDebug::Trace(const CLEO::CRunningScript* thread, CLEO::eLogLevel level, const char* format, ...)
 {
     if(thread != nullptr && thread->IsCustom())
     {

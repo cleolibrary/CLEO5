@@ -32,7 +32,7 @@ namespace CLEO
                     HMODULE hlib = LoadLibrary(fullPath);
                     if (!hlib)
                     {
-                        LOG_WARNING("Error loading plugin '%s'", fullPath);
+                        LOG_WARNING(0, "Error loading plugin '%s'", fullPath);
                     }
                     else 
                     {
@@ -42,7 +42,7 @@ namespace CLEO
                 }
                 else
                 {
-                    LOG_WARNING("Plugin `%s` already loaded. Skipping '%s'", name.c_str(), fullPath);
+                    LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", name.c_str(), fullPath);
                 }
             });
 
@@ -58,7 +58,7 @@ namespace CLEO
                     HMODULE hlib = LoadLibrary(fullPath);
                     if (!hlib)
                     {
-                        LOG_WARNING("Error while loading plugin '%s'", fullPath);
+                        LOG_WARNING(0, "Error while loading plugin '%s'", fullPath);
                     }
                     else
                     {
@@ -68,7 +68,7 @@ namespace CLEO
                 }
                 else
                 {
-                    LOG_WARNING("Plugin `%s` already loaded. Skipping '%s'", name.c_str(), fullPath);
+                    LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", name.c_str(), fullPath);
                 }
             });
         }

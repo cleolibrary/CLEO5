@@ -207,7 +207,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 	std::ifstream file(path, std::ios::binary);
 	if (!file.good())
 	{
-		LOG_WARNING("Failed to open module file '%s'", path);
+		LOG_WARNING(0, "Failed to open module file '%s'", path);
 		return false;
 	}
 
@@ -232,7 +232,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 	file.read((char*)&segment, sizeof(segment));
 	if (file.fail())
 	{
-		LOG_WARNING("Module '%s' file header read error", path);
+		LOG_WARNING(0, "Module '%s' file header read error", path);
 		return false;
 	}
 
@@ -241,7 +241,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 		segment.jumpAddress >= 0 || // jump labels should be negative values
 		std::memcmp(segment.magic, Segment_Magic, sizeof(Segment_Magic)) != 0) // not a custom header
 	{
-		LOG_WARNING("Module '%s' load error. Custom segment not present", path);
+		LOG_WARNING(0, "Module '%s' load error. Custom segment not present", path);
 		return false;
 	}
 	segment.jumpAddress = abs(segment.jumpAddress); // turn label into actual file offset
@@ -262,7 +262,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 		if (file.fail() ||
 			file.tellg() > segment.jumpAddress) // read past the segment end
 		{ 
-			LOG_WARNING("Module '%s' load error. Invalid custom header", path);
+			LOG_WARNING(0, "Module '%s' load error. Invalid custom header", path);
 			return false;
 		}
 
@@ -274,7 +274,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 		{
 			if (headerEndPos > segment.jumpAddress)
 			{
-				LOG_WARNING("Module '%s' load error. Invalid size of exports header", path);
+				LOG_WARNING(0, "Module '%s' load error. Invalid size of exports header", path);
 				return false;
 			}
 
@@ -288,11 +288,11 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 				{
 					if (e.name.empty())
 					{
-						LOG_WARNING("Module '%s' export load error.", path);
+						LOG_WARNING(0, "Module '%s' export load error.", path);
 					}
 					else
 					{
-						LOG_WARNING("Module's '%s' export '%s' load error.", path, e.name.c_str());
+						LOG_WARNING(0, "Module's '%s' export '%s' load error.", path, e.name.c_str());
 					}
 					return false;
 				}
@@ -311,7 +311,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 			file.seekg(headerEndPos, file.beg);
 			if (file.fail())
 			{
-				LOG_WARNING("Module '%s' load error. Error while skipping unknown header type", path);
+				LOG_WARNING(0, "Module '%s' load error. Error while skipping unknown header type", path);
 				return false;
 			}
 		}
@@ -319,13 +319,13 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 
 	if (!file.good())
 	{
-		LOG_WARNING("Module '%s' read error", path);
+		LOG_WARNING(0, "Module '%s' read error", path);
 		return false;
 	}
 
 	if (!result) // no usable elements found. No point to keeping this module
 	{
-		LOG_WARNING("Module '%s' skipped. Nothing found", path);
+		LOG_WARNING(0, "Module '%s' skipped. Nothing found", path);
 		return false;
 	}
 

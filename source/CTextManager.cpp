@@ -115,7 +115,7 @@ namespace CLEO
             }
             catch (std::exception& ex)
             {
-                LOG_WARNING("Loading of FXT file '%s' failed: \n%s", fullPath, ex.what());
+                LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", fullPath, ex.what());
             }
         });
     }
@@ -137,7 +137,7 @@ namespace CLEO
         {
             if (!dynamic || fxt->second->is_static)
             {
-                LOG_WARNING("Attempting to add FXT \'%s\' - FAILED (GXT conflict)", key, value);
+                LOG_WARNING(0, "Attempting to add FXT \'%s\' - FAILED (GXT conflict)", key, value);
                 return false;
             }
 
