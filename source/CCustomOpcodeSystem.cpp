@@ -1455,7 +1455,7 @@ namespace CLEO
 		auto path = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(path)
 
 		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
-		TRACE("[0A92] Starting new custom script %s from thread named %s", filename.c_str(), thread->GetName());
+		TRACE("[0A92] Starting new custom script %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str());
 		SetScriptCondResult(thread, cs && cs->IsOK());
@@ -1496,7 +1496,7 @@ namespace CLEO
 
 		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
 		filename += ".cm"; // add custom mission extension
-		TRACE("[0A94] Starting new custom mission %s from thread named %s", filename.c_str(), thread->GetName());
+		TRACE("[0A94] Starting new custom mission %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), true);
 		SetScriptCondResult(thread, cs && cs->IsOK());
@@ -1514,7 +1514,7 @@ namespace CLEO
 		{
 			if (cs) delete cs;
 			SkipUnusedVarArgs(thread);
-			LOG_WARNING(0, "[0A94] Failed to load mission '%s' from script '%s'.", filename.c_str(), thread->GetName());
+			LOG_WARNING(0, "[0A94] Failed to load mission '%s' from script '%s'.", filename.c_str(), thread->GetName().c_str());
 		}
 
 		return OR_CONTINUE;
