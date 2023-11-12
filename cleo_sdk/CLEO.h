@@ -4,6 +4,9 @@
 */
 #pragma once
 
+#ifdef __cplusplus
+#include <string>
+#endif
 #include <wtypes.h>
 
 #define CLEO_VERSION_MAIN	5
