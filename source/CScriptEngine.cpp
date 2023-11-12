@@ -1397,15 +1397,19 @@ namespace CLEO
                 dwChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
 
                 // thread name from filename
+                auto threadNamePath = path;
+                if(threadNamePath.extension() == cs3_ext || threadNamePath.extension() == cs4_ext)
+                {
+                    threadNamePath.replace_extension(cs_ext); // keep original extension even in compatibility modes
+                }
+                auto fName = threadNamePath.filename().string();
+
                 memset(Name, '\0', sizeof(Name));
-                auto fName = FS::path(szFileName).filename().string(); // taken from original source
                 if(!fName.empty())
                 {
                     auto len = min(fName.length(), sizeof(Name) - 1); // and text terminator
                     memcpy(Name, fName.c_str(), len);
                 }
-                else
-                    strcpy(Name, "noname");
 			}
 			lastScriptCreated = this;
             bOK = true;
