@@ -1400,11 +1400,14 @@ namespace CLEO
 
                 // thread name from filename
                 memset(Name, '\0', sizeof(Name));
-                if(!scriptFileName.empty())
+                auto fName = FS::path(szFileName).filename().string(); // taken from original source
+                if(!fName.empty())
                 {
-                    auto len = min(scriptFileName.length(), sizeof(Name) - 1); // and text terminator
-                    memcpy(Name, scriptFileName.c_str(), len);
+                    auto len = min(fName.length(), sizeof(Name) - 1); // and text terminator
+                    memcpy(Name, fName.c_str(), len);
                 }
+                else
+                    strcpy(Name, "noname");
 			}
 			lastScriptCreated = this;
             bOK = true;
