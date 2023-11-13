@@ -3231,22 +3231,6 @@ namespace CLEO
 		auto cs = reinterpret_cast<CCustomScript*>(thread);
 		DWORD returnParamCount = GetVarArgCount(cs);
 
-		SetScriptCondResult(cs, true);
-
-		if(cs->SP != 0) // current scope was created with GOSUB
-		{
-			if (returnParamCount > 0)
-			{
-				SHOW_ERROR("GOSUB calls do not support return params! Invalid return in script %s\nScript suspended.", cs->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(cs);
-			}
-
-			// routine return - same as 0050
-			cs->SP -= 1;
-			cs->SetIp(cs->Stack[cs->SP]);
-			return OR_CONTINUE;
-		}
-
 		if (returnParamCount) GetScriptParams(cs, returnParamCount);
 
 		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
@@ -3264,6 +3248,7 @@ namespace CLEO
 		if (returnSlotCount) SetScriptParams(cs, returnSlotCount);
 		cs->IncPtr(); // skip var args
 
+		SetScriptCondResult(cs, true);
 		return OR_CONTINUE;
 	}
 
@@ -3272,23 +3257,14 @@ namespace CLEO
 	{
 		auto cs = reinterpret_cast<CCustomScript*>(thread);
 
-		SetScriptCondResult(cs, false);
-
-		if (cs->SP != 0) // current scope was created with GOSUB
-		{
-			// routine return - same as 0050
-			cs->SP -= 1;
-			cs->SetIp(cs->Stack[cs->SP]);
-			return OR_CONTINUE;
-		}
-
 		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
 		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
 		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
 		delete scmFunc;
 
-		SkipUnusedVarArgs(thread); // return_false - exit function without change of return slots
+		SkipUnusedVarArgs(thread); // just exit without change of return params
 
+		SetScriptCondResult(cs, false);
 		return OR_CONTINUE;
 	}
 }
