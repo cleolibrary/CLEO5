@@ -2311,13 +2311,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript *thread)
 	{
 		ScmFunction *scmFunc = ScmFunction::Store[reinterpret_cast<CCustomScript*>(thread)->GetScmFunction()];
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
-
-		if (cs->SP != 0) // current scope was created with GOSUB
-		{
-			SHOW_ERROR("Opcode [0AB2] can not be used as return in subroutines! Invalid return in script %s\nScript suspended.", cs->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(cs);
-		}
 		
 		DWORD returnParamCount = GetVarArgCount(thread);
 		if (returnParamCount)
