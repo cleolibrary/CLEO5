@@ -15,6 +15,7 @@ namespace CLEO
         friend struct ScmFunction;
         friend struct ThreadSavingInfo;
         friend OpcodeResult __stdcall opcode_2002(CRunningScript* pScript);
+        friend OpcodeResult __stdcall opcode_2003(CRunningScript* pScript);
 
         DWORD dwChecksum;
         bool bSaveEnabled;
