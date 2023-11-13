@@ -126,6 +126,7 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // resolve_filepath
 	OpcodeResult __stdcall opcode_2001(CRunningScript* thread); // get_script_filename
+	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // set_result
 
 	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript *script);
 	struct ScriptDeleteDelegate {
@@ -400,6 +401,7 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		CLEO_RegisterOpcode(0x2000, opcode_2000); // resolve_filepath
 		CLEO_RegisterOpcode(0x2001, opcode_2001); // get_script_filename
+		CLEO_RegisterOpcode(0x2002, opcode_2002); // set_result
 	}
 
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
@@ -3219,6 +3221,13 @@ namespace CLEO
 
 		SetScriptCondResult(thread, true);
 		return OR_CONTINUE;
+	}
+
+	//2002=1, set_result %1d% // IF
+	OpcodeResult __stdcall opcode_2002(CRunningScript* thread)
+	{
+		GetScriptParams(thread, 1);
+		SetScriptCondResult(thread, opcodeParams[0].dwParam != 0);
 	}
 }
 
