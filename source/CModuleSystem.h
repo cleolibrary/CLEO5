@@ -1,6 +1,5 @@
 #pragma once
 #include <atomic>
-#include <filesystem>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -58,7 +57,7 @@ namespace CLEO
 
 			// hot reloading when source file modified
 			std::atomic<int> refCount = 0;
-			std::filesystem::file_time_type fileTime; // last write time of source file
+			FS::file_time_type fileTime; // last write time of source file
 			void Update();
 			std::atomic<bool> updateActive = true;
 			std::atomic<bool> updateNeeded = false;

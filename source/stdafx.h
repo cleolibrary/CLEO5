@@ -11,12 +11,32 @@
 #include <memory>
 #include <assert.h>
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <direct.h>
 #include <list>
 #include <vector>
 #include <set>
 #include <cstdint>
+
+
+// global constant paths. Initialize before anything else
+namespace FS = std::filesystem;
+
+static std::string GetApplicationDirectory()
+{
+    char buffer[512];
+    GetModuleFileNameA(NULL, buffer, sizeof(buffer) - 1); // game exe absolute path
+    return FS::path(buffer).parent_path().string();
+}
+static const std::string Filepath_Root = GetApplicationDirectory();
+
+//static const std::string Filepath_Cleo = FS::path(Filepath_Root).append("cleo").string(); // absolute path
+static const std::string Filepath_Cleo = "cleo"; // relative path - allow mod loaders to affect it
+
+static const std::string Filepath_Config = FS::path(Filepath_Cleo).append(".cleo_config.ini").string();
+static const std::string Filepath_Log = FS::path(Filepath_Cleo).append(".cleo.log").string();
+
 
 #include <game_sa/CPools.h>
 #include <game_sa/CMenuManager.h>

@@ -1,0 +1,89 @@
+name: CLEO 5 Release Build
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+**'
+
+jobs:
+  build:
+    runs-on: windows-2022
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: "true"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+  
+      - name: Read Version Tag
+        id: read_version
+        run: node.exe .github/workflows/version.js
+
+      - name: Build Projects
+        shell: cmd
+        run: |
+          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
+          msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
+          msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
+
+      - name: Prepare Files
+        id: prepare_archive
+        shell: cmd
+        run: |
+          @REM create output directory
+          mkdir .output\Release\cleo
+          mkdir .output\Release\cleo\cleo_modules
+          mkdir .output\Release\cleo\cleo_plugins
+          mkdir .output\Release\cleo\cleo_saves
+          mkdir .output\Release\cleo\cleo_text
+          mkdir .output\Release\cleo_readme
+
+          @REM copy files
+          copy third-party\bass\bass.dll .output\Release\bass.dll
+          copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
+          copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
+          copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
+
+          @REM install Silent's ASI Loader
+          curl https://silent.rockstarvision.com/uploads/silents_asi_loader_13.zip -o silents_asi_loader_13.zip
+          powershell.exe -NoP -NonI -Command "Expand-Archive '.\silents_asi_loader_13.zip' '.\.output\Release'"
+          move .output\Release\ReadMe.txt ".output\Release\cleo_readme\ASI Loader Readme.txt"
+          rmdir /s /q .output\Release\advanced_plugin_management_example
+          rmdir /s /q .output\Release\scripts
+
+
+      - name: Convert Markdown to HTML
+        id: md_to_html
+        run: |
+          npm install showdown
+          node.exe .github/workflows/markdown.js
+          move README.html .output\Release\cleo_readme\README.html
+          move CHANGELOG.html .output\Release\cleo_readme\CHANGELOG.html
+
+      - name: Pack binaries (Main)
+        uses: ThirteenAG/zip-release@master
+        with:
+          path: ./.output/Release/*
+          type: "zip"
+          filename: ${{ steps.read_version.outputs.archive_name }}
+          exclusions: "*.pdb *.lib *.exp *.map"
+
+      - name: Upload Release
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ steps.read_version.outputs.version }}
+          bodyFile: 'changes.txt' # generated in read_version
+          tag: ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          artifacts: ${{ steps.read_version.outputs.archive_name }}

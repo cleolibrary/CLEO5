@@ -53,6 +53,12 @@
     <TargetName>DebugUtils</TargetName>
     <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
+  <PropertyGroup>
+    <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(GTA_SA_DIR)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -78,7 +84,9 @@
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
 xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
+if defined GTA_SA_DIR (
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)
  </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -103,7 +111,9 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
 xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
+if defined GTA_SA_DIR (
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)
  </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

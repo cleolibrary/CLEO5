@@ -8,9 +8,10 @@ CLEO requires an 'ASI Loader' installed to run which is provided with the releas
 No additional files are replaced, however the following files and folders are added:
 
 - cleo\ (CLEO script directory)
-- cleo\FileSystemOperations.cleo (file system plugin)
-- cleo\IniFiles.cleo (INI config plugin)
-- cleo\IntOperations.cleo (INT operations plugin)
+- cleo\cleo_plugins\DebugUtils.cleo (script debug utilities plugin)
+- cleo\cleo_plugins\FileSystemOperations.cleo (file system plugin)
+- cleo\cleo_plugins\IniFiles.cleo (INI config plugin)
+- cleo\cleo_plugins\IntOperations.cleo (INT operations plugin)
 - cleo\cleo_saves\ (CLEO save directory)
 - cleo\cleo_text\ (CLEO text directory)
 - cleo.asi (core library)
@@ -35,7 +36,7 @@ CLEO is continually being improved and extended over time. In very rare circumst
 
 ## Credits
 
-The author and original developer of the CLEO library is Seemann. Development of CLEO 4 was led by Alien and Deji. Today the CLEO library is an open-source project being maintained at https://github.com/cleolibrary
+The author and original developer of the CLEO library is Seemann. Development of CLEO 4 was led by Alien and Deji, later turned into CLEO 5 by Miran. Today the CLEO library is an open-source project being maintained at https://github.com/cleolibrary
 
 The author of the ASI Loader is Silent. Find out more at: https://gtaforums.com/topic/523982-relopensrc-silents-asi-loader/
 
@@ -44,6 +45,7 @@ Special thanks to:
 - Stanislav Golovin (a.k.a. listener) for his great work in exploration of the GTA series.
 - NTAuthority and LINK/2012 for additional support with CLEO 4.3.
 - mfisto for the alpha-testing of CLEO 4, his support and advices.
+- 123nir for the alpha-testing of CLEO 5.0.0, troubleshooting and valuable bug reports.
 
 The developers have no connection with Take 2 Interactive or Rockstar Games.
 By using this product or any of the additional products included you take your own personal responsibility for any negative consequences should they arise.

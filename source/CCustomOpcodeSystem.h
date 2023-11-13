@@ -19,16 +19,27 @@ namespace CLEO
     class CCustomOpcodeSystem : public VInjectible
     {
     public:
+        static const size_t MinValidAddress = 0x10000; // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
+
         static const size_t LastOriginalOpcode = 0x0A4E; // GTA SA
         static const size_t LastCustomOpcode = 0x7FFF;
 
+        // most recently processed
+        static CRunningScript* lastScript;
+        static WORD lastOpcode;
+        static WORD* lastOpcodePtr;
+        static WORD lastCustomOpcode;
+        static std::string lastErrorMsg;
+        static WORD prevOpcode; // previous
+        
         void FinalizeScriptObjects();
 
         CCustomOpcodeSystem();
         virtual void Inject(CCodeInjector& inj);
         ~CCustomOpcodeSystem()
         {
-            //TRACE("Last opcode executed %04X at %s:%d", last_opcode, last_thread, last_off);
+            TRACE("Last opcode executed: %04X", lastOpcode);
+            TRACE("Previous opcode executed: %04X", prevOpcode);
         }
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
@@ -64,6 +75,8 @@ namespace CLEO
     
     char* ReadStringParam(CRunningScript* thread, char* buf = nullptr, DWORD bufSize = 0);
     bool WriteStringParam(CRunningScript* thread, const char* str);
+    std::pair<char*, DWORD> GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
     int ReadFormattedString(CRunningScript* thread, char* buf, DWORD bufSize, const char* format);
-    void SkipUnusedParameters(CRunningScript* thread); // for var-args opcodes
+    void SkipUnusedVarArgs(CRunningScript* thread); // for var-args opcodes
+    DWORD GetVarArgCount(CRunningScript* thread); // for var-args opcodes
 }

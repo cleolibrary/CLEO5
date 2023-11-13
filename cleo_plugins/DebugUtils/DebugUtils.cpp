@@ -40,9 +40,9 @@ public:
             // register opcodes
             CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
             CLEO_RegisterOpcode(0x00C4, Opcode_DebugOff);
-            CLEO_RegisterOpcode(0x00CC, Opcode_Breakpoint);
-            CLEO_RegisterOpcode(0x00CD, Opcode_Trace);
-            CLEO_RegisterOpcode(0x00CE, Opcode_LogToFile);
+            CLEO_RegisterOpcode(0x2100, Opcode_Breakpoint);
+            CLEO_RegisterOpcode(0x2101, Opcode_Trace);
+            CLEO_RegisterOpcode(0x2102, Opcode_LogToFile);
 
             // original Rockstar's script debugging opcodes
             if(GetPrivateProfileInt("General", "LegacyDebugOpcodes", 0, config.c_str()) != 0)
@@ -185,12 +185,12 @@ public:
         return OR_CONTINUE;
     }
 
-    // 00CC=-1, breakpoint ...
+    // 2100=-1, breakpoint ...
     static OpcodeResult WINAPI Opcode_Breakpoint(CScriptThread* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
-            SkipUnusedParams(thread);
+            CLEO_SkipUnusedVarArgs(thread);
             return OR_CONTINUE;
         }
 
@@ -232,12 +232,12 @@ public:
         return OR_INTERRUPT;
     }
 
-    // 00CD=-1, trace %1s% ...
+    // 2101=-1, trace %1s% ...
     static OpcodeResult WINAPI Opcode_Trace(CScriptThread* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
-            SkipUnusedParams(thread);
+            CLEO_SkipUnusedVarArgs(thread);
             return OR_CONTINUE;
         }
 
@@ -248,7 +248,7 @@ public:
         return OR_CONTINUE;
     }
 
-    // 00CE=-1, log_to_file %1s% timestamp %2d% text %3s% ...
+    // 2102=-1, log_to_file %1s% timestamp %2d% text %3s% ...
     static OpcodeResult WINAPI Opcode_LogToFile(CScriptThread* thread)
     {
         auto filestr = CLEO_ReadStringOpcodeParam(thread);
@@ -279,7 +279,7 @@ public:
             ss << "Failed to open log file '" << filename << "'";
             CLEO_Log(eLogLevel::Error, ss.str().c_str());
 
-            SkipUnusedParams(thread);
+            CLEO_SkipUnusedVarArgs(thread);
             return OR_CONTINUE;
         }
 

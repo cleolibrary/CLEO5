@@ -104,17 +104,18 @@ namespace CLEO
     CTextManager::CTextManager() : fxts(1, crc32FromUpcaseStdString)
     {
         // parse FXT files
-        FilesWalk("cleo\\cleo_text", ".fxt", [this](const char *fname)
+        auto path = FS::path(Filepath_Cleo).append("cleo_text").string();
+        FilesWalk(path.c_str(), ".fxt", [this](const char* fullPath, const char* filename)
         {
-            TRACE("Parsing FXT file %s", fname);
+            TRACE("Parsing FXT file %s", fullPath);
             try
             {
-                std::ifstream stream(fname);
+                std::ifstream stream(fullPath);
                 ParseFxtFile(stream);
             }
             catch (std::exception& ex)
             {
-                LOG_WARNING("Loading of FXT file '%s' failed: \n%s", fname, ex.what());
+                LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", fullPath, ex.what());
             }
         });
     }
@@ -136,7 +137,7 @@ namespace CLEO
         {
             if (!dynamic || fxt->second->is_static)
             {
-                LOG_WARNING("Attempting to add FXT \'%s\' - FAILED (GXT conflict)", key, value);
+                LOG_WARNING(0, "Attempting to add FXT \'%s\' - FAILED (GXT conflict)", key, value);
                 return false;
             }
 

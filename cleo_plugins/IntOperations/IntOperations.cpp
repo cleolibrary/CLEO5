@@ -27,6 +27,7 @@ public:
             CLEO_RegisterOpcode(0x0B1B, Scr_IntOp_MOD);
             CLEO_RegisterOpcode(0x0B1C, Scr_IntOp_SHR);
             CLEO_RegisterOpcode(0x0B1D, Scr_IntOp_SHL);
+            CLEO_RegisterOpcode(0x0B1E, Sign_Extend);
         }
         else
         {
@@ -199,7 +200,7 @@ public:
     static OpcodeResult WINAPI Scr_IntOp_SHR(CScriptThread* thread)
         /****************************************************************
         Opcode Format
-        0B1C=3,%1d% >>= %2d%
+        0B1C=2,%1d% >>= %2d%
         ****************************************************************/
     {
         SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
@@ -211,12 +212,35 @@ public:
     static OpcodeResult WINAPI Scr_IntOp_SHL(CScriptThread* thread)
         /****************************************************************
         Opcode Format
-        0B1D=3,%1d% <<= %2d%
+        0B1D=2,%1d% <<= %2d%
         ****************************************************************/
     {
         SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
         int val = CLEO_GetIntOpcodeParam(thread);
         op->dwParam <<= val;
+        return OR_CONTINUE;
+    }
+
+    static OpcodeResult WINAPI Sign_Extend(CScriptThread* thread)
+        /****************************************************************
+        Opcode Format
+        0B1E=2,sign_extend %1d% size %2d%
+        ****************************************************************/
+    {
+        SCRIPT_VAR* op = CLEO_GetPointerToScriptVariable(thread);
+        int size = CLEO_GetIntOpcodeParam(thread);
+
+        if (size > 0 && size < 4) 
+        {
+            size_t offset = size * 8 - 1; // bit offset of top most bit in source value
+            bool signBit = op->dwParam & (1 << offset);
+
+            if(signBit)
+            {
+                op->dwParam |= 0xFFFFFFFF << offset; // set all upper bits
+            }
+        }
+        
         return OR_CONTINUE;
     }
 } intOperations;

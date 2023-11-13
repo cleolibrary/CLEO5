@@ -53,6 +53,12 @@
     <TargetName>FileSystemOperations</TargetName>
     <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
+  <PropertyGroup>
+    <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(GTA_SA_DIR)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>

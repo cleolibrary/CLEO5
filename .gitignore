@@ -39,6 +39,6 @@ Debug/*
 Release/*
 ipch/
 .vs/
-*/.output
 *.zip
-/.output/*/*.lib
+*.lib
+node_modules/
