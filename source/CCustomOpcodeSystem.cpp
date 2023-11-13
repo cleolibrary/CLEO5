@@ -3256,7 +3256,7 @@ namespace CLEO
 			SHOW_ERROR("Opcode [2002] returned %d params, while function caller expected %d in script %s\nScript suspended.", returnParamCount, returnSlotCount,  cs->GetInfoStr().c_str());
 			return CCustomOpcodeSystem::ErrorSuspendScript(cs);
 		}
-		else if(returnParamCount > returnSlotCount) // more args than needed, not critical
+		else if(returnParamCount > 1 && returnParamCount > returnSlotCount) // more args than needed, not critical
 		{
 			LOG_WARNING(thread, "Opcode [2002] returned %d params, while function caller expected %d in script %s", returnParamCount, returnSlotCount, cs->GetInfoStr().c_str());
 		}
