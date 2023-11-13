@@ -3253,7 +3253,7 @@ namespace CLEO
 		DWORD returnSlotCount = GetVarArgCount(cs);
 		if(returnSlotCount > returnParamCount)
 		{
-			SHOW_ERROR("Opcode [2002] returned fewer params than expected by function caller in script %s\nScript suspended.", cs->GetInfoStr().c_str());
+			SHOW_ERROR("Opcode [2002] returned %d params, while function caller expected %d in script %s\nScript suspended.", returnParamCount, returnSlotCount,  cs->GetInfoStr().c_str());
 			return CCustomOpcodeSystem::ErrorSuspendScript(cs);
 		}
 
