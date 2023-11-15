@@ -1368,20 +1368,27 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0A8C(CRunningScript *thread)
 	{
 		GetScriptParams(thread, 4);
-		void *Address = opcodeParams[0].pParam;
+		void *address = opcodeParams[0].pParam;
 		DWORD size = opcodeParams[1].dwParam;
 		DWORD value = opcodeParams[2].dwParam;
 		bool vp = opcodeParams[3].bParam;
+
+		if ((size_t)address <= CCustomOpcodeSystem::MinValidAddress)
+		{
+			SHOW_ERROR("Invalid '0x%X' pointer param of opcode [0A8C] in script %s\nScript suspended.", address, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
 		switch (size)
 		{
 		default:
-			GetInstance().CodeInjector.MemoryWrite(Address, (BYTE)value, vp, size);
+			GetInstance().CodeInjector.MemoryWrite(address, (BYTE)value, vp, size);
 			break;
 		case 2:
-			GetInstance().CodeInjector.MemoryWrite(Address, (WORD)value, vp);
+			GetInstance().CodeInjector.MemoryWrite(address, (WORD)value, vp);
 			break;
 		case 4:
-			GetInstance().CodeInjector.MemoryWrite(Address, (DWORD)value, vp);
+			GetInstance().CodeInjector.MemoryWrite(address, (DWORD)value, vp);
 			break;
 		}
 		return OR_CONTINUE;
@@ -1391,26 +1398,31 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0A8D(CRunningScript *thread)
 	{
 		GetScriptParams(thread, 3);
-		//DWORD value;
-		void *Address = opcodeParams[0].pParam;
+		void *address = opcodeParams[0].pParam;
 		DWORD size = opcodeParams[1].dwParam;
 		bool vp = opcodeParams[2].bParam;
 
-		opcodeParams[0].dwParam = 0;
+		if ((size_t)address <= CCustomOpcodeSystem::MinValidAddress)
+		{
+			SHOW_ERROR("Invalid '0x%X' pointer param of opcode [0A8D] in script %s\nScript suspended.", address, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
 
+		opcodeParams[0].dwParam = 0;
 		switch (size)
 		{
 		case 1:
-			GetInstance().CodeInjector.MemoryRead(Address, (BYTE)opcodeParams[0].ucParam, vp);
+			GetInstance().CodeInjector.MemoryRead(address, (BYTE)opcodeParams[0].ucParam, vp);
 			break;
 		case 2:
-			GetInstance().CodeInjector.MemoryRead(Address, (WORD)opcodeParams[0].usParam, vp);
+			GetInstance().CodeInjector.MemoryRead(address, (WORD)opcodeParams[0].usParam, vp);
 			break;
 		case 4:
-			GetInstance().CodeInjector.MemoryRead(Address, (DWORD)opcodeParams[0].dwParam, vp);
+			GetInstance().CodeInjector.MemoryRead(address, (DWORD)opcodeParams[0].dwParam, vp);
 			break;
 		default:
-			SHOW_ERROR("Invalid size param (%d) of opcode [0A8D] in script %s", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			SHOW_ERROR("Invalid size param '%d' of opcode [0A8D] in script %s\nScript suspended.", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
 		SetScriptParams(thread, 1);
