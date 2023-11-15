@@ -9,6 +9,8 @@
 #include <tlhelp32.h>
 #include <sstream>
 
+#include <array>
+
 #define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
 #define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
 #define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
@@ -1248,8 +1250,8 @@ namespace CLEO
 		bool savedCondResult;
 		eLogicalOperation savedLogicalOp;
 		bool savedNotFlag;
-		static const size_t store_size = 0x400;
-		static ScmFunction *Store[store_size];
+		static const size_t Store_Size = 0x400;
+		static std::array<ScmFunction*, Store_Size> store;
 		static size_t allocationPlace; // contains an index of last allocated object
 		void* moduleExportRef = 0; // modules switching. Points to modules baseIP in case if this is export call
 		std::string savedScriptFileDir; // modules switching
@@ -1258,23 +1260,23 @@ namespace CLEO
 		void *operator new(size_t size)
 		{
 			size_t start_search = allocationPlace;
-			while (Store[allocationPlace])	// find first unused position in store
+			while (store[allocationPlace]) // find first unused position in store
 			{
-				if (++allocationPlace >= store_size) allocationPlace = 0;		// end of store reached
+				if (++allocationPlace >= Store_Size) allocationPlace = 0; // end of store reached
 				if (allocationPlace == start_search) 
 				{
 					SHOW_ERROR("CLEO function storage stack overfllow!");
-					throw std::bad_alloc();	// the store is filled up
+					throw std::bad_alloc(); // the store is filled up
 				}
 			}
 			ScmFunction *obj = reinterpret_cast<ScmFunction *>(::operator new(size));
-			Store[allocationPlace] = obj;
+			store[allocationPlace] = obj;
 			return obj;
 		}
 
 		void operator delete(void *mem)
 		{
-			Store[reinterpret_cast<ScmFunction *>(mem)->thisScmFunctionId] = nullptr;
+			store[reinterpret_cast<ScmFunction *>(mem)->thisScmFunctionId] = nullptr;
 			::operator delete(mem);
 		}
 
@@ -1348,12 +1350,12 @@ namespace CLEO
 		}
 	};
 
-	ScmFunction *ScmFunction::Store[store_size] = { /* default initializer - nullptr */ };
+	std::array<ScmFunction*, ScmFunction::Store_Size> ScmFunction::store = { 0 };
 	size_t ScmFunction::allocationPlace = 0;
 
 	void ResetScmFunctionStore()
 	{
-		for each(ScmFunction *scmFunc in ScmFunction::Store)
+		for each(ScmFunction *scmFunc in ScmFunction::store)
 		{
 			if (scmFunc) delete scmFunc;
 		}
@@ -2321,10 +2323,15 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB2=-1,ret
+	//0AB2=-1,cleo_return ...
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript *thread)
 	{
-		ScmFunction *scmFunc = ScmFunction::Store[reinterpret_cast<CCustomScript*>(thread)->GetScmFunction()];
+		auto stackIdx = reinterpret_cast<CCustomScript*>(thread)->GetScmFunction();
+		if(stackIdx >= ScmFunction::store.size() || ScmFunction::store[stackIdx] == nullptr)
+		{
+			SHOW_ERROR("Invalid Cleo Call reference. [0AB2] possibly used without preceding [0AB1] in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
 		
 		DWORD returnParamCount = GetVarArgCount(thread);
 		if (returnParamCount)
@@ -2358,6 +2365,7 @@ namespace CLEO
 		}
 		if (returnParamCount) GetScriptParams(thread, returnParamCount);
 
+		ScmFunction* scmFunc = ScmFunction::store[stackIdx];
 		scmFunc->Return(thread); // jump back to cleo_call, right after last input param. Return slot var args starts here
 		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // export - release module
 		delete scmFunc;
@@ -3241,11 +3249,18 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread)
 	{
 		auto cs = reinterpret_cast<CCustomScript*>(thread);
-		DWORD returnParamCount = GetVarArgCount(cs);
 
+		auto stackIdx = cs->GetScmFunction();
+		if (stackIdx >= ScmFunction::store.size() || ScmFunction::store[stackIdx] == nullptr)
+		{
+			SHOW_ERROR("Invalid Cleo Call reference. [2002] possibly used without preceding [0AB1] in script %s\nScript suspended.", cs->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		DWORD returnParamCount = GetVarArgCount(cs);
 		if (returnParamCount) GetScriptParams(cs, returnParamCount);
 
-		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
+		ScmFunction* scmFunc = ScmFunction::store[stackIdx];
 		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
 		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
 		delete scmFunc;
@@ -3269,7 +3284,14 @@ namespace CLEO
 	{
 		auto cs = reinterpret_cast<CCustomScript*>(thread);
 
-		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
+		auto stackIdx = cs->GetScmFunction();
+		if (stackIdx >= ScmFunction::store.size() || ScmFunction::store[stackIdx] == nullptr)
+		{
+			SHOW_ERROR("Invalid Cleo Call reference. [2003] possibly used without preceding [0AB1] in script %s\nScript suspended.", cs->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		ScmFunction* scmFunc = ScmFunction::store[stackIdx];
 		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
 		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
 		delete scmFunc;
