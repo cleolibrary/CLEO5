@@ -84,6 +84,11 @@ private:
                             this->msg.push_back(c);
                     }
                 }
+
+                if(!this->msg.empty() && this->msg.back() == ' ') // a bug(?) in game prevents drawing texts ending with whitespace
+                {
+                    this->msg.back() = '_'; // '_' is drawn as empty character too
+                }
             }
 
             ResetTime();
