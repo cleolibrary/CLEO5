@@ -403,7 +403,7 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x2000, opcode_2000); // resolve_filepath
 		CLEO_RegisterOpcode(0x2001, opcode_2001); // get_script_filename
 		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
-		CLEO_RegisterOpcode(0x2002, opcode_2003); // cleo_return_false
+		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_false
 	}
 
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
