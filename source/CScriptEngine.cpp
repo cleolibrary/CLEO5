@@ -1319,6 +1319,31 @@ namespace CLEO
         FS::path path = szFileName;
         path = FS::weakly_canonical(path);
 
+        // file exists?
+        if (path.extension() == cs_ext && !FS::is_regular_file(path))
+        {
+            // maybe then it was renamed to enable compatibility mode?
+            auto compatPath = path;
+
+            compatPath.replace_extension(cs4_ext);
+            if(FS::is_regular_file(compatPath))
+            {
+                path = compatPath;
+            }
+            else
+            {
+                compatPath.replace_extension(cs3_ext);
+                if (FS::is_regular_file(compatPath))
+                {
+                    path = compatPath;
+                }
+                else
+                {
+                    throw std::logic_error("File does not exists");
+                }
+            }
+        }
+
         // deduce compatibility mode from filetype extension
         if (path.extension() == cs4_ext)
             CompatVer = CLEO_VER_4;
