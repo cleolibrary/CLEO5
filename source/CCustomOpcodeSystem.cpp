@@ -3474,7 +3474,7 @@ extern "C"
 		}
 
 		// if "label == 0" then "script_name" need to be the file name
-		auto cs = new CCustomScript(script_name, false, fromThread, label);
+		auto cs = new CCustomScript(filename.c_str(), false, fromThread, label);
 		if (fromThread) SetScriptCondResult(fromThread, cs && cs->IsOK());
 		if (cs && cs->IsOK())
 		{
@@ -3489,7 +3489,7 @@ extern "C"
 		{
 			if (cs) delete cs;
 			if (fromThread) SkipUnusedVarArgs(fromThread);
-			LOG_WARNING(0, "Failed to load script '%s'.", script_name);
+			LOG_WARNING(0, "Failed to load script '%s'.", filename.c_str());
 			return nullptr;
 		}
 
