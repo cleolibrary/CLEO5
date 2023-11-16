@@ -3,6 +3,7 @@
 #include "CLegacy.h"
 #include "CGameVersionManager.h"
 #include "CCustomOpcodeSystem.h"
+#include "ScmFunction.h"
 #include "CTextManager.h"
 #include "CModelInfo.h"
 
@@ -126,8 +127,9 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // resolve_filepath
 	OpcodeResult __stdcall opcode_2001(CRunningScript* thread); // get_script_filename
-	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
+	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_true
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_false
+	OpcodeResult __stdcall opcode_2004(CRunningScript* thread); // cleo_return_none
 
 	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript *script);
 	struct ScriptDeleteDelegate {
@@ -263,6 +265,44 @@ namespace CLEO
 		return (callbackResult != OR_NONE) ? callbackResult : result;
 	}
 
+	OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs)
+	{
+		auto cs = reinterpret_cast<CCustomScript*>(thread);
+
+		ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
+		if (scmFunc == nullptr)
+		{
+			SHOW_ERROR("Invalid Cleo Call reference. [%04X] possibly used without preceding [0AB1] in script %s\nScript suspended.", opcode, cs->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		DWORD returnParamCount = 0;
+		if(returnArgs)
+		{
+			returnParamCount = GetVarArgCount(cs);
+			if (returnParamCount) GetScriptParams(cs, returnParamCount);
+		}
+
+		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
+		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
+		delete scmFunc;
+
+		if (returnArgs)
+		{
+			DWORD returnSlotCount = GetVarArgCount(cs);
+			if (returnParamCount != returnSlotCount) // new CLEO5 opcode, strict error checks
+			{
+				SHOW_ERROR("Opcode [%04X] returned %d params, while function caller expected %d in script %s\nScript suspended.", opcode, returnParamCount, returnSlotCount, cs->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(cs);
+			}
+
+			if (returnSlotCount) SetScriptParams(cs, returnSlotCount);
+			cs->IncPtr(); // skip var args
+		}
+
+		return OR_CONTINUE;
+	}
+
 	OpcodeResult CCustomOpcodeSystem::ErrorSuspendScript(CRunningScript* thread)
 	{
 		//thread->SetActive(false): // will crash game if no active script left
@@ -295,7 +335,7 @@ namespace CLEO
 		m_hNativeLibs.clear();
 
 		// clean up after opcode_0AB1
-		ResetScmFunctionStore();
+		ScmFunction::Clear();
 
 		// clean up after opcode_0AC8
 		std::for_each(m_pAllocations.begin(), m_pAllocations.end(), free);
@@ -402,8 +442,9 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		CLEO_RegisterOpcode(0x2000, opcode_2000); // resolve_filepath
 		CLEO_RegisterOpcode(0x2001, opcode_2001); // get_script_filename
-		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
+		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_true
 		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_false
+		CLEO_RegisterOpcode(0x2004, opcode_2004); // cleo_return_none
 	}
 
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
@@ -1149,130 +1190,6 @@ namespace CLEO
 
 		thread->SetIp(ip); // restore
 		return count;
-	}
-
-	struct ScmFunction
-	{
-		unsigned short prevScmFunctionId, thisScmFunctionId;
-		void* savedBaseIP;
-		BYTE *retnAddress;
-		BYTE* savedStack[8]; // gosub stack
-		WORD savedSP;
-		SCRIPT_VAR savedTls[32];
-		std::list<std::string> stringParams; // texts with this scope lifetime
-		bool savedCondResult;
-		eLogicalOperation savedLogicalOp;
-		bool savedNotFlag;
-		static const size_t store_size = 0x400;
-		static ScmFunction *Store[store_size];
-		static size_t allocationPlace; // contains an index of last allocated object
-		void* moduleExportRef = 0; // modules switching. Points to modules baseIP in case if this is export call
-		std::string savedScriptFileDir; // modules switching
-		std::string savedScriptFileName; // modules switching
-
-		void *operator new(size_t size)
-		{
-			size_t start_search = allocationPlace;
-			while (Store[allocationPlace])	// find first unused position in store
-			{
-				if (++allocationPlace >= store_size) allocationPlace = 0;		// end of store reached
-				if (allocationPlace == start_search) 
-				{
-					SHOW_ERROR("CLEO function storage stack overfllow!");
-					throw std::bad_alloc();	// the store is filled up
-				}
-			}
-			ScmFunction *obj = reinterpret_cast<ScmFunction *>(::operator new(size));
-			Store[allocationPlace] = obj;
-			return obj;
-		}
-
-		void operator delete(void *mem)
-		{
-			Store[reinterpret_cast<ScmFunction *>(mem)->thisScmFunctionId] = nullptr;
-			::operator delete(mem);
-		}
-
-		ScmFunction(CRunningScript *thread) :
-			prevScmFunctionId(reinterpret_cast<CCustomScript*>(thread)->GetScmFunction())
-		{
-			auto cs = reinterpret_cast<CCustomScript*>(thread);
-
-			// create snapshot of current scope
-			savedBaseIP = cs->BaseIP;
-			std::copy(std::begin(cs->Stack), std::end(cs->Stack), std::begin(savedStack));
-			savedSP = cs->SP;
-
-			auto scope = cs->IsMission() ? missionLocals : cs->LocalVar;
-			std::copy(scope, scope + 32, savedTls);
-
-			savedCondResult = cs->bCondResult;
-			savedLogicalOp = cs->LogicalOp;
-			savedNotFlag = cs->NotFlag;
-
-			savedScriptFileDir = cs->GetScriptFileDir();
-			savedScriptFileName = cs->GetScriptFileName();
-
-			// init new scope
-			std::fill(std::begin(cs->Stack), std::end(cs->Stack), nullptr);
-			cs->SP = 0;
-			cs->bCondResult = false;
-			cs->LogicalOp = eLogicalOperation::NONE;
-			cs->NotFlag = false;
-
-			cs->SetScmFunction(thisScmFunctionId = (unsigned short)allocationPlace);
-		}
-
-		void Return(CRunningScript *thread)
-		{
-			auto cs = reinterpret_cast<CCustomScript*>(thread);
-
-			// restore parent scope's gosub call stack
-			cs->BaseIP = savedBaseIP;
-			std::copy(std::begin(savedStack), std::end(savedStack), std::begin(cs->Stack));
-			cs->SP = savedSP;
-			
-			// restore parent scope's local variables
-			std::copy(savedTls, savedTls + 32, cs->IsMission() ? missionLocals : cs->LocalVar);
-
-			// process conditional result of just ended function in parent scope
-			bool condResult = cs->bCondResult;
-			if (savedNotFlag) condResult = !condResult;
-
-			if (savedLogicalOp >= eLogicalOperation::AND_2 && savedLogicalOp < eLogicalOperation::AND_END)
-			{
-				cs->bCondResult = savedCondResult && condResult;
-				cs->LogicalOp = --savedLogicalOp;
-			}
-			else if(savedLogicalOp >= eLogicalOperation::OR_2 && savedLogicalOp < eLogicalOperation::OR_END)
-			{
-				cs->bCondResult = savedCondResult || condResult;
-				cs->LogicalOp = --savedLogicalOp;
-			}
-			else // eLogicalOperation::NONE
-			{
-				cs->bCondResult = condResult;
-				cs->LogicalOp = savedLogicalOp;
-			}
-
-			cs->SetScriptFileDir(savedScriptFileDir.c_str());
-			cs->SetScriptFileName(savedScriptFileName.c_str());
-
-			cs->SetIp(retnAddress);
-			cs->SetScmFunction(prevScmFunctionId);
-		}
-	};
-
-	ScmFunction *ScmFunction::Store[store_size] = { /* default initializer - nullptr */ };
-	size_t ScmFunction::allocationPlace = 0;
-
-	void ResetScmFunctionStore()
-	{
-		for each(ScmFunction *scmFunc in ScmFunction::Store)
-		{
-			if (scmFunc) delete scmFunc;
-		}
-		ScmFunction::allocationPlace = 0;
 	}
 
 	/************************************************************************/
@@ -2174,10 +2091,17 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB2=-1,ret
+	//0AB2=-1,cleo_return
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript *thread)
 	{
-		ScmFunction *scmFunc = ScmFunction::Store[reinterpret_cast<CCustomScript*>(thread)->GetScmFunction()];
+		auto cs = reinterpret_cast<CCustomScript*>(thread);
+
+		ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
+		if (scmFunc == nullptr)
+		{
+			SHOW_ERROR("Invalid Cleo Call reference. [0AB2] possibly used without preceding [0AB1] in script %s\nScript suspended.", cs->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
 		
 		DWORD returnParamCount = GetVarArgCount(thread);
 		if (returnParamCount)
@@ -2185,19 +2109,19 @@ namespace CLEO
 			auto paramType = (eDataType)*thread->GetBytePointer();
 			if (!IsImmInteger(paramType))
 			{
-				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", cs->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 			DWORD declaredParamCount; *thread >> declaredParamCount;
 
 			if(returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
 			{
-				SHOW_ERROR("Opcode [0AB2] declared %d return args, but provided %d in script %s\nScript suspended.", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Opcode [0AB2] declared %d return args, but provided %d in script %s\nScript suspended.", declaredParamCount, returnParamCount - 1, cs->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 			else if (returnParamCount - 1 > declaredParamCount) // more args than needed, not critical
 			{
-				LOG_WARNING(thread, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				LOG_WARNING(thread, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1, cs->GetInfoStr().c_str());
 			}
 		}
 		if (returnParamCount) GetScriptParams(thread, returnParamCount);
@@ -2210,12 +2134,12 @@ namespace CLEO
 		if(returnParamCount) returnParamCount--; // do not count the 'num args' argument itself
 		if (returnSlotCount > returnParamCount)
 		{
-			SHOW_ERROR("Opcode [0AB2] returned %d params, while function caller expected %d in script %s\nScript suspended.", returnParamCount, returnSlotCount, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			SHOW_ERROR("Opcode [0AB2] returned %d params, while function caller expected %d in script %s\nScript suspended.", returnParamCount, returnSlotCount, cs->GetInfoStr().c_str());
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 		else if (returnSlotCount < returnParamCount) // more args than needed, not critical
 		{
-			LOG_WARNING(thread, "Opcode [0AB2] returned %d params, while function caller expected %d in script %s", returnParamCount, returnSlotCount, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(thread, "Opcode [0AB2] returned %d params, while function caller expected %d in script %s", returnParamCount, returnSlotCount, cs->GetInfoStr().c_str());
 		}
 
 		if (returnSlotCount) SetScriptParams(thread, returnSlotCount);
@@ -3081,47 +3005,25 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//2002=-1, cleo_return_with ...
+	//2002=-1, cleo_return_true ...
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread)
 	{
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
-		DWORD returnParamCount = GetVarArgCount(cs);
-
-		if (returnParamCount) GetScriptParams(cs, returnParamCount);
-
-		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
-		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
-		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
-		delete scmFunc;
-
-		DWORD returnSlotCount = GetVarArgCount(cs);
-		if(returnParamCount != returnSlotCount) // new CLEO5 opcode, strict error checks
-		{
-			SHOW_ERROR("Opcode [2002] returned %d params, while function caller expected %d in script %s\nScript suspended.", returnParamCount, returnSlotCount,  cs->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(cs);
-		}
-
-		if (returnSlotCount) SetScriptParams(cs, returnSlotCount);
-		cs->IncPtr(); // skip var args
-
-		SetScriptCondResult(cs, true);
-		return OR_CONTINUE;
+		SetScriptCondResult(thread, true);
+		return CCustomOpcodeSystem::CleoReturnGeneric(0x2002, thread, true);
 	}
 
-	//2003=0, cleo_return_false
+	//2003=-1, cleo_return_false
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread)
 	{
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
+		SetScriptCondResult(thread, false);
+		return CCustomOpcodeSystem::CleoReturnGeneric(0x2003, thread, true);
+	}
 
-		ScmFunction* scmFunc = ScmFunction::Store[cs->GetScmFunction()];
-		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
-		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
-		delete scmFunc;
-
-		SkipUnusedVarArgs(thread); // just exit without change of return params
-
-		SetScriptCondResult(cs, false);
-		return OR_CONTINUE;
+	//2004=0, cleo_return_none
+	OpcodeResult __stdcall opcode_2004(CRunningScript* thread)
+	{
+		SetScriptCondResult(thread, false);
+		return CCustomOpcodeSystem::CleoReturnGeneric(0x2004, thread, false);
 	}
 }
 

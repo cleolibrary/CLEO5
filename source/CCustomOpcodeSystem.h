@@ -8,7 +8,6 @@
 namespace CLEO
 {
     typedef OpcodeResult(__stdcall * CustomOpcodeHandler)(CRunningScript*);
-    void ResetScmFunctionStore();
     bool is_legacy_handle(DWORD dwHandle);
     FILE * convert_handle_to_file(DWORD dwHandle);
 
@@ -44,6 +43,7 @@ namespace CLEO
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
 
+        static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs);
         static OpcodeResult ErrorSuspendScript(CRunningScript* thread); // suspend script execution forever
 
     private:

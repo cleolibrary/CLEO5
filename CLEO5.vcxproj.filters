@@ -99,6 +99,9 @@
     <ClCompile Include="source\CDebug.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
+    <ClCompile Include="source\ScmFunction.cpp">
+      <Filter>source\extensions</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -160,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="source\Singleton.h">
       <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ScmFunction.h">
+      <Filter>source\extensions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
