@@ -2299,7 +2299,7 @@ namespace CLEO
 				break;
 
 			default:
-				SHOW_ERROR("Invalid argument type '0x%02X' in opcode [0AB1] in script %s", paramType, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid argument type '0x%02X' in opcode [0AB1] in script %s\nScript suspended.", paramType, ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
