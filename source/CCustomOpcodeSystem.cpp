@@ -2244,7 +2244,6 @@ namespace CLEO
 			if (nParams > 32)
 			{
 				SHOW_ERROR("Argument count %d is out of supported range (32) of opcode [0AB1] in script %s", nParams, ((CCustomScript*)thread)->GetInfoStr().c_str());
-
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
@@ -2258,8 +2257,9 @@ namespace CLEO
 		for (DWORD i = 0; i < min(nParams, 32); i++)
 		{
 			SCRIPT_VAR* arg = arguments + i;
-				
-			switch (*thread->GetBytePointer())
+			
+			auto paramType = (eDataType)*thread->GetBytePointer();
+			switch (paramType)
 			{
 			case DT_DWORD:
 			case DT_WORD:
@@ -2279,6 +2279,10 @@ namespace CLEO
 			case DT_LVAR_STRING:
 			case DT_VAR_TEXTLABEL:
 			case DT_LVAR_TEXTLABEL:
+			case DT_VAR_TEXTLABEL_ARRAY:
+			case DT_LVAR_TEXTLABEL_ARRAY:
+			case DT_VAR_STRING_ARRAY:
+			case DT_LVAR_STRING_ARRAY:
 				arg->pParam = GetScriptParamPointer(thread);
 				if (arg->pParam >= locals && arg->pParam < localsEnd) // correct scoped variable's pointer
 				{
@@ -2293,6 +2297,10 @@ namespace CLEO
 				scmFunc->stringParams.emplace_back(ReadStringParam(thread)); // those texts exists in script code, but without terminator character. Copy is necessary
 				arg->pcParam = (char*)scmFunc->stringParams.back().c_str();
 				break;
+
+			default:
+				SHOW_ERROR("Invalid argument type '0x%02X' in opcode [0AB1] in script %s", paramType, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
 

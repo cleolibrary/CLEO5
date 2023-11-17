@@ -49,26 +49,26 @@ enum eGameVersion : int
 // operand types
 enum eDataType : int
 {
-	DT_END,
-	DT_DWORD, // imm32
+	DT_END, // variable args end marker
+	DT_DWORD, // literal int 32
 	DT_VAR, // globalVar $
 	DT_LVAR, // localVar @
-	DT_BYTE, // imm8
-	DT_WORD, // imm16
-	DT_FLOAT, // imm32f
+	DT_BYTE, // literal int 8
+	DT_WORD, // literal int 16
+	DT_FLOAT, // literal float 32
 	DT_VAR_ARRAY, // globalArr $(,)
 	DT_LVAR_ARRAY, // localArr @(,)
-	DT_TEXTLABEL, // sstring ''
+	DT_TEXTLABEL, // literal sstring ''
 	DT_VAR_TEXTLABEL, // globalVarSString s$
 	DT_LVAR_TEXTLABEL, // localVarSString @s
-	DT_VAR_TEXTLABEL_ARRAY,
-	DT_LVAR_TEXTLABEL_ARRAY,
-	DT_VARLEN_STRING, // vstring ""
+	DT_VAR_TEXTLABEL_ARRAY, // globalVarSStringArr s$(,)
+	DT_LVAR_TEXTLABEL_ARRAY, // localVarSStringArr @s(,)
+	DT_VARLEN_STRING, // literal vstring ""
 	DT_STRING,
 	DT_VAR_STRING, // globalVarVString v$
 	DT_LVAR_STRING, // localVarVString @v
-	DT_VAR_STRING_ARRAY,
-	DT_LVAR_STRING_ARRAY
+	DT_VAR_STRING_ARRAY, // globalVarStringArr v$(,)
+	DT_LVAR_STRING_ARRAY // localVarStringArr @v(,)
 };
 static const char* ToStr(eDataType type)
 {
