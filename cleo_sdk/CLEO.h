@@ -192,9 +192,8 @@ const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory
 // argument of CLEO_RegisterCallback
 enum class eCallbackId : DWORD
 {
-	ScmInit1, // void WINAPI OnScmInit1();
-	ScmInit2, // void WINAPI OnScmInit2();
-	ScmInit3, // void WINAPI OnScmInit3();
+	GameBegin, // void WINAPI OnGameBegin(DWORD saveSlot); // -1 if not started from save
+	GameEnd, // void WINAPI OnGameEnd();
 	ScriptsLoaded, // void WINAPI OnScriptsLoaded();
 	ScriptsFinalize, // void WINAPI OnScriptsFinalize();
 	ScriptRegister, // void WINAPI OnScriptRegister(CRunningScript* pScript); // called after script creation
@@ -212,8 +211,8 @@ enum class eLogLevel : DWORD
 {
 	None,
 	Error, // errors and warnings
-	Debug, // debug mode related
-	Default // all
+	Debug, // debug mode / user traces
+	Default // all log messages
 };
 
 typedef int SCRIPT_HANDLE;

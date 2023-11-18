@@ -51,10 +51,10 @@ namespace CLEO
         void CloseReadWriteAccess();
 
         template<typename T>
-        void ReplaceFunction(T *funcPtr, memory_pointer Position)
+        void ReplaceFunction(T *funcPtr, memory_pointer Position, T** origFuncPtr = nullptr)
         {
             TRACE("Replacing call: 0x%08X", (DWORD)Position);
-            MemCall((size_t)Position, (size_t)funcPtr);		// *whistle*
+            MemCall((size_t)Position, (size_t)funcPtr, (size_t*)origFuncPtr); // *whistle*
         }
 
         template<typename T>

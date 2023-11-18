@@ -68,6 +68,7 @@ namespace CLEO
         void StoreScriptDraws();
         void RestoreScriptDraws();
 
+        void LoadCleoSave(int slot);
         void StoreScriptCustoms();
         void RestoreScriptCustoms();
 
@@ -96,6 +97,8 @@ namespace CLEO
 
     class CScriptEngine : VInjectible
     {
+        bool gameInProgress = false;
+
         friend class CCustomScript;
         std::list<CCustomScript *> CustomScripts;
         std::list<CCustomScript *> ScriptsWaitingForDelete;
@@ -115,9 +118,14 @@ namespace CLEO
         ~CScriptEngine();
         
         virtual void Inject(CCodeInjector&);
-        void Initialize(); // call after new game started
-        void LoadCustomScripts(bool bMode = false);
 
+        void GameBegin(); // call after new game started
+        void GameEnd();
+
+        void LoadCustomScripts();
+
+        // CLEO saves
+        void LoadState(int saveSlot);
         void SaveState();
 
         CRunningScript*	FindScriptNamed(const char *);

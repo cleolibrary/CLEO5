@@ -82,6 +82,10 @@ namespace CLEO
         { 0x00A44B68,	memory_und, 0x00A44B68,	0x00A471E8, 0x00AB9C98 },		// MA_NUM_SCRIPT_TEXTS
         { 0x0058FCE4,	memory_und, 0x0058FCE4, 0x005904B4, 0x0059E73C },		// MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE
         { 0x0058D552,	memory_und, 0x0058D552, 0x0058DD22, 0x0059BAD4 },		// MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE
+        { 0x00748E6B,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_GAME_SHUTDOWN TODO: find for other versions
+        { 0x0053C758,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_GAME_RESTART_1 TODO: find for other versions
+        { 0x00748E04,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_GAME_RESTART_2 TODO: find for other versions
+        { 0x00748E3E,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_GAME_RESTART_3 TODO: find for other versions
 
                                                                                 // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
         { 0x008A6168,	memory_und, 0x008A6168, 0x008A7450, 0x00913C20 },		// MA_OPCODE_HANDLER,

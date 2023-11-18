@@ -184,67 +184,6 @@ namespace CLEO
     CRunningScript **inactiveThreadQueue, **activeThreadQueue;
 	CCustomScript *lastScriptCreated = nullptr;
 
-    // called to initialise the scripts (after the main.scm has actually had a chance to set up)
-    void OnInitScm1(void)
-    {
-        TRACE("Scripts initialized");
-        GetInstance().ScriptEngine.RemoveAllCustomScripts();
-        InitScm();
-        GetInstance().TextManager.ClearDynamicFxts();
-        GetInstance().OpcodeSystem.FinalizeScriptObjects();
-        GetInstance().SoundSystem.UnloadAllStreams();
-
-        GetInstance().ScriptEngine.Initialize();
-        GetInstance().ModuleSystem.Clear();
-        //GetInstance().ModuleSystem.LoadCleoModules(); // TODO: enbale if cleo_modules approved
-        GetInstance().ScriptEngine.LoadCustomScripts(false);
-
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScmInit1))
-        {
-            typedef void WINAPI callback(void);
-            ((callback*)func)();
-        }
-    }
-
-    // called on first load before the others
-    void OnInitScm2(void)
-    {
-        TRACE("Scripts exclusively initialized");
-        GetInstance().ScriptEngine.RemoveAllCustomScripts();
-        InitScm();
-        GetInstance().TextManager.ClearDynamicFxts();
-        GetInstance().OpcodeSystem.FinalizeScriptObjects();
-        GetInstance().SoundSystem.UnloadAllStreams();
-
-        GetInstance().ScriptEngine.Initialize();
-        GetInstance().ScriptEngine.LoadCustomScripts();
-
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScmInit2))
-        {
-            typedef void WINAPI callback(void);
-            ((callback*)func)();
-        }
-    }
-
-    // called to load the scripts
-    void OnInitScm3(void)
-    {
-        TRACE("Scripts loaded");
-        GetInstance().ScriptEngine.RemoveAllCustomScripts();
-        InitScm();
-        GetInstance().TextManager.ClearDynamicFxts();
-        GetInstance().OpcodeSystem.FinalizeScriptObjects();
-        GetInstance().SoundSystem.UnloadAllStreams();
-
-        GetInstance().ScriptEngine.Initialize();
-        GetInstance().ScriptEngine.LoadCustomScripts(true);
-
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScmInit3))
-        {
-            typedef void WINAPI callback(void);
-            ((callback*)func)();
-        }
-    }
 
     extern "C" void __stdcall opcode_004E(CCustomScript *pScript)
     {
@@ -282,60 +221,15 @@ namespace CLEO
         }
     }
 
-    void OnNewGame(void)
-    {
-        static struct CGangWeapons {
-            BYTE _f0;
-            BYTE _f1; // -
-            DWORD weapon1;
-            DWORD weapon2;
-            DWORD weapon3;
-        } *gangWeapons((CGangWeapons *)0xC0B870);	// 1.01 eu specific
-        TRACE("New game started");
-        gangWeapons[0].weapon1 = 22;
-        gangWeapons[0].weapon2 = 28;
-        gangWeapons[0].weapon3 = 0;
-
-        gangWeapons[1].weapon1 = 22;
-        gangWeapons[1].weapon2 = 0;
-        gangWeapons[1].weapon3 = 0;
-
-        gangWeapons[2].weapon1 = 22;
-        gangWeapons[2].weapon2 = 0;
-        gangWeapons[2].weapon3 = 0;
-
-        gangWeapons[4].weapon1 = 24;
-        gangWeapons[4].weapon2 = 28;
-        gangWeapons[4].weapon3 = 0;
-
-        gangWeapons[5].weapon1 = 24;
-        gangWeapons[5].weapon2 = 0;
-        gangWeapons[5].weapon3 = 0;
-
-        gangWeapons[6].weapon1 = 22;
-        gangWeapons[6].weapon2 = 30;
-        gangWeapons[6].weapon3 = 0;
-
-        gangWeapons[7].weapon1 = 22;
-        gangWeapons[7].weapon2 = 28;
-        gangWeapons[7].weapon3 = 0;
-
-        GetInstance().TextManager.ClearDynamicFxts();
-        GetInstance().OpcodeSystem.FinalizeScriptObjects();
-        GetInstance().ScriptEngine.RemoveAllCustomScripts();
-        GetInstance().SoundSystem.UnloadAllStreams();
-        GetInstance().ScriptEngine.LoadCustomScripts();
-    }
-
     void OnLoadScmData(void)
     {
-        TRACE(__FUNCSIG__);
+        TRACE("Loading scripts save data...");
         LoadScmData();
     }
 
     void OnSaveScmData(void)
     {
-        TRACE(__FUNCSIG__);
+        TRACE("Saving scripts save data...");
         GetInstance().ScriptEngine.SaveState();
         GetInstance().ScriptEngine.UnregisterAllScripts();
         SaveScmData();
@@ -419,6 +313,8 @@ namespace CLEO
 
     void __fastcall HOOK_ProcessScript(CCustomScript * pScript, int)
     {
+        GetInstance().ScriptEngine.GameBegin(); // all initialized and ready to process scripts
+
         // run registered callbacks
         bool process = true;
         for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptProcess))
@@ -858,7 +754,6 @@ namespace CLEO
         GetScriptStringParam = reinterpret_cast<void(__thiscall*)(CRunningScript*, char*, BYTE)>(_GetScriptStringParam);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR * (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
-        InitScm = gvm.TranslateMemoryAddress(MA_INIT_SCM_FUNCTION);
         SaveScmData = gvm.TranslateMemoryAddress(MA_SAVE_SCM_DATA_FUNCTION);
         LoadScmData = gvm.TranslateMemoryAddress(MA_LOAD_SCM_DATA_FUNCTION);
 
@@ -892,18 +787,6 @@ namespace CLEO
         activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
         staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
 
-        if (gvm.GetGameVersion() == GV_EU11)
-        {
-            inj.ReplaceFunction(OnInitScm3, gvm.TranslateMemoryAddress(MA_CALL_INIT_SCM3));
-            inj.InjectFunction(OnNewGame, 0x5DEEA0);	// GV_EU11 specific
-        }
-        else
-        {
-            inj.ReplaceFunction(OnInitScm1, gvm.TranslateMemoryAddress(MA_CALL_INIT_SCM1));
-            inj.ReplaceFunction(OnInitScm2, gvm.TranslateMemoryAddress(MA_CALL_INIT_SCM2));
-            inj.ReplaceFunction(OnInitScm3, gvm.TranslateMemoryAddress(MA_CALL_INIT_SCM3));
-        }
-
         inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
@@ -916,8 +799,7 @@ namespace CLEO
 
     CScriptEngine::~CScriptEngine()
     {
-        TRACE("Unloading scripts...");
-        RemoveAllCustomScripts();
+        GameEnd();
     }
 
     CleoSafeHeader safe_header;
@@ -926,8 +808,12 @@ namespace CLEO
     std::unique_ptr<ThreadSavingInfo[]> safe_info_utilizer;
     std::unique_ptr<unsigned long[]> stopped_info_utilizer;
 
-    void CScriptEngine::Initialize()
+    void CScriptEngine::GameBegin()
     {
+        if(gameInProgress) return; // already started
+        if(activeThreadQueue == nullptr || activeThreadQueue[0] == nullptr) return; // main gamescript not loaded yet 
+        gameInProgress = true;
+
         if (CGame::bMissionPackGame == 0) // regular main game
         {
             MainScriptFileDir = FS::path(Filepath_Cleo).append("data\\script").string();
@@ -941,66 +827,63 @@ namespace CLEO
 
         NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, Filepath_Config.c_str()) != 0;
         MainScriptCurWorkDir = Filepath_Root;
+
+        if(GetInstance().VersionManager.GetGameVersion() == GV_EU11)
+        {
+            static struct CGangWeapons
+            {
+                WORD _fill;
+                DWORD weapon[3];
+            } *gangWeapons((CGangWeapons*)0xC0B870); // 1.01 eu specific
+
+            gangWeapons[0].weapon[0] = 22;
+            gangWeapons[0].weapon[1] = 28;
+            gangWeapons[0].weapon[2] = 0;
+
+            gangWeapons[1].weapon[0] = 22;
+            gangWeapons[1].weapon[1] = 0;
+            gangWeapons[1].weapon[2] = 0;
+
+            gangWeapons[2].weapon[0] = 22;
+            gangWeapons[2].weapon[1] = 0;
+            gangWeapons[2].weapon[2] = 0;
+
+            gangWeapons[4].weapon[0] = 24;
+            gangWeapons[4].weapon[1] = 28;
+            gangWeapons[4].weapon[2] = 0;
+
+            gangWeapons[5].weapon[0] = 24;
+            gangWeapons[5].weapon[1] = 0;
+            gangWeapons[5].weapon[2] = 0;
+
+            gangWeapons[6].weapon[0] = 22;
+            gangWeapons[6].weapon[1] = 30;
+            gangWeapons[6].weapon[2] = 0;
+
+            gangWeapons[7].weapon[0] = 22;
+            gangWeapons[7].weapon[1] = 28;
+            gangWeapons[7].weapon[2] = 0;
+        }
+
+        GetInstance().ModuleSystem.LoadCleoModules();
+        LoadState(GetInstance().saveSlot);
+        LoadCustomScripts();
     }
 
-    void CScriptEngine::LoadCustomScripts(bool load_mode)
+    void CScriptEngine::GameEnd()
     {
-        // steam offset is different, so get it manually for now
-        CGameVersionManager& gvm = GetInstance().VersionManager;
-        int nSlot = gvm.GetGameVersion() != GV_STEAM ? *(BYTE*)&MenuManager->m_nSelectedSaveGame : *((BYTE*)MenuManager + 0x15B);
+        if (!gameInProgress) return;
+        gameInProgress = false;
 
-        auto saveFile = FS::path(Filepath_Cleo).append(stringPrintf("cleo_saves\\cs%d.sav", nSlot)).string();
+        RemoveAllCustomScripts();
+        GetInstance().ModuleSystem.Clear();
+        memset(CleoVariables, 0, sizeof(CleoVariables));
+    }
 
-        safe_info = nullptr;
-        stopped_info = nullptr;
-        safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
-
-        if (load_mode)
-        {
-            // load cleo saving file
-            try
-            {
-                TRACE("Loading cleo safe %s", saveFile.c_str());
-                std::ifstream ss(saveFile.c_str(), std::ios::binary);
-                if (ss.is_open())
-                {
-                    ss.exceptions(std::ios::eofbit | std::ios::badbit | std::ios::failbit);
-                    ReadBinary(ss, safe_header);
-                    if (safe_header.signature != CleoSafeHeader::sign)
-                        throw std::runtime_error("Invalid file format");
-                    safe_info = new ThreadSavingInfo[safe_header.n_saved_threads];
-                    safe_info_utilizer.reset(safe_info);
-                    stopped_info = new unsigned long[safe_header.n_stopped_threads];
-                    stopped_info_utilizer.reset(stopped_info);
-                    ReadBinary(ss, CleoVariables, 0x400);
-                    ReadBinary(ss, safe_info, safe_header.n_saved_threads);
-                    ReadBinary(ss, stopped_info, safe_header.n_stopped_threads);
-                    for (size_t i = 0; i < safe_header.n_stopped_threads; ++i)
-                        InactiveScriptHashes.insert(stopped_info[i]);
-                    TRACE("Finished. Loaded %u cleo variables, %u saved threads info, %u stopped threads info",
-                        0x400, safe_header.n_saved_threads, safe_header.n_stopped_threads);
-                }
-                else
-                {
-                    memset(CleoVariables, 0, sizeof(CleoVariables));
-                }
-            }
-            catch (std::exception& ex)
-            {
-                TRACE("Loading of cleo safe %s failed: %s", saveFile.c_str(), ex.what());
-                safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
-                memset(CleoVariables, 0, sizeof(CleoVariables));
-            }
-        }
-        else
-        {
-            memset(CleoVariables, 0, sizeof(CleoVariables));
-        }
-
+    void CScriptEngine::LoadCustomScripts()
+    {
         TRACE("Searching for CLEO scripts");
-        std::string scriptsDir = "cleo"; // TODO: use Filepath_Cleo instead ModLoader is updated to support CLEO5
-
-        FilesWalk(scriptsDir.c_str(), cs_ext, [&](const char* fullPath, const char* filename) 
+        FilesWalk(Filepath_Cleo.c_str(), cs_ext, [&](const char* fullPath, const char* filename)
         {
             if (auto cs = LoadScript(fullPath))
             {
@@ -1008,7 +891,7 @@ namespace CLEO
             }
         });
 
-        FilesWalk(scriptsDir.c_str(), cs4_ext, [&](const char* fullPath, const char* filename) 
+        FilesWalk(Filepath_Cleo.c_str(), cs4_ext, [&](const char* fullPath, const char* filename)
         {
             if (auto cs = LoadScript(fullPath))
             {
@@ -1017,7 +900,7 @@ namespace CLEO
             }
         });
 
-        FilesWalk(scriptsDir.c_str(), cs3_ext, [&](const char* fullPath, const char* filename)
+        FilesWalk(Filepath_Cleo.c_str(), cs3_ext, [&](const char* fullPath, const char* filename)
         {
             if (auto cs = LoadScript(fullPath))
             {
@@ -1079,6 +962,54 @@ namespace CLEO
 
         AddCustomScript(cs);
         return cs;
+    }
+
+    void CScriptEngine::LoadState(int saveSlot)
+    {
+        memset(CleoVariables, 0, sizeof(CleoVariables));
+
+        if(saveSlot == -1) return;
+
+        auto saveFile = FS::path(Filepath_Cleo).append(stringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
+
+        safe_info = nullptr;
+        stopped_info = nullptr;
+        safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
+
+        // load cleo saving file
+        try
+        {
+            TRACE("Loading cleo safe %s", saveFile.c_str());
+            std::ifstream ss(saveFile.c_str(), std::ios::binary);
+            if (ss.is_open())
+            {
+                ss.exceptions(std::ios::eofbit | std::ios::badbit | std::ios::failbit);
+                ReadBinary(ss, safe_header);
+                if (safe_header.signature != CleoSafeHeader::sign)
+                    throw std::runtime_error("Invalid file format");
+                safe_info = new ThreadSavingInfo[safe_header.n_saved_threads];
+                safe_info_utilizer.reset(safe_info);
+                stopped_info = new unsigned long[safe_header.n_stopped_threads];
+                stopped_info_utilizer.reset(stopped_info);
+                ReadBinary(ss, CleoVariables, 0x400);
+                ReadBinary(ss, safe_info, safe_header.n_saved_threads);
+                ReadBinary(ss, stopped_info, safe_header.n_stopped_threads);
+                for (size_t i = 0; i < safe_header.n_stopped_threads; ++i)
+                    InactiveScriptHashes.insert(stopped_info[i]);
+                TRACE("Finished. Loaded %u cleo variables, %u saved threads info, %u stopped threads info",
+                    0x400, safe_header.n_saved_threads, safe_header.n_stopped_threads);
+            }
+            else
+            {
+                memset(CleoVariables, 0, sizeof(CleoVariables));
+            }
+        }
+        catch (std::exception& ex)
+        {
+            TRACE("Loading of cleo safe %s failed: %s", saveFile.c_str(), ex.what());
+            safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
+            memset(CleoVariables, 0, sizeof(CleoVariables));
+        }
     }
 
     void CScriptEngine::SaveState()
@@ -1255,23 +1186,20 @@ namespace CLEO
 
     void CScriptEngine::RemoveAllCustomScripts(void)
     {
+        TRACE("Unloading scripts...");
+
         InactiveScriptHashes.clear();
-        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs) {
-            TRACE("Unregistering custom script named %s", cs->GetName().c_str());
-            RemoveScriptFromQueue(cs, activeThreadQueue);
-            //AddScriptToQueue(cs, inactiveThreadQueue);
-            //if(cs->GetPrev()) cs->GetPrev()->SetNext(nullptr);
-            //if(cs->GetNext()) cs->GetNext()->SetPrev(nullptr);
-            //TRACE("Psyke!!");
-            cs->SetActive(false);
-            delete cs;
-        });
+
+        UnregisterAllScripts();
         CustomScripts.clear();
-        std::for_each(ScriptsWaitingForDelete.begin(), ScriptsWaitingForDelete.end(), [this](CCustomScript *cs) {
+
+        std::for_each(ScriptsWaitingForDelete.begin(), ScriptsWaitingForDelete.end(), [this](CCustomScript *cs) 
+        {
             TRACE("Deleting inactive script named %s", cs->GetName().c_str());
             delete cs;
         });
         ScriptsWaitingForDelete.clear();
+
         if (CustomMission)
         {
             TRACE("Unregistering custom mission named %s", CustomMission->GetName().c_str());
