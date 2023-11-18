@@ -1301,7 +1301,7 @@ namespace CLEO
         });
     }
 
-	// TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
+    // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
     CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label)
         : CRunningScript(), bSaveEnabled(false), bOK(false),
         LastSearchPed(0), LastSearchCar(0), LastSearchObj(0),
@@ -1317,11 +1317,11 @@ namespace CLEO
 
         try
         {
-			std::ifstream is;
-			if (label != 0) // Create external from label.
-			{
-				if (!parent)
-					throw std::logic_error("Trying to create external thread from label without parent thread");
+            std::ifstream is;
+            if (label != 0) // Create external from label.
+            {
+                if (!parent)
+                    throw std::logic_error("Trying to create external thread from label without parent thread");
 
                 if (!parent->IsCustom())
                     throw std::logic_error("Only custom threads can spawn children threads from label");
@@ -1334,15 +1334,15 @@ namespace CLEO
                 scriptFileName = cs->GetScriptFileName();
                 workDir = cs->GetWorkDir();
 
-				BaseIP = cs->GetBasePointer();
-				CurrentIP = cs->GetBasePointer() - label;
-				memcpy(Name, cs->Name, sizeof(Name));
-				dwChecksum = cs->dwChecksum;
-				parentThread = cs;
+                BaseIP = cs->GetBasePointer();
+                CurrentIP = cs->GetBasePointer() - label;
+                memcpy(Name, cs->Name, sizeof(Name));
+                dwChecksum = cs->dwChecksum;
+                parentThread = cs;
                 cs->childThreads.push_back(this);
-			}
-			else
-			{
+            }
+            else
+            {
                 // store script file directory and name
                 FS::path path = szFileName;
                 path = FS::weakly_canonical(path);
@@ -1420,25 +1420,25 @@ namespace CLEO
                     workDir = Filepath_Root; // game root
                 }
 
-				using std::ios;
-				std::ifstream is(path.string().c_str(), std::ios::binary);
-				is.exceptions(std::ios::badbit | std::ios::failbit);
-				std::size_t length;
-				is.seekg(0, std::ios::end);
-				length = (size_t)is.tellg();
-				is.seekg(0, std::ios::beg);
+                using std::ios;
+                std::ifstream is(path.string().c_str(), std::ios::binary);
+                is.exceptions(std::ios::badbit | std::ios::failbit);
+                std::size_t length;
+                is.seekg(0, std::ios::end);
+                length = (size_t)is.tellg();
+                is.seekg(0, std::ios::beg);
 
-				if (bIsMiss)
-				{
-					if (*MissionLoaded)
-						throw std::logic_error("Starting of custom mission when other mission loaded");
-					*MissionLoaded = 1;
-					BaseIP = CurrentIP = missionBlock;
-				}
-				else {
-					BaseIP = CurrentIP = new BYTE[length];
-				}
-				is.read(reinterpret_cast<char *>(BaseIP), length);
+                if (bIsMiss)
+                {
+                    if (*MissionLoaded)
+                        throw std::logic_error("Starting of custom mission when other mission loaded");
+                    *MissionLoaded = 1;
+                    BaseIP = CurrentIP = missionBlock;
+                }
+                else {
+                    BaseIP = CurrentIP = new BYTE[length];
+                }
+                is.read(reinterpret_cast<char *>(BaseIP), length);
 
                 dwChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
 
@@ -1456,8 +1456,8 @@ namespace CLEO
                     auto len = min(fName.length(), sizeof(Name) - 1); // and text terminator
                     memcpy(Name, fName.c_str(), len);
                 }
-			}
-			lastScriptCreated = this;
+            }
+            lastScriptCreated = this;
             bOK = true;
         }
         catch (std::exception& e)
@@ -1473,9 +1473,9 @@ namespace CLEO
     CCustomScript::~CCustomScript()
     {
         if (BaseIP && !bIsMission) delete[] BaseIP;
-		RunScriptDeleteDelegate(reinterpret_cast<CRunningScript*>(this));
-		if (lastScriptCreated == this) lastScriptCreated = nullptr;
+        RunScriptDeleteDelegate(reinterpret_cast<CRunningScript*>(this));
+        if (lastScriptCreated == this) lastScriptCreated = nullptr;
     }
 
-	float VectorSqrMagnitude(CVector vector) { return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z; }
+    float VectorSqrMagnitude(CVector vector) { return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z; }
 }
