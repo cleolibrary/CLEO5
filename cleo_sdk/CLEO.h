@@ -97,42 +97,84 @@ static const char* ToStr(eDataType type)
 	default: return "corrupted";
 	}
 }
+static bool IsInteger(eDataType type)
+{
+	switch (type)
+	{
+		case DT_BYTE:
+		case DT_WORD:
+		case DT_DWORD:
+			return true;
+	}
+	return false;
+}
+static bool IsString(eDataType type)
+{
+	switch (type)
+	{
+		case DT_STRING:
+		case DT_TEXTLABEL:
+		case DT_LVAR_TEXTLABEL:
+		case DT_LVAR_TEXTLABEL_ARRAY:
+		case DT_LVAR_STRING:
+		case DT_LVAR_STRING_ARRAY:
+		case DT_VAR_TEXTLABEL:
+		case DT_VAR_TEXTLABEL_ARRAY:
+		case DT_VAR_STRING:
+		case DT_VAR_STRING_ARRAY:
+		case DT_VARLEN_STRING:
+			return true;
+	}
+	return false;
+}
+static bool IsVariable(eDataType type)
+{
+	switch (type)
+	{
+		case DT_VAR:
+		case DT_VAR_ARRAY:
+		case DT_LVAR:
+		case DT_LVAR_ARRAY:
+			return true;
+	}
+	return false;
+}
 static const char* ToKindStr(eDataType type)
 {
 	switch (type)
 	{
-	case DT_BYTE:
-	case DT_WORD:
-	case DT_DWORD:
-		return "int"; break;
+		case DT_BYTE:
+		case DT_WORD:
+		case DT_DWORD:
+			return "int"; break;
 
-	case DT_FLOAT:
-		return "float"; break;
+		case DT_FLOAT:
+			return "float"; break;
 
-	case DT_STRING:
-	case DT_TEXTLABEL:
-	case DT_LVAR_TEXTLABEL:
-	case DT_LVAR_TEXTLABEL_ARRAY:
-	case DT_LVAR_STRING:
-	case DT_LVAR_STRING_ARRAY:
-	case DT_VAR_TEXTLABEL:
-	case DT_VAR_TEXTLABEL_ARRAY:
-	case DT_VAR_STRING:
-	case DT_VAR_STRING_ARRAY:
-	case DT_VARLEN_STRING:
-		return "string"; break;
+		case DT_STRING:
+		case DT_TEXTLABEL:
+		case DT_LVAR_TEXTLABEL:
+		case DT_LVAR_TEXTLABEL_ARRAY:
+		case DT_LVAR_STRING:
+		case DT_LVAR_STRING_ARRAY:
+		case DT_VAR_TEXTLABEL:
+		case DT_VAR_TEXTLABEL_ARRAY:
+		case DT_VAR_STRING:
+		case DT_VAR_STRING_ARRAY:
+		case DT_VARLEN_STRING:
+			return "string"; break;
 
-	case DT_VAR:
-	case DT_VAR_ARRAY:
-	case DT_LVAR:
-	case DT_LVAR_ARRAY:
-		return "variable"; break;
+		case DT_VAR:
+		case DT_VAR_ARRAY:
+		case DT_LVAR:
+		case DT_LVAR_ARRAY:
+			return "variable"; break;
 
-	case DT_END:
-		return "varArgEnd"; break;
+		case DT_END:
+			return "varArgEnd"; break;
 
-	default:
-		return "corrupted"; break;
+		default:
+			return "corrupted"; break;
 	}
 }
 

@@ -2146,38 +2146,20 @@ namespace CLEO
 
 		char* moduleTxt = nullptr;
 		auto paramType = (eDataType)*thread->GetBytePointer();
-		switch (paramType)
+		if (IsInteger(paramType) || IsVariable(paramType))
 		{
-			// label of current script
-			case DT_DWORD:
-			case DT_WORD:
-			case DT_BYTE:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
-				*thread >> label;
-				break;
-
-			// string with module and export name
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-				moduleTxt = GetScriptParamPointer(thread)->pcParam;
-				break;
-
-			case DT_STRING:
-			case DT_TEXTLABEL:
-			case DT_VARLEN_STRING:
-				moduleTxt = ReadStringParam(thread);
-				break;
-
-			default:
-				SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			*thread >> label; // label offset
 		}
-
+		else if (IsString(paramType))
+		{
+			moduleTxt = ReadStringParam(thread); // string with module and export name
+		}
+		else
+		{
+			SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+	
 		ScmFunction* scmFunc = new ScmFunction(thread);
 		
 		// parse module reference text
@@ -3397,9 +3379,14 @@ extern "C"
 				break;
 			case DT_VAR_ARRAY:
 			case DT_LVAR_ARRAY:
+			case DT_VAR_TEXTLABEL_ARRAY:
+			case DT_LVAR_TEXTLABEL_ARRAY:
+			case DT_VAR_STRING_ARRAY:
+			case DT_LVAR_STRING_ARRAY:
 				thread->IncPtr(6);
 				break;
 			case DT_BYTE:
+			//case DT_END: // should be only skipped with var args dediacated functions
 				thread->IncPtr();
 				break;
 			case DT_WORD:
