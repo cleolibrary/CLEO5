@@ -97,7 +97,7 @@ static const char* ToStr(eDataType type)
 	default: return "corrupted";
 	}
 }
-static bool IsInteger(eDataType type)
+static bool IsInteger(eDataType type) // warning: integers can also be carried by 'variable' types
 {
 	switch (type)
 	{
@@ -108,7 +108,7 @@ static bool IsInteger(eDataType type)
 	}
 	return false;
 }
-static bool IsString(eDataType type)
+static bool IsString(eDataType type) // warning: strings can also be carried by 'variable' types
 {
 	switch (type)
 	{
