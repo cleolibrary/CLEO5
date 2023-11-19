@@ -492,20 +492,9 @@ namespace CLEO
 	inline CRunningScript& operator>>(CRunningScript& thread, DWORD& uval)
 	{
 		auto paramType = (eDataType)*thread.GetBytePointer();
-		switch(paramType)
+		if (!IsImmInteger(paramType) && !IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
 		{
-			// integers
-			case DT_BYTE:
-			case DT_WORD:
-			case DT_DWORD:
-			case DT_LVAR:
-			case DT_LVAR_ARRAY:
-			case DT_VAR:
-			case DT_VAR_ARRAY:
-				break;
-
-			default:
-				LOG_WARNING(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+			LOG_WARNING(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -516,20 +505,9 @@ namespace CLEO
 	inline CRunningScript& operator<<(CRunningScript& thread, DWORD uval)
 	{
 		auto paramType = (eDataType)*thread.GetBytePointer();
-		switch (paramType)
+		if (!IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
 		{
-			// integers
-			/*case DT_BYTE:
-			case DT_WORD:
-			case DT_DWORD:*/
-			case DT_LVAR:
-			case DT_LVAR_ARRAY:
-			case DT_VAR:
-			case DT_VAR_ARRAY:
-				break;
-
-			default:
-				LOG_WARNING(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+			LOG_WARNING(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].dwParam = uval;
@@ -540,20 +518,9 @@ namespace CLEO
 	inline CRunningScript& operator>>(CRunningScript& thread, int& nval)
 	{
 		auto paramType = (eDataType)*thread.GetBytePointer();
-		switch (paramType)
+		if (!IsImmInteger(paramType) && !IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
 		{
-			// integers
-			case DT_BYTE:
-			case DT_WORD:
-			case DT_DWORD:
-			case DT_LVAR:
-			case DT_LVAR_ARRAY:
-			case DT_VAR:
-			case DT_VAR_ARRAY:
-				break;
-
-			default:
-				LOG_WARNING(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+			LOG_WARNING(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -564,20 +531,9 @@ namespace CLEO
 	inline CRunningScript& operator<<(CRunningScript& thread, int nval)
 	{
 		auto paramType = (eDataType)*thread.GetBytePointer();
-		switch (paramType)
+		if (!IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
 		{
-			// integers
-			/*case DT_BYTE:
-			case DT_WORD:
-			case DT_DWORD:*/
-			case DT_LVAR:
-			case DT_LVAR_ARRAY:
-			case DT_VAR:
-			case DT_VAR_ARRAY:
-				break;
-
-			default:
-				LOG_WARNING(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+			LOG_WARNING(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].nParam = nval;
@@ -588,17 +544,9 @@ namespace CLEO
 	inline CRunningScript& operator>>(CRunningScript& thread, float& fval)
 	{
 		auto paramType = (eDataType)*thread.GetBytePointer();
-		switch (paramType)
+		if (!IsImmFloat(paramType) && !IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
 		{
-			case DT_FLOAT:
-			case DT_LVAR:
-			case DT_LVAR_ARRAY:
-			case DT_VAR:
-			case DT_VAR_ARRAY:
-				break;
-
-			default:
-				LOG_WARNING(&thread, "Reading float argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+			LOG_WARNING(&thread, "Reading float argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		GetScriptParams(&thread, 1);
@@ -609,16 +557,9 @@ namespace CLEO
 	inline CRunningScript& operator<<(CRunningScript& thread, float fval)
 	{
 		auto paramType = (eDataType)*thread.GetBytePointer();
-		switch (paramType)
+		if (!IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
 		{
-			case DT_LVAR:
-			case DT_LVAR_ARRAY:
-			case DT_VAR:
-			case DT_VAR_ARRAY:
-				break;
-
-			default:
-				LOG_WARNING(&thread, "Writing float, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
+			LOG_WARNING(&thread, "Writing float, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
 		}
 
 		opcodeParams[0].fParam = fval;
@@ -685,86 +626,62 @@ namespace CLEO
 		lastErrorMsg.clear();
 
 		auto paramType = CLEO_GetOperandType(thread);
-		switch(paramType)
+		if (IsImmInteger(paramType) || IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
 		{
-			// address of string buffer
-			case DT_DWORD:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
+			GetScriptParams(thread, 1);
+
+			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 			{
-				GetScriptParams(thread, 1);
-				
-				if(opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
-				{
-					lastErrorMsg = (opcodeParams[0].dwParam == 0) ?
-						"Reading string from 'null' pointer argument" :
-						stringPrintf("Reading string from invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
+				lastErrorMsg = (opcodeParams[0].dwParam == 0) ?
+					"Reading string from 'null' pointer argument" :
+					stringPrintf("Reading string from invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
 
-					return nullptr; // error, target buffer untouched
-				}
+				return nullptr; // error, target buffer untouched
+			}
 
-				char* str = opcodeParams[0].pcParam;
-				auto length = strlen(str);
+			char* str = opcodeParams[0].pcParam;
+			auto length = strlen(str);
 
-				if(length > bufLength)
+			if (length > bufLength)
+			{
+				lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
+				length = bufLength; // clamp to target buffer size
+			}
+
+			if (length) strncpy(buf, str, length);
+
+			if (bufSize > 0) buf[length] = '\0'; // string terminator
+			return buf;
+		}
+		else
+		if(IsImmString(paramType) || IsVarString(paramType))
+		{
+			if (paramType == DT_VARLEN_STRING)
+			{
+				// prococess here as GetScriptStringParam can not obtain strings with lenght greater than 128
+				thread->IncPtr(1); // already processed paramType
+
+				DWORD length = (BYTE)*thread->GetBytePointer(); // as unsigned byte! 
+				thread->IncPtr(1); // length info
+
+				char* str = (char*)thread->GetBytePointer();
+				thread->IncPtr(length); // text data
+
+				if (length > bufLength)
 				{
 					lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
 					length = bufLength; // clamp to target buffer size
 				}
 
 				if (length) strncpy(buf, str, length);
-
 				if (bufSize > 0) buf[length] = '\0'; // string terminator
-				return buf;
 			}
-
-			// short string variable
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-			case DT_VAR_TEXTLABEL_ARRAY:
-			case DT_LVAR_TEXTLABEL_ARRAY:
-
-			// long string variable
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_STRING_ARRAY:
-			case DT_LVAR_STRING_ARRAY:
-
-			// in-code string
-			case DT_TEXTLABEL: // sstring ''
-			case DT_STRING:
-			case DT_VARLEN_STRING:
+			else
 			{
-				if (paramType == DT_VARLEN_STRING)
-				{
-					// prococess here as GetScriptStringParam can not obtain strings with lenght greater than 128
-					thread->IncPtr(1); // already processed paramType
-
-					DWORD length = (BYTE)*thread->GetBytePointer(); // as unsigned byte! 
-					thread->IncPtr(1); // length info
-
-					char* str = (char*)thread->GetBytePointer();
-					thread->IncPtr(length); // text data
-
-					if (length > bufLength)
-					{
-						lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
-						length = bufLength; // clamp to target buffer size
-					}
-
-					if (length) strncpy(buf, str, length);
-					if (bufSize > 0) buf[length] = '\0'; // string terminator
-				}
-				else
-				{
-					GetScriptStringParam(thread, buf, (BYTE)min(bufSize, 0xFF)); // standard game's function
-				}
-
-				return buf;
+				GetScriptStringParam(thread, buf, (BYTE)min(bufSize, 0xFF)); // standard game's function
 			}
-			break;
+
+			return buf;
 		}
 
 		// unsupported param type
@@ -797,44 +714,42 @@ namespace CLEO
 		lastErrorMsg.clear();
 
 		auto paramType = CLEO_GetOperandType(thread);
-		switch(paramType)
+		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
 			// address to output buffer
-			case DT_DWORD:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
-				GetScriptParams(thread, 1);
+			GetScriptParams(thread, 1);
 
-				if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
-				{
-					lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
-					return { nullptr, 0 }; // error
-				}
-				return { opcodeParams[0].pcParam, 0x7FFFFFFF }; // user allocated memory block can be any size
-
-			// short string variable
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-			case DT_VAR_TEXTLABEL_ARRAY:
-			case DT_LVAR_TEXTLABEL_ARRAY:
-				return { (char*)GetScriptParamPointer(thread), 8 };
-
-			// long string variable
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_STRING_ARRAY:
-			case DT_LVAR_STRING_ARRAY:
-				return { (char*)GetScriptParamPointer(thread), 16 };
-
-			default:
+			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 			{
-				lastErrorMsg = stringPrintf("Writing string, got argument %s", ToKindStr(paramType));
-				CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
+				lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
 				return { nullptr, 0 }; // error
 			}
+			return { opcodeParams[0].pcParam, 0x7FFFFFFF }; // user allocated memory block can be any size
 		}
+		else
+		if (IsVarString(paramType))
+		{
+			switch(paramType)
+			{
+				// short string variable
+				case DT_VAR_TEXTLABEL:
+				case DT_LVAR_TEXTLABEL:
+				case DT_VAR_TEXTLABEL_ARRAY:
+				case DT_LVAR_TEXTLABEL_ARRAY:
+					return { (char*)GetScriptParamPointer(thread), 8 };
+
+				// long string variable
+				case DT_VAR_STRING:
+				case DT_LVAR_STRING:
+				case DT_VAR_STRING_ARRAY:
+				case DT_LVAR_STRING_ARRAY:
+					return { (char*)GetScriptParamPointer(thread), 16 };
+			}
+		}
+
+		lastErrorMsg = stringPrintf("Writing string, got argument %s", ToKindStr(paramType));
+		CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
+		return { nullptr, 0 }; // error
 	}
 
 	// perform 'sprintf'-operation for parameters, passed through SCM
@@ -1790,29 +1705,24 @@ namespace CLEO
 		SCRIPT_VAR	*arguments_end = arguments + numParams;
 
 		// retrieve parameters
-		for (SCRIPT_VAR *arg = arguments; arg != arguments_end; ++arg)
+		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
 		{
-			switch (*thread->GetBytePointer())
-			{
-			case DT_FLOAT:
-			case DT_DWORD:
-			case DT_WORD:
-			case DT_BYTE:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
+			auto paramType = (eDataType)*thread->GetBytePointer();
+			if (IsImmInteger(paramType) || IsVariable(paramType))
 				*thread >> arg->dwParam;
-				break;
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-				arg->pParam = GetScriptParamPointer(thread);
-				break;
-			case DT_VARLEN_STRING:
-			case DT_TEXTLABEL:
+			else
+			if (IsImmFloat(paramType))
+				*thread >> arg->fParam;
+			else
+			if (IsImmString(paramType))
 				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
+			else
+			if (IsVarString(paramType))
+				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
+			else
+			{
+				SHOW_ERROR("Invalid param type (%s) in opcode [0AA5] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
 
@@ -1858,29 +1768,24 @@ namespace CLEO
 		SCRIPT_VAR *arguments_end = arguments + numParams;
 
 		// retrieve parameters
-		for (SCRIPT_VAR *arg = arguments; arg != arguments_end; ++arg)
+		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
 		{
-			switch (*thread->GetBytePointer())
-			{
-			case DT_FLOAT:
-			case DT_DWORD:
-			case DT_WORD:
-			case DT_BYTE:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
+			auto paramType = (eDataType)*thread->GetBytePointer();
+			if (IsImmInteger(paramType) || IsVariable(paramType))
 				*thread >> arg->dwParam;
-				break;
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-				arg->pParam = GetScriptParamPointer(thread);
-				break;
-			case DT_VARLEN_STRING:
-			case DT_TEXTLABEL:
-				arg->pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
+			else
+			if (IsImmFloat(paramType))
+				*thread >> arg->fParam;
+			else
+			if (IsImmString(paramType))
+				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
+			else
+			if (IsVarString(paramType))
+				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
+			else
+			{
+				SHOW_ERROR("Invalid param type (%s) in opcode [0AA6] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
 
@@ -1925,35 +1830,24 @@ namespace CLEO
 		SCRIPT_VAR	*	arguments_end = arguments + numParams;
 
 		// retrieve parameters
-		for (SCRIPT_VAR *arg = arguments; arg != arguments_end; ++arg)
+		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
 		{
-			switch (*thread->GetBytePointer())
-			{
-			case DT_DWORD:
-			case DT_WORD:
-			case DT_BYTE:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
+			auto paramType = (eDataType)*thread->GetBytePointer();
+			if (IsImmInteger(paramType) || IsVariable(paramType))
 				*thread >> arg->dwParam;
-				break;
-
-			case DT_FLOAT:
+			else
+			if (IsImmFloat(paramType))
 				*thread >> arg->fParam;
-				break;
-
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-				arg->pParam = GetScriptParamPointer(thread);
-				break;
-
-			case DT_VARLEN_STRING:
-			case DT_TEXTLABEL:
-				arg->pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
-				break;
+			else
+			if (IsImmString(paramType))
+				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
+			else
+			if (IsVarString(paramType))
+				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
+			else
+			{
+				SHOW_ERROR("Invalid param type (%s) in opcode [0AA7] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
 
@@ -2002,34 +1896,24 @@ namespace CLEO
 		SCRIPT_VAR	*arguments_end = arguments + numParams;
 
 		// retrieve parameters
-		for (SCRIPT_VAR *arg = arguments; arg != arguments_end; ++arg)
+		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
 		{
-			switch (*thread->GetBytePointer())
-			{
-			case DT_DWORD:
-			case DT_WORD:
-			case DT_BYTE:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
+			auto paramType = (eDataType)*thread->GetBytePointer();
+			if (IsImmInteger(paramType) || IsVariable(paramType))
 				*thread >> arg->dwParam;
-				break;
-
-			case DT_FLOAT:
+			else
+			if (IsImmFloat(paramType))
 				*thread >> arg->fParam;
-				break;
-
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-				arg->pParam = GetScriptParamPointer(thread);
-				break;
-
-			case DT_VARLEN_STRING:
-			case DT_TEXTLABEL:
-				arg->pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
+			else
+			if (IsImmString(paramType))
+				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
+			else
+			if (IsVarString(paramType))
+				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
+			else
+			{
+				SHOW_ERROR("Invalid param type (%s) in opcode [0AA8] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 		}
 
@@ -2146,11 +2030,11 @@ namespace CLEO
 
 		char* moduleTxt = nullptr;
 		auto paramType = (eDataType)*thread->GetBytePointer();
-		if (IsInteger(paramType) || IsVariable(paramType))
+		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
 			*thread >> label; // label offset
 		}
-		else if (IsString(paramType))
+		else if (IsImmString(paramType) || IsVarString(paramType))
 		{
 			moduleTxt = ReadStringParam(thread); // string with module and export name
 		}
@@ -2195,24 +2079,19 @@ namespace CLEO
 		}
 
 		// "number of input parameters" opcode argument
-		DWORD nParams;
+		DWORD nParams = 0;
 		paramType = (eDataType)*thread->GetBytePointer();
-		switch (paramType)
+		if (paramType != DT_END)
 		{
-			case DT_END:
-				nParams = 0;
-				break;
-
-			// literal integers
-			case DT_BYTE:
-			case DT_WORD:
-			case DT_DWORD:
+			if (IsImmInteger(paramType))
+			{
 				*thread >> nParams;
-				break;
-
-			default:
+			}
+			else
+			{
 				SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
 		}
 		if (nParams)
 		{
@@ -2239,48 +2118,32 @@ namespace CLEO
 		for (DWORD i = 0; i < min(nParams, 32); i++)
 		{
 			SCRIPT_VAR* arg = arguments + i;
-			
+
 			auto paramType = (eDataType)*thread->GetBytePointer();
-			switch (paramType)
+			if (IsImmInteger(paramType) || IsVariable(paramType))
 			{
-			case DT_DWORD:
-			case DT_WORD:
-			case DT_BYTE:
-			case DT_VAR:
-			case DT_LVAR:
-			case DT_VAR_ARRAY:
-			case DT_LVAR_ARRAY:
 				*thread >> arg->dwParam;
-				break;
-
-			case DT_FLOAT:
+			}
+			else if(paramType == DT_FLOAT)
+			{
 				*thread >> arg->fParam;
-				break;
-
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-			case DT_VAR_TEXTLABEL_ARRAY:
-			case DT_LVAR_TEXTLABEL_ARRAY:
-			case DT_VAR_STRING_ARRAY:
-			case DT_LVAR_STRING_ARRAY:
+			}
+			else if (IsVarString(paramType))
+			{
 				arg->pParam = GetScriptParamPointer(thread);
 				if (arg->pParam >= locals && arg->pParam < localsEnd) // correct scoped variable's pointer
 				{
 					arg->dwParam -= (DWORD)locals;
 					arg->dwParam += (DWORD)storedLocals;
 				}
-				break;
-
-			case DT_STRING:
-			case DT_TEXTLABEL:
-			case DT_VARLEN_STRING:
-				scmFunc->stringParams.emplace_back(ReadStringParam(thread)); // those texts exists in script code, but without terminator character. Copy is necessary
+			}
+			else if (IsImmString(paramType)) // those texts exists in script code, but without terminator character. Copy is necessary
+			{
+				scmFunc->stringParams.emplace_back(ReadStringParam(thread)); 
 				arg->pcParam = (char*)scmFunc->stringParams.back().c_str();
-				break;
-
-			default:
+			}
+			else
+			{
 				SHOW_ERROR("Invalid argument type '0x%02X' in opcode [0AB1] in script %s\nScript suspended.", paramType, ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
@@ -2319,22 +2182,13 @@ namespace CLEO
 		DWORD returnParamCount = GetVarArgCount(thread);
 		if (returnParamCount)
 		{
-			DWORD declaredParamCount;
-
 			auto paramType = (eDataType)*thread->GetBytePointer();
-			switch (paramType)
+			if (!IsImmInteger(paramType))
 			{
-				// literal integers
-				case DT_BYTE:
-				case DT_WORD:
-				case DT_DWORD:
-					*thread >> declaredParamCount;
-				break;
-
-			default:
 				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
+			DWORD declaredParamCount; *thread >> declaredParamCount;
 
 			if(returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
 			{

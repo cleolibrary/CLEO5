@@ -97,7 +97,7 @@ static const char* ToStr(eDataType type)
 	default: return "corrupted";
 	}
 }
-static bool IsInteger(eDataType type) // warning: integers can also be carried by 'variable' types
+static bool IsImmInteger(eDataType type) // immediate/literal integer in code like 42
 {
 	switch (type)
 	{
@@ -108,12 +108,25 @@ static bool IsInteger(eDataType type) // warning: integers can also be carried b
 	}
 	return false;
 }
-static bool IsString(eDataType type) // warning: strings can also be carried by 'variable' types
+static bool IsImmFloat(eDataType type) // immediate/literal float in code like 42.0
+{
+	return type == DT_FLOAT;
+}
+static bool IsImmString(eDataType type) // immediate/literal string in code like "text"
 {
 	switch (type)
 	{
 		case DT_STRING:
 		case DT_TEXTLABEL:
+		case DT_VARLEN_STRING:
+			return true;
+	}
+	return false;
+}
+static bool IsVarString(eDataType type) // string variable
+{
+	switch (type)
+	{
 		case DT_LVAR_TEXTLABEL:
 		case DT_LVAR_TEXTLABEL_ARRAY:
 		case DT_LVAR_STRING:
@@ -122,12 +135,11 @@ static bool IsString(eDataType type) // warning: strings can also be carried by 
 		case DT_VAR_TEXTLABEL_ARRAY:
 		case DT_VAR_STRING:
 		case DT_VAR_STRING_ARRAY:
-		case DT_VARLEN_STRING:
 			return true;
 	}
 	return false;
 }
-static bool IsVariable(eDataType type)
+static bool IsVariable(eDataType type) // can carry int, float, pointer to text
 {
 	switch (type)
 	{
