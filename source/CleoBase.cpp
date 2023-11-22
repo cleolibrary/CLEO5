@@ -138,6 +138,8 @@ namespace CLEO
             typedef void WINAPI callback(DWORD);
             ((callback*)func)((DWORD)saveSlot);
         }
+
+        TextManager.LoadFxts();
     }
 
     void CCleoInstance::GameEnd()
@@ -157,7 +159,7 @@ namespace CLEO
         ScriptEngine.GameEnd();
         OpcodeSystem.FinalizeScriptObjects();
         SoundSystem.UnloadAllStreams();
-        TextManager.ClearDynamicFxts();
+        TextManager.Clear();
 
         saveSlot = -1;
     }

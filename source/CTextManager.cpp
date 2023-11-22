@@ -103,21 +103,6 @@ namespace CLEO
 
     CTextManager::CTextManager() : fxts(1, crc32FromUpcaseStdString)
     {
-        // parse FXT files
-        auto path = FS::path(Filepath_Cleo).append("cleo_text").string();
-        FilesWalk(path.c_str(), ".fxt", [this](const char* fullPath, const char* filename)
-        {
-            TRACE("Parsing FXT file %s", fullPath);
-            try
-            {
-                std::ifstream stream(fullPath);
-                ParseFxtFile(stream);
-            }
-            catch (std::exception& ex)
-            {
-                LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", fullPath, ex.what());
-            }
-        });
     }
 
     const char* CTextManager::Get(const char* key)
@@ -198,6 +183,30 @@ namespace CLEO
             ++count;
         }
         //		TRACE("Deleting finished, %d elements erased", count);
+    }
+
+    void CTextManager::LoadFxts()
+    {
+        // load whole FXT files directory
+        auto path = FS::path(Filepath_Cleo).append("cleo_text").string();
+        FilesWalk(path.c_str(), ".fxt", [this](const char* fullPath, const char* filename)
+        {
+            TRACE("Parsing FXT file %s", fullPath);
+            try
+            {
+                std::ifstream stream(fullPath);
+                ParseFxtFile(stream);
+            }
+            catch (std::exception& ex)
+            {
+                LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", fullPath, ex.what());
+            }
+        });
+    }
+
+    void CTextManager::Clear()
+    {
+        fxts.clear();
     }
 
     void CTextManager::Inject(CCodeInjector& inj)

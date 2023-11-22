@@ -25,6 +25,10 @@ namespace CLEO
     public:
         CTextManager();
         ~CTextManager();
+
+        void LoadFxts();
+        void Clear();
+
         const char* Get(const char* key);
         bool AddFxt(const char *key, const char *value, bool dynamic = true);
         bool RemoveFxt(const char *key);
