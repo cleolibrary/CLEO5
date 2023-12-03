@@ -828,43 +828,6 @@ namespace CLEO
         NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, Filepath_Config.c_str()) != 0;
         MainScriptCurWorkDir = Filepath_Root;
 
-        if(GetInstance().VersionManager.GetGameVersion() == GV_EU11)
-        {
-            static struct CGangWeapons
-            {
-                WORD _fill;
-                DWORD weapon[3];
-            } *gangWeapons((CGangWeapons*)0xC0B870); // 1.01 eu specific
-
-            gangWeapons[0].weapon[0] = 22;
-            gangWeapons[0].weapon[1] = 28;
-            gangWeapons[0].weapon[2] = 0;
-
-            gangWeapons[1].weapon[0] = 22;
-            gangWeapons[1].weapon[1] = 0;
-            gangWeapons[1].weapon[2] = 0;
-
-            gangWeapons[2].weapon[0] = 22;
-            gangWeapons[2].weapon[1] = 0;
-            gangWeapons[2].weapon[2] = 0;
-
-            gangWeapons[4].weapon[0] = 24;
-            gangWeapons[4].weapon[1] = 28;
-            gangWeapons[4].weapon[2] = 0;
-
-            gangWeapons[5].weapon[0] = 24;
-            gangWeapons[5].weapon[1] = 0;
-            gangWeapons[5].weapon[2] = 0;
-
-            gangWeapons[6].weapon[0] = 22;
-            gangWeapons[6].weapon[1] = 30;
-            gangWeapons[6].weapon[2] = 0;
-
-            gangWeapons[7].weapon[0] = 22;
-            gangWeapons[7].weapon[1] = 28;
-            gangWeapons[7].weapon[2] = 0;
-        }
-
         GetInstance().ModuleSystem.LoadCleoModules();
         LoadState(GetInstance().saveSlot);
         LoadCustomScripts();
