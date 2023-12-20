@@ -127,9 +127,8 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // resolve_filepath
 	OpcodeResult __stdcall opcode_2001(CRunningScript* thread); // get_script_filename
-	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_true
-	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_false
-	OpcodeResult __stdcall opcode_2004(CRunningScript* thread); // cleo_return_none
+	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
+	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
 
 	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript *script);
 	struct ScriptDeleteDelegate {
@@ -442,9 +441,8 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		CLEO_RegisterOpcode(0x2000, opcode_2000); // resolve_filepath
 		CLEO_RegisterOpcode(0x2001, opcode_2001); // get_script_filename
-		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_true
-		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_false
-		CLEO_RegisterOpcode(0x2004, opcode_2004); // cleo_return_none
+		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
+		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
 	}
 
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
@@ -3005,25 +3003,34 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//2002=-1, cleo_return_true ...
+	//2002=-1, cleo_return_with ...
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread)
 	{
-		SetScriptCondResult(thread, true);
+		DWORD argCount = GetVarArgCount(thread);
+		if (argCount < 1)
+		{
+			SHOW_ERROR("Opcode [2002] missing condition result argument in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		DWORD result; *thread >> result;
+		SetScriptCondResult(thread, result != 0);
+
 		return CCustomOpcodeSystem::CleoReturnGeneric(0x2002, thread, true);
 	}
 
-	//2003=-1, cleo_return_false
+	//2003=-1, cleo_return_fail
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread)
 	{
-		SetScriptCondResult(thread, false);
-		return CCustomOpcodeSystem::CleoReturnGeneric(0x2003, thread, true);
-	}
+		DWORD argCount = GetVarArgCount(thread);
+		if (argCount != 0) // argument(s) not supported yet
+		{
+			SHOW_ERROR("Too many arguments of opcode [2003] in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
 
-	//2004=0, cleo_return_none
-	OpcodeResult __stdcall opcode_2004(CRunningScript* thread)
-	{
 		SetScriptCondResult(thread, false);
-		return CCustomOpcodeSystem::CleoReturnGeneric(0x2004, thread, false);
+		return CCustomOpcodeSystem::CleoReturnGeneric(0x2003, thread, false);
 	}
 }
 
