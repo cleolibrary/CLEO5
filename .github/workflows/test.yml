@@ -46,7 +46,7 @@ jobs:
           compression-level: 0
           name: SA.CLEO5
           path: |
-          .output\Release\*
-          !.output\Release\*.pdb
-          !.output\Release\*.lib
-          !.output\Release\*.exp
+            .output\Release\*
+            !.output\Release\*.pdb
+            !.output\Release\*.lib
+            !.output\Release\*.exp
