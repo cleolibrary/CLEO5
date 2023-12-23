@@ -42,7 +42,6 @@ jobs:
           mkdir .output\Release\cleo\cleo_plugins
           mkdir .output\Release\cleo\cleo_saves
           mkdir .output\Release\cleo\cleo_text
-          mkdir .output\Release\cleo\cleo_sounds
           mkdir .output\Release\cleo_readme
 
           @REM copy files
