@@ -19,6 +19,7 @@
   - opcodes **0AAB**, **0AE4**, **0AE5**, **0AE6**, **0AE7** and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
   - new opcode **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
+  - opcodes **0A8C (write_memory)** and **0A8D (read_memory)** no longer crashes game when memory location is inaccessible
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 
     - `root:\` for _game root_ directory

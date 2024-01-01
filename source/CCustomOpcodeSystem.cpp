@@ -1209,18 +1209,28 @@ namespace CLEO
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
-		switch (size)
+		try
 		{
-		default:
-			GetInstance().CodeInjector.MemoryWrite(address, (BYTE)value, vp, size);
-			break;
-		case 2:
-			GetInstance().CodeInjector.MemoryWrite(address, (WORD)value, vp);
-			break;
-		case 4:
-			GetInstance().CodeInjector.MemoryWrite(address, (DWORD)value, vp);
-			break;
+			switch (size)
+			{
+			default:
+				GetInstance().CodeInjector.MemoryWrite(address, (BYTE)value, vp, size);
+				break;
+			case 2:
+				GetInstance().CodeInjector.MemoryWrite(address, (WORD)value, vp);
+				break;
+			case 4:
+				GetInstance().CodeInjector.MemoryWrite(address, (DWORD)value, vp);
+				break;
+			}
 		}
+		catch(...)
+		{
+			SetScriptCondResult(thread, false);
+			return OR_CONTINUE;
+		}
+
+		SetScriptCondResult(thread, true);
 		return OR_CONTINUE;
 	}
 
@@ -1238,23 +1248,33 @@ namespace CLEO
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
-		opcodeParams[0].dwParam = 0;
-		switch (size)
+		try
 		{
-		case 1:
-			GetInstance().CodeInjector.MemoryRead(address, (BYTE)opcodeParams[0].ucParam, vp);
-			break;
-		case 2:
-			GetInstance().CodeInjector.MemoryRead(address, (WORD)opcodeParams[0].usParam, vp);
-			break;
-		case 4:
-			GetInstance().CodeInjector.MemoryRead(address, (DWORD)opcodeParams[0].dwParam, vp);
-			break;
-		default:
-			SHOW_ERROR("Invalid size param '%d' of opcode [0A8D] in script %s\nScript suspended.", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			opcodeParams[0].dwParam = 0;
+			switch (size)
+			{
+			case 1:
+				GetInstance().CodeInjector.MemoryRead(address, (BYTE)opcodeParams[0].ucParam, vp);
+				break;
+			case 2:
+				GetInstance().CodeInjector.MemoryRead(address, (WORD)opcodeParams[0].usParam, vp);
+				break;
+			case 4:
+				GetInstance().CodeInjector.MemoryRead(address, (DWORD)opcodeParams[0].dwParam, vp);
+				break;
+			default:
+				SHOW_ERROR("Invalid size param '%d' of opcode [0A8D] in script %s\nScript suspended.", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
+		}
+		catch (...)
+		{
+			SetScriptCondResult(thread, false);
+			SetScriptParams(thread, 1); // zero
+			return OR_CONTINUE;
 		}
 
+		SetScriptCondResult(thread, true);
 		SetScriptParams(thread, 1);
 		return OR_CONTINUE;
 	}
