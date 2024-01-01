@@ -73,10 +73,20 @@ namespace CLEO
 
     extern void(__thiscall * ProcessScript)(CRunningScript*);
     
+    struct StringParamBufferInfo
+    {
+        char* data = nullptr;
+        DWORD size = 0;
+        bool needTerminator = false;
+    };
+
     char* ReadStringParam(CRunningScript* thread, char* buf = nullptr, DWORD bufSize = 0);
-    bool WriteStringParam(CRunningScript* thread, const char* str);
-    std::pair<char*, DWORD> GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
+    StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
     int ReadFormattedString(CRunningScript* thread, char* buf, DWORD bufSize, const char* format);
+
+    bool WriteStringParam(CRunningScript* thread, const char* str);
+    bool WriteStringParam(const StringParamBufferInfo& target, const char* str);
+
     void SkipUnusedVarArgs(CRunningScript* thread); // for var-args opcodes
     DWORD GetVarArgCount(CRunningScript* thread); // for var-args opcodes
 }

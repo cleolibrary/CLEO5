@@ -680,6 +680,10 @@ namespace CLEO
 			}
 			else
 			{
+				size_t maxSize = 16 + 1; // long string and terminator
+				maxSize = min(maxSize, bufSize);
+				ZeroMemory(buf, maxSize);
+
 				GetScriptStringParam(thread, buf, (BYTE)min(bufSize, 0xFF)); // standard game's function
 			}
 
@@ -696,23 +700,46 @@ namespace CLEO
 	bool WriteStringParam(CRunningScript* thread, const char* str)
 	{
 		auto target = GetStringParamWriteBuffer(thread);
-
-		if(target.first != nullptr && target.second > 0)
-		{
-			size_t length = str == nullptr ? 0 : strlen(str);
-			length = min(length, target.second - 1); // and null terminator
-
-			if (length > 0) std::memcpy(target.first, str, length);
-			target.first[length] = '\0';
-
-			return true; // ok
-		}
-
-		return false; // failed
+		return WriteStringParam(target, str);
 	}
 
-	std::pair<char*, DWORD> GetStringParamWriteBuffer(CRunningScript* thread)
+	bool WriteStringParam(const StringParamBufferInfo& target, const char* str)
 	{
+		lastErrorMsg.clear();
+
+		if (str != nullptr && (size_t)str <= CCustomOpcodeSystem::MinValidAddress)
+		{
+			lastErrorMsg = stringPrintf("Writing string from invalid '0x%X' pointer", target.data);
+			return false;
+		}
+
+		if ((size_t)target.data <= CCustomOpcodeSystem::MinValidAddress)
+		{
+			lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
+			return false;
+		}
+
+		if (target.size == 0)
+		{
+			return false;
+		}
+
+		bool addTerminator = target.needTerminator;
+		size_t buffLen = target.size - addTerminator;
+		size_t length = str == nullptr ? 0 : strlen(str);
+
+		if (buffLen > length) addTerminator = true; // there is space left for terminator
+
+		length = min(length, buffLen);
+		if (length > 0) std::memcpy(target.data, str, length);
+		if (addTerminator) target.data[length] = '\0';
+
+		return true;
+	}
+
+	StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread)
+	{
+		StringParamBufferInfo result;
 		lastErrorMsg.clear();
 
 		auto paramType = CLEO_GetOperandType(thread);
@@ -724,9 +751,14 @@ namespace CLEO
 			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 			{
 				lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
-				return { nullptr, 0 }; // error
+				return result; // error
 			}
-			return { opcodeParams[0].pcParam, 0x7FFFFFFF }; // user allocated memory block can be any size
+
+			result.data = opcodeParams[0].pcParam;
+			result.size = 0x7FFFFFFF; // user allocated memory block can be any size
+			result.needTerminator = true;
+
+			return result;
 		}
 		else
 		if (IsVarString(paramType))
@@ -738,20 +770,26 @@ namespace CLEO
 				case DT_LVAR_TEXTLABEL:
 				case DT_VAR_TEXTLABEL_ARRAY:
 				case DT_LVAR_TEXTLABEL_ARRAY:
-					return { (char*)GetScriptParamPointer(thread), 8 };
+					result.data = (char*)GetScriptParamPointer(thread);
+					result.size = 8;
+					result.needTerminator = false;
+					return result;
 
 				// long string variable
 				case DT_VAR_STRING:
 				case DT_LVAR_STRING:
 				case DT_VAR_STRING_ARRAY:
 				case DT_LVAR_STRING_ARRAY:
-					return { (char*)GetScriptParamPointer(thread), 16 };
+					result.data = (char*)GetScriptParamPointer(thread);
+					result.size = 16;
+					result.needTerminator = false;
+					return result;
 			}
 		}
 
 		lastErrorMsg = stringPrintf("Writing string, got argument %s", ToKindStr(paramType));
 		CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
-		return { nullptr, 0 }; // error
+		return result; // error
 	}
 
 	// perform 'sprintf'-operation for parameters, passed through SCM
@@ -1004,7 +1042,7 @@ namespace CLEO
 					argumentIsStr[i] = true;
 
 					auto str = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(str)
-					stringParams.push_front(std::move(str));
+					stringParams.emplace_front(str);
 					arg->pcParam = stringParams.front().data();
 				}
 				else
@@ -2564,19 +2602,11 @@ namespace CLEO
 	//0AD3=-1,string %1d% format %2d% ...
 	OpcodeResult __stdcall opcode_0AD3(CRunningScript *thread)
 	{
-		auto resultArg = GetStringParamWriteBuffer(thread); OPCODE_VALIDATE_STR_ARG_WRITE(resultArg.first)
+		auto resultArg = GetStringParamWriteBuffer(thread); OPCODE_VALIDATE_STR_ARG_WRITE(resultArg.data)
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
 		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
 
-		if (resultArg.first != nullptr && resultArg.second > 0)
-		{
-			size_t length = text == nullptr ? 0 : strlen(text);
-			length = min(length, resultArg.second - 1); // and null terminator
-
-			if (length > 0) std::memcpy(resultArg.first, text, length);
-			resultArg.first[length] = '\0';
-		}
-
+		WriteStringParam(resultArg, text);
 		return OR_CONTINUE;
 	}
 
@@ -2962,9 +2992,9 @@ namespace CLEO
 		// this opcode is useless now
 		float val; *thread >> val;
 		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
-		auto resultArg = GetStringParamWriteBuffer(thread); OPCODE_VALIDATE_STR_ARG_WRITE(resultArg.first)
+		auto resultArg = GetStringParamWriteBuffer(thread); OPCODE_VALIDATE_STR_ARG_WRITE(resultArg.data)
 
-		sprintf(resultArg.first, format, val);
+		sprintf_s(resultArg.data, resultArg.size, format, val);
 		return OR_CONTINUE;
 	}
 
