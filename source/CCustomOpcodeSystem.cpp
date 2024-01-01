@@ -1023,10 +1023,10 @@ namespace CLEO
 				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 			}
 
-			std::fill(std::begin(argumentIsStr), std::end(argumentIsStr), 0);
 			for (DWORD i = 0; i < returnArgCount; i++)
 			{
 				SCRIPT_VAR* arg = arguments + i;
+				argumentIsStr[i] = false;
 
 				auto paramType = (eDataType)*thread->GetBytePointer();
 				if (IsImmInteger(paramType) || IsVariable(paramType))
