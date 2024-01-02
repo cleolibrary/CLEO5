@@ -443,7 +443,7 @@ public:
 #endif // __cplusplus
 };
 #pragma pack(pop)
-static_assert(sizeof(CRunningScript) == 0xE4, "Invalid size of CRunningScript!");
+static_assert(sizeof(CRunningScript) == 0xE0, "Invalid size of CRunningScript!");
 
 // alias for legacy use
 #ifdef __cplusplus
