@@ -432,6 +432,7 @@ public:
 	int ReadDataByte() { char b = *CurrentIP; ++CurrentIP; return b; }
 	short ReadDataWord() { short v = *(short*)CurrentIP; CurrentIP += 2; return v; }
 	int ReadDataInt() { int i = *(int*)CurrentIP; CurrentIP += 4; return i; }
+	float ReadDataFloat() { float f = *(float*)CurrentIP; CurrentIP += 4; return f; }
 
 	void PushStack(BYTE* ptr) { Stack[SP++] = ptr; }
 	BYTE* PopStack() { return Stack[--SP]; }
@@ -442,7 +443,7 @@ public:
 #endif // __cplusplus
 };
 #pragma pack(pop)
-static_assert(sizeof(CRunningScript) == 0xE0, "Invalid size of CRunningScript!");
+static_assert(sizeof(CRunningScript) == 0xE4, "Invalid size of CRunningScript!");
 
 // alias for legacy use
 #ifdef __cplusplus
