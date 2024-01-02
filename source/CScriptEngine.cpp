@@ -3,6 +3,7 @@
 #include "CFileMgr.h"
 #include "CGame.h"
 #include <CTheScripts.h>
+#include "patch.h"
 
 #include <sstream>
 
@@ -346,6 +347,79 @@ namespace CLEO
         SaveScmData();
         GetInstance().ScriptEngine.ReregisterAllScripts();
     }
+
+    class MyRunningScript : CRunningScript {
+    public:
+        SCRIPT_VAR* GetPointerToLocalVariable(int varIndex) {
+            if (this->IsMission())
+                return &missionLocals[varIndex];
+            else
+                return this->GetVarPtr(varIndex);
+        }
+
+        void ReadArrayInformation(WORD* outArrVarOffset, int* outArrElemIdx) {
+            BYTE* ip = this->GetBytePointer();
+
+            *outArrVarOffset = this->ReadDataWord();
+            WORD arrayIndexVar = this->ReadDataVarIndex();
+            bool isGlobalIndexVar = this->ReadDataVarIndex() < 0; // high bit set
+
+            if (isGlobalIndexVar) {
+                *outArrElemIdx = *reinterpret_cast<int*>(&scmBlock[arrayIndexVar]);
+            }
+            else {
+                *outArrElemIdx = GetPointerToLocalVariable(arrayIndexVar)->dwParam;
+            }
+        }
+
+        void CollectParams(WORD count) {
+            WORD arrVarOffset;
+            int arrElemIdx;
+
+            TRACE("Collecting %d parameters for %s", count, this->GetName().c_str());
+
+            for (int i = 0; i < count; i++) {
+                int dt = this->ReadDataByte();
+                TRACE("Parameter %d DataType %d", i, dt);
+                switch (dt) {
+                case DT_DWORD:
+                    opcodeParams[i].dwParam = this->ReadDataInt();
+                    TRACE("Retrieved Data %d", opcodeParams[i].dwParam);
+                    break;
+                case DT_VAR:
+                {
+                    WORD index = this->ReadDataVarIndex();
+                    opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[index]);
+                    break;
+                }
+                case DT_LVAR:
+                {
+                    WORD index = this->ReadDataVarIndex();
+                    opcodeParams[i] = *GetPointerToLocalVariable(index);
+                    break;
+                }
+                case DT_BYTE:
+                    opcodeParams[i].dwParam = this->ReadDataByte();
+                    break;
+                case DT_WORD:
+                    opcodeParams[i].dwParam = this->ReadDataWord();
+                    break;
+                case DT_FLOAT:
+                    opcodeParams[i].fParam = this->ReadDataFloat();
+                    break;
+                case DT_VAR_ARRAY:
+                    ReadArrayInformation(&arrVarOffset, &arrElemIdx);
+                    opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[arrVarOffset + (4 * arrElemIdx)]);
+                    break;
+                case DT_LVAR_ARRAY:
+                    ReadArrayInformation(&arrVarOffset, &arrElemIdx);
+                    opcodeParams[i] = *GetPointerToLocalVariable(arrVarOffset + arrElemIdx);
+                    break;
+                }
+            }
+        }
+
+    };
 
     struct CleoSafeHeader
     {
@@ -889,6 +963,9 @@ namespace CLEO
         FUNC_SetScriptCondResult = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_COND_RESULT_FUNCTION);
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
+
+        void(__thiscall MyRunningScript:: * pFunc)(WORD) = &MyRunningScript::CollectParams;
+        plugin::patch::ReplaceFunction(FUNC_GetScriptParams, (void*&)pFunc);
 
         AddScriptToQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_AddScriptToQueue);
         RemoveScriptFromQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_RemoveScriptFromQueue);
