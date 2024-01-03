@@ -974,9 +974,6 @@ namespace CLEO
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
-        void(* pFunc)() = &HOOK_CRunningScript__CollectParams;
-        plugin::patch::ReplaceFunction(FUNC_GetScriptParams, (void*&)pFunc);
-
         AddScriptToQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_AddScriptToQueue);
         RemoveScriptFromQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_RemoveScriptFromQueue);
         StopScript = reinterpret_cast<void(__thiscall*)(CRunningScript*)>(_StopScript);
@@ -1031,6 +1028,7 @@ namespace CLEO
         inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
+        inj.ReplaceFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
     }
 
     CScriptEngine::~CScriptEngine()
