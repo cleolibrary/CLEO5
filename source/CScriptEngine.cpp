@@ -471,6 +471,121 @@ namespace CLEO
         }
     }
 
+    SCRIPT_VAR* CRunningScript::GetPointerToLocalArrayElement(CRunningScript* script, int off, WORD idx, BYTE mul)
+    {
+        int final_index = off + mul * idx;
+
+        if (script->IsMission())
+            return &missionLocals[final_index];
+        return script->GetVarPtr(final_index);
+    }
+
+
+    #define TEXTLABEL_SIZE 8
+    #define STRING_SIZE 16
+
+    void CRunningScript::ReadTextLabelFromScript(CRunningScript* script, char* buffer, BYTE nBufferLength) {
+        WORD arrVarOffset;
+        int  arrElemIdx;
+
+        TRACE("Script: %s", script->GetName().c_str());
+
+        BYTE type = script->ReadDataType();
+        switch (type) {
+        case DT_TEXTLABEL:
+            for (int i = 0; i < TEXTLABEL_SIZE; i++)
+                buffer[i] = script->ReadDataByte();
+            break;
+
+        case DT_VAR_TEXTLABEL:
+        {
+            TRACE("DT_VAR_TEXTLABEL");
+            WORD index = script->ReadDataVarIndex();
+            strncpy(buffer, (char*)&scmBlock[index], TEXTLABEL_SIZE);
+            TRACE("%s", buffer);
+            break;
+        }
+
+        case DT_LVAR_TEXTLABEL:
+        {
+            TRACE("DT_LVAR_TEXTLABEL");
+            WORD index = script->ReadDataVarIndex();
+            strncpy(buffer, (char*)GetPointerToLocalVariable(script, index), TEXTLABEL_SIZE);
+            TRACE("%s", buffer);
+            break;
+        }
+
+        case DT_VAR_TEXTLABEL_ARRAY:
+        case DT_VAR_STRING_ARRAY:
+            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+            if (type == DT_VAR_TEXTLABEL_ARRAY)
+                strncpy(buffer, (char*)&scmBlock[TEXTLABEL_SIZE * arrElemIdx + arrVarOffset], TEXTLABEL_SIZE);
+            else
+                strncpy(buffer, (char*)&scmBlock[STRING_SIZE * arrElemIdx + arrVarOffset], min(nBufferLength, STRING_SIZE));
+            break;
+
+        case DT_LVAR_TEXTLABEL_ARRAY:
+        case DT_LVAR_STRING_ARRAY:
+            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+            if (type == DT_LVAR_TEXTLABEL_ARRAY)
+                strncpy(buffer, (char*)GetPointerToLocalArrayElement(script, arrVarOffset, arrElemIdx, 2), TEXTLABEL_SIZE);
+            else {
+                BYTE bufferLength = min(nBufferLength, STRING_SIZE);
+                strncpy(buffer, (char*)GetPointerToLocalArrayElement(script, arrVarOffset, arrElemIdx, 4), bufferLength);
+            }
+            break;
+
+        case DT_VARLEN_STRING:
+        {
+            short nStringLen = script->ReadDataByte();
+            for (int i = 0; i < nStringLen; i++)
+                buffer[i] = script->ReadDataByte();
+
+            if (nStringLen < nBufferLength)
+                memset(&buffer[nStringLen], 0, (nBufferLength - nStringLen));
+            break;
+        }
+
+        case DT_STRING:
+            strncpy(buffer, (const char*)script->GetBytePointer(), min(nBufferLength, STRING_SIZE));
+            script->IncPtr(STRING_SIZE);
+            break;
+
+        case DT_VAR_STRING:
+        {
+            WORD index = script->ReadDataVarIndex();
+            strncpy(buffer, (char*)&scmBlock[index], min(nBufferLength, STRING_SIZE));
+            break;
+        }
+
+        case DT_LVAR_STRING:
+        {
+            WORD index = script->ReadDataVarIndex();
+            strncpy(buffer, (char*)GetPointerToLocalVariable(script, index), min(nBufferLength, STRING_SIZE));
+            break;
+        }
+
+        default:
+            break;
+        }
+    }
+
+    // wrapper around CRunningScript::ReadTextLabelFromScript to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__ReadTextLabelFromScript()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push dword ptr[esp + 8]       // nBufferLength
+            push dword ptr[esp + 12]       // buffer
+            push ecx					// script
+            call CRunningScript::ReadTextLabelFromScript
+            pop ecx                     // restore ecx     
+            retn 8
+        }
+    }
+
+
     struct CleoSafeHeader
     {
         const static unsigned sign;
@@ -1070,6 +1185,7 @@ namespace CLEO
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
         inj.InjectFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
         inj.InjectFunction(&HOOK_CRunningScript__StoreParams, gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__ReadTextLabelFromScript, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
     }
 
     CScriptEngine::~CScriptEngine()
