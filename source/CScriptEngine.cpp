@@ -1028,7 +1028,7 @@ namespace CLEO
         inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
-        inj.ReplaceFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
     }
 
     CScriptEngine::~CScriptEngine()
