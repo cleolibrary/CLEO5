@@ -374,15 +374,11 @@ namespace CLEO
         WORD arrVarOffset;
         int arrElemIdx;
 
-        TRACE("Collecting %d parameters for %s", count, GetName().c_str());
-
         for (int i = 0; i < count; i++) {
             int dt = script->ReadDataByte();
-            TRACE("Parameter %d DataType %d", i, dt);
             switch (dt) {
             case DT_DWORD:
                 opcodeParams[i].dwParam = script->ReadDataInt();
-                TRACE("Retrieved Data %d", opcodeParams[i].dwParam);
                 break;
             case DT_VAR:
             {
@@ -426,6 +422,50 @@ namespace CLEO
             push dword ptr[esp+8]       // count
             push ecx					// script
             call CRunningScript::CollectParams
+            pop ecx                     // restore ecx     
+            retn 4
+        }
+    }
+
+    void CRunningScript::StoreParams(CRunningScript* script, WORD count) {
+        WORD arrVarOffset;
+        int  arrElemIdx;
+
+        for (int i = 0; i < count; i++) {
+            switch (script->ReadDataByte()) {
+            case DT_VAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                *(SCRIPT_VAR*)(&scmBlock[index]) = opcodeParams[i];
+                break;
+            }
+            case DT_LVAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                *GetPointerToLocalVariable(script, index) = opcodeParams[i];
+                break;
+            }
+            case DT_VAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                *(SCRIPT_VAR*)(&scmBlock[arrVarOffset + 4 * arrElemIdx]) = opcodeParams[i];
+                break;
+            case DT_LVAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx) = opcodeParams[i];
+                break;
+            }
+        }
+    }
+
+    // wrapper around CRunningScript::StoreParams to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__StoreParams()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push dword ptr[esp + 8]       // count
+            push ecx					// script
+            call CRunningScript::StoreParams
             pop ecx                     // restore ecx     
             retn 4
         }
@@ -1029,6 +1069,7 @@ namespace CLEO
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
         inj.InjectFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__StoreParams, gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION));
     }
 
     CScriptEngine::~CScriptEngine()
