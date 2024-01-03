@@ -444,6 +444,8 @@ public:
 	void ReadArrayInformation(CRunningScript* script, WORD* outArrVarOffset, int* outArrElemIdx);
 	void CollectParams(CRunningScript*, WORD count);
 	void StoreParams(CRunningScript*, WORD count);
+	SCRIPT_VAR* GetPointerToLocalArrayElement(CRunningScript* script, int off, WORD idx, BYTE mul);
+	void ReadTextLabelFromScript(CRunningScript*, char* buffer, BYTE nBufferLength);
 
 #endif // __cplusplus
 };
