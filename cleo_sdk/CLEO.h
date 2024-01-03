@@ -440,6 +440,10 @@ public:
 	WORD GetScmFunction() const { return ScmFunction; }
 	void SetScmFunction(WORD id) { ScmFunction = id; }
 
+	SCRIPT_VAR* GetPointerToLocalVariable(CRunningScript* script, int varIndex);
+	void ReadArrayInformation(CRunningScript* script, WORD* outArrVarOffset, int* outArrElemIdx);
+	void CollectParams(CRunningScript*, WORD count);
+
 #endif // __cplusplus
 };
 #pragma pack(pop)
