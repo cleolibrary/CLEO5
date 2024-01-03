@@ -348,78 +348,88 @@ namespace CLEO
         GetInstance().ScriptEngine.ReregisterAllScripts();
     }
 
-    class MyRunningScript : CRunningScript {
-    public:
-        SCRIPT_VAR* GetPointerToLocalVariable(int varIndex) {
-            if (this->IsMission())
-                return &missionLocals[varIndex];
-            else
-                return this->GetVarPtr(varIndex);
+    SCRIPT_VAR* CRunningScript::GetPointerToLocalVariable(CRunningScript* script, int varIndex) {
+        if (IsMission())
+            return &missionLocals[varIndex];
+        else
+            return script->GetVarPtr(varIndex);
+    }
+
+    void CRunningScript::ReadArrayInformation(CRunningScript* script, WORD* outArrVarOffset, int* outArrElemIdx) {
+        BYTE* ip = script->GetBytePointer();
+
+        *outArrVarOffset = script->ReadDataWord();
+        WORD arrayIndexVar = script->ReadDataVarIndex();
+        bool isGlobalIndexVar = script->ReadDataVarIndex() < 0; // high bit set
+
+        if (isGlobalIndexVar) {
+            *outArrElemIdx = *reinterpret_cast<int*>(&scmBlock[arrayIndexVar]);
         }
-
-        void ReadArrayInformation(WORD* outArrVarOffset, int* outArrElemIdx) {
-            BYTE* ip = this->GetBytePointer();
-
-            *outArrVarOffset = this->ReadDataWord();
-            WORD arrayIndexVar = this->ReadDataVarIndex();
-            bool isGlobalIndexVar = this->ReadDataVarIndex() < 0; // high bit set
-
-            if (isGlobalIndexVar) {
-                *outArrElemIdx = *reinterpret_cast<int*>(&scmBlock[arrayIndexVar]);
-            }
-            else {
-                *outArrElemIdx = GetPointerToLocalVariable(arrayIndexVar)->dwParam;
-            }
+        else {
+            *outArrElemIdx = GetPointerToLocalVariable(script, arrayIndexVar)->dwParam;
         }
+    }
 
-        void CollectParams(WORD count) {
-            WORD arrVarOffset;
-            int arrElemIdx;
+    void CRunningScript::CollectParams(CRunningScript* script, WORD count) {
+        WORD arrVarOffset;
+        int arrElemIdx;
 
-            TRACE("Collecting %d parameters for %s", count, this->GetName().c_str());
+        TRACE("Collecting %d parameters for %s", count, GetName().c_str());
 
-            for (int i = 0; i < count; i++) {
-                int dt = this->ReadDataByte();
-                TRACE("Parameter %d DataType %d", i, dt);
-                switch (dt) {
-                case DT_DWORD:
-                    opcodeParams[i].dwParam = this->ReadDataInt();
-                    TRACE("Retrieved Data %d", opcodeParams[i].dwParam);
-                    break;
-                case DT_VAR:
-                {
-                    WORD index = this->ReadDataVarIndex();
-                    opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[index]);
-                    break;
-                }
-                case DT_LVAR:
-                {
-                    WORD index = this->ReadDataVarIndex();
-                    opcodeParams[i] = *GetPointerToLocalVariable(index);
-                    break;
-                }
-                case DT_BYTE:
-                    opcodeParams[i].dwParam = this->ReadDataByte();
-                    break;
-                case DT_WORD:
-                    opcodeParams[i].dwParam = this->ReadDataWord();
-                    break;
-                case DT_FLOAT:
-                    opcodeParams[i].fParam = this->ReadDataFloat();
-                    break;
-                case DT_VAR_ARRAY:
-                    ReadArrayInformation(&arrVarOffset, &arrElemIdx);
-                    opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[arrVarOffset + (4 * arrElemIdx)]);
-                    break;
-                case DT_LVAR_ARRAY:
-                    ReadArrayInformation(&arrVarOffset, &arrElemIdx);
-                    opcodeParams[i] = *GetPointerToLocalVariable(arrVarOffset + arrElemIdx);
-                    break;
-                }
+        for (int i = 0; i < count; i++) {
+            int dt = script->ReadDataByte();
+            TRACE("Parameter %d DataType %d", i, dt);
+            switch (dt) {
+            case DT_DWORD:
+                opcodeParams[i].dwParam = script->ReadDataInt();
+                TRACE("Retrieved Data %d", opcodeParams[i].dwParam);
+                break;
+            case DT_VAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[index]);
+                break;
+            }
+            case DT_LVAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                opcodeParams[i] = *GetPointerToLocalVariable(script, index);
+                break;
+            }
+            case DT_BYTE:
+                opcodeParams[i].dwParam = script->ReadDataByte();
+                break;
+            case DT_WORD:
+                opcodeParams[i].dwParam = script->ReadDataWord();
+                break;
+            case DT_FLOAT:
+                opcodeParams[i].fParam = script->ReadDataFloat();
+                break;
+            case DT_VAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[arrVarOffset + (4 * arrElemIdx)]);
+                break;
+            case DT_LVAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                opcodeParams[i] = *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx);
+                break;
             }
         }
+    }
 
-    };
+    // wrapper around CRunningScript::CollectParams to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__CollectParams()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push dword ptr[esp+8]       // count
+            push ecx					// script
+            call CRunningScript::CollectParams
+            pop ecx                     // restore ecx     
+            retn 4
+        }
+    }
 
     struct CleoSafeHeader
     {
@@ -964,7 +974,7 @@ namespace CLEO
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
-        void(__thiscall MyRunningScript:: * pFunc)(WORD) = &MyRunningScript::CollectParams;
+        void(* pFunc)() = &HOOK_CRunningScript__CollectParams;
         plugin::patch::ReplaceFunction(FUNC_GetScriptParams, (void*&)pFunc);
 
         AddScriptToQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_AddScriptToQueue);
