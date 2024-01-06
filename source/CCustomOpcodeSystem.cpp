@@ -2476,7 +2476,7 @@ namespace CLEO
 	{
 		DWORD size; *thread >> size;
 
-		void* mem = malloc(size);
+		void* mem = calloc(size, 1);
 		if (mem)
 		{
 			DWORD oldProtect;
@@ -2485,9 +2485,7 @@ namespace CLEO
 			GetInstance().OpcodeSystem.m_pAllocations.insert(mem);
 		}
 		else
-		{
 			LOG_WARNING(thread, "[0AC8] failed to allocate %d bytes of memory in script %s", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
-		}
 
 		*thread << mem;
 		SetScriptCondResult(thread, mem != nullptr);
