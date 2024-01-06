@@ -11,12 +11,17 @@
 #include <sstream>
 #include <forward_list>
 
-#define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CLEO::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
-#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CLEO::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
-#define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CLEO::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
+#define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
+#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
+#define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
 
 namespace CLEO 
 {
+	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, T*& pval);
+	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, T* pval);
+	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval);
+	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
+
 	DWORD FUNC_fopen;
 	DWORD FUNC_fclose;
 	DWORD FUNC_fwrite;
@@ -195,9 +200,8 @@ namespace CLEO
 	WORD CCustomOpcodeSystem::lastOpcode = 0;
 	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
 	WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
-	std::string lastErrorMsg = {};
+	std::string CCustomOpcodeSystem::lastErrorMsg = {};
 	WORD CCustomOpcodeSystem::prevOpcode = 0;
-
 
 	// opcode handler for custom opcodes
 	OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript *thread, int dummy, WORD opcode)
@@ -238,7 +242,7 @@ namespace CLEO
 
 			if (opcode > LastOriginalOpcode)
 			{
-				SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str(), prevOpcode);
 				return ErrorSuspendScript(thread);
 			}
 
@@ -263,6 +267,123 @@ namespace CLEO
 		}
 
 		return (callbackResult != OR_NONE) ? callbackResult : result;
+	}
+
+	OpcodeResult CCustomOpcodeSystem::CallFunctionGeneric(WORD opcode, CRunningScript* thread, bool thisCall, bool returnArg)
+	{
+		void* func; *thread >> func;
+		void* struc = nullptr; if(thisCall) *thread >> struc;
+		DWORD numParams; *thread >> numParams;
+		DWORD stackAlign; *thread >> stackAlign; // pop
+
+		if ((size_t)func <= CCustomOpcodeSystem::MinValidAddress)
+		{
+			SHOW_ERROR("Invalid '0x%X' function pointer param of opcode [%04X] in script %s\nScript suspended.", func, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		if (thisCall && (size_t)struc <= CCustomOpcodeSystem::MinValidAddress)
+		{
+			SHOW_ERROR("Invalid '0x%X' struct pointer param of opcode [%04X] in script %s\nScript suspended.", struc, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		int nVarArg = GetVarArgCount(thread);
+		if (numParams + returnArg != nVarArg) // and return argument
+		{
+			SHOW_ERROR("Opcode [%04X] declared %d input args, but provided %d in script %s\nScript suspended.", opcode, numParams, (int)nVarArg - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		constexpr size_t Max_Args = 50;
+		if (numParams > Max_Args)
+		{
+			SHOW_ERROR("Opcode [%04X] used with more than supported arguments in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+		}
+
+		static SCRIPT_VAR arguments[Max_Args] = { 0 };
+		SCRIPT_VAR* arguments_end = arguments + numParams;
+
+		constexpr size_t Max_Text_Params = 5;
+		static char textParams[Max_Text_Params][MAX_STR_LEN];
+		size_t currTextParam = 0;
+
+		stackAlign *= 4;
+		
+		// retrieve parameters
+		for (size_t i = 0; i < numParams; i++)
+		{
+			auto& param = arguments[i];
+			auto paramType = thread->PeekDataType();
+
+			if (IsImmInteger(paramType) || IsVariable(paramType))
+				*thread >> param.dwParam;
+			else
+			if (IsImmFloat(paramType))
+				*thread >> param.fParam;
+			else
+			if (IsImmString(paramType) || IsVarString(paramType))
+			{
+				if (currTextParam >= Max_Text_Params)
+				{
+					SHOW_ERROR("Opcode [%04X] used with more than supported string arguments in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+					return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				}
+
+				param.pcParam = ReadStringParam(thread, textParams[currTextParam], MAX_STR_LEN); OPCODE_VALIDATE_STR_ARG_READ(param.pcParam)
+				currTextParam++;
+			}
+			else
+			{
+				SHOW_ERROR("Invalid param type (%s) in opcode [%04X] in script %s \nScript suspended.", opcode, ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
+		}
+
+		// validate return target variable
+		if (returnArg)
+		{
+			auto paramType = thread->PeekDataType();
+
+			if (!IsVariable(paramType) && !IsVarString(paramType))
+			{
+				SHOW_ERROR("Invalid return param type (%s) in opcode [%04X] in script %s \nScript suspended.", opcode, ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			}
+		}
+
+		DWORD result;
+		_asm
+		{
+			// transfer args to stack
+			lea ecx, arguments
+			call_func_loop:
+			cmp ecx, arguments_end
+				jae call_func_loop_end
+				push[ecx]
+				add ecx, 0x4
+				jmp call_func_loop
+				call_func_loop_end:
+
+			// set struct pointer for this call
+			lea ecx, thisCall
+			test ecx, ecx
+			jz call_func_this_end
+			mov ecx, struc
+			call_func_this_end:
+			
+			// call function
+			xor eax, eax
+			call func
+			mov result, eax // get result
+			add esp, stackAlign // cleanup stack
+		}
+
+		if (returnArg) *thread << result;
+
+		SkipUnusedVarArgs(thread);
+		return OR_CONTINUE;
 	}
 
 	OpcodeResult CCustomOpcodeSystem::ErrorSuspendScript(CRunningScript* thread)
@@ -625,7 +746,7 @@ namespace CLEO
 		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
 		const auto bufLength = bufSize ? bufSize - 1 : 0; // max text length (minus terminator char)
 
-		lastErrorMsg.clear();
+		CCustomOpcodeSystem::lastErrorMsg.clear();
 
 		auto paramType = CLEO_GetOperandType(thread);
 		if (IsImmInteger(paramType) || IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
@@ -634,7 +755,7 @@ namespace CLEO
 
 			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 			{
-				lastErrorMsg = (opcodeParams[0].dwParam == 0) ?
+				CCustomOpcodeSystem::lastErrorMsg = (opcodeParams[0].dwParam == 0) ?
 					"Reading string from 'null' pointer argument" :
 					stringPrintf("Reading string from invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
 
@@ -646,7 +767,7 @@ namespace CLEO
 
 			if (length > bufLength)
 			{
-				lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
+				CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
 				length = bufLength; // clamp to target buffer size
 			}
 
@@ -671,7 +792,7 @@ namespace CLEO
 
 				if (length > bufLength)
 				{
-					lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
+					CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
 					length = bufLength; // clamp to target buffer size
 				}
 
@@ -692,7 +813,7 @@ namespace CLEO
 
 		// unsupported param type
 		GetScriptParams(thread, 1); // skip unhandled param
-		lastErrorMsg = stringPrintf("Reading string argument, got %s", ToKindStr(paramType));
+		CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Reading string argument, got %s", ToKindStr(paramType));
 		return nullptr; // error, target buffer untouched
 	}
 
@@ -705,17 +826,17 @@ namespace CLEO
 
 	bool WriteStringParam(const StringParamBufferInfo& target, const char* str)
 	{
-		lastErrorMsg.clear();
+		CCustomOpcodeSystem::lastErrorMsg.clear();
 
 		if (str != nullptr && (size_t)str <= CCustomOpcodeSystem::MinValidAddress)
 		{
-			lastErrorMsg = stringPrintf("Writing string from invalid '0x%X' pointer", target.data);
+			CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string from invalid '0x%X' pointer", target.data);
 			return false;
 		}
 
 		if ((size_t)target.data <= CCustomOpcodeSystem::MinValidAddress)
 		{
-			lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
+			CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
 			return false;
 		}
 
@@ -740,7 +861,7 @@ namespace CLEO
 	StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread)
 	{
 		StringParamBufferInfo result;
-		lastErrorMsg.clear();
+		CCustomOpcodeSystem::lastErrorMsg.clear();
 
 		auto paramType = CLEO_GetOperandType(thread);
 		if (IsImmInteger(paramType) || IsVariable(paramType))
@@ -750,7 +871,7 @@ namespace CLEO
 
 			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 			{
-				lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
+				CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
 				return result; // error
 			}
 
@@ -787,7 +908,7 @@ namespace CLEO
 			}
 		}
 
-		lastErrorMsg = stringPrintf("Writing string, got argument %s", ToKindStr(paramType));
+		CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string, got argument %s", ToKindStr(paramType));
 		CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
 		return result; // error
 	}
@@ -800,12 +921,12 @@ namespace CLEO
 		char* outIter = outputStr;
 		char bufa[256], fmtbufa[64], *fmta;
 
-		lastErrorMsg.clear();
+		CCustomOpcodeSystem::lastErrorMsg.clear();
 
 		// invalid input arguments
 		if(outputStr == nullptr || len == 0)
 		{
-			lastErrorMsg = "Need target buffer to read formatted string";
+			CCustomOpcodeSystem::lastErrorMsg = "Need target buffer to read formatted string";
 			SkipUnusedVarArgs(thread);
 			return -1; // error
 		}
@@ -890,7 +1011,7 @@ namespace CLEO
 						const char* str = ReadStringParam(thread, bufa, sizeof(bufa));
 						if(str == nullptr) // read error
 						{
-							if(lastErrorMsg.find("'null' pointer") != std::string::npos)
+							if(CCustomOpcodeSystem::lastErrorMsg.find("'null' pointer") != std::string::npos)
 							{
 								static const char none[] = "(null)";
 								str = none;
@@ -969,7 +1090,7 @@ namespace CLEO
 		{
 		_ReadFormattedString_OutOfMemory: // jump here on error
 
-			lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole formatted string", len);
+			CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole formatted string", len);
 			SkipUnusedVarArgs(thread);
 			outputStr[len - 1] = '\0';
 			return -1; // error
@@ -978,8 +1099,8 @@ namespace CLEO
 		// still more var-args available
 		if (CLEO_GetOperandType(thread) != DT_END)
 		{
-			lastErrorMsg = "More params than slots in formatted string";
-			LOG_WARNING(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			CCustomOpcodeSystem::lastErrorMsg = "More params than slots in formatted string";
+			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 		}
 		SkipUnusedVarArgs(thread); // skip terminator too
 
@@ -987,7 +1108,7 @@ namespace CLEO
 		return (int)written;
 
 	_ReadFormattedString_ArgMissing: // jump here on error
-		lastErrorMsg = "Less params than slots in formatted string";
+		CCustomOpcodeSystem::lastErrorMsg = "Less params than slots in formatted string";
 		thread->IncPtr(); // skip vararg terminator
 		outputStr[written] = '\0';
 		return -1; // error
@@ -1713,258 +1834,25 @@ namespace CLEO
 	//0AA5=-1,call %1d% num_params %2h% pop %3h%
 	OpcodeResult __stdcall opcode_0AA5(CRunningScript *thread)
 	{
-		static char textParams[5][MAX_STR_LEN]; unsigned currTextParam = 0;
-		static SCRIPT_VAR arguments[50] = { 0 };
-		void(*func)(); *thread >> func;
-		DWORD numParams; *thread >> numParams;
-		DWORD stackAlign; *thread >> stackAlign; // pop
-
-		auto nVarArg = GetVarArgCount(thread);
-		if (numParams != nVarArg)
-		{
-			SHOW_ERROR("Opcode [0AA5] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-		}
-
-		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
-		stackAlign *= 4;
-		SCRIPT_VAR	*arguments_end = arguments + numParams;
-
-		// retrieve parameters
-		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
-		{
-			auto paramType = (eDataType)*thread->GetBytePointer();
-			if (IsImmInteger(paramType) || IsVariable(paramType))
-				*thread >> arg->dwParam;
-			else
-			if (IsImmFloat(paramType))
-				*thread >> arg->fParam;
-			else
-			if (IsImmString(paramType))
-				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
-			else
-			if (IsVarString(paramType))
-				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
-			else
-			{
-				SHOW_ERROR("Invalid param type (%s) in opcode [0AA5] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-			}
-		}
-
-		// call function
-		_asm
-		{
-			lea ecx, arguments
-			loop_0AA5 :
-			cmp ecx, arguments_end
-				jae loop_end_0AA5
-				push[ecx]
-				add ecx, 0x4
-				jmp loop_0AA5
-				loop_end_0AA5 :
-				xor eax, eax
-				call func
-				add esp, stackAlign
-		}
-
-		SkipUnusedVarArgs(thread);
-		return OR_CONTINUE;
+		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA5, thread, false, false);
 	}
 
 	//0AA6=-1,call_method %1d% struct %2d% num_params %3h% pop %4h%
 	OpcodeResult __stdcall opcode_0AA6(CRunningScript *thread)
 	{
-		static char textParams[5][MAX_STR_LEN]; unsigned currTextParam = 0;
-		static SCRIPT_VAR arguments[50] = { 0 };
-		void(*func)(); *thread >> func;
-		void* struc; *thread >> struc;
-		DWORD numParams; *thread >> numParams;
-		DWORD stackAlign; *thread >> stackAlign; // pop
-
-		auto nVarArg = GetVarArgCount(thread);
-		if (numParams != nVarArg)
-		{
-			SHOW_ERROR("Opcode [0AA6] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-		}
-
-		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
-		stackAlign *= 4;
-		SCRIPT_VAR *arguments_end = arguments + numParams;
-
-		// retrieve parameters
-		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
-		{
-			auto paramType = (eDataType)*thread->GetBytePointer();
-			if (IsImmInteger(paramType) || IsVariable(paramType))
-				*thread >> arg->dwParam;
-			else
-			if (IsImmFloat(paramType))
-				*thread >> arg->fParam;
-			else
-			if (IsImmString(paramType))
-				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
-			else
-			if (IsVarString(paramType))
-				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
-			else
-			{
-				SHOW_ERROR("Invalid param type (%s) in opcode [0AA6] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-			}
-		}
-
-		_asm
-		{
-			lea ecx, arguments
-			loop_0AA6 :
-			cmp ecx, arguments_end
-				jae loop_end_0AA6
-				push[ecx]
-				add ecx, 0x4
-				jmp loop_0AA6
-				loop_end_0AA6 :
-				mov ecx, struc
-				xor eax, eax
-				call func
-				add esp, stackAlign
-		}
-
-		SkipUnusedVarArgs(thread);
-		return OR_CONTINUE;
+		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA6, thread, true, false);
 	}
 
 	//0AA7=-1,call_function_return %1d% num_params %2h% pop %3h%
 	OpcodeResult __stdcall opcode_0AA7(CRunningScript *thread)
 	{
-		static char textParams[5][MAX_STR_LEN]; DWORD currTextParam = 0;
-		static SCRIPT_VAR arguments[50] = { 0 };
-		void(*func)(); *thread >> func;
-		DWORD numParams; *thread >> numParams;
-		DWORD stackAlign; *thread >> stackAlign; // pop
-
-		int nVarArg = GetVarArgCount(thread);
-		if (numParams + 1 != nVarArg) // and return argument
-		{
-			SHOW_ERROR("Opcode [0AA7] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, (int)nVarArg - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-		}
-
-		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
-		stackAlign *= 4;
-		SCRIPT_VAR	*	arguments_end = arguments + numParams;
-
-		// retrieve parameters
-		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
-		{
-			auto paramType = (eDataType)*thread->GetBytePointer();
-			if (IsImmInteger(paramType) || IsVariable(paramType))
-				*thread >> arg->dwParam;
-			else
-			if (IsImmFloat(paramType))
-				*thread >> arg->fParam;
-			else
-			if (IsImmString(paramType))
-				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
-			else
-			if (IsVarString(paramType))
-				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
-			else
-			{
-				SHOW_ERROR("Invalid param type (%s) in opcode [0AA7] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-			}
-		}
-
-		DWORD result;
-
-		_asm
-		{
-			lea ecx, arguments
-			loop_0AA7 :
-			cmp ecx, arguments_end
-				jae loop_end_0AA7
-				push[ecx]
-				add ecx, 0x4
-				jmp loop_0AA7
-				loop_end_0AA7 :
-				xor eax, eax
-				call func
-				mov result, eax
-				add esp, stackAlign
-		}
-
-		*thread << result;
-		SkipUnusedVarArgs(thread);
-		return OR_CONTINUE;
+		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA7, thread, false, true);
 	}
 
 	//0AA8=-1,call_method_return %1d% struct %2d% num_params %3h% pop %4h%
 	OpcodeResult __stdcall opcode_0AA8(CRunningScript *thread)
 	{
-		static char textParams[5][MAX_STR_LEN]; DWORD currTextParam = 0;
-		static SCRIPT_VAR arguments[50] = { 0 };
-		void(*func)(); *thread >> func;
-		void* struc; *thread >> struc;
-		DWORD numParams; *thread >> numParams;
-		DWORD stackAlign; *thread >> stackAlign; // pop
-
-		int nVarArg = GetVarArgCount(thread);
-		if (numParams + 1 != nVarArg) // and return argument
-		{
-			SHOW_ERROR("Opcode [0AA8] declared %d input args, but provided %d in script %s\nScript suspended.", numParams, (int)nVarArg - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-		}
-
-		if (numParams > (sizeof(arguments) / sizeof(SCRIPT_VAR))) numParams = sizeof(arguments) / sizeof(SCRIPT_VAR);
-		stackAlign *= 4;
-		SCRIPT_VAR	*arguments_end = arguments + numParams;
-
-		// retrieve parameters
-		for (SCRIPT_VAR* arg = arguments; arg != arguments_end; ++arg)
-		{
-			auto paramType = (eDataType)*thread->GetBytePointer();
-			if (IsImmInteger(paramType) || IsVariable(paramType))
-				*thread >> arg->dwParam;
-			else
-			if (IsImmFloat(paramType))
-				*thread >> arg->fParam;
-			else
-			if (IsImmString(paramType))
-				(*arg).pcParam = ReadStringParam(thread, textParams[currTextParam++], MAX_STR_LEN);
-			else
-			if (IsVarString(paramType))
-				arg->pParam = GetScriptParamPointer(thread); // TODO: should use ReadStringParam too to ensure it is null terminated?
-			else
-			{
-				SHOW_ERROR("Invalid param type (%s) in opcode [0AA8] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
-			}
-		}
-
-		DWORD result;
-
-		_asm
-		{
-			lea ecx, arguments
-			loop_0AA8 :
-			cmp ecx, arguments_end
-				jae loop_end_0AA8
-				push[ecx]
-				add ecx, 0x4
-				jmp loop_0AA8
-				loop_end_0AA8 :
-				mov ecx, struc
-				xor eax, eax
-				call func
-				mov result, eax
-				add esp, stackAlign
-		}
-
-		*thread << result;
-		SkipUnusedVarArgs(thread);
-		return OR_CONTINUE;
+		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA8, thread, true, true);
 	}
 
 	//0AA9=0,  is_game_version_original
@@ -3167,7 +3055,7 @@ extern "C"
 		auto result = ReadStringParam(thread, buf, size);
 
 		if (result == nullptr)
-			LOG_WARNING(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 
 		return result;
 	}
@@ -3175,7 +3063,7 @@ extern "C"
 	void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
 	{
 		if(!WriteStringParam(thread, str))
-			LOG_WARNING(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 	}
 
 	char* WINAPI CLEO_ReadParamsFormatted(CLEO::CRunningScript* thread, const char* format, char* buf, int bufSize)
@@ -3186,7 +3074,7 @@ extern "C"
 
 		if(ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
 		{
-			LOG_WARNING(thread, "%s in script %s", lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return nullptr; // error
 		}
 

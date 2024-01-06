@@ -43,7 +43,8 @@ namespace CLEO
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
 
-        OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
+        static OpcodeResult CallFunctionGeneric(WORD opcode, CRunningScript* thread, bool thisCall, bool returnArg);
+        static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
         static OpcodeResult ErrorSuspendScript(CRunningScript* thread); // suspend script execution forever
 
     private:
@@ -89,4 +90,13 @@ namespace CLEO
 
     void SkipUnusedVarArgs(CRunningScript* thread); // for var-args opcodes
     DWORD GetVarArgCount(CRunningScript* thread); // for var-args opcodes
+
+    inline CRunningScript& operator>>(CRunningScript& thread, DWORD& uval);
+    inline CRunningScript& operator<<(CRunningScript& thread, DWORD uval);
+    inline CRunningScript& operator>>(CRunningScript& thread, int& nval);
+    inline CRunningScript& operator<<(CRunningScript& thread, int nval);
+    inline CRunningScript& operator>>(CRunningScript& thread, float& fval);
+    inline CRunningScript& operator<<(CRunningScript& thread, float fval);
+    inline CRunningScript& operator>>(CRunningScript& thread, CVector& vec);
+    inline CRunningScript& operator<<(CRunningScript& thread, const CVector& vec);
 }

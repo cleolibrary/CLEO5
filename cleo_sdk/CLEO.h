@@ -367,7 +367,8 @@ public:
 	bool GetNotFlag() const { return NotFlag; }
 	void SetNotFlag(bool state) { NotFlag = state; }
 
-	char ReadDataType() { return ReadDataByte(); }
+	eDataType PeekDataType() const { return *(eDataType*)GetBytePointer(); }
+	eDataType ReadDataType() { return (eDataType)ReadDataByte(); }
 	short ReadDataVarIndex() { return ReadDataWord(); }
 	short ReadDataArrayOffset() { return ReadDataWord(); }
 	short ReadDataArrayIndex() { return ReadDataWord(); }
