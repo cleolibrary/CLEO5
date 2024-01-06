@@ -53,6 +53,7 @@ namespace CLEO
         friend OpcodeResult __stdcall opcode_0AA3(CRunningScript *pScript);
         friend OpcodeResult __stdcall opcode_0AC8(CRunningScript *pScript);
         friend OpcodeResult __stdcall opcode_0AC9(CRunningScript *pScript);
+        friend OpcodeResult __stdcall opcode_2004(CRunningScript* pScript);
 
         std::set<DWORD> m_hFiles;
         std::set<HMODULE> m_hNativeLibs;
