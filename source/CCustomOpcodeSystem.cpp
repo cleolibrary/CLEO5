@@ -295,7 +295,7 @@ namespace CLEO
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
-		constexpr size_t Max_Args = 50;
+		constexpr size_t Max_Args = 32;
 		if (numParams > Max_Args)
 		{
 			SHOW_ERROR("Opcode [%04X] used with more than supported arguments in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
@@ -309,7 +309,7 @@ namespace CLEO
 		static char textParams[Max_Text_Params][MAX_STR_LEN];
 		size_t currTextParam = 0;
 
-		stackAlign *= 4;
+		stackAlign *= 4; // bytes peer argument
 		
 		// retrieve parameters
 		for (size_t i = 0; i < numParams; i++)
