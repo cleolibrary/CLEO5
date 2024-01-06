@@ -291,7 +291,7 @@ namespace CLEO
 		int nVarArg = GetVarArgCount(thread);
 		if (numParams + returnArg != nVarArg) // and return argument
 		{
-			SHOW_ERROR("Opcode [%04X] declared %d input args, but provided %d in script %s\nScript suspended.", opcode, numParams, (int)nVarArg - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			SHOW_ERROR("Opcode [%04X] declared %d input args, but provided %d in script %s\nScript suspended.", opcode, numParams, (int)nVarArg - returnArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
 		}
 
