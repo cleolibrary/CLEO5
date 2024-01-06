@@ -2486,7 +2486,7 @@ namespace CLEO
 		}
 		else
 		{
-			LOG_WARNING(thread, "[0AC8] failed to allocate of %d bytes memory in script %s", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(thread, "[0AC8] failed to allocate %d bytes of memory in script %s", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
 		}
 
 		*thread << mem;
