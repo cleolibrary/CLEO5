@@ -366,14 +366,8 @@ namespace CLEO
 				jmp call_func_loop
 				call_func_loop_end:
 
-			// set struct pointer for this call
-			lea ecx, thisCall
-			test ecx, ecx
-			jz call_func_this_end
-			mov ecx, struc
-			call_func_this_end:
-			
 			// call function
+			mov ecx, struc
 			xor eax, eax
 			call func
 			mov result, eax // get result
