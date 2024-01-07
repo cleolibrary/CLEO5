@@ -575,9 +575,13 @@ namespace CLEO
     {
         _asm
         {
+            mov eax, [esp+4]            // buffer
+            mov edx, [esp+8]            // nBufferLength
+
             push ecx                    // save ecx
-            push dword ptr[esp + 8]       // nBufferLength
-            push dword ptr[esp + 12]       // buffer
+
+            push edx                    // nBufferLength
+            push eax                    // buffer
             push ecx					// script
             call CRunningScript::ReadTextLabelFromScript
             pop ecx                     // restore ecx     
