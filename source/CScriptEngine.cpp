@@ -488,8 +488,6 @@ namespace CLEO
         WORD arrVarOffset;
         int  arrElemIdx;
 
-        TRACE("Script: %s", script->GetName().c_str());
-
         BYTE type = script->ReadDataType();
         switch (type) {
         case DT_TEXTLABEL:
@@ -499,10 +497,8 @@ namespace CLEO
 
         case DT_VAR_TEXTLABEL:
         {
-            TRACE("DT_VAR_TEXTLABEL");
             WORD index = script->ReadDataVarIndex();
             strncpy(buffer, (char*)&scmBlock[index], TEXTLABEL_SIZE);
-            TRACE("%s", buffer);
             break;
         }
 
@@ -511,7 +507,6 @@ namespace CLEO
             TRACE("DT_LVAR_TEXTLABEL");
             WORD index = script->ReadDataVarIndex();
             strncpy(buffer, (char*)GetPointerToLocalVariable(script, index), TEXTLABEL_SIZE);
-            TRACE("%s", buffer);
             break;
         }
 
@@ -589,6 +584,71 @@ namespace CLEO
         }
     }
 
+
+    SCRIPT_VAR CRunningScript::CollectNextParameterWithoutIncreasingPC(CRunningScript* script) {
+        WORD arrVarOffset;
+        int arrElemIdx;
+
+        SCRIPT_VAR result;
+        result.dwParam = -1;
+
+        TRACE("Calling CollectNextParam");
+
+        BYTE* ip = script->GetBytePointer();
+
+        int dt = script->ReadDataByte();
+        switch (dt) {
+        case DT_DWORD:
+            result.dwParam = script->ReadDataInt();
+            break;
+        case DT_VAR:
+        {
+            WORD index = script->ReadDataVarIndex();
+            result = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[index]);
+            break;
+        }
+        case DT_LVAR:
+        {
+            WORD index = script->ReadDataVarIndex();
+            result = *GetPointerToLocalVariable(script, index);
+            break;
+        }
+        case DT_BYTE:
+            result.dwParam = script->ReadDataByte();
+            break;
+        case DT_WORD:
+            result.dwParam = script->ReadDataWord();
+            break;
+        case DT_FLOAT:
+            result.fParam = script->ReadDataFloat();
+            break;
+        case DT_VAR_ARRAY:
+            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+            result = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[arrVarOffset + (4 * arrElemIdx)]);
+            break;
+        case DT_LVAR_ARRAY:
+            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+            result = *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx);
+            break;
+        }
+
+        script->SetIp(ip);
+
+        return result;
+    }
+
+    // wrapper around CRunningScript::CollectNextParameterWithoutIncreasingPC to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__CollectNextParameterWithoutIncreasingPC()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push ecx                    // script
+            call CRunningScript::CollectNextParameterWithoutIncreasingPC
+            pop ecx                     // restore ecx     
+            retn
+        }
+    }
 
     struct CleoSafeHeader
     {
@@ -1188,6 +1248,7 @@ namespace CLEO
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
         inj.InjectFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__CollectNextParameterWithoutIncreasingPC, gvm.TranslateMemoryAddress(MA_GET_NEXT_SCRIPT_PARAM_NO_UPDATE_FUNCTION));
         inj.InjectFunction(&HOOK_CRunningScript__StoreParams, gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION));
         inj.InjectFunction(&HOOK_CRunningScript__ReadTextLabelFromScript, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
     }
