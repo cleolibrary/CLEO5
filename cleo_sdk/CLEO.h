@@ -446,7 +446,7 @@ public:
 	void StoreParams(CRunningScript*, WORD count);
 	SCRIPT_VAR* GetPointerToLocalArrayElement(CRunningScript* script, int off, WORD idx, BYTE mul);
 	void ReadTextLabelFromScript(CRunningScript*, char* buffer, BYTE nBufferLength);
-	SCRIPT_VAR CollectNextParameterWithoutIncreasingPC(CRunningScript* script);
+	DWORD CollectNextParameterWithoutIncreasingPC(CRunningScript* script);
 
 #endif // __cplusplus
 };

@@ -585,7 +585,7 @@ namespace CLEO
     }
 
 
-    SCRIPT_VAR CRunningScript::CollectNextParameterWithoutIncreasingPC(CRunningScript* script) {
+    DWORD CRunningScript::CollectNextParameterWithoutIncreasingPC(CRunningScript* script) {
         WORD arrVarOffset;
         int arrElemIdx;
 
@@ -634,7 +634,7 @@ namespace CLEO
 
         script->SetIp(ip);
 
-        return result;
+        return result.dwParam;
     }
 
     // wrapper around CRunningScript::CollectNextParameterWithoutIncreasingPC to preserve the value of ecx register
