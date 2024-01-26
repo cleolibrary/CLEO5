@@ -22,20 +22,6 @@ namespace CLEO
 	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval);
 	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
 
-	DWORD FUNC_fopen;
-	DWORD FUNC_fclose;
-	DWORD FUNC_fwrite;
-	DWORD FUNC_fread;
-	DWORD FUNC_fgetc;
-	DWORD FUNC_fgets;
-	DWORD FUNC_fputs;
-	DWORD FUNC_fseek;
-	DWORD FUNC_fprintf;
-	DWORD FUNC_ftell;
-	DWORD FUNC_fflush;
-	DWORD FUNC_feof;
-	DWORD FUNC_ferror;
-
 	OpcodeResult __stdcall opcode_0A8C(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A8D(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A8E(CRunningScript *thread);
@@ -50,11 +36,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0A97(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A98(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A99(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A9A(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A9B(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A9C(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A9D(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A9E(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A9F(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA1(CRunningScript *thread);
@@ -108,12 +89,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AD2(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AD3(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AD4(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD5(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD6(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD7(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD8(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD9(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ADA(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ADB(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ADD(CRunningScript *thread);
@@ -390,8 +365,8 @@ namespace CLEO
 
 	void CCustomOpcodeSystem::FinalizeScriptObjects()
 	{
-		TRACE("Cleaning up script data... %u files, %u libs, %u allocations...",
-			m_hFiles.size(), m_hNativeLibs.size(), m_pAllocations.size()
+		TRACE("Cleaning up script data... %u libs, %u allocations...",
+			m_hNativeLibs.size(), m_pAllocations.size()
 		);
 
 		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptsFinalize))
@@ -399,14 +374,6 @@ namespace CLEO
 			typedef void WINAPI callback(void);
 			((callback*)func)();
 		}
-
-		// clean up after opcode_0A9A
-		for (auto i = m_hFiles.begin(); i != m_hFiles.end(); ++i)
-		{
-			if (!is_legacy_handle(*i))
-				fclose(convert_handle_to_file(*i));
-		}
-		m_hFiles.clear();
 
 		// clean up after opcode_0AA2
 		std::for_each(m_hNativeLibs.begin(), m_hNativeLibs.end(), FreeLibrary);
@@ -437,11 +404,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0A97, opcode_0A97);
 		CLEO_RegisterOpcode(0x0A98, opcode_0A98);
 		CLEO_RegisterOpcode(0x0A99, opcode_0A99);
-		CLEO_RegisterOpcode(0x0A9A, opcode_0A9A);
-		CLEO_RegisterOpcode(0x0A9B, opcode_0A9B);
-		CLEO_RegisterOpcode(0x0A9C, opcode_0A9C);
-		CLEO_RegisterOpcode(0x0A9D, opcode_0A9D);
-		CLEO_RegisterOpcode(0x0A9E, opcode_0A9E);
 		CLEO_RegisterOpcode(0x0A9F, opcode_0A9F);
 		CLEO_RegisterOpcode(0x0AA0, opcode_0AA0);
 		CLEO_RegisterOpcode(0x0AA1, opcode_0AA1);
@@ -495,12 +457,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2);
 		CLEO_RegisterOpcode(0x0AD3, opcode_0AD3);
 		CLEO_RegisterOpcode(0x0AD4, opcode_0AD4);
-		CLEO_RegisterOpcode(0x0AD5, opcode_0AD5);
-		CLEO_RegisterOpcode(0x0AD6, opcode_0AD6);
-		CLEO_RegisterOpcode(0x0AD7, opcode_0AD7);
-		CLEO_RegisterOpcode(0x0AD8, opcode_0AD8);
-		CLEO_RegisterOpcode(0x0AD9, opcode_0AD9);
-		CLEO_RegisterOpcode(0x0ADA, opcode_0ADA);
 		CLEO_RegisterOpcode(0x0ADB, opcode_0ADB);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
 		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
@@ -546,20 +502,6 @@ namespace CLEO
 		}
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
-
-		FUNC_fopen = gvm.TranslateMemoryAddress(MA_FOPEN_FUNCTION);
-		FUNC_fclose = gvm.TranslateMemoryAddress(MA_FCLOSE_FUNCTION);
-		FUNC_fread = gvm.TranslateMemoryAddress(MA_FREAD_FUNCTION);
-		FUNC_fwrite = gvm.TranslateMemoryAddress(MA_FWRITE_FUNCTION);
-		FUNC_fgetc = gvm.TranslateMemoryAddress(MA_FGETC_FUNCTION);
-		FUNC_fgets = gvm.TranslateMemoryAddress(MA_FGETS_FUNCTION);
-		FUNC_fputs = gvm.TranslateMemoryAddress(MA_FPUTS_FUNCTION);
-		FUNC_fseek = gvm.TranslateMemoryAddress(MA_FSEEK_FUNCTION);
-		FUNC_fprintf = gvm.TranslateMemoryAddress(MA_FPRINTF_FUNCTION);
-		FUNC_ftell = gvm.TranslateMemoryAddress(MA_FTELL_FUNCTION);
-		FUNC_fflush = gvm.TranslateMemoryAddress(MA_FFLUSH_FUNCTION);
-		FUNC_feof = gvm.TranslateMemoryAddress(MA_FEOF_FUNCTION);
-		FUNC_ferror = gvm.TranslateMemoryAddress(MA_FERROR_FUNCTION);
 
 		pedPool = gvm.TranslateMemoryAddress(MA_PED_POOL);
 		vehiclePool = gvm.TranslateMemoryAddress(MA_VEHICLE_POOL);
@@ -1220,176 +1162,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	// Legacy modes for CLEO 3
-	FILE* legacy_fopen(const char* szPath, const char* szMode)
-	{
-		FILE* hFile;
-		_asm
-		{
-			push szMode
-			push szPath
-			call FUNC_fopen
-			add esp, 8
-			mov hFile, eax
-		}
-		return hFile;
-	}
-	void legacy_fclose(FILE * hFile)
-	{
-		_asm
-		{
-			push hFile
-			call FUNC_fclose
-			add esp, 4
-		}
-	}
-	size_t legacy_fread(void * buf, size_t len, size_t count, FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			push count
-			push len
-			push buf
-			call FUNC_fread
-			add esp, 0x10
-		}
-	}
-	size_t legacy_fwrite(const void * buf, size_t len, size_t count, FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			push count
-			push len
-			push buf
-			call FUNC_fwrite
-			add esp, 0x10
-		}
-	}
-	char legacy_fgetc(FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			call FUNC_fgetc
-			add esp, 0x4
-		}
-	}
-	char * legacy_fgets(char *pStr, int num, FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			push num
-			push pStr
-			call FUNC_fgets
-			add esp, 0xC
-		}
-	}
-	int legacy_fputs(const char *pStr, FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			push pStr
-			call FUNC_fputs
-			add esp, 0x8
-		}
-	}
-	int legacy_fseek(FILE * stream, long int offs, int original)
-	{
-		_asm
-		{
-			push stream
-			push offs
-			push original
-			call FUNC_fseek
-			add esp, 0xC
-		}
-	}
-	int legacy_ftell(FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			call FUNC_ftell
-			add esp, 0x4
-		}
-	}
-	int __declspec(naked) fprintf(FILE * stream, const char * format, ...)
-	{
-		_asm jmp FUNC_fprintf
-	}
-	int legacy_fflush(FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			call FUNC_fflush
-			add esp, 0x4
-		}
-	}
-	int legacy_feof(FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			call FUNC_feof
-			add esp, 0x4
-		}
-	}
-	int legacy_ferror(FILE * stream)
-	{
-		_asm
-		{
-			push stream
-			call FUNC_ferror
-			add esp, 0x4
-		}
-	}
-
-	bool is_legacy_handle(DWORD dwHandle) { return (dwHandle & 0x1) == 0; }
-	FILE * convert_handle_to_file(DWORD dwHandle) { return dwHandle ? reinterpret_cast<FILE*>(is_legacy_handle(dwHandle) ? dwHandle : dwHandle & ~(0x1)) : nullptr; }
-
-	inline DWORD open_file(const char * szPath, const char * szMode, bool bLegacy)
-	{
-		FILE * hFile = bLegacy ? legacy_fopen(szPath, szMode) : fopen(szPath, szMode);
-		if (hFile) return bLegacy ? (DWORD)hFile : (DWORD)hFile | 0x1;
-		return NULL;
-	}
-	inline void close_file(DWORD dwHandle)
-	{
-		if (is_legacy_handle(dwHandle)) legacy_fclose(convert_handle_to_file(dwHandle));
-		else fclose(convert_handle_to_file(dwHandle));
-	}
-	inline DWORD file_get_size(DWORD file_handle)
-	{
-		FILE * hFile = convert_handle_to_file(file_handle);
-		if (hFile)
-		{
-			auto savedPos = ftell(hFile);
-			fseek(hFile, 0, SEEK_END);
-			DWORD dwSize = static_cast<DWORD>(ftell(hFile));
-			fseek(hFile, savedPos, SEEK_SET);
-			return dwSize;
-		}
-		return 0;
-	}
-	inline DWORD read_file(void *buf, DWORD size, DWORD count, DWORD hFile)
-	{
-		return is_legacy_handle(hFile) ? legacy_fread(buf, size, 1, convert_handle_to_file(hFile)) : fread(buf, size, 1, convert_handle_to_file(hFile));
-	}
-	inline DWORD write_file(const void *buf, DWORD size, DWORD count, DWORD hFile)
-	{
-		return is_legacy_handle(hFile) ? legacy_fwrite(buf, size, 1, convert_handle_to_file(hFile)) : fwrite(buf, size, 1, convert_handle_to_file(hFile));
-	}
-	inline void flush_file(DWORD dwHandle)
-	{
-		if (is_legacy_handle(dwHandle)) legacy_fflush(convert_handle_to_file(dwHandle));
-		else fflush(convert_handle_to_file(dwHandle));
-	}
-
 	inline void ThreadJump(CRunningScript *thread, int off)
 	{
 		thread->SetIp(off < 0 ? thread->GetBasePointer() - off : scmBlock + off);
@@ -1660,105 +1432,6 @@ namespace CLEO
 		{
 			auto path = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(path)
 			reinterpret_cast<CCustomScript*>(thread)->SetWorkDir(path);
-		}
-		return OR_CONTINUE;
-	}
-
-	//0A9A=3,%3d% = openfile %1d% mode %2d% // IF and SET
-	OpcodeResult __stdcall opcode_0A9A(CRunningScript *thread)
-	{
-		auto path = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(path)
-
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path);
-		auto paramType = *thread->GetBytePointer();
-		char mode[0x10];
-
-		// either CLEO 3 or CLEO 4 made a big mistake! (they differ in one major unapparent preference)
-		// lets try to resolve this with a legacy mode
-		auto cs = (CCustomScript*)thread;
-		bool bLegacyMode = cs->IsCustom() && cs->GetCompatibility() < CLEO_VER_4_3;
-
-		if (paramType >= 1 && paramType <= 8)
-		{
-			// integer param (for backward compatibility with CLEO 3)
-			union
-			{
-				DWORD uParam;
-				char strParam[4];
-			} param;
-			*thread >> param.uParam;
-			strcpy(mode, param.strParam);
-		}
-		else
-		{
-			auto modeOk = ReadStringParam(thread, mode, sizeof(mode)); 
-			OPCODE_VALIDATE_STR_ARG_READ(modeOk)
-		}
-
-		if (auto hfile = open_file(filename.c_str(), mode, bLegacyMode))
-		{
-			GetInstance().OpcodeSystem.m_hFiles.insert(hfile);
-
-			*thread << hfile;
-			SetScriptCondResult(thread, true);
-		}
-		else
-		{
-			*thread << NULL;
-			SetScriptCondResult(thread, false);
-		}
-
-		return OR_CONTINUE;
-	}
-
-	//0A9B=1,closefile %1d%
-	OpcodeResult __stdcall opcode_0A9B(CRunningScript *thread)
-	{
-		DWORD hFile;
-		*thread >> hFile;
-		if (convert_handle_to_file(hFile))
-		{
-			close_file(hFile);
-			GetInstance().OpcodeSystem.m_hFiles.erase(hFile);
-		}
-		return OR_CONTINUE;
-	}
-
-	//0A9C=2,%2d% = file %1d% size
-	OpcodeResult __stdcall opcode_0A9C(CRunningScript *thread)
-	{
-		DWORD hFile;
-		*thread >> hFile;
-		if (convert_handle_to_file(hFile)) *thread << file_get_size(hFile);
-		return OR_CONTINUE;
-	}
-
-	//0A9D=3,readfile %1d% size %2d% to %3d%
-	OpcodeResult __stdcall opcode_0A9D(CRunningScript *thread)
-	{
-		DWORD hFile;
-		DWORD size;
-		*thread >> hFile >> size;
-
-		SCRIPT_VAR* buf = GetScriptParamPointer(thread);
-		buf->dwParam = 0; // https://github.com/cleolibrary/CLEO4/issues/91
-
-		if (convert_handle_to_file(hFile)) read_file(buf, size, 1, hFile);
-		return OR_CONTINUE;
-	}
-
-	//0A9E=3,writefile %1d% size %2d% from %3d%
-	OpcodeResult __stdcall opcode_0A9E(CRunningScript *thread)
-	{
-		DWORD hFile;
-		DWORD size;
-		const void *buf;
-		*thread >> hFile >> size;
-		buf = GetScriptParamPointer(thread);
-		if (convert_handle_to_file(hFile))
-		{
-			write_file(buf, size, 1, hFile);
-			flush_file(hFile);
 		}
 		return OR_CONTINUE;
 	}
@@ -2548,105 +2221,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AD5=3,file %1d% seek %2d% from_origin %3d% //IF and SET
-	OpcodeResult __stdcall opcode_0AD5(CRunningScript *thread)
-	{
-		DWORD hFile;
-		int seek, origin;
-		*thread >> hFile >> seek >> origin;
-		if (convert_handle_to_file(hFile)) SetScriptCondResult(thread, fseek(convert_handle_to_file(hFile), seek, origin) == 0);
-		else SetScriptCondResult(thread, false);
-		return OR_CONTINUE;
-	}
-
-	//0AD6=1,end_of_file %1d% reached
-	OpcodeResult __stdcall opcode_0AD6(CRunningScript *thread)
-	{
-		DWORD hFile;
-		*thread >> hFile;
-		if (FILE *file = convert_handle_to_file(hFile))
-			SetScriptCondResult(thread, ferror(file) || feof(file) != 0);
-		else
-			SetScriptCondResult(thread, true);
-		return OR_CONTINUE;
-	}
-
-	//0AD7=3,read_string_from_file %1d% to %2d% size %3d% //IF and SET
-	OpcodeResult __stdcall opcode_0AD7(CRunningScript *thread)
-	{
-		DWORD hFile;
-		char *buf;
-		DWORD size;
-		*thread >> hFile;
-		if (*thread->GetBytePointer() >= 1 && *thread->GetBytePointer() <= 8) *thread >> buf;
-		else buf = (char *)GetScriptParamPointer(thread);
-		*thread >> size;
-		if (convert_handle_to_file(hFile)) SetScriptCondResult(thread, fgets(buf, size, convert_handle_to_file(hFile)) == buf);
-		else SetScriptCondResult(thread, false);
-		return OR_CONTINUE;
-	}
-
-	//0AD8=2,write_string_to_file %1d% from %2d% //IF and SET
-	OpcodeResult __stdcall opcode_0AD8(CRunningScript *thread)
-	{
-		DWORD hFile; *thread >> hFile;
-		auto text = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(text)
-
-		if (FILE * file = convert_handle_to_file(hFile))
-		{
-			SetScriptCondResult(thread, fputs(text, file) > 0);
-			fflush(file);
-		}
-		else 
-		{
-			SetScriptCondResult(thread, false);
-		}
-		return OR_CONTINUE;
-	}
-
-	//0AD9=-1,write_formated_text %2d% to_file %1d%
-	OpcodeResult __stdcall opcode_0AD9(CRunningScript *thread)
-	{
-		DWORD hFile; *thread >> hFile;
-		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
-		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
-		
-		if (FILE * file = convert_handle_to_file(hFile))
-		{
-			fputs(text, file);
-			fflush(file);
-		}
-		return OR_CONTINUE;
-	}
-
-	//0ADA=-1,%3d% = scan_file %1d% format %2d% //IF and SET
-	OpcodeResult __stdcall opcode_0ADA(CRunningScript *thread)
-	{
-		DWORD hFile; *thread >> hFile;
-		auto format = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(format)
-		int *result = (int *)GetScriptParamPointer(thread);
-
-		size_t cExParams = 0;
-		SCRIPT_VAR *ExParams[35];
-		// read extra params
-		while (*thread->GetBytePointer()) ExParams[cExParams++] = GetScriptParamPointer(thread);
-		thread->IncPtr();
-
-		if (FILE *file = convert_handle_to_file(hFile))
-		{
-			*result = fscanf(file, format,
-							 /* extra parameters (will be aligned automatically, but the limit of 35 elements maximum exists) */
-							 ExParams[0], ExParams[1], ExParams[2], ExParams[3], ExParams[4], ExParams[5],
-							 ExParams[6], ExParams[7], ExParams[8], ExParams[9], ExParams[10], ExParams[11],
-							 ExParams[12], ExParams[13], ExParams[14], ExParams[15], ExParams[16], ExParams[17],
-							 ExParams[18], ExParams[19], ExParams[20], ExParams[21], ExParams[22], ExParams[23],
-							 ExParams[24], ExParams[25], ExParams[26], ExParams[27], ExParams[28], ExParams[29],
-							 ExParams[30], ExParams[31], ExParams[32], ExParams[33], ExParams[34]);
-		}
-		SetScriptCondResult(thread, cExParams == *result);
-		return OR_CONTINUE;
-	}
-
 	//0ADB=2,%2d% = car_model %1o% name
 	OpcodeResult __stdcall opcode_0ADB(CRunningScript *thread)
 	{
@@ -3096,6 +2670,23 @@ extern "C"
 			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 
 		return result;
+	}
+
+	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)
+	{
+		if (thread == nullptr || 
+			outBuf == nullptr || 
+			outBufSize == nullptr ||
+			outNeedsTerminator == nullptr)
+		{
+			LOG_WARNING(thread, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return;
+		}
+
+		auto target = GetStringParamWriteBuffer(thread);
+		*outBuf = target.data;
+		*outBufSize = target.size;
+		*outNeedsTerminator = target.needTerminator;
 	}
 
 	void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)

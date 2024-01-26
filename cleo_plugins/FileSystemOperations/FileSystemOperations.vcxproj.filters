@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="FileSystemOperations.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FileUtils.h" />
+  </ItemGroup>
 </Project>

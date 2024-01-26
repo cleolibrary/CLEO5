@@ -17,7 +17,7 @@
   - **2004 ([forget_memory](https://library.sannybuilder.com/#/sa/CLEO/2004))**
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
-  - opcodes **0AAB**, **0AE4**, **0AE5**, **0AE6**, **0AE7** and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
+  - opcodes **0A9A**, **0A9B**, **0A9C**, **0A9D**, **0A9E**, **0AAB**, **0AD5**, **0AD6**, **0AD7**, **0AD8**, **0AD9**, **0ADA**, **0AE4**, **0AE5**, **0AE6**, **0AE7**  and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
   - **cleo_return_\*** opcodes now can pass strings as return arguments
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
   - new opcode **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
@@ -49,6 +49,7 @@
 - new SDK method: CLEO_GetVarArgCount
 - new SDK method: CLEO_SkipUnusedVarArgs
 - new SDK method: CLEO_ReadParamsFormatted
+- new SDK method: CLEO_ReadStringParamWriteBuffer
 - new SDK method: CLEO_GetScriptVersion
 - new SDK method: CLEO_GetScriptInfoStr
 - new SDK method: CLEO_ResolvePath

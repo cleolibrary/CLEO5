@@ -112,6 +112,9 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
   <ItemGroup>
     <ClCompile Include="FileSystemOperations.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FileUtils.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
