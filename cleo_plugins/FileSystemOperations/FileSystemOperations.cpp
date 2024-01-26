@@ -8,6 +8,8 @@
 using namespace CLEO;
 using namespace plugin;
 
+#define OPCODE_VALIDATE_HANDLE(x) if((size_t)x <= MinValidAddress) { auto info = scriptInfoStr(thread); SHOW_ERROR("Invalid '0x%X' file handle param in script %s \nScript suspended.", x, info.c_str()); return thread->Suspend(); }
+
 class FileSystemOperations 
 {
 public:
@@ -128,7 +130,7 @@ public:
     //0A9B=1,closefile %1d%
     static OpcodeResult WINAPI opcode_0A9B(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         close_file(handle);
         m_hFiles.erase(handle);
         return OR_CONTINUE;
@@ -137,7 +139,7 @@ public:
     //0A9C=2,%2d% = file %1d% size
     static OpcodeResult WINAPI opcode_0A9C(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         auto size = file_get_size(handle);
         CLEO_SetIntOpcodeParam(thread, size);
         return OR_CONTINUE;
@@ -146,7 +148,7 @@ public:
     //0A9D=3,readfile %1d% size %2d% to %3d%
     static OpcodeResult WINAPI opcode_0A9D(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         DWORD size = CLEO_GetIntOpcodeParam(thread);
         SCRIPT_VAR* buf = CLEO_GetPointerToScriptVariable(thread);
 
@@ -158,7 +160,7 @@ public:
     //0A9E=3,writefile %1d% size %2d% from %3d%
     static OpcodeResult WINAPI opcode_0A9E(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         DWORD size = CLEO_GetIntOpcodeParam(thread);
         SCRIPT_VAR* buf = CLEO_GetPointerToScriptVariable(thread);
 
@@ -182,17 +184,11 @@ public:
     //0AD5=3,file %1d% seek %2d% from_origin %3d% //IF and SET
     static OpcodeResult WINAPI opcode_0AD5(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         int offset = (int)CLEO_GetIntOpcodeParam(thread);
         int origin = (int)CLEO_GetIntOpcodeParam(thread);
 
         FILE* file = convert_handle_to_file(handle);
-        if (file == nullptr)
-        {
-            CLEO_SetThreadCondResult(thread, false);
-            return OR_CONTINUE;
-        }
-
         bool ok = fseek(file, offset, origin) == 0;
         CLEO_SetThreadCondResult(thread, ok);
         return OR_CONTINUE;
@@ -201,15 +197,9 @@ public:
     //0AD6=1,end_of_file %1d% reached
     static OpcodeResult WINAPI opcode_0AD6(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
 
         FILE* file = convert_handle_to_file(handle);
-        if (file == nullptr)
-        {
-            CLEO_SetThreadCondResult(thread, true);
-            return OR_CONTINUE;
-        }
-
         bool end = ferror(file) || feof(file) != 0;
         CLEO_SetThreadCondResult(thread, end);
         return OR_CONTINUE;
@@ -218,7 +208,7 @@ public:
     //0AD7=3,read_string_from_file %1d% to %2d% size %3d% //IF and SET
     static OpcodeResult WINAPI opcode_0AD7(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
 
         char* buffer = nullptr;
         int bufferSize = 0;
@@ -227,14 +217,14 @@ public:
 
         int size = CLEO_GetIntOpcodeParam(thread);
 
-        if (size <= 0)
+        if (is_legacy_handle(handle))
         {
-            CLEO_SetThreadCondResult(thread, false);
-            return OR_CONTINUE;
+            auto info = scriptInfoStr(thread);
+            SHOW_ERROR("Opcode [0AD7] used in legacy mode in script %s\nScript suspended.", info.c_str());
+            return thread->Suspend();
         }
 
-        FILE* file = convert_handle_to_file(handle);
-        if (file == nullptr)
+        if (size <= 0)
         {
             CLEO_SetThreadCondResult(thread, false);
             return OR_CONTINUE;
@@ -244,6 +234,7 @@ public:
         tmpBuff.resize(size);
         auto data = tmpBuff.data();
 
+        FILE* file = convert_handle_to_file(handle);
         bool ok = fgets(data, size, file) != nullptr;
         if(!ok)
         {
@@ -258,23 +249,17 @@ public:
         memcpy(buffer, data, resultSize);
         if(resultSize < bufferSize) buffer[resultSize] = '\0'; // terminate string whenever possible
 
-        else CLEO_SetThreadCondResult(thread, false);
+        CLEO_SetThreadCondResult(thread, false);
         return OR_CONTINUE;
     }
 
     //0AD8=2,write_string_to_file %1d% from %2d% //IF and SET
     static OpcodeResult WINAPI opcode_0AD8(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         auto text = CLEO_ReadStringOpcodeParam(thread);
 
         FILE* file = convert_handle_to_file(handle);
-        if (file == nullptr)
-        {
-            CLEO_SetThreadCondResult(thread, false);
-            return OR_CONTINUE;
-        }
-
         bool ok = fputs(text, file) > 0;
         if (!ok)
         {
@@ -290,16 +275,11 @@ public:
     //0AD9=-1,write_formated_text %2d% to_file %1d%
     static OpcodeResult WINAPI opcode_0AD9(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         auto format = CLEO_ReadStringOpcodeParam(thread);
         char text[MAX_STR_LEN]; CLEO_ReadParamsFormatted(thread, format, text, MAX_STR_LEN);
         
         FILE* file = convert_handle_to_file(handle);
-        if (file == nullptr)
-        {
-            return OR_CONTINUE;
-        }
-        
         fputs(text, file);
         fflush(file);
         return OR_CONTINUE;
@@ -308,7 +288,7 @@ public:
     //0ADA=-1,%3d% = scan_file %1d% format %2d% //IF and SET
     static OpcodeResult WINAPI opcode_0ADA(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         auto format = CLEO_ReadStringOpcodeParam(thread);
         int* result = (int*)CLEO_GetPointerToScriptVariable(thread);
 
@@ -322,13 +302,6 @@ public:
         CLEO_SkipUnusedVarArgs(thread); // var arg terminator
 
         FILE* file = convert_handle_to_file(handle);
-        if (file == nullptr)
-        {
-            *result = 0;
-            CLEO_SetThreadCondResult(thread, false);
-            return OR_CONTINUE;
-        }
-
         *result = fscanf(file, format,
             /* extra parameters (will be aligned automatically, but the limit of 35 elements maximum exists) */
             ExParams[0], ExParams[1], ExParams[2], ExParams[3], ExParams[4], ExParams[5],
@@ -345,7 +318,7 @@ public:
     //2200=3,read_block_from_file %1d% size %2d% address %3d% // IF and SET
     static OpcodeResult WINAPI opcode_2200(CRunningScript* thread)
     {
-        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         DWORD size = CLEO_GetIntOpcodeParam(thread);
 
         auto paramType = CLEO_GetOperandType(thread);
