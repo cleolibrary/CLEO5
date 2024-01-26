@@ -11,9 +11,9 @@
 #include <sstream>
 #include <forward_list>
 
-#define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
-#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
-#define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return CCustomOpcodeSystem::ErrorSuspendScript(thread); }
+#define OPCODE_VALIDATE_STR_ARG_READ(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
+#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
+#define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
 
 namespace CLEO 
 {
@@ -204,7 +204,7 @@ namespace CLEO
 			if(opcode > LastCustomOpcode)
 			{
 				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 
 			CustomOpcodeHandler handler = customOpcodeProc[opcode];
@@ -219,7 +219,7 @@ namespace CLEO
 			if (opcode > LastOriginalOpcode)
 			{
 				SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str(), prevOpcode);
-				return ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 
 			size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
@@ -228,7 +228,7 @@ namespace CLEO
 			if(result == OR_ERROR)
 			{
 				SHOW_ERROR("Opcode [%04X] not found! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 		}
 
@@ -255,27 +255,27 @@ namespace CLEO
 		if ((size_t)func <= CCustomOpcodeSystem::MinValidAddress)
 		{
 			SHOW_ERROR("Invalid '0x%X' function pointer param of opcode [%04X] in script %s\nScript suspended.", func, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		if (thisCall && (size_t)struc <= CCustomOpcodeSystem::MinValidAddress)
 		{
 			SHOW_ERROR("Invalid '0x%X' struct pointer param of opcode [%04X] in script %s\nScript suspended.", struc, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		int nVarArg = GetVarArgCount(thread);
 		if (numParams + returnArg != nVarArg) // and return argument
 		{
 			SHOW_ERROR("Opcode [%04X] declared %d input args, but provided %d in script %s\nScript suspended.", opcode, numParams, (int)nVarArg - returnArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		constexpr size_t Max_Args = 32;
 		if (numParams > Max_Args)
 		{
 			SHOW_ERROR("Opcode [%04X] used with more than supported arguments in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		static SCRIPT_VAR arguments[Max_Args] = { 0 };
@@ -304,7 +304,7 @@ namespace CLEO
 				if (currTextParam >= Max_Text_Params)
 				{
 					SHOW_ERROR("Opcode [%04X] used with more than supported string arguments in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+					return thread->Suspend();
 				}
 
 				param.pcParam = ReadStringParam(thread, textParams[currTextParam], MAX_STR_LEN); OPCODE_VALIDATE_STR_ARG_READ(param.pcParam)
@@ -313,7 +313,7 @@ namespace CLEO
 			else
 			{
 				SHOW_ERROR("Invalid param type (%s) in opcode [%04X] in script %s \nScript suspended.", opcode, ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 		}
 
@@ -325,7 +325,7 @@ namespace CLEO
 			if (!IsVariable(paramType) && !IsVarString(paramType))
 			{
 				SHOW_ERROR("Invalid return param type (%s) in opcode [%04X] in script %s \nScript suspended.", opcode, ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 		}
 
@@ -354,13 +354,6 @@ namespace CLEO
 
 		SkipUnusedVarArgs(thread);
 		return OR_CONTINUE;
-	}
-
-	OpcodeResult CCustomOpcodeSystem::ErrorSuspendScript(CRunningScript* thread)
-	{
-		//thread->SetActive(false): // will crash game if no active script left
-		((CCustomScript*)thread)->WakeTime = 0xFFFFFFFF;
-		return OpcodeResult::OR_INTERRUPT;
 	}
 
 	void CCustomOpcodeSystem::FinalizeScriptObjects()
@@ -1060,7 +1053,7 @@ namespace CLEO
 		if (scmFunc == nullptr)
 		{
 			SHOW_ERROR("Invalid Cleo Call reference. [%04X] possibly used without preceding [0AB1] in script %s\nScript suspended.", opcode, cs->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		// store return arguments
@@ -1072,14 +1065,14 @@ namespace CLEO
 			if (returnArgCount > 32)
 			{
 				SHOW_ERROR("Opcode [%04X] has too many (%d) args in script %s\nScript suspended.", opcode, returnArgCount, cs->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 
 			auto nVarArg = GetVarArgCount(thread);
 			if (returnArgCount > nVarArg)
 			{
 				SHOW_ERROR("Opcode [%04X] declared %d args, but %d was provided in script %s\nScript suspended.", opcode, returnArgCount, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 
 			for (DWORD i = 0; i < returnArgCount; i++)
@@ -1107,7 +1100,7 @@ namespace CLEO
 				else
 				{
 					SHOW_ERROR("Invalid argument type '0x%02X' in opcode [%04X] in script %s\nScript suspended.", paramType, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+					return thread->Suspend();
 				}
 			}
 		}
@@ -1123,7 +1116,7 @@ namespace CLEO
 			if (returnSlotCount > returnArgCount || (strictArgCount && returnSlotCount < returnArgCount))
 			{
 				SHOW_ERROR("Opcode [%04X] returned %d params, while function caller expected %d in script %s\nScript suspended.", opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(cs);
+				return cs->Suspend();
 			}
 			else if (returnSlotCount < returnArgCount)
 			{
@@ -1152,7 +1145,7 @@ namespace CLEO
 				else
 				{
 					SHOW_ERROR("Invalid output argument type '0x%02X' in opcode [%04X] in script %s\nScript suspended.", paramType, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+					return thread->Suspend();
 				}
 			}
 		}
@@ -1206,7 +1199,7 @@ namespace CLEO
 		if ((size_t)address <= CCustomOpcodeSystem::MinValidAddress)
 		{
 			SHOW_ERROR("Invalid '0x%X' pointer param of opcode [0A8C] in script %s\nScript suspended.", address, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		switch (size)
@@ -1235,7 +1228,7 @@ namespace CLEO
 		if ((size_t)address <= CCustomOpcodeSystem::MinValidAddress)
 		{
 			SHOW_ERROR("Invalid '0x%X' pointer param of opcode [0A8D] in script %s\nScript suspended.", address, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		opcodeParams[0].dwParam = 0;
@@ -1252,7 +1245,7 @@ namespace CLEO
 			break;
 		default:
 			SHOW_ERROR("Invalid size param '%d' of opcode [0A8D] in script %s\nScript suspended.", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		SetScriptParams(thread, 1);
@@ -1624,7 +1617,7 @@ namespace CLEO
 		else
 		{
 			SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 	
 		ScmFunction* scmFunc = new ScmFunction(thread);
@@ -1637,7 +1630,7 @@ namespace CLEO
 			if (pos == str.npos)
 			{
 				SHOW_ERROR("Invalid module reference '%s' in opcode [0AB1] in script %s \nScript suspended.", moduleTxt, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 			std::string_view strExport = str.substr(0, pos);
 			std::string_view strModule = str.substr(pos + 1);
@@ -1651,7 +1644,7 @@ namespace CLEO
 			if (!scriptRef.Valid())
 			{
 				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), &str[0], ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 			scmFunc->moduleExportRef = scriptRef.base; // to be released on return
 
@@ -1673,7 +1666,7 @@ namespace CLEO
 			else
 			{
 				SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 		}
 		if (nParams)
@@ -1682,13 +1675,13 @@ namespace CLEO
 			if (nParams > nVarArg) // if less it means there are return params too
 			{
 				SHOW_ERROR("Opcode [0AB1] declared %d input args, but provided %d in script %s\nScript suspended.", nParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 
 			if (nParams > 32)
 			{
 				SHOW_ERROR("Argument count %d is out of supported range (32) of opcode [0AB1] in script %s", nParams, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 		}
 
@@ -1728,7 +1721,7 @@ namespace CLEO
 			else
 			{
 				SHOW_ERROR("Invalid argument type '0x%02X' in opcode [0AB1] in script %s\nScript suspended.", paramType, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 		}
 
@@ -1767,14 +1760,14 @@ namespace CLEO
 			if (!IsImmInteger(paramType))
 			{
 				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 			DWORD declaredParamCount; *thread >> declaredParamCount;
 
 			if (returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
 			{
 				SHOW_ERROR("Opcode [0AB2] declared %d return args, but provided %d in script %s\nScript suspended.", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+				return thread->Suspend();
 			}
 			else if (returnParamCount - 1 > declaredParamCount) // more args than needed, not critical
 			{
@@ -2055,7 +2048,7 @@ namespace CLEO
 		if ((size_t)mem <= CCustomOpcodeSystem::MinValidAddress)
 		{
 			SHOW_ERROR("[0AC9] used with invalid '0x%X' pointer argument in script %s\nScript suspended.", mem, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		// allocated with 0AC8
@@ -2563,7 +2556,7 @@ namespace CLEO
 		if (argCount < 1)
 		{
 			SHOW_ERROR("Opcode [2002] missing condition result argument in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		DWORD result; *thread >> result;
@@ -2580,7 +2573,7 @@ namespace CLEO
 		if (argCount != 0) // argument(s) not supported yet
 		{
 			SHOW_ERROR("Too many arguments of opcode [2003] in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		SetScriptCondResult(thread, false);
@@ -2595,7 +2588,7 @@ namespace CLEO
 		if ((size_t)mem <= CCustomOpcodeSystem::MinValidAddress)
 		{
 			SHOW_ERROR("[2004] used with invalid '0x%X' pointer argument in script %s\nScript suspended.", mem, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return CCustomOpcodeSystem::ErrorSuspendScript(thread);
+			return thread->Suspend();
 		}
 
 		// allocated with 0AC8

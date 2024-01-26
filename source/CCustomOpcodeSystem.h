@@ -43,7 +43,6 @@ namespace CLEO
 
         static OpcodeResult CallFunctionGeneric(WORD opcode, CRunningScript* thread, bool thisCall, bool returnArg);
         static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
-        static OpcodeResult ErrorSuspendScript(CRunningScript* thread); // suspend script execution forever
 
     private:
         friend OpcodeResult __stdcall opcode_0AA2(CRunningScript *pScript);
