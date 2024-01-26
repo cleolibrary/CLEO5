@@ -27,21 +27,6 @@ namespace CLEO
         MA_CALL_UPDATE_GAME_LOGICS,
         MA_UPDATE_GAME_LOGICS_FUNCTION,
 
-        // CrtFix
-        MA_FOPEN_FUNCTION,
-        MA_FCLOSE_FUNCTION,
-        MA_FGETC_FUNCTION,
-        MA_FGETS_FUNCTION,
-        MA_FPUTS_FUNCTION,
-        MA_FREAD_FUNCTION,
-        MA_FWRITE_FUNCTION,
-        MA_FSEEK_FUNCTION,
-        MA_FPRINTF_FUNCTION,
-        MA_FTELL_FUNCTION,
-        MA_FFLUSH_FUNCTION,
-        MA_FEOF_FUNCTION,
-        MA_FERROR_FUNCTION,
-
         // MenuStatusNotifier
         MA_MENU_MANAGER,
         MA_DRAW_TEXT_FUNCTION,

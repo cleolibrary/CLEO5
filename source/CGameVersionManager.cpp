@@ -10,21 +10,6 @@ namespace CLEO
         { 0x0053BEE0,	memory_und, 0x0053BEE0, 0x0053C380, 0x0054DE60 },		// MA_UPDATE_GAME_LOGICS_FUNCTION,
 
                                                                                 // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
-        { 0x008232D8,	memory_und, 0x00823318, 0x00824098, 0x0085C75E },		// MA_FOPEN_FUNCTION,
-        { 0x0082318B,	memory_und, 0x008231CB, 0x00823F4B, 0x0085C396 },		// MA_FCLOSE_FUNCTION,
-        { 0x008231DC,	memory_und, 0x0082321C, 0x00823F9C, 0x0085C680 },		// MA_FGETC_FUNCTION,
-        { 0x00823798,	memory_und, 0x008237D8, 0x00824558, 0x0085D00C },		// MA_FGETS_FUNCTION,
-        { 0x008262B8,	memory_und, 0x008262F8, 0x00826BA8, 0x008621F1 },		// MA_FPUTS_FUNCTION,
-        { 0x00823521,	memory_und, 0x00823561, 0x008242E1, 0x0085CD04 },		// MA_FREAD_FUNCTION,
-        { 0x00823674,	memory_und, 0x008236B4, 0x00824434, 0x0085CE7E },		// MA_FWRITE_FUNCTION,
-        { 0x0082374F,	memory_und, 0x0082378F, 0x0082450F, 0x0085CF87 },		// MA_FSEEK_FUNCTION,
-        { 0x00823A30,	memory_und, 0x00823A70, 0x008247F0, 0x0085D464 },		// MA_FPRINTF_FUNCTION,
-        { 0x00826261,	memory_und, 0x008262A1, 0x00826B51, 0x00862183 },		// MA_FTELL_FUNCTION,
-        { 0x00823E86,	memory_und, 0x00823EC6, 0x00824C46, 0x0085DDDD },		// MA_FFLUSH_FUNCTION,
-        { 0x008262A2,	memory_und, 0x008262E2, 0x00826B92, 0x0085D193 },		// MA_FEOF_FUNCTION,
-        { 0x008262AD,	memory_und, 0x008262ED, 0x00826B9D, 0x0085D1C2 },		// MA_FERROR_FUNCTION,
-
-                                                                                // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
         { 0x00BA6748,	memory_und, 0x00BA6748, 0x00BA8DC8, 0x00C33100 },		// MA_MENU_MANAGER,
         { 0x0071A700,	memory_und, 0x0071A700, 0x0071AF30, 0x0073BF50 },		// MA_DRAW_TEXT_FUNCTION,
         { 0x00719610,	memory_und, 0x00719610, 0x00719E40, 0x0073ABC0 },		// MA_SET_TEXT_ALIGN_FUNCTION,
