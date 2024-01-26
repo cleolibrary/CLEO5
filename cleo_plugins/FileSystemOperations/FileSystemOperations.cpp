@@ -1,6 +1,7 @@
 #include "plugin.h"
 #include "CLEO.h"
 #include "FileUtils.h"
+#include "Utils.h"
 
 #include <set>
 
@@ -47,6 +48,7 @@ public:
             CLEO_RegisterOpcode(0x0AD8, opcode_0AD8);
             CLEO_RegisterOpcode(0x0AD9, opcode_0AD9);
             CLEO_RegisterOpcode(0x0ADA, opcode_0ADA);
+            CLEO_RegisterOpcode(0x0ADA, opcode_2200);
 
             CLEO_RegisterOpcode(0x0AAB, Script_FS_FileExists);
             CLEO_RegisterOpcode(0x0AE4, Script_FS_DirectoryExists);
@@ -337,6 +339,45 @@ public:
             ExParams[30], ExParams[31], ExParams[32], ExParams[33], ExParams[34]);
 
         CLEO_SetThreadCondResult(thread, paramCount == *result);
+        return OR_CONTINUE;
+    }
+
+    //2200=3,read_block_from_file %1d% size %2d% address %3d% // IF and SET
+    static OpcodeResult WINAPI opcode_2200(CRunningScript* thread)
+    {
+        DWORD handle = CLEO_GetIntOpcodeParam(thread);
+        DWORD size = CLEO_GetIntOpcodeParam(thread);
+
+        auto paramType = CLEO_GetOperandType(thread);
+        if(!IsImmInteger(paramType) && !IsVariable(paramType))
+        {
+            auto info = scriptInfoStr(thread);
+            SHOW_ERROR("Invalid type (0x%02X) of 'address' argument in opcode [2200] in script %s\nScript suspended.", paramType, info.c_str());
+            return thread->Suspend();
+        }
+        DWORD target = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_POINTER(target)
+
+        if(size < 0)
+        {
+            auto info = scriptInfoStr(thread);
+            SHOW_ERROR("Invalid size argument (%d) in opcode [2200] in script %s\nScript suspended.", size, info.c_str());
+            return thread->Suspend();
+        }
+
+        if (size == 0)
+        {
+            CLEO_SetThreadCondResult(thread, true); // done
+            return OR_CONTINUE;
+        }
+
+        auto readCount = read_file((void*)target, size, 1, handle);
+        if (readCount != size)
+        {
+            CLEO_SetThreadCondResult(thread, false);
+            return OR_CONTINUE;
+        }
+
+        CLEO_SetThreadCondResult(thread, true);
         return OR_CONTINUE;
     }
 

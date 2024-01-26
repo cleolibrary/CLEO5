@@ -9,18 +9,19 @@
   - new opcode **2102 ([log_to_file](https://library.sannybuilder.com/#/sa/debug/2102))**
   - implemented support of opcodes **0662**, **0663** and **0664** (original Rockstar's script debugging opcodes. See DebugUtils.ini)
 - new and updated opcodes
+  - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
   - **2000 ([resolve_filepath](https://library.sannybuilder.com/#/sa/CLEO/2000))**
   - **2001 ([get_script_filename](https://library.sannybuilder.com/#/sa/CLEO/2001))**
   - **2002 ([cleo_return_with](https://library.sannybuilder.com/#/sa/CLEO/2002))**
   - **2003 ([cleo_return_fail](https://library.sannybuilder.com/#/sa/CLEO/2003))**
   - **2004 ([forget_memory](https://library.sannybuilder.com/#/sa/CLEO/2004))**
+  - **2200 ([read_block_from_file](https://library.sannybuilder.com/#/sa/file/2200))**
+  - opcodes **0A9A**, **0A9B**, **0A9C**, **0A9D**, **0A9E**, **0AAB**, **0AD5**, **0AD6**, **0AD7**, **0AD8**, **0AD9**, **0ADA**, **0AE4**, **0AE5**, **0AE6**, **0AE7**  and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
-  - opcodes **0A9A**, **0A9B**, **0A9C**, **0A9D**, **0A9E**, **0AAB**, **0AD5**, **0AD6**, **0AD7**, **0AD8**, **0AD9**, **0ADA**, **0AE4**, **0AE5**, **0AE6**, **0AE7**  and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
   - **cleo_return_\*** opcodes now can pass strings as return arguments
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
-  - new opcode **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 
     - `root:\` for _game root_ directory
