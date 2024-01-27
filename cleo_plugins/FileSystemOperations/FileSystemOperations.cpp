@@ -217,13 +217,6 @@ public:
 
         int size = CLEO_GetIntOpcodeParam(thread);
 
-        if (is_legacy_handle(handle))
-        {
-            auto info = scriptInfoStr(thread);
-            SHOW_ERROR("Opcode [0AD7] used in legacy mode in script %s\nScript suspended.", info.c_str());
-            return thread->Suspend();
-        }
-
         if (size <= 0)
         {
             CLEO_SetThreadCondResult(thread, false);
@@ -234,8 +227,7 @@ public:
         tmpBuff.resize(size);
         auto data = tmpBuff.data();
 
-        FILE* file = convert_handle_to_file(handle);
-        bool ok = fgets(data, size, file) != nullptr;
+        bool ok = file_get_s(data, size, handle) != nullptr;
         if(!ok)
         {
             CLEO_SetThreadCondResult(thread, false);
@@ -249,7 +241,7 @@ public:
         memcpy(buffer, data, resultSize);
         if(resultSize < bufferSize) buffer[resultSize] = '\0'; // terminate string whenever possible
 
-        CLEO_SetThreadCondResult(thread, false);
+        CLEO_SetThreadCondResult(thread, true);
         return OR_CONTINUE;
     }
 

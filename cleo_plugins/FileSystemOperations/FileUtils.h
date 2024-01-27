@@ -260,6 +260,17 @@ DWORD write_file(const void* buf, DWORD size, DWORD count, DWORD handle)
 		return fwrite(buf, size, 1, file);
 }
 
+char* file_get_s(char* buf, DWORD bufSize, DWORD handle)
+{
+	FILE* file = convert_handle_to_file(handle);
+	if (file == nullptr) return nullptr;
+
+	if (is_legacy_handle(handle))
+		return legacy_fgets(buf, bufSize, file);
+	else
+		return fgets(buf, bufSize, file);
+}
+
 void flush_file(DWORD handle)
 {
 	FILE* file = convert_handle_to_file(handle);
