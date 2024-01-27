@@ -36,11 +36,11 @@ void InitializeFileFunc(CLEO::eGameVersion version)
 
 	FUNC_fopen = MA_FOPEN_FUNCTION[version];
 	FUNC_fclose = MA_FCLOSE_FUNCTION[version];
-	FUNC_fread = MA_FGETC_FUNCTION[version];
-	FUNC_fwrite = MA_FGETS_FUNCTION[version];
-	FUNC_fgetc = MA_FPUTS_FUNCTION[version];
-	FUNC_fgets = MA_FREAD_FUNCTION[version];
-	FUNC_fputs = MA_FWRITE_FUNCTION[version];
+	FUNC_fread = MA_FREAD_FUNCTION[version];
+	FUNC_fwrite = MA_FWRITE_FUNCTION[version];
+	FUNC_fgetc = MA_FGETC_FUNCTION[version];
+	FUNC_fgets = MA_FGETS_FUNCTION[version];
+	FUNC_fputs = MA_FPUTS_FUNCTION[version];
 	FUNC_fseek = MA_FSEEK_FUNCTION[version];
 	FUNC_fprintf = MA_FPRINTF_FUNCTION[version];
 	FUNC_ftell = MA_FTELL_FUNCTION[version];
