@@ -8,7 +8,9 @@
 using namespace CLEO;
 using namespace plugin;
 
-#define OPCODE_VALIDATE_HANDLE(x) if((size_t)x <= MinValidAddress) { auto info = scriptInfoStr(thread); SHOW_ERROR("Invalid '0x%X' file handle param in script %s \nScript suspended.", x, info.c_str()); return thread->Suspend(); }
+#define OPCODE_VALIDATE_HANDLE(x) if((size_t)x <= MinValidAddress) \
+    { auto info = scriptInfoStr(thread); SHOW_ERROR("Invalid '0x%X' file handle param in script %s \nScript suspended.", x, info.c_str()); return thread->Suspend(); } \
+    else if(m_hFiles.find(x) == m_hFiles.end()) { auto info = scriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", x, info.c_str()); return thread->Suspend(); }
 
 class FileSystemOperations 
 {
@@ -19,11 +21,7 @@ public:
     static void WINAPI OnFinalizeScriptObjects()
     {
         // clean up opened files
-        for (auto handle : m_hFiles)
-        {
-            if (!is_legacy_handle(handle))
-                fclose(convert_handle_to_file(handle));
-        }
+        for (auto handle : m_hFiles) File::close(handle);
         m_hFiles.clear();
 
         // clean up file searches
@@ -36,7 +34,7 @@ public:
         auto cleoVer = CLEO_GetVersion();
         if (cleoVer >= CLEO_VERSION)
         {
-            InitializeFileFunc(CLEO_GetGameVersion()); // file utils
+            File::initialize(CLEO_GetGameVersion()); // file utils
 
             //register opcodes
             CLEO_RegisterOpcode(0x0A9A, opcode_0A9A);
@@ -50,7 +48,8 @@ public:
             CLEO_RegisterOpcode(0x0AD8, opcode_0AD8);
             CLEO_RegisterOpcode(0x0AD9, opcode_0AD9);
             CLEO_RegisterOpcode(0x0ADA, opcode_0ADA);
-            CLEO_RegisterOpcode(0x0ADA, opcode_2200);
+            CLEO_RegisterOpcode(0x2300, opcode_2300);
+            CLEO_RegisterOpcode(0x2301, opcode_2301);
 
             CLEO_RegisterOpcode(0x0AAB, Script_FS_FileExists);
             CLEO_RegisterOpcode(0x0AE4, Script_FS_DirectoryExists);
@@ -113,8 +112,8 @@ public:
         // lets try to resolve this with a legacy mode
         bool legacy = CLEO_GetScriptVersion(thread) < CLEO_VER_4_3;
 
-        auto handle = open_file(filename.c_str(), mode, legacy);
-        if (handle == NULL)
+        auto handle = File::open(filename.c_str(), mode, legacy);
+        if (!File::isOk(handle))
         {
             CLEO_SetIntOpcodeParam(thread, NULL);
             CLEO_SetThreadCondResult(thread, false);
@@ -131,8 +130,12 @@ public:
     static OpcodeResult WINAPI opcode_0A9B(CRunningScript* thread)
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
-        close_file(handle);
-        m_hFiles.erase(handle);
+
+        if (m_hFiles.find(handle) != m_hFiles.end())
+        {
+            File::close(handle);
+            m_hFiles.erase(handle);
+        }
         return OR_CONTINUE;
     }
 
@@ -140,7 +143,8 @@ public:
     static OpcodeResult WINAPI opcode_0A9C(CRunningScript* thread)
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
-        auto size = file_get_size(handle);
+
+        auto size = File::getSize(handle);
         CLEO_SetIntOpcodeParam(thread, size);
         return OR_CONTINUE;
     }
@@ -150,10 +154,10 @@ public:
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         DWORD size = CLEO_GetIntOpcodeParam(thread);
-        SCRIPT_VAR* buf = CLEO_GetPointerToScriptVariable(thread);
+        SCRIPT_VAR* buffer = CLEO_GetPointerToScriptVariable(thread);
 
-        buf->dwParam = 0; // https://github.com/cleolibrary/CLEO4/issues/91
-        read_file(buf, size, 1, handle);
+        buffer->dwParam = 0; // https://github.com/cleolibrary/CLEO4/issues/91
+        File::read(handle, buffer, size);
         return OR_CONTINUE;
     }
 
@@ -162,10 +166,10 @@ public:
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         DWORD size = CLEO_GetIntOpcodeParam(thread);
-        SCRIPT_VAR* buf = CLEO_GetPointerToScriptVariable(thread);
+        SCRIPT_VAR* buffer = CLEO_GetPointerToScriptVariable(thread);
 
-        write_file(buf, size, 1, handle);
-        flush_file(handle);
+        File::write(handle, buffer, size);
+        if (File::isOk(handle)) File::flush(handle);
         return OR_CONTINUE;
     }
 
@@ -186,10 +190,9 @@ public:
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         int offset = (int)CLEO_GetIntOpcodeParam(thread);
-        int origin = (int)CLEO_GetIntOpcodeParam(thread);
+        DWORD origin = CLEO_GetIntOpcodeParam(thread);
 
-        FILE* file = convert_handle_to_file(handle);
-        bool ok = fseek(file, offset, origin) == 0;
+        bool ok = File::seek(handle, offset, origin);
         CLEO_SetThreadCondResult(thread, ok);
         return OR_CONTINUE;
     }
@@ -199,8 +202,7 @@ public:
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
 
-        FILE* file = convert_handle_to_file(handle);
-        bool end = ferror(file) || feof(file) != 0;
+        bool end = !File::isOk(handle) || File::isEndOfFile(handle);
         CLEO_SetThreadCondResult(thread, end);
         return OR_CONTINUE;
     }
@@ -227,7 +229,7 @@ public:
         tmpBuff.resize(size);
         auto data = tmpBuff.data();
 
-        bool ok = file_get_s(data, size, handle) != nullptr;
+        bool ok = File::readString(handle, data, size) != nullptr;
         if(!ok)
         {
             CLEO_SetThreadCondResult(thread, false);
@@ -251,15 +253,14 @@ public:
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         auto text = CLEO_ReadStringOpcodeParam(thread);
 
-        FILE* file = convert_handle_to_file(handle);
-        bool ok = fputs(text, file) > 0;
+        auto ok = File::writeString(handle, text);
         if (!ok)
         {
             CLEO_SetThreadCondResult(thread, false);
             return OR_CONTINUE;
         }
 
-        fflush(file);
+        File::flush(handle);
         CLEO_SetThreadCondResult(thread, true);
         return OR_CONTINUE;
     }
@@ -269,11 +270,15 @@ public:
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         auto format = CLEO_ReadStringOpcodeParam(thread);
-        char text[MAX_STR_LEN]; CLEO_ReadParamsFormatted(thread, format, text, MAX_STR_LEN);
+        static char text[4 * MAX_STR_LEN]; CLEO_ReadParamsFormatted(thread, format, text, MAX_STR_LEN);
         
-        FILE* file = convert_handle_to_file(handle);
-        fputs(text, file);
-        fflush(file);
+        auto ok = File::writeString(handle, text);
+        if (!ok)
+        {
+            return OR_CONTINUE;
+        }
+
+        File::flush(handle);
         return OR_CONTINUE;
     }
 
@@ -282,33 +287,36 @@ public:
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         auto format = CLEO_ReadStringOpcodeParam(thread);
-        int* result = (int*)CLEO_GetPointerToScriptVariable(thread);
+        auto result = (DWORD*)CLEO_GetPointerToScriptVariable(thread);
 
         size_t paramCount = 0;
-        SCRIPT_VAR* ExParams[35];
+        SCRIPT_VAR* outputParams[35];
         while (CLEO_GetOperandType(thread) != eDataType::DT_END)
         {
             // TODO: if target param is string variable it should be handled correctly
-            ExParams[paramCount++] = CLEO_GetPointerToScriptVariable(thread);
+            outputParams[paramCount++] = CLEO_GetPointerToScriptVariable(thread);
         }
         CLEO_SkipUnusedVarArgs(thread); // var arg terminator
 
-        FILE* file = convert_handle_to_file(handle);
-        *result = fscanf(file, format,
-            /* extra parameters (will be aligned automatically, but the limit of 35 elements maximum exists) */
-            ExParams[0], ExParams[1], ExParams[2], ExParams[3], ExParams[4], ExParams[5],
-            ExParams[6], ExParams[7], ExParams[8], ExParams[9], ExParams[10], ExParams[11],
-            ExParams[12], ExParams[13], ExParams[14], ExParams[15], ExParams[16], ExParams[17],
-            ExParams[18], ExParams[19], ExParams[20], ExParams[21], ExParams[22], ExParams[23],
-            ExParams[24], ExParams[25], ExParams[26], ExParams[27], ExParams[28], ExParams[29],
-            ExParams[30], ExParams[31], ExParams[32], ExParams[33], ExParams[34]);
+        *result = File::scan(handle, format, (void**)&outputParams);
 
-        CLEO_SetThreadCondResult(thread, paramCount == *result);
+        //CLEO_SetThreadCondResult(thread, paramCount == *result);
+        CLEO_SetThreadCondResult(thread, true);
         return OR_CONTINUE;
     }
 
-    //2200=3,read_block_from_file %1d% size %2d% address %3d% // IF and SET
-    static OpcodeResult WINAPI opcode_2200(CRunningScript* thread)
+    //2300=2,get_file_position %1d% store_to %2d%
+    static OpcodeResult WINAPI opcode_2300(CRunningScript* thread)
+    {
+        DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
+
+        auto pos = File::getPos(handle);
+        CLEO_SetIntOpcodeParam(thread, pos);
+        return OR_CONTINUE;
+    }
+
+    //2301=3,read_block_from_file %1d% size %2d% buffer %3d% // IF and SET
+    static OpcodeResult WINAPI opcode_2301(CRunningScript* thread)
     {
         DWORD handle = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_HANDLE(handle)
         DWORD size = CLEO_GetIntOpcodeParam(thread);
@@ -317,7 +325,7 @@ public:
         if(!IsImmInteger(paramType) && !IsVariable(paramType))
         {
             auto info = scriptInfoStr(thread);
-            SHOW_ERROR("Invalid type (0x%02X) of 'address' argument in opcode [2200] in script %s\nScript suspended.", paramType, info.c_str());
+            SHOW_ERROR("Invalid type (0x%02X) of 'address' argument in opcode [2301] in script %s\nScript suspended.", paramType, info.c_str());
             return thread->Suspend();
         }
         DWORD target = CLEO_GetIntOpcodeParam(thread); OPCODE_VALIDATE_POINTER(target)
@@ -325,7 +333,7 @@ public:
         if(size < 0)
         {
             auto info = scriptInfoStr(thread);
-            SHOW_ERROR("Invalid size argument (%d) in opcode [2200] in script %s\nScript suspended.", size, info.c_str());
+            SHOW_ERROR("Invalid size argument (%d) in opcode [2301] in script %s\nScript suspended.", size, info.c_str());
             return thread->Suspend();
         }
 
@@ -335,7 +343,7 @@ public:
             return OR_CONTINUE;
         }
 
-        auto readCount = read_file((void*)target, size, 1, handle);
+        auto readCount = File::read(handle, (void*)target, size);
         if (readCount != size)
         {
             CLEO_SetThreadCondResult(thread, false);
@@ -398,6 +406,15 @@ public:
     {
         auto handle = (HANDLE)CLEO_GetIntOpcodeParam(thread);
 
+        if (m_hFileSearches.find(handle) == m_hFileSearches.end())
+        {
+            auto info = scriptInfoStr(thread);
+            LOG_WARNING(thread, "[0AE7] used with handle (0x%X) to unknown or already closed file search in script %s", handle, info.c_str());
+            CLEO_SkipOpcodeParams(thread, 1);
+            CLEO_SetThreadCondResult(thread, false);
+            return OR_CONTINUE;
+        }
+
         WIN32_FIND_DATA ffd = { 0 };
         if (FindNextFile(handle, &ffd))
         {
@@ -416,6 +433,14 @@ public:
     static OpcodeResult WINAPI Script_FS_FindClose(CRunningScript* thread)
     {
         auto handle = (HANDLE)CLEO_GetIntOpcodeParam(thread);
+
+        if (m_hFileSearches.find(handle) == m_hFileSearches.end())
+        {
+            auto info = scriptInfoStr(thread);
+            LOG_WARNING(thread, "[0AE8] used with handle (0x%X) to unknown or already closed file search in script %s", handle, info.c_str());
+            return OR_CONTINUE;
+        }
+
         FindClose(handle);
         m_hFileSearches.erase(handle);
         return OR_CONTINUE;
@@ -426,8 +451,8 @@ public:
     {
         auto filename = ReadPathParam(thread);
 
-        CLEO_SetThreadCondResult(thread, DeleteFile(filename.c_str()));
-
+        auto success = DeleteFile(filename.c_str());
+        CLEO_SetThreadCondResult(thread, success);
         return OR_CONTINUE;
     }
 
@@ -485,12 +510,12 @@ public:
         BOOL result;
         if (DeleteAllInsideFlag)
         {
-            //remove directory with all files and subdirectories
+            // remove directory with all files and subdirectories
             result = DeleteDir(dirpath.c_str());
         }
         else
         {
-            //try to remove as empty directory
+            // try to remove as empty directory
             result = RemoveDirectory(dirpath.c_str());
         }
 
