@@ -218,11 +218,17 @@ public:
         CLEO_ReadStringParamWriteBuffer(thread, &buffer, &bufferSize, &needsTerminator);
 
         int size = CLEO_GetIntOpcodeParam(thread);
-
-        if (size <= 0)
+        if (size == 0)
         {
+            if (bufferSize > 0) buffer[0] = '\0';
             CLEO_SetThreadCondResult(thread, false);
             return OR_CONTINUE;
+        }
+        if (size < 0)
+        {
+            auto info = scriptInfoStr(thread);
+            SHOW_ERROR("Invalid size argument (%d) in opcode [0AD7] in script %s\nScript suspended.", size, info.c_str());
+            return thread->Suspend();
         }
 
         std::vector<char> tmpBuff;
