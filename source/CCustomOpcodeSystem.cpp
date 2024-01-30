@@ -2672,7 +2672,7 @@ extern "C"
 			outBufSize == nullptr ||
 			outNeedsTerminator == nullptr)
 		{
-			LOG_WARNING(thread, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(thread, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return;
 		}
 
