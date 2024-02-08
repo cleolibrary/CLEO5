@@ -2212,23 +2212,6 @@ extern "C"
 		*outNeedsTerminator = target.needTerminator;
 	}
 
-	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)
-	{
-		if (thread == nullptr || 
-			outBuf == nullptr || 
-			outBufSize == nullptr ||
-			outNeedsTerminator == nullptr)
-		{
-			LOG_WARNING(thread, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return;
-		}
-
-		auto target = GetStringParamWriteBuffer(thread);
-		*outBuf = target.data;
-		*outBufSize = target.size;
-		*outNeedsTerminator = target.needTerminator;
-	}
-
 	DWORD WINAPI CLEO_PeekIntOpcodeParam(CLEO::CRunningScript* thread)
 	{
 		// store state
