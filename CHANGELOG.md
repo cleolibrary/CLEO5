@@ -10,6 +10,9 @@
   - implemented support of opcodes **0662**, **0663** and **0664** (original Rockstar's script debugging opcodes. See DebugUtils.ini)
 - new and updated opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
+  - **0D4E ([read_struct](https://library.sannybuilder.com/#/sa/CLEO/0D4E))** - mirrored from CLEO+/NewOpcodes
+  - **0E28 ([write_struct](https://library.sannybuilder.com/#/sa/CLEO/0E28))** - mirrored from CLEO+/NewOpcodes
+  - **0E70 ([get_last_created_custom_script](https://library.sannybuilder.com/#/sa/CLEO/0E70))** - mirrored from CLEO+
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
   - **2000 ([resolve_filepath](https://library.sannybuilder.com/#/sa/CLEO/2000))**
   - **2001 ([get_script_filename](https://library.sannybuilder.com/#/sa/CLEO/2001))**
@@ -46,6 +49,7 @@
 - fixed resolution dependent aspect ratio of CLEO text in main menu
 - fixed clearing mission locals when new CLEO mission is started
 - when reading less than 4 bytes with **0A9D (readfile)** now remaining bytes of the target variable are set to zero
+- fixed invalid 7 characters length limit of **0AAA (get_script_struct_named)**
 
 #### SDK AND PLUGINS
 - now all opcodes in range **0-7FFF** can be registered by plugins

@@ -1,7 +1,7 @@
 #include "plugin.h"
 #include "CLEO.h"
+#include "CLEO_Utils.h"
 #include "FileUtils.h"
-#include "Utils.h"
 
 #include <set>
 
@@ -10,8 +10,8 @@ using namespace plugin;
 
 #define READ_HANDLE_PARAM() CLEO_GetIntOpcodeParam(thread); \
     if((size_t)handle <= MinValidAddress) \
-    { auto info = scriptInfoStr(thread); SHOW_ERROR("Invalid '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); } \
-    else if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = scriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); }
+    { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); } \
+    else if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); }
 
 class FileSystemOperations 
 {
@@ -73,7 +73,7 @@ public:
         {
             std::string err(128, '\0');
             sprintf(err.data(), "This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-            MessageBox(HWND_DESKTOP, err.data(), "FileSystemOperations.cleo", MB_SYSTEMMODAL | MB_ICONERROR);
+            MessageBox(HWND_DESKTOP, err.data(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
         }
     }
 
@@ -227,7 +227,7 @@ public:
         }
         if (size < 0)
         {
-            auto info = scriptInfoStr(thread);
+            auto info = ScriptInfoStr(thread);
             SHOW_ERROR("Invalid size argument (%d) in opcode [0AD7] in script %s\nScript suspended.", size, info.c_str());
             return thread->Suspend();
         }
@@ -331,7 +331,7 @@ public:
         auto paramType = CLEO_GetOperandType(thread);
         if(!IsImmInteger(paramType) && !IsVariable(paramType))
         {
-            auto info = scriptInfoStr(thread);
+            auto info = ScriptInfoStr(thread);
             SHOW_ERROR("Invalid type (0x%02X) of 'address' argument in opcode [2301] in script %s\nScript suspended.", paramType, info.c_str());
             return thread->Suspend();
         }
@@ -339,7 +339,7 @@ public:
 
         if(size < 0)
         {
-            auto info = scriptInfoStr(thread);
+            auto info = ScriptInfoStr(thread);
             SHOW_ERROR("Invalid size argument (%d) in opcode [2301] in script %s\nScript suspended.", size, info.c_str());
             return thread->Suspend();
         }
@@ -415,7 +415,7 @@ public:
 
         if (m_hFileSearches.find(handle) == m_hFileSearches.end())
         {
-            auto info = scriptInfoStr(thread);
+            auto info = ScriptInfoStr(thread);
             LOG_WARNING(thread, "[0AE7] used with handle (0x%X) to unknown or already closed file search in script %s", handle, info.c_str());
             CLEO_SkipOpcodeParams(thread, 1);
             CLEO_SetThreadCondResult(thread, false);
@@ -443,7 +443,7 @@ public:
 
         if (m_hFileSearches.find(handle) == m_hFileSearches.end())
         {
-            auto info = scriptInfoStr(thread);
+            auto info = ScriptInfoStr(thread);
             LOG_WARNING(thread, "[0AE8] used with handle (0x%X) to unknown or already closed file search in script %s", handle, info.c_str());
             return OR_CONTINUE;
         }

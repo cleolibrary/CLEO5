@@ -1,10 +1,6 @@
 #pragma once
 #include <mutex>
 
-#define TRACE(format,...) {Debug.Trace(CLEO::eLogLevel::Default, format, __VA_ARGS__);}
-#define LOG_WARNING(script, format, ...) {Debug.Trace(script, CLEO::eLogLevel::Error, format, __VA_ARGS__);}
-#define SHOW_ERROR(a,...) {Debug.Error(a, __VA_ARGS__);}
-
 std::string stringPrintf(const char* format, ...);
 
 namespace CLEO

@@ -38,3 +38,8 @@ EXPORTS
 	_CLEO_SetScriptDebugMode@8				@35
 	_CLEO_Log@8								@36
 	_CLEO_ReadStringParamWriteBuffer@16		@37
+	_CLEO_GetParamsCollectiveArray@0		@38
+	_CLEO_GetParamsHandledCount@0			@39
+	_CLEO_PeekIntOpcodeParam@4				@40
+	_CLEO_PeekFloatOpcodeParam@4			@41
+	_CLEO_GetScriptByName@16				@42

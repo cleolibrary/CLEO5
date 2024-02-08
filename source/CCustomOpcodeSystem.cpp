@@ -22,8 +22,6 @@ namespace CLEO
 	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval);
 	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
 
-	OpcodeResult __stdcall opcode_0A8C(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A8D(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A8E(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A8F(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A90(CRunningScript *thread);
@@ -32,22 +30,10 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A94(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A95(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A96(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A97(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A98(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A99(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A9F(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA1(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA2(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA3(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA4(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA5(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA6(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA7(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA8(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AAA(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AAC(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AAD(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AAE(CRunningScript *thread);
@@ -74,10 +60,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AC3(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AC4(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AC5(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC6(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC7(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC8(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC9(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ACA(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ACB(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ACC(CRunningScript *thread);
@@ -98,10 +80,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AE1(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AE2(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AE3(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AE9(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AEA(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AEB(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AEC(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AED(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AEE(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AEF(CRunningScript *thread);
@@ -110,7 +88,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_2001(CRunningScript* thread); // get_script_filename
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
-	OpcodeResult __stdcall opcode_2004(CRunningScript* thread); // forget_memory
 
 	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript *script);
 	struct ScriptDeleteDelegate {
@@ -147,15 +124,6 @@ namespace CLEO
 	ScriptDeleteDelegate scriptDeleteDelegate;
 	void RunScriptDeleteDelegate(CRunningScript *script) { scriptDeleteDelegate(script); }
 
-	CBuildingPool		**buildingPool = nullptr;			// add for future CLEO releases
-	CVehiclePool			**vehiclePool = nullptr;
-	CObjectPool			**objectPool = nullptr;
-	CPedPool				**pedPool = nullptr;
-
-	inline CPedPool& GetPedPool() { return **pedPool; }
-	inline CVehiclePool& GetVehiclePool() { return **vehiclePool; }
-	inline CObjectPool& GetObjectPool() { return **objectPool; }
-
 	void(__thiscall * ProcessScript)(CRunningScript*);
 
 	const char * (__cdecl * GetUserDirectory)();
@@ -176,8 +144,10 @@ namespace CLEO
 	WORD CCustomOpcodeSystem::lastOpcode = 0;
 	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
 	WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
+	std::set<size_t>CCustomOpcodeSystem::ProtectedOpcodes = {};
 	std::string CCustomOpcodeSystem::lastErrorMsg = {};
 	WORD CCustomOpcodeSystem::prevOpcode = 0;
+	BYTE CCustomOpcodeSystem::handledParamCount = 0;
 
 	// opcode handler for custom opcodes
 	OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript *thread, int dummy, WORD opcode)
@@ -187,6 +157,7 @@ namespace CLEO
 		lastScript = thread;
 		lastOpcode = opcode;
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
+		handledParamCount = 0;
 
 		// execute registered callbacks
 		OpcodeResult result = OR_NONE;
@@ -245,122 +216,9 @@ namespace CLEO
 		return (callbackResult != OR_NONE) ? callbackResult : result;
 	}
 
-	OpcodeResult CCustomOpcodeSystem::CallFunctionGeneric(WORD opcode, CRunningScript* thread, bool thisCall, bool returnArg)
-	{
-		void* func; *thread >> func;
-		void* struc = nullptr; if(thisCall) *thread >> struc;
-		DWORD numParams; *thread >> numParams;
-		DWORD stackAlign; *thread >> stackAlign; // pop
-
-		if ((size_t)func <= CCustomOpcodeSystem::MinValidAddress)
-		{
-			SHOW_ERROR("Invalid '0x%X' function pointer param of opcode [%04X] in script %s\nScript suspended.", func, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		if (thisCall && (size_t)struc <= CCustomOpcodeSystem::MinValidAddress)
-		{
-			SHOW_ERROR("Invalid '0x%X' struct pointer param of opcode [%04X] in script %s\nScript suspended.", struc, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		int nVarArg = GetVarArgCount(thread);
-		if (numParams + returnArg != nVarArg) // and return argument
-		{
-			SHOW_ERROR("Opcode [%04X] declared %d input args, but provided %d in script %s\nScript suspended.", opcode, numParams, (int)nVarArg - returnArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		constexpr size_t Max_Args = 32;
-		if (numParams > Max_Args)
-		{
-			SHOW_ERROR("Opcode [%04X] used with more than supported arguments in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		static SCRIPT_VAR arguments[Max_Args] = { 0 };
-		SCRIPT_VAR* arguments_end = arguments + numParams;
-
-		constexpr size_t Max_Text_Params = 5;
-		static char textParams[Max_Text_Params][MAX_STR_LEN];
-		size_t currTextParam = 0;
-
-		stackAlign *= 4; // bytes peer argument
-		
-		// retrieve parameters
-		for (size_t i = 0; i < numParams; i++)
-		{
-			auto& param = arguments[i];
-			auto paramType = thread->PeekDataType();
-
-			if (IsImmInteger(paramType) || IsVariable(paramType))
-				*thread >> param.dwParam;
-			else
-			if (IsImmFloat(paramType))
-				*thread >> param.fParam;
-			else
-			if (IsImmString(paramType) || IsVarString(paramType))
-			{
-				if (currTextParam >= Max_Text_Params)
-				{
-					SHOW_ERROR("Opcode [%04X] used with more than supported string arguments in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return thread->Suspend();
-				}
-
-				param.pcParam = ReadStringParam(thread, textParams[currTextParam], MAX_STR_LEN); OPCODE_VALIDATE_STR_ARG_READ(param.pcParam)
-				currTextParam++;
-			}
-			else
-			{
-				SHOW_ERROR("Invalid param type (%s) in opcode [%04X] in script %s \nScript suspended.", opcode, ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
-			}
-		}
-
-		// validate return target variable
-		if (returnArg)
-		{
-			auto paramType = thread->PeekDataType();
-
-			if (!IsVariable(paramType) && !IsVarString(paramType))
-			{
-				SHOW_ERROR("Invalid return param type (%s) in opcode [%04X] in script %s \nScript suspended.", opcode, ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
-			}
-		}
-
-		DWORD result;
-		_asm
-		{
-			// transfer args to stack
-			lea ecx, arguments
-			call_func_loop:
-			cmp ecx, arguments_end
-				jae call_func_loop_end
-				push[ecx]
-				add ecx, 0x4
-				jmp call_func_loop
-				call_func_loop_end:
-
-			// call function
-			mov ecx, struc
-			xor eax, eax
-			call func
-			mov result, eax // get result
-			add esp, stackAlign // cleanup stack
-		}
-
-		if (returnArg) *thread << result;
-
-		SkipUnusedVarArgs(thread);
-		return OR_CONTINUE;
-	}
-
 	void CCustomOpcodeSystem::FinalizeScriptObjects()
 	{
-		TRACE("Cleaning up script data... %u libs, %u allocations...",
-			m_hNativeLibs.size(), m_pAllocations.size()
-		);
+		TRACE("Cleaning up script data...");
 
 		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptsFinalize))
 		{
@@ -368,23 +226,13 @@ namespace CLEO
 			((callback*)func)();
 		}
 
-		// clean up after opcode_0AA2
-		std::for_each(m_hNativeLibs.begin(), m_hNativeLibs.end(), FreeLibrary);
-		m_hNativeLibs.clear();
-
 		// clean up after opcode_0AB1
 		ScmFunction::Clear();
-
-		// clean up after opcode_0AC8
-		std::for_each(m_pAllocations.begin(), m_pAllocations.end(), free);
-		m_pAllocations.clear();
 	}
 
 	CCustomOpcodeSystem::CCustomOpcodeSystem()
 	{
 		// register CLEO opcodes
-		CLEO_RegisterOpcode(0x0A8C, opcode_0A8C);
-		CLEO_RegisterOpcode(0x0A8D, opcode_0A8D);
 		CLEO_RegisterOpcode(0x0A8E, opcode_0A8E);
 		CLEO_RegisterOpcode(0x0A8F, opcode_0A8F);
 		CLEO_RegisterOpcode(0x0A90, opcode_0A90);
@@ -393,22 +241,10 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
 		CLEO_RegisterOpcode(0x0A94, opcode_0A94);
 		CLEO_RegisterOpcode(0x0A95, opcode_0A95);
-		CLEO_RegisterOpcode(0x0A96, opcode_0A96);
-		CLEO_RegisterOpcode(0x0A97, opcode_0A97);
-		CLEO_RegisterOpcode(0x0A98, opcode_0A98);
 		CLEO_RegisterOpcode(0x0A99, opcode_0A99);
-		CLEO_RegisterOpcode(0x0A9F, opcode_0A9F);
 		CLEO_RegisterOpcode(0x0AA0, opcode_0AA0);
 		CLEO_RegisterOpcode(0x0AA1, opcode_0AA1);
-		CLEO_RegisterOpcode(0x0AA2, opcode_0AA2);
-		CLEO_RegisterOpcode(0x0AA3, opcode_0AA3);
-		CLEO_RegisterOpcode(0x0AA4, opcode_0AA4);
-		CLEO_RegisterOpcode(0x0AA5, opcode_0AA5);
-		CLEO_RegisterOpcode(0x0AA6, opcode_0AA6);
-		CLEO_RegisterOpcode(0x0AA7, opcode_0AA7);
-		CLEO_RegisterOpcode(0x0AA8, opcode_0AA8);
 		CLEO_RegisterOpcode(0x0AA9, opcode_0AA9);
-		CLEO_RegisterOpcode(0x0AAA, opcode_0AAA);
 		CLEO_RegisterOpcode(0x0AAC, opcode_0AAC);
 		CLEO_RegisterOpcode(0x0AAD, opcode_0AAD);
 		CLEO_RegisterOpcode(0x0AAE, opcode_0AAE);
@@ -435,10 +271,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AC3, opcode_0AC3);
 		CLEO_RegisterOpcode(0x0AC4, opcode_0AC4);
 		CLEO_RegisterOpcode(0x0AC5, opcode_0AC5);
-		CLEO_RegisterOpcode(0x0AC6, opcode_0AC6);
-		CLEO_RegisterOpcode(0x0AC7, opcode_0AC7);
-		CLEO_RegisterOpcode(0x0AC8, opcode_0AC8);
-		CLEO_RegisterOpcode(0x0AC9, opcode_0AC9);
 		CLEO_RegisterOpcode(0x0ACA, opcode_0ACA);
 		CLEO_RegisterOpcode(0x0ACB, opcode_0ACB);
 		CLEO_RegisterOpcode(0x0ACC, opcode_0ACC);
@@ -459,19 +291,16 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
 		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
 		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
-		CLEO_RegisterOpcode(0x0AE9, opcode_0AE9);
-		CLEO_RegisterOpcode(0x0AEA, opcode_0AEA);
-		CLEO_RegisterOpcode(0x0AEB, opcode_0AEB);
-		CLEO_RegisterOpcode(0x0AEC, opcode_0AEC);
 		CLEO_RegisterOpcode(0x0AED, opcode_0AED);
 		CLEO_RegisterOpcode(0x0AEE, opcode_0AEE);
 		CLEO_RegisterOpcode(0x0AEF, opcode_0AEF);
+
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
+		
 		CLEO_RegisterOpcode(0x2000, opcode_2000); // resolve_filepath
 		CLEO_RegisterOpcode(0x2001, opcode_2001); // get_script_filename
 		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
 		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
-		CLEO_RegisterOpcode(0x2004, opcode_2004); // forget_memory
 	}
 
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
@@ -496,9 +325,6 @@ namespace CLEO
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
 
-		pedPool = gvm.TranslateMemoryAddress(MA_PED_POOL);
-		vehiclePool = gvm.TranslateMemoryAddress(MA_VEHICLE_POOL);
-		objectPool = gvm.TranslateMemoryAddress(MA_OBJECT_POOL);
 		GetUserDirectory = gvm.TranslateMemoryAddress(MA_GET_USER_DIR_FUNCTION);
 		ChangeToUserDir = gvm.TranslateMemoryAddress(MA_CHANGE_TO_USER_DIR_FUNCTION);
 		ChangeToProgramDir = gvm.TranslateMemoryAddress(MA_CHANGE_TO_PROGRAM_DIR_FUNCTION);
@@ -532,6 +358,12 @@ namespace CLEO
 			return false;
 		}
 
+		if (ProtectedOpcodes.find(opcode) != ProtectedOpcodes.end())
+		{
+			LOG_WARNING(0, "Opcode [%04X] is protected and can not be registerred! Skipping...", opcode);
+			return false;
+		}
+
 		CustomOpcodeHandler& dst = customOpcodeProc[opcode];
 		if (*dst != nullptr)
 		{
@@ -545,12 +377,6 @@ namespace CLEO
 
 	inline CRunningScript& operator>>(CRunningScript& thread, DWORD& uval)
 	{
-		auto paramType = (eDataType)*thread.GetBytePointer();
-		if (!IsImmInteger(paramType) && !IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
-		{
-			LOG_WARNING(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
-		}
-
 		GetScriptParams(&thread, 1);
 		uval = opcodeParams[0].dwParam;
 		return thread;
@@ -558,12 +384,6 @@ namespace CLEO
 
 	inline CRunningScript& operator<<(CRunningScript& thread, DWORD uval)
 	{
-		auto paramType = (eDataType)*thread.GetBytePointer();
-		if (!IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
-		{
-			LOG_WARNING(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
-		}
-
 		opcodeParams[0].dwParam = uval;
 		SetScriptParams(&thread, 1);
 		return thread;
@@ -571,12 +391,6 @@ namespace CLEO
 
 	inline CRunningScript& operator>>(CRunningScript& thread, int& nval)
 	{
-		auto paramType = (eDataType)*thread.GetBytePointer();
-		if (!IsImmInteger(paramType) && !IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
-		{
-			LOG_WARNING(&thread, "Reading integer argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
-		}
-
 		GetScriptParams(&thread, 1);
 		nval = opcodeParams[0].nParam;
 		return thread;
@@ -584,12 +398,6 @@ namespace CLEO
 
 	inline CRunningScript& operator<<(CRunningScript& thread, int nval)
 	{
-		auto paramType = (eDataType)*thread.GetBytePointer();
-		if (!IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
-		{
-			LOG_WARNING(&thread, "Writing integer, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
-		}
-
 		opcodeParams[0].nParam = nval;
 		SetScriptParams(&thread, 1);
 		return thread;
@@ -597,12 +405,6 @@ namespace CLEO
 
 	inline CRunningScript& operator>>(CRunningScript& thread, float& fval)
 	{
-		auto paramType = (eDataType)*thread.GetBytePointer();
-		if (!IsImmFloat(paramType) && !IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
-		{
-			LOG_WARNING(&thread, "Reading float argument, got %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
-		}
-
 		GetScriptParams(&thread, 1);
 		fval = opcodeParams[0].fParam;
 		return thread;
@@ -610,32 +412,8 @@ namespace CLEO
 
 	inline CRunningScript& operator<<(CRunningScript& thread, float fval)
 	{
-		auto paramType = (eDataType)*thread.GetBytePointer();
-		if (!IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
-		{
-			LOG_WARNING(&thread, "Writing float, got argument type %s in script %s", ToKindStr(paramType), ((CCustomScript*)&thread)->GetInfoStr().c_str());
-		}
-
 		opcodeParams[0].fParam = fval;
 		SetScriptParams(&thread, 1);
-		return thread;
-	}
-
-	inline CRunningScript& operator>>(CRunningScript& thread, CVector& vec)
-	{
-		GetScriptParams(&thread, 3);
-		vec.x = opcodeParams[0].fParam;
-		vec.y = opcodeParams[1].fParam;
-		vec.z = opcodeParams[2].fParam;
-		return thread;
-	}
-
-	inline CRunningScript& operator<<(CRunningScript& thread, const CVector& vec)
-	{
-		opcodeParams[0].fParam = vec.x;
-		opcodeParams[1].fParam = vec.y;
-		opcodeParams[2].fParam = vec.z;
-		SetScriptParams(&thread, 3);
 		return thread;
 	}
 
@@ -1187,71 +965,6 @@ namespace CLEO
 	/*						Opcode definitions								*/
 	/************************************************************************/
 
-	//0A8C=4,write_memory %1d% size %2d% value %3d% virtual_protect %4d%
-	OpcodeResult __stdcall opcode_0A8C(CRunningScript *thread)
-	{
-		GetScriptParams(thread, 4);
-		void *address = opcodeParams[0].pParam;
-		DWORD size = opcodeParams[1].dwParam;
-		DWORD value = opcodeParams[2].dwParam;
-		bool vp = opcodeParams[3].bParam;
-
-		if ((size_t)address <= CCustomOpcodeSystem::MinValidAddress)
-		{
-			SHOW_ERROR("Invalid '0x%X' pointer param of opcode [0A8C] in script %s\nScript suspended.", address, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		switch (size)
-		{
-		default:
-			GetInstance().CodeInjector.MemoryWrite(address, (BYTE)value, vp, size);
-			break;
-		case 2:
-			GetInstance().CodeInjector.MemoryWrite(address, (WORD)value, vp);
-			break;
-		case 4:
-			GetInstance().CodeInjector.MemoryWrite(address, (DWORD)value, vp);
-			break;
-		}
-		return OR_CONTINUE;
-	}
-
-	//0A8D=4,%4d% = read_memory %1d% size %2d% virtual_protect %3d%
-	OpcodeResult __stdcall opcode_0A8D(CRunningScript *thread)
-	{
-		GetScriptParams(thread, 3);
-		void *address = opcodeParams[0].pParam;
-		DWORD size = opcodeParams[1].dwParam;
-		bool vp = opcodeParams[2].bParam;
-
-		if ((size_t)address <= CCustomOpcodeSystem::MinValidAddress)
-		{
-			SHOW_ERROR("Invalid '0x%X' pointer param of opcode [0A8D] in script %s\nScript suspended.", address, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		opcodeParams[0].dwParam = 0;
-		switch (size)
-		{
-		case 1:
-			GetInstance().CodeInjector.MemoryRead(address, (BYTE)opcodeParams[0].ucParam, vp);
-			break;
-		case 2:
-			GetInstance().CodeInjector.MemoryRead(address, (WORD)opcodeParams[0].usParam, vp);
-			break;
-		case 4:
-			GetInstance().CodeInjector.MemoryRead(address, (DWORD)opcodeParams[0].dwParam, vp);
-			break;
-		default:
-			SHOW_ERROR("Invalid size param '%d' of opcode [0A8D] in script %s\nScript suspended.", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		SetScriptParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
 	//0A8E=3,%3d% = %1d% + %2d% ; int
 	OpcodeResult __stdcall opcode_0A8E(CRunningScript *thread)
 	{
@@ -1314,7 +1027,7 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0A93=0,end_custom_thread
+	//0A93=0,terminate_this_custom_script
 	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread)
 	{
 		CCustomScript *cs = reinterpret_cast<CCustomScript *>(thread);
@@ -1366,34 +1079,8 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0A96=2,%2d% = actor %1d% struct
-	OpcodeResult __stdcall opcode_0A96(CRunningScript *thread)
-	{
-		DWORD handle;
-		*thread >> handle;
-		*thread << GetPedPool().GetAtRef(handle);
-		return OR_CONTINUE;
-	}
-
-	//0A97=2,%2d% = car %1d% struct
-	OpcodeResult __stdcall opcode_0A97(CRunningScript *thread)
-	{
-		DWORD handle;
-		*thread >> handle;
-		*thread << GetVehiclePool().GetAtRef(handle);
-		return OR_CONTINUE;
-	}
-
-	//0A98=2,%2d% = object %1d% struct
-	OpcodeResult __stdcall opcode_0A98(CRunningScript *thread)
-	{
-		DWORD handle;
-		*thread >> handle;
-		*thread << GetObjectPool().GetAtRef(handle);
-		return OR_CONTINUE;
-	}
-
 	//0A99=1,chdir %1b:userdir/rootdir%
+	// TODO: move to filesystem plugin
 	OpcodeResult __stdcall opcode_0A99(CRunningScript *thread)
 	{
 		auto paramType = *thread->GetBytePointer();
@@ -1429,13 +1116,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0A9F=1,%1d% = current_thread_pointer
-	OpcodeResult __stdcall opcode_0A9F(CRunningScript *thread)
-	{
-		*thread << thread;
-		return OR_CONTINUE;
-	}
-
 	//0AA0=1,gosub_if_false %1p%
 	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread)
 	{
@@ -1455,86 +1135,12 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AA2=2,%2h% = load_library %1d% // IF and SET
-	OpcodeResult __stdcall opcode_0AA2(CRunningScript *thread)
-	{
-		auto path = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(path)
-
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path);
-
-		auto libHandle = LoadLibrary(filename.c_str());
-		*thread << libHandle;
-		SetScriptCondResult(thread, libHandle != nullptr);
-		if (libHandle) GetInstance().OpcodeSystem.m_hNativeLibs.insert(libHandle);
-
-		return OR_CONTINUE;
-	}
-
-	//0AA3=1,free_library %1h%
-	OpcodeResult __stdcall opcode_0AA3(CRunningScript *thread)
-	{
-		HMODULE libHandle;
-		*thread >> libHandle;
-		FreeLibrary(libHandle);
-		GetInstance().OpcodeSystem.m_hNativeLibs.erase(libHandle);
-		return OR_CONTINUE;
-	}
-
-	//0AA4=3,%3d% = get_proc_address %1d% library %2d% // IF and SET
-	OpcodeResult __stdcall opcode_0AA4(CRunningScript *thread)
-	{
-		auto funcName = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(funcName)
-
-		HMODULE libHandle;
-		*thread >> libHandle;
-		void *funcAddr = (void *)GetProcAddress(libHandle, funcName);
-		*thread << funcAddr;
-		SetScriptCondResult(thread, funcAddr != nullptr);
-		return OR_CONTINUE;
-	}
-
-	//0AA5=-1,call %1d% num_params %2h% pop %3h%
-	OpcodeResult __stdcall opcode_0AA5(CRunningScript *thread)
-	{
-		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA5, thread, false, false);
-	}
-
-	//0AA6=-1,call_method %1d% struct %2d% num_params %3h% pop %4h%
-	OpcodeResult __stdcall opcode_0AA6(CRunningScript *thread)
-	{
-		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA6, thread, true, false);
-	}
-
-	//0AA7=-1,call_function_return %1d% num_params %2h% pop %3h%
-	OpcodeResult __stdcall opcode_0AA7(CRunningScript *thread)
-	{
-		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA7, thread, false, true);
-	}
-
-	//0AA8=-1,call_method_return %1d% struct %2d% num_params %3h% pop %4h%
-	OpcodeResult __stdcall opcode_0AA8(CRunningScript *thread)
-	{
-		return CCustomOpcodeSystem::CallFunctionGeneric(0x0AA8, thread, true, true);
-	}
-
 	//0AA9=0,  is_game_version_original
 	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread)
 	{
 		auto gv = GetInstance().VersionManager.GetGameVersion();
 		auto cs = (CCustomScript*)thread;
 		SetScriptCondResult(thread, gv == GV_US10 || (cs->IsCustom() && cs->GetCompatibility() <= CLEO_VER_4_MIN && gv == GV_EU10));
-		return OR_CONTINUE;
-	}
-
-	//0AAA=2,  %2d% = thread %1d% pointer  // IF and SET
-	OpcodeResult __stdcall opcode_0AAA(CRunningScript *thread)
-	{
-		auto threadName = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(threadName)
-		threadName[7] = '\0';
-		CRunningScript *cs = GetInstance().ScriptEngine.FindCustomScriptNamed(threadName);
-		if (!cs) cs = GetInstance().ScriptEngine.FindScriptNamed(threadName);
-		*thread << cs;
-		SetScriptCondResult(thread, cs != nullptr);
 		return OR_CONTINUE;
 	}
 
@@ -1789,7 +1395,7 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB4=2,%2d% = var %1d%
+	//0AB4=2,%2d% = get_cleo_shared_var %1d%
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript *thread)
 	{
 		DWORD varId;
@@ -1801,9 +1407,10 @@ namespace CLEO
 	//0AB5=3,store_actor %1d% closest_vehicle_to %2d% closest_ped_to %3d%
 	OpcodeResult __stdcall opcode_0AB5(CRunningScript *thread)
 	{
-		DWORD actor;
-		*thread >> actor;
-		auto pPlayerPed = GetPedPool().GetAtRef(actor);
+		auto handle = OPCODE_READ_PARAM_PED_HANDLE();
+
+		auto pPlayerPed = CPools::GetPed(handle);
+
 		CPedIntelligence * pedintel;
 		if (pPlayerPed && (pedintel = pPlayerPed->m_pIntelligence))
 		{
@@ -1825,7 +1432,7 @@ namespace CLEO
 				pPed = nullptr;
 			}
 
-			*thread << (pVehicle ? GetVehiclePool().GetRef(pVehicle) : -1) << (pPed ? GetPedPool().GetRef(pPed) : -1);
+			*thread << (pVehicle ? CPools::GetVehicleRef(pVehicle) : -1) << (pPed ? CPools::GetPedRef(pPed) : -1);
 		}
 		else *thread << -1 << -1;
 		return OR_CONTINUE;
@@ -1842,13 +1449,16 @@ namespace CLEO
 		{
 			CVector coords(pMarker->m_vecPos);
 			coords.z = FindGroundZ(coords.x, coords.y);
-			*thread << coords;
-			SetScriptCondResult(thread, true);
+
+			OPCODE_WRITE_PARAM_FLOAT(coords.x);
+			OPCODE_WRITE_PARAM_FLOAT(coords.y);
+			OPCODE_WRITE_PARAM_FLOAT(coords.z);
+			OPCODE_CONDITION_RESULT(true);
 		}
 		else
 		{
-			GetScriptParams(thread, 3);
-			SetScriptCondResult(thread, false);
+			OPCODE_SKIP_PARAMS(3);
+			OPCODE_CONDITION_RESULT(false);
 		}
 
 		return OR_CONTINUE;
@@ -1857,18 +1467,24 @@ namespace CLEO
 	//0AB7=2,get_vehicle %1d% number_of_gears_to %2d%
 	OpcodeResult __stdcall opcode_0AB7(CRunningScript *thread)
 	{
-		DWORD hVehicle;
-		*thread >> hVehicle;
-		*thread << GetVehiclePool().GetAtRef(hVehicle)->m_pHandlingData->m_transmissionData.m_nNumberOfGears;
+		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
+
+		auto vehicle = CPools::GetVehicle(handle);
+		auto gears = vehicle->m_pHandlingData->m_transmissionData.m_nNumberOfGears;
+
+		OPCODE_WRITE_PARAM_INT(gears);
 		return OR_CONTINUE;
 	}
 
 	//0AB8=2,get_vehicle %1d% current_gear_to %2d%
 	OpcodeResult __stdcall opcode_0AB8(CRunningScript *thread)
 	{
-		DWORD hVehicle;
-		*thread >> hVehicle;
-		*thread << GetVehiclePool().GetAtRef(hVehicle)->m_nCurrentGear;
+		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
+
+		auto vehicle = CPools::GetVehicle(handle);
+		auto gear = vehicle->m_nCurrentGear;
+
+		OPCODE_WRITE_PARAM_INT(gear);
 		return OR_CONTINUE;
 	}
 
@@ -1886,7 +1502,7 @@ namespace CLEO
 	{
 		auto threadName = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(threadName)
 
-		auto deleted_thread = GetInstance().ScriptEngine.FindCustomScriptNamed(threadName);
+		auto deleted_thread = (CCustomScript*)GetInstance().ScriptEngine.FindScriptNamed(threadName, false, true, 0);
 		if (deleted_thread)
 		{
 			GetInstance().ScriptEngine.RemoveCustomScript(deleted_thread);
@@ -1916,29 +1532,36 @@ namespace CLEO
 	//0ABD=1,  vehicle %1d% siren_on
 	OpcodeResult __stdcall opcode_0ABD(CRunningScript *thread)
 	{
-		DWORD hVehicle;
-		*thread >> hVehicle;
-		SetScriptCondResult(thread, GetVehiclePool().GetAtRef(hVehicle)->m_nVehicleFlags.bSirenOrAlarm);
+		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
+
+		auto vehicle = CPools::GetVehicle(handle);
+		auto state = vehicle->m_nVehicleFlags.bSirenOrAlarm;
+
+		OPCODE_CONDITION_RESULT(state);
 		return OR_CONTINUE;
 	}
 
 	//0ABE=1,  vehicle %1d% engine_on
 	OpcodeResult __stdcall opcode_0ABE(CRunningScript *thread)
 	{
-		DWORD hVehicle;
-		*thread >> hVehicle;
-		SetScriptCondResult(thread, GetVehiclePool().GetAtRef(hVehicle)->m_nVehicleFlags.bEngineOn);
+		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
+
+		auto vehicle = CPools::GetVehicle(handle);
+		auto state = vehicle->m_nVehicleFlags.bEngineOn;
+
+		OPCODE_CONDITION_RESULT(state);
 		return OR_CONTINUE;
 	}
 
 	//0ABF=2,set_vehicle %1d% engine_state_to %2d%
 	OpcodeResult __stdcall opcode_0ABF(CRunningScript *thread)
 	{
-		DWORD	hVehicle,
-			state;
-		*thread >> hVehicle >> state;
-		auto veh = GetVehiclePool().GetAtRef(hVehicle);
-		veh->m_nVehicleFlags.bEngineOn = state != false;
+		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
+		auto state = OPCODE_READ_PARAM_BOOL();
+
+		auto vehicle = CPools::GetVehicle(handle);
+
+		vehicle->m_nVehicleFlags.bEngineOn = state != false;
 		return OR_CONTINUE;
 	}
 
@@ -1966,101 +1589,49 @@ namespace CLEO
 	//0AC2=4,set_3d_audiostream %1d% position %2d% %3d% %4d%
 	OpcodeResult __stdcall opcode_0AC2(CRunningScript *thread)
 	{
-		CAudioStream *stream;
+		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
 		CVector pos;
-		*thread >> stream >> pos;
-		if (stream) stream->Set3dPosition(pos);
+		pos.x = OPCODE_READ_PARAM_FLOAT();
+		pos.y = OPCODE_READ_PARAM_FLOAT();
+		pos.z = OPCODE_READ_PARAM_FLOAT();
+
+		stream->Set3dPosition(pos);
 		return OR_CONTINUE;
 	}
 
 	//0AC3=2,link_3d_audiostream %1d% to_object %2d%
 	OpcodeResult __stdcall opcode_0AC3(CRunningScript *thread)
 	{
-		CAudioStream *stream;
-		DWORD handle;
-		*thread >> stream >> handle;
-		if (stream) stream->Link(GetObjectPool().GetAtRef(handle));
+		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
+		auto handle = OPCODE_READ_PARAM_OBJECT_HANDLE();
+
+		auto object = CPools::GetObject(handle);
+
+		stream->Link(object);
 		return OR_CONTINUE;
 	}
 
 	//0AC4=2,link_3d_audiostream %1d% to_actor %2d%
 	OpcodeResult __stdcall opcode_0AC4(CRunningScript *thread)
 	{
-		CAudioStream *stream;
-		DWORD handle;
-		*thread >> stream >> handle;
-		if (stream) stream->Link(GetPedPool().GetAtRef(handle));
+		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
+		auto handle = OPCODE_READ_PARAM_PED_HANDLE();
+
+		auto ped = CPools::GetPed(handle);
+
+		stream->Link(ped);
 		return OR_CONTINUE;
 	}
 
 	//0AC5=2,link_3d_audiostream %1d% to_vehicle %2d%
 	OpcodeResult __stdcall opcode_0AC5(CRunningScript *thread)
 	{
-		CAudioStream *stream;
-		DWORD handle;
-		*thread >> stream >> handle;
-		if (stream) stream->Link(GetVehiclePool().GetAtRef(handle));
-		return OR_CONTINUE;
-	}
+		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
+		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
-	//0AC6=2,%2d% = label %1p% offset
-	OpcodeResult __stdcall opcode_0AC6(CRunningScript *thread)
-	{
-		int label;
-		*thread >> label;
-		*thread << (label < 0 ? thread->GetBasePointer() - label : scmBlock + label);
-		return OR_CONTINUE;
-	}
+		auto vehicle = CPools::GetVehicle(handle);
 
-	//0AC7=2,%2d% = var %1d% offset
-	OpcodeResult __stdcall opcode_0AC7(CRunningScript *thread)
-	{
-		*thread << GetScriptParamPointer(thread);
-		return OR_CONTINUE;
-	}
-
-	//0AC8=2,%2d% = allocate_memory_size %1d%
-	OpcodeResult __stdcall opcode_0AC8(CRunningScript *thread)
-	{
-		DWORD size; *thread >> size;
-
-		void* mem = calloc(size, 1);
-		if (mem)
-		{
-			DWORD oldProtect;
-			VirtualProtect(mem, size, PAGE_EXECUTE_READWRITE, &oldProtect);
-
-			GetInstance().OpcodeSystem.m_pAllocations.insert(mem);
-		}
-		else
-			LOG_WARNING(thread, "[0AC8] failed to allocate %d bytes of memory in script %s", size, ((CCustomScript*)thread)->GetInfoStr().c_str());
-
-		*thread << mem;
-		SetScriptCondResult(thread, mem != nullptr);
-		return OR_CONTINUE;
-	}
-
-	//0AC9=1,free_allocated_memory %1d%
-	OpcodeResult __stdcall opcode_0AC9(CRunningScript *thread)
-	{
-		void *mem; *thread >> mem;
-
-		if ((size_t)mem <= CCustomOpcodeSystem::MinValidAddress)
-		{
-			SHOW_ERROR("[0AC9] used with invalid '0x%X' pointer argument in script %s\nScript suspended.", mem, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		// allocated with 0AC8
-		auto & allocs = GetInstance().OpcodeSystem.m_pAllocations;
-		if (allocs.find(mem) != allocs.end())
-		{
-			free(mem);
-			allocs.erase(mem);
-			return OR_CONTINUE; // done
-		}
-
-		LOG_WARNING(thread, "[0AC9] used with pointer to unknown or already freed memory in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+		stream->Link(vehicle);
 		return OR_CONTINUE;
 	}
 
@@ -2150,20 +1721,22 @@ namespace CLEO
 	//0AD2=2,  %2d% = player %1d% targeted_actor //IF and SET
 	OpcodeResult __stdcall opcode_0AD2(CRunningScript *thread)
 	{
-		DWORD playerId;
-		*thread >> playerId;
-		auto pPlayerPed = GetPlayerPed(playerId);
+		auto playerId = OPCODE_READ_PARAM_INT();
+
+		auto pPlayerPed = GetPlayerPed(playerId); // TODO: use plugin SDK instead
 		auto pTargetEntity = GetWeaponTarget(pPlayerPed);
+
 		if (!pTargetEntity) pTargetEntity = (CEntity*)pPlayerPed->m_pPlayerTargettedPed;
 		if (pTargetEntity && pTargetEntity->m_nType == ENTITY_TYPE_PED)
 		{
-			*thread << GetPedPool().GetRef(reinterpret_cast<CPed*>(pTargetEntity));
-			SetScriptCondResult(thread, true);
+			auto handle = CPools::GetPedRef(reinterpret_cast<CPed*>(pTargetEntity));
+			OPCODE_WRITE_PARAM_INT(handle);
+			OPCODE_CONDITION_RESULT(true);
 		}
 		else
 		{
-			*thread << -1;
-			SetScriptCondResult(thread, false);
+			OPCODE_WRITE_PARAM_INT(-1);
+			OPCODE_CONDITION_RESULT(false);
 		}
 		return OR_CONTINUE;
 	}
@@ -2186,21 +1759,29 @@ namespace CLEO
 		char fmt[MAX_STR_LEN];
 		auto format = ReadStringParam(thread, fmt, sizeof(fmt)); OPCODE_VALIDATE_STR_ARG_READ(format)
 
-		size_t cExParams = 0;
+		auto resultType = thread->PeekDataType();
+		if (!IsVariable(resultType) && IsVarString(resultType))
+		{
+			SHOW_ERROR("Result parameter must be variable type, received '%s' in script %s \nScript suspended.", ToKindStr(resultType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return thread->Suspend();
+		}
 		int *result = (int *)GetScriptParamPointer(thread);
-		SCRIPT_VAR *ExParams[35];
 
 		// read extra params
+		size_t cExParams = 0;
+		SCRIPT_VAR *ExParams[35];
 		for (int i = 0; i < 35; i++)
 		{
-			if (*thread->GetBytePointer())
+			auto paramType = thread->PeekDataType();
+			if (paramType != DT_END)
 			{
 				ExParams[i] = GetScriptParamPointer(thread);
 				cExParams++;
 			}
-			else ExParams[i] = nullptr;
+			else ExParams[i] = nullptr; // clear unused args
 		}
-		thread->IncPtr();
+		SkipUnusedVarArgs(thread); // and var args terminator
+
 		*result = sscanf(src, format,
 						 /* extra parameters (will be aligned automatically, but the limit of 35 elements maximum exists) */
 						 ExParams[0], ExParams[1], ExParams[2], ExParams[3], ExParams[4], ExParams[5],
@@ -2214,24 +1795,20 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0ADB=2,%2d% = car_model %1o% name
+	//0ADB=2,%2d% = car_model %1d% name
 	OpcodeResult __stdcall opcode_0ADB(CRunningScript *thread)
 	{
-		DWORD mi;
-		char *buf;
-		*thread >> mi;
+		DWORD modelIndex; *thread >> modelIndex;
 
 		CVehicleModelInfo* model;
 		// if 1.0 US, prefer GetModelInfo function  makes it compatible with fastman92's limit adjuster
-		if (CLEO::GetInstance().VersionManager.GetGameVersion() == CLEO::GV_US10) {
-			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(mi);
-		}
-		else {
-			model = reinterpret_cast<CVehicleModelInfo*>(Models[mi]);
-		}
-		if (*thread->GetBytePointer() >= 1 && *thread->GetBytePointer() <= 8) *thread >> buf;
-		else buf = (char *)GetScriptParamPointer(thread);
-		memcpy(buf, model->m_szGameName, 8);
+		if (CLEO::GetInstance().VersionManager.GetGameVersion() == CLEO::GV_US10)
+			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(modelIndex);
+		else
+			model = reinterpret_cast<CVehicleModelInfo*>(Models[modelIndex]);
+
+		auto str = std::string(std::string_view(model->m_szGameName, sizeof(model->m_szGameName))); // to proper cstr
+		WriteStringParam(thread, str.c_str());
 		return OR_CONTINUE;
 	}
 
@@ -2299,24 +1876,28 @@ namespace CLEO
 	//0AE1=7,%7d% = find_actor_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% pass_deads %6h% //IF and SET
 	OpcodeResult __stdcall opcode_0AE1(CRunningScript *thread)
 	{
-		CVector center;
-		float radius;
-		DWORD next, pass_deads;
+		CVector center = {};
+		center.x = OPCODE_READ_PARAM_FLOAT();
+		center.y = OPCODE_READ_PARAM_FLOAT();
+		center.z = OPCODE_READ_PARAM_FLOAT();
+		auto radius = OPCODE_READ_PARAM_FLOAT();
+		auto findNext = OPCODE_READ_PARAM_BOOL();
+		auto passDead = OPCODE_READ_PARAM_INT();
+
 		static DWORD stat_last_found = 0;
-		auto& pool = GetPedPool();
-		*thread >> center >> radius >> next >> pass_deads;
+		auto& pool = *CPools::ms_pPedPool;
 
 		DWORD& last_found = reinterpret_cast<CCustomScript *>(thread)->IsCustom() ?
 			reinterpret_cast<CCustomScript *>(thread)->GetLastSearchPed() :
 			stat_last_found;
 
-		if (!next) last_found = 0;
+		if (!findNext) last_found = 0;
 
 		for (int index = last_found; index < pool.m_nSize; ++index)
 		{
 			if (auto obj = pool.GetAt(index))
 			{
-				if (pass_deads != -1 && (obj->IsPlayer() || (pass_deads && !IsAvailable(obj))/* || obj->GetOwner() == 2*/ || obj->m_nPedFlags.bFadeOut))
+				if (passDead != -1 && (obj->IsPlayer() || (passDead && !IsAvailable(obj))/* || obj->GetOwner() == 2*/ || obj->m_nPedFlags.bFadeOut))
 					continue;
 
 				if (radius >= 1000.0f || (VectorSqrMagnitude(obj->GetPosition() - center) <= radius * radius))
@@ -2325,41 +1906,45 @@ namespace CLEO
 											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
 											//obj->PedCreatedBy = 2; // add reference to found actor
 
-					*thread << pool.GetRef(obj);
-					SetScriptCondResult(thread, true);
+					auto found = pool.GetRef(obj);
+					OPCODE_WRITE_PARAM_INT(found);
+					OPCODE_CONDITION_RESULT(true);
 					return OR_CONTINUE;
 				}
 			}
 		}
 
-		*thread << -1;
 		last_found = 0;
-		SetScriptCondResult(thread, false);
+		OPCODE_WRITE_PARAM_INT(-1);
+		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 
 	//0AE2=7,%7d% = find_vehicle_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% pass_wrecked %6h% //IF and SET
 	OpcodeResult __stdcall opcode_0AE2(CRunningScript *thread)
 	{
-		CVector center;
-		float radius;
-		DWORD next, pass_wrecked;
-		static DWORD stat_last_found = 0;
+		CVector center = {};
+		center.x = OPCODE_READ_PARAM_FLOAT();
+		center.y = OPCODE_READ_PARAM_FLOAT();
+		center.z = OPCODE_READ_PARAM_FLOAT();
+		auto radius = OPCODE_READ_PARAM_FLOAT();
+		auto findNext = OPCODE_READ_PARAM_BOOL();
+		auto passWreck = OPCODE_READ_PARAM_INT();
 
-		auto& pool = GetVehiclePool();
-		*thread >> center >> radius >> next >> pass_wrecked;
+		static DWORD stat_last_found = 0;
+		auto& pool = *CPools::ms_pVehiclePool;
 
 		DWORD& last_found = reinterpret_cast<CCustomScript*>(thread)->IsCustom() ?
 			reinterpret_cast<CCustomScript *>(thread)->GetLastSearchVehicle() :
 			stat_last_found;
 
-		if (!next) last_found = 0;
+		if (!findNext) last_found = 0;
 
 		for (int index = last_found; index < pool.m_nSize; ++index)
 		{
 			if (auto obj = pool.GetAt(index))
 			{
-				if ((pass_wrecked && IsWrecked(obj)) || (/*obj->GetOwner() == 2 ||*/ obj->m_nVehicleFlags.bFadeOut))
+				if ((passWreck && IsWrecked(obj)) || (/*obj->GetOwner() == 2 ||*/ obj->m_nVehicleFlags.bFadeOut))
 					continue;
 
 				if (radius >= 1000.0f || (VectorSqrMagnitude(obj->GetPosition() - center) <= radius * radius))
@@ -2367,33 +1952,37 @@ namespace CLEO
 					last_found = index + 1;	// on next opcode call start search from next index
 											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
 											// obj.referenceType = 2; // add reference to found actor
-					*thread << pool.GetRef(obj);
-					SetScriptCondResult(thread, true);
-					return OR_CONTINUE;
+
+					auto found = pool.GetRef(obj);
+					OPCODE_WRITE_PARAM_INT(found);
+					OPCODE_CONDITION_RESULT(true);
 				}
 			}
 		}
 
-		*thread << -1;
 		last_found = 0;
-		SetScriptCondResult(thread, false);
+		OPCODE_WRITE_PARAM_INT(-1);
+		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 
 	//0AE3=6,%6d% = find_object_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% //IF and SET
 	OpcodeResult __stdcall opcode_0AE3(CRunningScript *thread)
 	{
-		CVector center;
-		float radius;
-		DWORD next;
+		CVector center = {};
+		center.x = OPCODE_READ_PARAM_FLOAT();
+		center.y = OPCODE_READ_PARAM_FLOAT();
+		center.z = OPCODE_READ_PARAM_FLOAT();
+		auto radius = OPCODE_READ_PARAM_FLOAT();
+		auto findNext = OPCODE_READ_PARAM_BOOL();
+
 		static DWORD stat_last_found = 0;
-		auto& pool = GetObjectPool();
-		*thread >> center >> radius >> next;
+		auto& pool = *CPools::ms_pObjectPool;
 
 		auto cs = reinterpret_cast<CCustomScript *>(thread);
 		DWORD& last_found = cs->IsCustom() ? cs->GetLastSearchObject() : stat_last_found;
 
-		if (!next) last_found = 0;
+		if (!findNext) last_found = 0;
 
 		for (int index = last_found; index < pool.m_nSize; ++index)
 		{
@@ -2406,53 +1995,17 @@ namespace CLEO
 					last_found = index + 1;	// on next opcode call start search from next index
 											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
 											// obj.referenceType = 2; // add reference to found actor
-					*thread << pool.GetRef(obj);
-					SetScriptCondResult(thread, true);
-					return OR_CONTINUE;
+
+					auto found = pool.GetRef(obj);
+					OPCODE_WRITE_PARAM_INT(found);
+					OPCODE_CONDITION_RESULT(true);
 				}
 			}
 		}
 
 		last_found = 0;
-		*thread << -1;
-		SetScriptCondResult(thread, false);
-		return OR_CONTINUE;
-	}
-
-	//0AE9=0,pop_float
-	OpcodeResult __stdcall opcode_0AE9(CRunningScript *thread)
-	{
-		float result;
-		_asm fstp result
-		opcodeParams[0].fParam = result;
-		SetScriptParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0AEA=2,%2d% = actor_struct %1d% handle
-	OpcodeResult __stdcall opcode_0AEA(CRunningScript *thread)
-	{
-		CPed *struc;
-		*thread >> struc;
-		*thread << GetPedPool().GetRef(struc);
-		return OR_CONTINUE;
-	}
-
-	//0AEB=2,%2d% = car_struct %1d% handle
-	OpcodeResult __stdcall opcode_0AEB(CRunningScript *thread)
-	{
-		CVehicle *struc;
-		*thread >> struc;
-		*thread << GetVehiclePool().GetRef(struc);
-		return OR_CONTINUE;
-	}
-
-	//0AEC=2,%2d% = object_struct %1d% handle
-	OpcodeResult __stdcall opcode_0AEC(CRunningScript *thread)
-	{
-		CObject *struc;
-		*thread >> struc;
-		*thread << GetObjectPool().GetRef(struc);
+		OPCODE_WRITE_PARAM_INT(-1);
+		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 
@@ -2579,29 +2132,6 @@ namespace CLEO
 		SetScriptCondResult(thread, false);
 		return GetInstance().OpcodeSystem.CleoReturnGeneric(0x2003, thread);
 	}
-
-	//2004=1,forget_memory %1d%
-	OpcodeResult __stdcall opcode_2004(CRunningScript* thread)
-	{
-		void* mem; *thread >> mem;
-
-		if ((size_t)mem <= CCustomOpcodeSystem::MinValidAddress)
-		{
-			SHOW_ERROR("[2004] used with invalid '0x%X' pointer argument in script %s\nScript suspended.", mem, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		// allocated with 0AC8
-		auto& allocs = GetInstance().OpcodeSystem.m_pAllocations;
-		if (allocs.find(mem) != allocs.end())
-		{
-			allocs.erase(mem);
-			return OR_CONTINUE; // done
-		}
-
-		LOG_WARNING(thread, "[2004] used with pointer to unknown or already freed memory in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
-		return OR_CONTINUE;
-	}
 }
 
 
@@ -2680,6 +2210,69 @@ extern "C"
 		*outBuf = target.data;
 		*outBufSize = target.size;
 		*outNeedsTerminator = target.needTerminator;
+	}
+
+	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)
+	{
+		if (thread == nullptr || 
+			outBuf == nullptr || 
+			outBufSize == nullptr ||
+			outNeedsTerminator == nullptr)
+		{
+			LOG_WARNING(thread, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return;
+		}
+
+		auto target = GetStringParamWriteBuffer(thread);
+		*outBuf = target.data;
+		*outBufSize = target.size;
+		*outNeedsTerminator = target.needTerminator;
+	}
+
+	DWORD WINAPI CLEO_PeekIntOpcodeParam(CLEO::CRunningScript* thread)
+	{
+		// store state
+		auto param = opcodeParams[0];
+		auto ip = thread->CurrentIP;
+		auto count = GetInstance().OpcodeSystem.handledParamCount;
+
+		GetScriptParams(thread, 1);
+		DWORD result = opcodeParams[0].dwParam;
+
+		// restore state
+		thread->CurrentIP = ip;
+		GetInstance().OpcodeSystem.handledParamCount = count;
+		opcodeParams[0] = param;
+
+		return result;
+	}
+
+	float WINAPI CLEO_PeekFloatOpcodeParam(CLEO::CRunningScript* thread)
+	{
+		// store state
+		auto param = opcodeParams[0];
+		auto ip = thread->CurrentIP;
+		auto count = GetInstance().OpcodeSystem.handledParamCount;
+
+		GetScriptParams(thread, 1);
+		float result = opcodeParams[0].fParam;
+
+		// restore state
+		thread->CurrentIP = ip;
+		GetInstance().OpcodeSystem.handledParamCount = count;
+		opcodeParams[0] = param;
+
+		return result;
+	}
+
+	SCRIPT_VAR* WINAPI CLEO_GetParamsCollectiveArray()
+	{
+		return opcodeParams;
+	}
+
+	DWORD WINAPI CLEO_GetParamsHandledCount()
+	{
+		return GetInstance().OpcodeSystem.handledParamCount;
 	}
 
 	void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
@@ -2844,6 +2437,11 @@ extern "C"
 	CLEO::CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript()
 	{
 		return lastScriptCreated;
+	}
+
+	CLEO::CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
+	{
+		return GetInstance().ScriptEngine.FindScriptNamed(threadName, standardScripts, customScripts, resultIndex);
 	}
 
 	void WINAPI CLEO_AddScriptDeleteDelegate(FuncScriptDeleteDelegateT func)

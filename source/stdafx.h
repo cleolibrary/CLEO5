@@ -47,18 +47,11 @@ static const std::string Filepath_Log = FS::path(Filepath_Cleo).append(".cleo.lo
 #include <game_sa/CRadar.h>
 
 #include "..\cleo_sdk\CLEO.h"
+#include "..\cleo_sdk\CLEO_Utils.h"
 #include "CTheScripts.h"
-
-#define CPOOL_USE_HANDLE_ACCESS
-
-//#define VALIDATE_SIZE(struc, size)	static_assert(sizeof(struc) == size, #struc " (Invalid Structure Size)")
 
 #define NUM_SCAN_ENTITIES 16
 
-using CPedPool = CPool<CPed, CCopPed>;
-using CVehiclePool = CPool<CVehicle, CHeli>;
-using CObjectPool = CPool<CObject, CCutsceneObject>;
-using CBuildingPool = CPool<CBuilding>;
 using RGBA = CRGBA;
 using RwV3D = RwV3d;
 struct RwRect2D;

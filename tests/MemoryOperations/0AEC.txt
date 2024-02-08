@@ -1,0 +1,41 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0AEC" // get_object_ref
+debug_on
+
+trace "0AEC (get_object_ref)"
+
+
+wait 0
+request_model 333 // golf club
+load_all_models_now
+create_object 333 {xyz} 0.0 0.0 0.0 {result} 0@
+get_object_pointer 0@ {result} 1@
+
+0AEC: get_object_ref 1@ {result} 2@ // tested opcode
+
+mark_object_as_no_longer_needed 0@
+
+if
+    0@ == 2@
+then
+    trace "~g~~h~~h~0AEC (get_object_ref), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AEC (get_object_ref), #0 FAILED!~n~%08x Expected~n~%08x Occured" 0@ 2@
+end
+
+
+terminate_this_custom_script

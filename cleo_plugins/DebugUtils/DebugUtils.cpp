@@ -1,6 +1,6 @@
 #include "ScreenLog.h"
-#include "Utils.h"
 #include "CLEO.h"
+#include "CLEO_Utils.h"
 #include "CTimer.h"
 #include <windows.h> // keyboard
 #include <deque>
@@ -62,7 +62,7 @@ public:
         {
             std::string err(128, '\0');
             sprintf(err.data(), "This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-            MessageBox(HWND_DESKTOP, err.data(), "DebugUtils.cleo", MB_SYSTEMMODAL | MB_ICONERROR);
+            MessageBox(HWND_DESKTOP, err.data(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
         }
     }
 
@@ -129,11 +129,14 @@ public:
                 {
                     keysReleased = false;
 
-                    std::stringstream ss;
-                    ss << "Script breakpoint ";
-                    if (!pausedScripts[i].msg.empty()) ss << "'" << pausedScripts[i].msg << "' ";
-                    ss << "released in '" << pausedScripts[i].ptr->GetName() << "'";
-                    CLEO_Log(eLogLevel::Debug, ss.str().c_str());
+                    if (!CTimer::m_CodePause)
+                    {
+                        std::stringstream ss;
+                        ss << "Script breakpoint ";
+                        if (!pausedScripts[i].msg.empty()) ss << "'" << pausedScripts[i].msg << "' "; // TODO: restore color if custom was used in name
+                        ss << "released in '" << pausedScripts[i].ptr->GetName() << "'";
+                        CLEO_Log(eLogLevel::Debug, ss.str().c_str());
+                    }
 
                     if (CTimer::m_CodePause)
                     {

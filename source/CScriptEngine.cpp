@@ -83,6 +83,8 @@ namespace CLEO
             push count
             call FUNC_GetScriptParams
         }
+
+        GetInstance().OpcodeSystem.handledParamCount += count;
     }
 
     void __fastcall _TransmitScriptParams(CRunningScript *pScript, int dummy, CRunningScript *pScriptB)
@@ -103,6 +105,8 @@ namespace CLEO
             push count
             call FUNC_SetScriptParams
         }
+
+        GetInstance().OpcodeSystem.handledParamCount += count;
     }
 
     void __fastcall _SetScriptCondResult(CRunningScript *pScript, int dummy, int val)
@@ -1029,27 +1033,40 @@ namespace CLEO
         }
     }
 
-    CRunningScript *CScriptEngine::FindScriptNamed(const char *name)
+    CRunningScript* CScriptEngine::FindScriptNamed(const char* threadName, bool standardScripts, bool customScripts, size_t resultIndex)
     {
-        for (auto script = *activeThreadQueue; script; script = script->GetNext())
+        if (standardScripts)
         {
-            if (_stricmp(name, script->GetName().c_str()) == 0)
-                return script;
-        }
-        return nullptr;
-    }
-    CCustomScript *CScriptEngine::FindCustomScriptNamed(const char *name)
-    {
-        if (CustomMission)
-        {
-            if (_stricmp(name, CustomMission->GetName().c_str()) == 0) return CustomMission;
+            for (auto script = *activeThreadQueue; script; script = script->GetNext())
+            {
+                if (_strnicmp(threadName, script->Name, sizeof(script->Name)) == 0)
+                {
+                    if (resultIndex == 0) return script;
+                    else resultIndex--;
+                }
+            }
         }
 
-        for (auto it = CustomScripts.begin(); it != CustomScripts.end(); ++it)
+        if (customScripts)
         {
-            auto cs = *it;
-            if (_stricmp(name, cs->GetName().c_str()) == 0)
-                return cs;
+            if (CustomMission)
+            {
+                if (_strnicmp(threadName, CustomMission->Name, sizeof(CustomMission->Name)) == 0)
+                {
+                    if (resultIndex == 0) return CustomMission;
+                    else resultIndex--;
+                }
+            }
+
+            for (auto it = CustomScripts.begin(); it != CustomScripts.end(); ++it)
+            {
+                auto cs = *it;
+                if (_strnicmp(threadName, cs->Name, sizeof(cs->Name)) == 0)
+                {
+                    if (resultIndex == 0) return cs;
+                    else resultIndex--;
+                }
+            }
         }
 
         return nullptr;

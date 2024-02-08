@@ -33,7 +33,7 @@ public:
         {
             std::string err(128, '\0');
             sprintf(err.data(), "This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-            MessageBox(HWND_DESKTOP, err.data(), "IntOperations.cleo", MB_SYSTEMMODAL | MB_ICONERROR);
+            MessageBox(HWND_DESKTOP, err.data(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
         }
     }
 

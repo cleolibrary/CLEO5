@@ -1,0 +1,41 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0A98" // get_vehicle_pointer
+debug_on
+
+trace "0A98 (get_object_pointer)"
+
+
+wait 0
+request_model 333 // golf club
+load_all_models_now
+create_object 333 {xyz} 0.0 0.0 0.0 {result} 0@
+
+1@ = 0
+0A98: get_object_pointer 0@ {result} 1@ // tested opcode
+
+mark_object_as_no_longer_needed 0@
+
+if
+    1@ > 0x10000 // possibly valid pointer
+then
+    trace "~g~~h~~h~0A98 (get_object_pointer), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A98 (get_object_pointer), #0 FAILED!~n~%d" 1@ 2@ 3@
+end
+
+
+terminate_this_custom_script

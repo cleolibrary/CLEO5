@@ -20,10 +20,12 @@ namespace CLEO
 
             TRACE("Loading plugins...");
 
+            // CLEO5 plugins
             auto path = FS::path(Filepath_Cleo).append("cleo_plugins").string();
-            FilesWalk(path.c_str(), ".cleo", [&](const char* fullPath, const char* filename)
+            FilesWalk(path.c_str(), ".cleo5", [&](const char* fullPath, const char* filename)
             {
                 std::string name = filename;
+                name.resize(name.length() - 5); // cut off file type
                 std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
 
                 if(loaded.find(name) == loaded.end())
@@ -50,6 +52,7 @@ namespace CLEO
             FilesWalk(Filepath_Cleo.c_str(), ".cleo", [&](const char* fullPath, const char* filename)
             {
                 std::string name = filename;
+                name.resize(name.length() - 4); // cut off file type
                 std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
 
                 if(loaded.find(name) == loaded.end())

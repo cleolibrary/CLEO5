@@ -1,0 +1,189 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "2400" // copy_memory
+debug_on
+
+trace "2400 (copy_memory)"
+
+wait 0
+// copy 0 bytes
+get_var_pointer 3@ {store_to} 0@
+get_var_pointer 5@ {store_to} 1@
+2@ = 0xcccccccc
+3@ = 0x11223344
+4@ = 0xdddddddd
+5@ = 0x55667788
+6@ = 0xeeeeeeee
+
+2400: copy_memory {src} 0@ {dest} 1@ {size} 0 // tested opcode
+if and
+    2@ == 0xcccccccc
+    3@ == 0x11223344
+    4@ == 0xdddddddd
+    5@ == 0x55667788
+    6@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~2400 (copy_memory), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #0 FAILED!~n~cccccccc 11223344 dddddddd 55667788 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
+end
+
+
+wait 0
+// copy 1 byte
+get_var_pointer 3@ {store_to} 0@
+get_var_pointer 5@ {store_to} 1@
+2@ = 0xcccccccc
+3@ = 0x11223344
+4@ = 0xdddddddd
+5@ = 0x55667788
+6@ = 0xeeeeeeee
+
+2400: copy_memory {src} 0@ {dest} 1@ {size} 1 // tested opcode
+if and
+    2@ == 0xcccccccc
+    3@ == 0x11223344
+    4@ == 0xdddddddd
+    5@ == 0x55667744
+    6@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~2400 (copy_memory), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #1 FAILED!~n~cccccccc 11223344 dddddddd 55667744 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
+end
+
+
+wait 0
+// copy 2 bytes
+get_var_pointer 3@ {store_to} 0@
+get_var_pointer 5@ {store_to} 1@
+2@ = 0xcccccccc
+3@ = 0x11223344
+4@ = 0xdddddddd
+5@ = 0x55667788
+6@ = 0xeeeeeeee
+
+2400: copy_memory {src} 0@ {dest} 1@ {size} 2 // tested opcode
+if and
+    2@ == 0xcccccccc
+    3@ == 0x11223344
+    4@ == 0xdddddddd
+    5@ == 0x55663344
+    6@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~2400 (copy_memory), #2 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #2 FAILED!~n~cccccccc 11223344 dddddddd 55663344 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
+end
+
+
+wait 0
+// copy 3 bytes
+get_var_pointer 3@ {store_to} 0@
+get_var_pointer 5@ {store_to} 1@
+2@ = 0xcccccccc
+3@ = 0x11223344
+4@ = 0xdddddddd
+5@ = 0x55667788
+6@ = 0xeeeeeeee
+
+2400: copy_memory {src} 0@ {dest} 1@ {size} 3 // tested opcode
+if and
+    2@ == 0xcccccccc
+    3@ == 0x11223344
+    4@ == 0xdddddddd
+    5@ == 0x55223344
+    6@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~2400 (copy_memory), #3 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #3 FAILED!~n~cccccccc 11223344 dddddddd 55223344 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
+end
+
+
+wait 0
+// copy 4 bytes
+get_var_pointer 3@ {store_to} 0@
+get_var_pointer 5@ {store_to} 1@
+2@ = 0xcccccccc
+3@ = 0x11223344
+4@ = 0xdddddddd
+5@ = 0x55667788
+6@ = 0xeeeeeeee
+
+2400: copy_memory {src} 0@ {dest} 1@ {size} 4 // tested opcode
+if and
+    2@ == 0xcccccccc
+    3@ == 0x11223344
+    4@ == 0xdddddddd
+    5@ == 0x11223344
+    6@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~2400 (copy_memory), #4 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #4 FAILED!~n~cccccccc 11223344 dddddddd 11223344 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
+end
+
+
+wait 0
+// copy 5 bytes
+get_var_pointer 3@ {store_to} 0@
+get_var_pointer 5@ {store_to} 1@
+2@ = 0xcccccccc
+3@ = 0x11223344
+4@ = 0xdddddddd
+5@ = 0x55667788
+6@ = 0xeeeeeeee
+
+2400: copy_memory {src} 0@ {dest} 1@ {size} 5 // tested opcode
+if and
+    2@ == 0xcccccccc
+    3@ == 0x11223344
+    4@ == 0xdddddddd
+    5@ == 0x11223344
+    6@ == 0xeeeeeedd
+then
+    trace "~g~~h~~h~2400 (copy_memory), #5 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #5 FAILED!~n~cccccccc 11223344 dddddddd 11223344 eeeeeedd Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
+end
+
+
+wait 0
+// copy 7 bytes
+get_var_pointer 3@ {store_to} 0@
+get_var_pointer 5@ {store_to} 1@
+2@ = 0xcccccccc
+3@ = 0x11223344
+4@ = 0xdddddddd
+5@ = 0x55667788
+6@ = 0xeeeeeeee
+
+2400: copy_memory {src} 0@ {dest} 1@ {size} 7 // tested opcode
+if and
+    2@ == 0xcccccccc
+    3@ == 0x11223344
+    4@ == 0xdddddddd
+    5@ == 0x11223344
+    6@ == 0xeedddddd
+then
+    trace "~g~~h~~h~2400 (copy_memory), #6 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #6 FAILED!~n~cccccccc 11223344 dddddddd 11223344 eedddddd Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
+end
+
+
+terminate_this_custom_script

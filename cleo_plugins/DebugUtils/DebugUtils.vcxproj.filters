@@ -15,13 +15,18 @@
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp">
       <Filter>sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\GTA_SDK\plugin_sa\game_sa\CTimer.cpp">
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTimer.cpp">
       <Filter>sdk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ScreenLog.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="..\..\cleo_sdk\CLEO.h">
+      <Filter>sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
+      <Filter>sdk</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sdk">

@@ -128,8 +128,7 @@ namespace CLEO
         void LoadState(int saveSlot);
         void SaveState();
 
-        CRunningScript*	FindScriptNamed(const char *);
-        CCustomScript*	FindCustomScriptNamed(const char*);
+        CRunningScript* FindScriptNamed(const char* threadName, bool standardScripts, bool customScripts, size_t resultIndex = 0);
         bool IsValidScriptPtr(const CRunningScript*) const; // leads to active script? (regular or custom)
         void AddCustomScript(CCustomScript*);
         void RemoveCustomScript(CCustomScript*);
@@ -162,8 +161,6 @@ namespace CLEO
     }
 
     extern "C" {
-        extern SCRIPT_VAR *opcodeParams;
-        extern SCRIPT_VAR *missionLocals;
         extern CRunningScript *staticThreads;
     }
 

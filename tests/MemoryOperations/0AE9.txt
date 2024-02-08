@@ -1,0 +1,38 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0AE9" // pop_float
+debug_on
+
+trace "0AE9 (pop_float)"
+
+
+wait 0
+0@s = '42.5'
+get_var_pointer 0@ {result} 2@
+call_function 0x0823CEE {argCount} 1 {pop} 1 {arg} 2@ // double atof(const char *)
+
+0AE9: pop_float {result} 3@  // tested opcode
+
+if
+    3@ == 42.5
+then
+    trace "~g~~h~~h~0AE9 (pop_float), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AE9 (pop_float), #0 FAILED!~n~42.5 Expected~n~%f Occured" 3@
+end
+
+
+terminate_this_custom_script

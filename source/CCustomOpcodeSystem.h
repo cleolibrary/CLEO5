@@ -20,6 +20,7 @@ namespace CLEO
 
         static const size_t LastOriginalOpcode = 0x0A4E; // GTA SA
         static const size_t LastCustomOpcode = 0x7FFF;
+        static std::set<size_t> ProtectedOpcodes; // these can not be overwritten
 
         // most recently processed
         static CRunningScript* lastScript;
@@ -28,6 +29,7 @@ namespace CLEO
         static WORD lastCustomOpcode;
         static std::string lastErrorMsg;
         static WORD prevOpcode; // previous
+        static BYTE handledParamCount; // read/writen since current opcode handling started
         
         void FinalizeScriptObjects();
 
@@ -47,12 +49,6 @@ namespace CLEO
     private:
         friend OpcodeResult __stdcall opcode_0AA2(CRunningScript *pScript);
         friend OpcodeResult __stdcall opcode_0AA3(CRunningScript *pScript);
-        friend OpcodeResult __stdcall opcode_0AC8(CRunningScript *pScript);
-        friend OpcodeResult __stdcall opcode_0AC9(CRunningScript *pScript);
-        friend OpcodeResult __stdcall opcode_2004(CRunningScript* pScript);
-
-        std::set<HMODULE> m_hNativeLibs;
-        std::set<void*> m_pAllocations;
 
         typedef OpcodeResult(__thiscall* _OpcodeHandler)(CRunningScript* thread, WORD opcode);
 
@@ -92,6 +88,4 @@ namespace CLEO
     inline CRunningScript& operator<<(CRunningScript& thread, int nval);
     inline CRunningScript& operator>>(CRunningScript& thread, float& fval);
     inline CRunningScript& operator<<(CRunningScript& thread, float fval);
-    inline CRunningScript& operator>>(CRunningScript& thread, CVector& vec);
-    inline CRunningScript& operator<<(CRunningScript& thread, const CVector& vec);
 }

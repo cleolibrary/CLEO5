@@ -102,6 +102,9 @@
     <ClCompile Include="source\ScmFunction.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPools.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -166,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="source\ScmFunction.h">
       <Filter>source\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="cleo_sdk\CLEO_Utils.h">
+      <Filter>cleo_sdk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
