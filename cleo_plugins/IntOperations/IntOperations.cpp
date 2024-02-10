@@ -1,5 +1,6 @@
 #include "plugin.h"
 #include "CLEO.h"
+#include "CLEO_Utils.h"
 
 using namespace CLEO;
 using namespace plugin;
@@ -10,31 +11,29 @@ public:
     IntOperations()
     {
         auto cleoVer = CLEO_GetVersion();
-        if (cleoVer >= CLEO_VERSION)
+        if (cleoVer < CLEO_VERSION)
         {
-            //register opcodes
-            CLEO_RegisterOpcode(0x0B10, Script_IntOp_AND);
-            CLEO_RegisterOpcode(0x0B11, Script_IntOp_OR);
-            CLEO_RegisterOpcode(0x0B12, Script_IntOp_XOR);
-            CLEO_RegisterOpcode(0x0B13, Script_IntOp_NOT);
-            CLEO_RegisterOpcode(0x0B14, Script_IntOp_MOD);
-            CLEO_RegisterOpcode(0x0B15, Script_IntOp_SHR);
-            CLEO_RegisterOpcode(0x0B16, Script_IntOp_SHL);
-            CLEO_RegisterOpcode(0x0B17, Scr_IntOp_AND);
-            CLEO_RegisterOpcode(0x0B18, Scr_IntOp_OR);
-            CLEO_RegisterOpcode(0x0B19, Scr_IntOp_XOR);
-            CLEO_RegisterOpcode(0x0B1A, Scr_IntOp_NOT);
-            CLEO_RegisterOpcode(0x0B1B, Scr_IntOp_MOD);
-            CLEO_RegisterOpcode(0x0B1C, Scr_IntOp_SHR);
-            CLEO_RegisterOpcode(0x0B1D, Scr_IntOp_SHL);
-            CLEO_RegisterOpcode(0x0B1E, Sign_Extend);
+            auto err = StringPrintf("This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
+            MessageBox(HWND_DESKTOP, err.c_str(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
+            return;
         }
-        else
-        {
-            std::string err(128, '\0');
-            sprintf(err.data(), "This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-            MessageBox(HWND_DESKTOP, err.data(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
-        }
+
+        //register opcodes
+        CLEO_RegisterOpcode(0x0B10, Script_IntOp_AND);
+        CLEO_RegisterOpcode(0x0B11, Script_IntOp_OR);
+        CLEO_RegisterOpcode(0x0B12, Script_IntOp_XOR);
+        CLEO_RegisterOpcode(0x0B13, Script_IntOp_NOT);
+        CLEO_RegisterOpcode(0x0B14, Script_IntOp_MOD);
+        CLEO_RegisterOpcode(0x0B15, Script_IntOp_SHR);
+        CLEO_RegisterOpcode(0x0B16, Script_IntOp_SHL);
+        CLEO_RegisterOpcode(0x0B17, Scr_IntOp_AND);
+        CLEO_RegisterOpcode(0x0B18, Scr_IntOp_OR);
+        CLEO_RegisterOpcode(0x0B19, Scr_IntOp_XOR);
+        CLEO_RegisterOpcode(0x0B1A, Scr_IntOp_NOT);
+        CLEO_RegisterOpcode(0x0B1B, Scr_IntOp_MOD);
+        CLEO_RegisterOpcode(0x0B1C, Scr_IntOp_SHR);
+        CLEO_RegisterOpcode(0x0B1D, Scr_IntOp_SHL);
+        CLEO_RegisterOpcode(0x0B1E, Sign_Extend);
     }
 
     static OpcodeResult WINAPI Script_IntOp_AND(CScriptThread* thread)
@@ -43,11 +42,12 @@ public:
         0B10=3,%3d% = %1d% AND %2d%
         ****************************************************************/
     {
-        int a = CLEO_GetIntOpcodeParam(thread);
-        int b = CLEO_GetIntOpcodeParam(thread);
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
 
-        CLEO_SetIntOpcodeParam(thread, a & b);
+        auto result = a & b;
 
+        OPCODE_WRITE_PARAM_INT(result);
         return OR_CONTINUE;
     }
 
@@ -57,11 +57,12 @@ public:
         0B11=3,%3d% = %1d% OR %2d%
         ****************************************************************/
     {
-        int a = CLEO_GetIntOpcodeParam(thread);
-        int b = CLEO_GetIntOpcodeParam(thread);
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
 
-        CLEO_SetIntOpcodeParam(thread, a | b);
+        auto result = a | b;
 
+        OPCODE_WRITE_PARAM_INT(result);
         return OR_CONTINUE;
     }
 
@@ -71,11 +72,12 @@ public:
         0B12=3,%3d% = %1d% XOR %2d%
         ****************************************************************/
     {
-        int a = CLEO_GetIntOpcodeParam(thread);
-        int b = CLEO_GetIntOpcodeParam(thread);
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
 
-        CLEO_SetIntOpcodeParam(thread, a ^ b);
+        auto result = a ^ b;
 
+        OPCODE_WRITE_PARAM_INT(result);
         return OR_CONTINUE;
     }
 
@@ -85,10 +87,9 @@ public:
         0B13=2,%2d% = NOT %1d%
         ****************************************************************/
     {
-        int a = CLEO_GetIntOpcodeParam(thread);
+        auto a = OPCODE_READ_PARAM_INT();
 
-        CLEO_SetIntOpcodeParam(thread, ~a);
-
+        OPCODE_WRITE_PARAM_INT(~a);
         return OR_CONTINUE;
     }
 
@@ -98,11 +99,12 @@ public:
         0B14=3,%3d% = %1d% MOD %2d%
         ****************************************************************/
     {
-        int a = CLEO_GetIntOpcodeParam(thread);
-        int b = CLEO_GetIntOpcodeParam(thread);
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
 
-        CLEO_SetIntOpcodeParam(thread, a % b);
+        auto result = a % b;
 
+        OPCODE_WRITE_PARAM_INT(result);
         return OR_CONTINUE;
     }
 
@@ -112,11 +114,12 @@ public:
         0B15=3,%3d% = %1d% SHR %2d%
         ****************************************************************/
     {
-        int a = CLEO_GetIntOpcodeParam(thread);
-        int b = CLEO_GetIntOpcodeParam(thread);
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
 
-        CLEO_SetIntOpcodeParam(thread, a >> b);
+        auto result = a >> b;
 
+        OPCODE_WRITE_PARAM_INT(result);
         return OR_CONTINUE;
     }
 
@@ -126,11 +129,12 @@ public:
         0B16=3,%3d% = %1d% SHL %2d%
         ****************************************************************/
     {
-        int a = CLEO_GetIntOpcodeParam(thread);
-        int b = CLEO_GetIntOpcodeParam(thread);
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
 
-        CLEO_SetIntOpcodeParam(thread, a << b);
+        auto result = a << b;
 
+        OPCODE_WRITE_PARAM_INT(result);
         return OR_CONTINUE;
     }
 
@@ -144,9 +148,10 @@ public:
         0B17=2,%1d% &= %2d%
         ****************************************************************/
     {
-        SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
-        int val = CLEO_GetIntOpcodeParam(thread);
-        op->dwParam &= val;
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto value = OPCODE_READ_PARAM_INT();
+
+        operand->dwParam &= value;
         return OR_CONTINUE;
     }
 
@@ -156,9 +161,10 @@ public:
         0B18=2,%1d% |= %2d%
         ****************************************************************/
     {
-        SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
-        int val = CLEO_GetIntOpcodeParam(thread);
-        op->dwParam |= val;
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto value = OPCODE_READ_PARAM_INT();
+
+        operand->dwParam |= value;
         return OR_CONTINUE;
     }
 
@@ -168,9 +174,10 @@ public:
         0B19=2,%1d% ^= %2d%
         ****************************************************************/
     {
-        SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
-        int val = CLEO_GetIntOpcodeParam(thread);
-        op->dwParam ^= val;
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto value = OPCODE_READ_PARAM_INT();
+
+        operand->dwParam ^= value;
         return OR_CONTINUE;
     }
 
@@ -180,8 +187,9 @@ public:
         0B1A=1,~%1d%
         ****************************************************************/
     {
-        SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
-        op->dwParam = ~op->dwParam;
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+
+        operand->dwParam = ~operand->dwParam;
         return OR_CONTINUE;
     }
 
@@ -191,9 +199,10 @@ public:
         0B1B=2,%1d% %= %2d%
         ****************************************************************/
     {
-        SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
-        int val = CLEO_GetIntOpcodeParam(thread);
-        op->dwParam %= val;
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto value = OPCODE_READ_PARAM_INT();
+
+        operand->dwParam %= value;
         return OR_CONTINUE;
     }
 
@@ -203,9 +212,10 @@ public:
         0B1C=2,%1d% >>= %2d%
         ****************************************************************/
     {
-        SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
-        int val = CLEO_GetIntOpcodeParam(thread);
-        op->dwParam >>= val;
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto value = OPCODE_READ_PARAM_INT();
+
+        operand->dwParam >>= value;
         return OR_CONTINUE;
     }
 
@@ -215,9 +225,10 @@ public:
         0B1D=2,%1d% <<= %2d%
         ****************************************************************/
     {
-        SCRIPT_VAR * op = CLEO_GetPointerToScriptVariable(thread);
-        int val = CLEO_GetIntOpcodeParam(thread);
-        op->dwParam <<= val;
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto value = OPCODE_READ_PARAM_INT();
+
+        operand->dwParam <<= value;
         return OR_CONTINUE;
     }
 
@@ -227,18 +238,21 @@ public:
         0B1E=2,sign_extend %1d% size %2d%
         ****************************************************************/
     {
-        SCRIPT_VAR* op = CLEO_GetPointerToScriptVariable(thread);
-        int size = CLEO_GetIntOpcodeParam(thread);
+        auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto size = OPCODE_READ_PARAM_INT();
 
-        if (size > 0 && size < 4) 
+        if (size <= 0 || size > 4)
         {
-            size_t offset = size * 8 - 1; // bit offset of top most bit in source value
-            bool signBit = op->dwParam & (1 << offset);
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
 
-            if(signBit)
-            {
-                op->dwParam |= 0xFFFFFFFF << offset; // set all upper bits
-            }
+        size_t offset = size * 8 - 1; // bit offset of top most bit in source value
+        bool signBit = operand->dwParam & (1 << offset);
+
+        if(signBit)
+        {
+            operand->dwParam |= 0xFFFFFFFF << offset; // set all upper bits
         }
         
         return OR_CONTINUE;

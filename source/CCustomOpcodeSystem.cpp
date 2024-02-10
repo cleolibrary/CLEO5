@@ -30,7 +30,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A94(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A95(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A99(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA1(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread);
@@ -84,8 +83,8 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AEE(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AEF(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
-	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // resolve_filepath
-	OpcodeResult __stdcall opcode_2001(CRunningScript* thread); // get_script_filename
+	// 2000 free slot
+	// 2001 free slot
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
 
@@ -144,7 +143,6 @@ namespace CLEO
 	WORD CCustomOpcodeSystem::lastOpcode = 0;
 	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
 	WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
-	std::set<size_t>CCustomOpcodeSystem::ProtectedOpcodes = {};
 	std::string CCustomOpcodeSystem::lastErrorMsg = {};
 	WORD CCustomOpcodeSystem::prevOpcode = 0;
 	BYTE CCustomOpcodeSystem::handledParamCount = 0;
@@ -241,7 +239,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
 		CLEO_RegisterOpcode(0x0A94, opcode_0A94);
 		CLEO_RegisterOpcode(0x0A95, opcode_0A95);
-		CLEO_RegisterOpcode(0x0A99, opcode_0A99);
 		CLEO_RegisterOpcode(0x0AA0, opcode_0AA0);
 		CLEO_RegisterOpcode(0x0AA1, opcode_0AA1);
 		CLEO_RegisterOpcode(0x0AA9, opcode_0AA9);
@@ -297,8 +294,7 @@ namespace CLEO
 
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		
-		CLEO_RegisterOpcode(0x2000, opcode_2000); // resolve_filepath
-		CLEO_RegisterOpcode(0x2001, opcode_2001); // get_script_filename
+		// 2000, 2001 free
 		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
 		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
 	}
@@ -355,12 +351,6 @@ namespace CLEO
 		if (opcode > LastCustomOpcode)
 		{
 			SHOW_ERROR("Can not register [%04X] opcode! Out of supported range.", opcode);
-			return false;
-		}
-
-		if (ProtectedOpcodes.find(opcode) != ProtectedOpcodes.end())
-		{
-			LOG_WARNING(0, "Opcode [%04X] is protected and can not be registerred! Skipping...", opcode);
 			return false;
 		}
 
@@ -1079,43 +1069,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0A99=1,chdir %1b:userdir/rootdir%
-	// TODO: move to filesystem plugin
-	OpcodeResult __stdcall opcode_0A99(CRunningScript *thread)
-	{
-		auto paramType = *thread->GetBytePointer();
-		if (paramType == DT_BYTE ||
-			paramType == DT_WORD ||
-			paramType == DT_DWORD ||
-			paramType == DT_VAR ||
-			paramType == DT_LVAR ||
-			paramType == DT_VAR_ARRAY ||
-			paramType == DT_LVAR_ARRAY)
-		{
-			// numbered predefined paths
-			DWORD param; *thread >> param;
-
-			const char* path;
-			switch(param)
-			{
-				case 0: path = DIR_GAME; break;
-				case 1: path = DIR_USER; break;
-				case 2: path = DIR_SCRIPT; break;
-				default:
-					LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", param, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return OR_CONTINUE;
-			}
-
-			reinterpret_cast<CCustomScript*>(thread)->SetWorkDir(path);
-		}
-		else
-		{
-			auto path = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(path)
-			reinterpret_cast<CCustomScript*>(thread)->SetWorkDir(path);
-		}
-		return OR_CONTINUE;
-	}
-
 	//0AA0=1,gosub_if_false %1p%
 	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread)
 	{
@@ -1386,7 +1339,7 @@ namespace CLEO
 		return GetInstance().OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, true, returnParamCount);
 	}
 
-	//0AB3=2,var %1d% = %2d%
+	//0AB3=2,set_cleo_shared_var %1d% = %2d%
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript *thread)
 	{
 		DWORD varId, value;
@@ -2043,62 +1996,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread)
 	{
 		*thread << PLATFORM_WINDOWS;
-		return OR_CONTINUE;
-	}
-
-	//2000=2,%2s% = resolve_filepath %1s%
-	OpcodeResult __stdcall opcode_2000(CRunningScript* thread)
-	{
-		auto path = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(path)
-		auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path);
-		auto ok = WriteStringParam(thread, resolved.c_str()); OPCODE_VALIDATE_STR_ARG_WRITE(ok)
-		return OR_CONTINUE;
-	}
-
-	//2001=3,%3s% = get_script_filename %1d% full_path %2d% // IF and SET
-	OpcodeResult __stdcall opcode_2001(CRunningScript* thread)
-	{
-		CCustomScript* script;
-		DWORD fullPath;
-		*thread >> script >> fullPath;
-
-		if((int)script == -1) 
-		{
-			script = (CCustomScript*)thread; // current script
-		}
-		else
-		{
-			if(!GetInstance().ScriptEngine.IsValidScriptPtr(script))
-			{
-				CLEO_SkipOpcodeParams(thread, 1); // no result text
-				SetScriptCondResult(thread, false); // invalid input param
-				return OR_CONTINUE;
-			}
-		}
-
-		if(fullPath != 0)
-		{
-			const size_t len =
-				strlen(script->GetScriptFileDir()) +
-				1 + // path separator
-				strlen(script->GetScriptFileName());
-
-			std::string path;
-			path.reserve(len);
-
-			path = script->GetScriptFileDir();
-			path.push_back('\\');
-			path.append(script->GetScriptFileName());
-			path = script->ResolvePath(path.c_str()); // real absolute path
-
-			auto ok = WriteStringParam(thread, path.c_str()); OPCODE_VALIDATE_STR_ARG_WRITE(ok)
-		}
-		else
-		{
-			auto ok = WriteStringParam(thread, script->GetScriptFileName()); OPCODE_VALIDATE_STR_ARG_WRITE(ok)
-		}
-
-		SetScriptCondResult(thread, true);
 		return OR_CONTINUE;
 	}
 

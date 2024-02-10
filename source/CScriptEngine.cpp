@@ -169,6 +169,29 @@ namespace CLEO
                 return CLEO::eCLEO_Version::CLEO_VER_CUR;
         }
 
+        LPCSTR WINAPI CLEO_GetScriptFilename(CRunningScript* thread)
+        {
+            if (!GetInstance().ScriptEngine.IsValidScriptPtr(thread))
+            {
+                return nullptr;
+            }
+
+            auto cs = (CCustomScript*)thread;
+            return cs->GetScriptFileName();
+        }
+
+        LPCSTR WINAPI CLEO_GetScriptWorkDir(CRunningScript* thread)
+        {
+            auto cs = (CCustomScript*)thread;
+            return cs->GetWorkDir();
+        }
+
+        void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path)
+        {
+            auto cs = (CCustomScript*)thread;
+            cs->SetWorkDir(path);
+        }
+
         SCRIPT_VAR *opcodeParams;
         SCRIPT_VAR *missionLocals;
         CRunningScript *staticThreads;

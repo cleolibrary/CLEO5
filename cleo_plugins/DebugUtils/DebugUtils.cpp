@@ -33,37 +33,35 @@ public:
     DebugUtils()
     {
         auto cleoVer = CLEO_GetVersion();
-        if (cleoVer >= CLEO_VERSION)
+        if (cleoVer < CLEO_VERSION)
         {
-            auto config = GetConfigFilename();
-
-            // register opcodes
-            CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
-            CLEO_RegisterOpcode(0x00C4, Opcode_DebugOff);
-            CLEO_RegisterOpcode(0x2100, Opcode_Breakpoint);
-            CLEO_RegisterOpcode(0x2101, Opcode_Trace);
-            CLEO_RegisterOpcode(0x2102, Opcode_LogToFile);
-
-            // original Rockstar's script debugging opcodes
-            if(GetPrivateProfileInt("General", "LegacyDebugOpcodes", 0, config.c_str()) != 0)
-            {
-                CLEO_RegisterOpcode(0x0662, Opcode_PrintString);
-                CLEO_RegisterOpcode(0x0663, Opcode_PrintInt);
-                CLEO_RegisterOpcode(0x0664, Opcode_PrintFloat);
-            }
-
-            // register event callbacks
-            CLEO_RegisterCallback(eCallbackId::Log, OnLog);
-            CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
-            CLEO_RegisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
-            CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
+            auto err = StringPrintf("This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
+            MessageBox(HWND_DESKTOP, err.c_str(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
+            return;
         }
-        else
+
+        auto config = GetConfigFilename();
+
+        // register opcodes
+        CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
+        CLEO_RegisterOpcode(0x00C4, Opcode_DebugOff);
+        CLEO_RegisterOpcode(0x2100, Opcode_Breakpoint);
+        CLEO_RegisterOpcode(0x2101, Opcode_Trace);
+        CLEO_RegisterOpcode(0x2102, Opcode_LogToFile);
+
+        // original Rockstar's script debugging opcodes
+        if(GetPrivateProfileInt("General", "LegacyDebugOpcodes", 0, config.c_str()) != 0)
         {
-            std::string err(128, '\0');
-            sprintf(err.data(), "This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-            MessageBox(HWND_DESKTOP, err.data(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
+            CLEO_RegisterOpcode(0x0662, Opcode_PrintString);
+            CLEO_RegisterOpcode(0x0663, Opcode_PrintInt);
+            CLEO_RegisterOpcode(0x0664, Opcode_PrintFloat);
         }
+
+        // register event callbacks
+        CLEO_RegisterCallback(eCallbackId::Log, OnLog);
+        CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
+        CLEO_RegisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
+        CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
     }
 
     // ---------------------------------------------- event callbacks -------------------------------------------------

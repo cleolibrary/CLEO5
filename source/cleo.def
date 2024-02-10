@@ -43,3 +43,6 @@ EXPORTS
 	_CLEO_PeekIntOpcodeParam@4				@40
 	_CLEO_PeekFloatOpcodeParam@4			@41
 	_CLEO_GetScriptByName@16				@42
+	_CLEO_GetScriptFilename@4				@43
+	_CLEO_GetScriptWorkDir@4				@44
+	_CLEO_SetScriptWorkDir@8				@45

@@ -16,53 +16,51 @@ public:
     MemoryOperations()
     {
         auto cleoVer = CLEO_GetVersion();
-        if (cleoVer >= CLEO_VERSION)
+        if (cleoVer < CLEO_VERSION)
         {
-            //register opcodes
-            CLEO_RegisterOpcode(0x0A8C, opcode_0A8C); // write_memory
-            CLEO_RegisterOpcode(0x0A8D, opcode_0A8D); // read_memory
-
-            CLEO_RegisterOpcode(0x0A96, opcode_0A96); // get_ped_pointer
-            CLEO_RegisterOpcode(0x0A97, opcode_0A97); // get_vehicle_pointer
-            CLEO_RegisterOpcode(0x0A98, opcode_0A98); // get_object_pointer
-
-            CLEO_RegisterOpcode(0x0A9F, opcode_0A9F); // get_object_pointer
-
-            CLEO_RegisterOpcode(0x0AA2, opcode_0AA2); // load_dynamic_library
-            CLEO_RegisterOpcode(0x0AA3, opcode_0AA3); // free_library
-            CLEO_RegisterOpcode(0x0AA4, opcode_0AA4); // get_dynamic_library_procedure
-            CLEO_RegisterOpcode(0x0AA5, opcode_0AA5); // call_function
-            CLEO_RegisterOpcode(0x0AA6, opcode_0AA6); // call_method
-            CLEO_RegisterOpcode(0x0AA7, opcode_0AA7); // call_function_return
-            CLEO_RegisterOpcode(0x0AA8, opcode_0AA8); // call_method_return
-
-            CLEO_RegisterOpcode(0x0AAA, opcode_0AAA); // get_script_struct_named
-
-            CLEO_RegisterOpcode(0x0AC6, opcode_0AC6); // get_label_pointer
-            CLEO_RegisterOpcode(0x0AC7, opcode_0AC7); // get_var_pointer
-            CLEO_RegisterOpcode(0x0AC8, opcode_0AC8); // allocate_memory
-            CLEO_RegisterOpcode(0x0AC9, opcode_0AC9); // free_memory
-
-            CLEO_RegisterOpcode(0x0AE9, opcode_0AE9); // pop_float
-            CLEO_RegisterOpcode(0x0AEA, opcode_0AEA); // get_ped_ref
-            CLEO_RegisterOpcode(0x0AEB, opcode_0AEB); // get_vehicle_ref
-            CLEO_RegisterOpcode(0x0AEC, opcode_0AEC); // get_object_ref
-
-            CLEO_RegisterOpcode(0x2400, opcode_2400); // copy_memory
-            CLEO_RegisterOpcode(0x2401, opcode_2401); // read_memory_with_offset
-            CLEO_RegisterOpcode(0x2402, opcode_2402); // write_memory_with_offset
-            CLEO_RegisterOpcode(0x2403, opcode_2403); // forget_memory
-            CLEO_RegisterOpcode(0x2404, opcode_2404); // get_last_created_custom_script
-
-            // register event callbacks
-            CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
+            auto err = StringPrintf("This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
+            MessageBox(HWND_DESKTOP, err.c_str(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
+            return;
         }
-        else
-        {
-            std::string err(128, '\0');
-            sprintf(err.data(), "This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-            MessageBox(HWND_DESKTOP, err.data(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
-        }
+
+        //register opcodes
+        CLEO_RegisterOpcode(0x0A8C, opcode_0A8C); // write_memory
+        CLEO_RegisterOpcode(0x0A8D, opcode_0A8D); // read_memory
+
+        CLEO_RegisterOpcode(0x0A96, opcode_0A96); // get_ped_pointer
+        CLEO_RegisterOpcode(0x0A97, opcode_0A97); // get_vehicle_pointer
+        CLEO_RegisterOpcode(0x0A98, opcode_0A98); // get_object_pointer
+
+        CLEO_RegisterOpcode(0x0A9F, opcode_0A9F); // get_object_pointer
+
+        CLEO_RegisterOpcode(0x0AA2, opcode_0AA2); // load_dynamic_library
+        CLEO_RegisterOpcode(0x0AA3, opcode_0AA3); // free_library
+        CLEO_RegisterOpcode(0x0AA4, opcode_0AA4); // get_dynamic_library_procedure
+        CLEO_RegisterOpcode(0x0AA5, opcode_0AA5); // call_function
+        CLEO_RegisterOpcode(0x0AA6, opcode_0AA6); // call_method
+        CLEO_RegisterOpcode(0x0AA7, opcode_0AA7); // call_function_return
+        CLEO_RegisterOpcode(0x0AA8, opcode_0AA8); // call_method_return
+
+        CLEO_RegisterOpcode(0x0AAA, opcode_0AAA); // get_script_struct_named
+
+        CLEO_RegisterOpcode(0x0AC6, opcode_0AC6); // get_label_pointer
+        CLEO_RegisterOpcode(0x0AC7, opcode_0AC7); // get_var_pointer
+        CLEO_RegisterOpcode(0x0AC8, opcode_0AC8); // allocate_memory
+        CLEO_RegisterOpcode(0x0AC9, opcode_0AC9); // free_memory
+
+        CLEO_RegisterOpcode(0x0AE9, opcode_0AE9); // pop_float
+        CLEO_RegisterOpcode(0x0AEA, opcode_0AEA); // get_ped_ref
+        CLEO_RegisterOpcode(0x0AEB, opcode_0AEB); // get_vehicle_ref
+        CLEO_RegisterOpcode(0x0AEC, opcode_0AEC); // get_object_ref
+
+        CLEO_RegisterOpcode(0x2400, opcode_2400); // copy_memory
+        CLEO_RegisterOpcode(0x2401, opcode_2401); // read_memory_with_offset
+        CLEO_RegisterOpcode(0x2402, opcode_2402); // write_memory_with_offset
+        CLEO_RegisterOpcode(0x2403, opcode_2403); // forget_memory
+        CLEO_RegisterOpcode(0x2404, opcode_2404); // get_last_created_custom_script
+
+        // register event callbacks
+        CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
     }
 
     static void __stdcall OnFinalizeScriptObjects()

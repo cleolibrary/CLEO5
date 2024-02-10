@@ -467,6 +467,10 @@ void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func);
 // script utils
 void WINAPI CLEO_GetScriptInfoStr(CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize); // short text for displaying in error\log messages
 eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread); // compatibility mode
+LPCSTR WINAPI CLEO_GetScriptFilename(CRunningScript* thread); // returns nullptr if provided script ptr is not valid
+
+LPCSTR WINAPI CLEO_GetScriptWorkDir(CRunningScript* thread);
+void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
 void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
 void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);

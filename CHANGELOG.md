@@ -8,23 +8,29 @@
   - new opcode **2101 ([trace](https://library.sannybuilder.com/#/sa/debug/2101))**
   - new opcode **2102 ([log_to_file](https://library.sannybuilder.com/#/sa/debug/2102))**
   - implemented support of opcodes **0662**, **0663** and **0664** (original Rockstar's script debugging opcodes. See DebugUtils.ini)
+- new [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
+  - file related opcodes moved from CLEO into separated plugin
+  - opcode **0A9E ([write_to_file](https://library.sannybuilder.com/#/sa/file/0A9E))** now supports literal numbers and strings
+  - fixed bug preventing file stream opcodes from working correctly for read-write modes
+  - fixed buffer overflows in file stream read opcodes
+  - added/fixed support of all file stream opcodes in legacy mode (Cleo3)
+  - new opcode **2300 ([get_file_position](https://library.sannybuilder.com/#/sa/file/2300))**
+  - new opcode **2301 ([read_block_from_file](https://library.sannybuilder.com/#/sa/file/2301))**
+- new [MemoryOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/MemoryOperations) plugin
+  - memory related opcodes moved from CLEO into separated plugin
+  - validation of input and output parameters for all opcodes
+  - new opcode **2400 ([copy_memory](https://library.sannybuilder.com/#/sa/memory/2400))**
+  - new opcode **2401 ([read_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2401))**
+  - new opcode **2402 ([writememory_with_offset](https://library.sannybuilder.com/#/sa/memory/2402))**
+  - new opcode **2403 ([forget_memory](https://library.sannybuilder.com/#/sa/memory/2403))**
+  - new opcode **2404 ([get_last_created_custom_script](https://library.sannybuilder.com/#/sa/memory/2404))**  
 - new and updated opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
-  - **0D4E ([read_struct](https://library.sannybuilder.com/#/sa/CLEO/0D4E))** - mirrored from CLEO+/NewOpcodes
-  - **0E28 ([write_struct](https://library.sannybuilder.com/#/sa/CLEO/0E28))** - mirrored from CLEO+/NewOpcodes
-  - **0E70 ([get_last_created_custom_script](https://library.sannybuilder.com/#/sa/CLEO/0E70))** - mirrored from CLEO+
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
   - **2000 ([resolve_filepath](https://library.sannybuilder.com/#/sa/CLEO/2000))**
   - **2001 ([get_script_filename](https://library.sannybuilder.com/#/sa/CLEO/2001))**
   - **2002 ([cleo_return_with](https://library.sannybuilder.com/#/sa/CLEO/2002))**
   - **2003 ([cleo_return_fail](https://library.sannybuilder.com/#/sa/CLEO/2003))**
-  - **2004 ([forget_memory](https://library.sannybuilder.com/#/sa/CLEO/2004))**
-  - **2300 ([get_file_position](https://library.sannybuilder.com/#/sa/file/2300))**
-  - **2301 ([read_block_from_file](https://library.sannybuilder.com/#/sa/file/2301))**
-  - opcodes **0A9A**, **0A9B**, **0A9C**, **0A9D**, **0A9E**, **0AAB**, **0AD5**, **0AD6**, **0AD7**, **0AD8**, **0AD9**, **0ADA**, **0AE4**, **0AE5**, **0AE6**, **0AE7**  and **0AE8** moved to the [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
-  - fixed bug preventing file stream opcodes from working correctly for read-write modes
-  - fixed buffer overflows in file stream read opcodes
-  - added/fixed support of all file stream opcodes in legacy mode (Cleo3)
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
   - **cleo_return_\*** opcodes now can pass strings as return arguments
@@ -56,12 +62,20 @@
 - plugins moved to _cleo\cleo_plugins_ directory
 - new SDK method: CLEO_RegisterCallback
 - new SDK method: CLEO_GetVarArgCount
+- new SDK method: CLEO_PeekIntOpcodeParam
+- new SDK method: CLEO_PeekFloatOpcodeParam
 - new SDK method: CLEO_SkipUnusedVarArgs
 - new SDK method: CLEO_ReadParamsFormatted
 - new SDK method: CLEO_ReadStringParamWriteBuffer
+- new SDK method: CLEO_GetParamsCollectiveArray
+- new SDK method: CLEO_GetParamsHandledCount
 - new SDK method: CLEO_GetScriptVersion
 - new SDK method: CLEO_GetScriptInfoStr
+- new SDK method: CLEO_GetScriptFilename
+- new SDK method: CLEO_GetScriptWorkDir
+- new SDK method: CLEO_SetScriptWorkDir
 - new SDK method: CLEO_ResolvePath
+- new SDK method: CLEO_GetScriptByName
 - new SDK method: CLEO_GetScriptDebugMode
 - new SDK method: CLEO_SetScriptDebugMode
 - new SDK method: CLEO_Log
