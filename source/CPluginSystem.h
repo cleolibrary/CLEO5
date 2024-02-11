@@ -17,63 +17,39 @@ namespace CLEO
         CPluginSystem()
         {
             std::set<std::string> loaded;
-
-            TRACE("Loading plugins...");
-
-            // CLEO5 plugins
-            auto path = FS::path(Filepath_Cleo).append("cleo_plugins").string();
-            FilesWalk(path.c_str(), ".cleo5", [&](const char* fullPath, const char* filename)
-            {
-                std::string name = filename;
-                name.resize(name.length() - 5); // cut off file type
-                std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
-
-                if(loaded.find(name) == loaded.end())
+            auto LoadPluginsDir = [&](std::string path, std::string extension)
+            { 
+                FilesWalk(path.c_str(), extension.c_str(), [&](const char* fullPath, const char* filename)
                 {
-                    TRACE("Loading plugin '%s'", fullPath);
-                    HMODULE hlib = LoadLibrary(fullPath);
-                    if (!hlib)
-                    {
-                        LOG_WARNING(0, "Error loading plugin '%s'", fullPath);
-                    }
-                    else 
-                    {
-                        loaded.insert(name);
-                        plugins.push_back(hlib);
-                    }
-                }
-                else
-                {
-                    LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", name.c_str(), fullPath);
-                }
-            });
+                    std::string name = filename;
+                    name.resize(name.length() - extension.length()); // cut off file type
+                    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
 
-            // load plugins from legacy location
-            FilesWalk(Filepath_Cleo.c_str(), ".cleo", [&](const char* fullPath, const char* filename)
-            {
-                std::string name = filename;
-                name.resize(name.length() - 4); // cut off file type
-                std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
-
-                if(loaded.find(name) == loaded.end())
-                {
-                    TRACE("Loading plugin '%s'", fullPath);
-                    HMODULE hlib = LoadLibrary(fullPath);
-                    if (!hlib)
+                    if (loaded.find(name) == loaded.end())
                     {
-                        LOG_WARNING(0, "Error while loading plugin '%s'", fullPath);
+                        TRACE("Loading plugin '%s'", fullPath);
+                        HMODULE hlib = LoadLibrary(fullPath);
+                        if (!hlib)
+                        {
+                            LOG_WARNING(0, "Error loading plugin '%s'", fullPath);
+                        }
+                        else
+                        {
+                            loaded.insert(name);
+                            plugins.push_back(hlib);
+                        }
                     }
                     else
                     {
-                        loaded.insert(name);
-                        plugins.push_back(hlib);
+                        LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", name.c_str(), fullPath);
                     }
-                }
-                else
-                {
-                    LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", name.c_str(), fullPath);
-                }
-            });
+                });
+            };
+
+            TRACE("Loading plugins...");
+            LoadPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), ".cleo5"); // CLEO5 plugins
+            LoadPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), ".cleo"); // legacy plugins
+            LoadPluginsDir(Filepath_Cleo.c_str(), ".cleo"); // legacy plugins location
         }
 
         ~CPluginSystem()
