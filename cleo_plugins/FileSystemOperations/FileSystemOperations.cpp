@@ -455,6 +455,7 @@ public:
         {
             OPCODE_SKIP_PARAMS(1);
             OPCODE_CONDITION_RESULT(false);
+            return OR_CONTINUE;
         }
 
         OPCODE_WRITE_PARAM_STRING(ffd.cFileName);
@@ -739,7 +740,7 @@ public:
             OPCODE_VALIDATE_POINTER(script);
         }
 
-        const char* filename = CLEO_GetScriptFilename(thread);
+        const char* filename = CLEO_GetScriptFilename((CRunningScript*)script);
         if (filename == nullptr)
         {
             OPCODE_SKIP_PARAMS(1);
@@ -756,7 +757,7 @@ public:
             std::string absolute = ".\\";
             absolute += filename;
             absolute.resize(MAX_STR_LEN);
-            CLEO_ResolvePath(thread, absolute.data(), MAX_STR_LEN);
+            CLEO_ResolvePath((CRunningScript*)script, absolute.data(), MAX_STR_LEN);
             OPCODE_WRITE_PARAM_STRING(absolute.c_str());
         }
 

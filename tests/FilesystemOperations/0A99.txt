@@ -1,0 +1,109 @@
+{$CLEO .s}
+{$USE debug}
+{$USE file}
+{$USE bitwise}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0A99" // set_current_directory
+debug_on
+
+trace "0A99 (set_current_directory)"
+
+
+wait 0
+// set current script location as work dir
+0A99: set_current_directory ".\\" // tested opcode
+
+0@ = allocate_memory 260
+string_format 0@ {format} ""
+resolve_filepath 0@ {store_to} 0@
+
+cleo_call @TEXT_LENGTH {args} 1 0@ {result} 1@
+if
+    cleo_call @TEXT_ENDS_WITH {args} 2 0@ "\cleo\cleo_tests\FilesystemOperations"
+then
+    trace "~g~~h~~h~0A99 (set_current_directory), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A99 (set_current_directory), #0 FAILED! Current script dir: %s" 0@
+end
+free_memory 0@
+
+
+wait 0
+// set virtual absolute path
+0A99: set_current_directory "cleo:" // tested opcode
+
+0@ = allocate_memory 260
+string_format 0@ {format} ""
+resolve_filepath 0@ {store_to} 0@
+
+cleo_call @TEXT_LENGTH {args} 1 0@ {result} 1@
+if
+    cleo_call @TEXT_ENDS_WITH {args} 2 0@ "\cleo"
+then
+    trace "~g~~h~~h~0A99 (set_current_directory), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A99 (set_current_directory), #1 FAILED! Current script dir: %s" 0@
+end
+free_memory 0@
+
+
+wait 0
+// predefined number
+0A99: set_current_directory 1 // tested opcode
+
+0@ = allocate_memory 260
+string_format 0@ {format} ""
+resolve_filepath 0@ {store_to} 0@
+
+cleo_call @TEXT_LENGTH {args} 1 0@ {result} 1@
+if
+    cleo_call @TEXT_ENDS_WITH {args} 2 0@ "\GTA San Andreas User Files"
+then
+    trace "~g~~h~~h~0A99 (set_current_directory), #2 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A99 (set_current_directory), #2 FAILED! Current script dir: %s" 0@
+end
+free_memory 0@
+
+
+terminate_this_custom_script
+
+
+:TEXT_LENGTH
+    call_function_return 0x00826330 args 1 pop 1 0@ result 5@
+cleo_return_with true 5@
+
+
+:TEXT_ENDS_WITH
+    cleo_call @TEXT_LENGTH {args} 1 0@ {result} 5@
+    cleo_call @TEXT_LENGTH {args} 1 1@ {result} 6@
+    if
+        5@ < 6@
+    then
+        cleo_return_with false
+    end
+    
+    5@ -= 6@
+    0@ += 5@
+    
+    call_function_return 0x0081E568 num_params 2 pop 0 0@ 1@ result 5@ // int lstrcmpiA(char* str, char* str)
+    if
+        5@ == 0
+    then
+        5@ = true
+    else
+        5@ = false
+    end
+cleo_return_with 5@
+    

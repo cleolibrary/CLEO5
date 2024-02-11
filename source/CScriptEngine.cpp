@@ -169,7 +169,7 @@ namespace CLEO
                 return CLEO::eCLEO_Version::CLEO_VER_CUR;
         }
 
-        LPCSTR WINAPI CLEO_GetScriptFilename(CRunningScript* thread)
+        LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread)
         {
             if (!GetInstance().ScriptEngine.IsValidScriptPtr(thread))
             {
@@ -180,7 +180,7 @@ namespace CLEO
             return cs->GetScriptFileName();
         }
 
-        LPCSTR WINAPI CLEO_GetScriptWorkDir(CRunningScript* thread)
+        LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread)
         {
             auto cs = (CCustomScript*)thread;
             return cs->GetWorkDir();
@@ -209,7 +209,6 @@ namespace CLEO
     BYTE *scriptTexts;
 
     CRunningScript **inactiveThreadQueue, **activeThreadQueue;
-	CCustomScript *lastScriptCreated = nullptr;
 
 
     extern "C" void __stdcall opcode_004E(CCustomScript *pScript)
@@ -819,11 +818,6 @@ namespace CLEO
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
     }
 
-    CScriptEngine::CScriptEngine()
-    {
-        CustomMission = nullptr;
-    }
-
     CScriptEngine::~CScriptEngine()
     {
         GameEnd();
@@ -1388,7 +1382,7 @@ namespace CLEO
                     memcpy(Name, fName.c_str(), len);
                 }
             }
-            lastScriptCreated = this;
+            GetInstance().ScriptEngine.LastScriptCreated = this;
             bOK = true;
         }
         catch (std::exception& e)
@@ -1405,7 +1399,8 @@ namespace CLEO
     {
         if (BaseIP && !bIsMission) delete[] BaseIP;
         RunScriptDeleteDelegate(reinterpret_cast<CRunningScript*>(this));
-        if (lastScriptCreated == this) lastScriptCreated = nullptr;
+
+        if (GetInstance().ScriptEngine.LastScriptCreated == this) GetInstance().ScriptEngine.LastScriptCreated = nullptr;
     }
 
     float VectorSqrMagnitude(CVector vector) { return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z; }

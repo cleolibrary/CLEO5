@@ -97,16 +97,18 @@ namespace CLEO
 
     class CScriptEngine : VInjectible
     {
+    public:
         bool gameInProgress = false;
 
         friend class CCustomScript;
         std::list<CCustomScript *> CustomScripts;
         std::list<CCustomScript *> ScriptsWaitingForDelete;
         std::set<unsigned long> InactiveScriptHashes;
-        CCustomScript *CustomMission;
+        CCustomScript *CustomMission = nullptr;
+        CCustomScript *LastScriptCreated = nullptr;
 
         CCustomScript *LoadScript(const char *szFilePath);
-    public:
+
         bool NativeScriptsDebugMode; // debug mode enabled?
         std::string MainScriptFileDir;
         std::string MainScriptFileName;
@@ -114,7 +116,7 @@ namespace CLEO
 
         static SCRIPT_VAR CleoVariables[0x400];
 
-        CScriptEngine();
+        CScriptEngine() = default;
         ~CScriptEngine();
         
         virtual void Inject(CCodeInjector&);
@@ -165,7 +167,6 @@ namespace CLEO
     }
 
     extern BYTE *scmBlock, *missionBlock;
-    extern CCustomScript *lastScriptCreated;
 
 	extern float VectorSqrMagnitude(CVector vector);
 }

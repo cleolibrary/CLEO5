@@ -2231,6 +2231,8 @@ extern "C"
 				break;
 			}
 		}
+
+		GetInstance().OpcodeSystem.handledParamCount += count;
 	}
 
 	void WINAPI CLEO_SkipUnusedVarArgs(CLEO::CRunningScript* thread)
@@ -2316,7 +2318,7 @@ extern "C"
 
 	CLEO::CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript()
 	{
-		return lastScriptCreated;
+		return GetInstance().ScriptEngine.LastScriptCreated;
 	}
 
 	CLEO::CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
