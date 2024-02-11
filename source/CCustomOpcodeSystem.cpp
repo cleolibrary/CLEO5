@@ -1342,18 +1342,50 @@ namespace CLEO
 	//0AB3=2,set_cleo_shared_var %1d% = %2d%
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript *thread)
 	{
-		DWORD varId, value;
-		*thread >> varId >> value;
-		GetInstance().ScriptEngine.CleoVariables[varId].dwParam = value;
+		auto varIdx = OPCODE_READ_PARAM_INT();
+
+		const auto VarCount = _countof(CScriptEngine::CleoVariables);
+		if (varIdx < 0 || varIdx >= VarCount)
+		{
+			SHOW_ERROR("Variable index '%d' out of supported range in script %s\nScript suspended.", varIdx, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return thread->Suspend();
+		}
+
+		auto paramType = thread->PeekDataType();
+		if (!IsImmInteger(paramType) &&
+			!IsImmFloat(paramType) &&
+			!IsVariable(paramType))
+		{
+			SHOW_ERROR("Invalid value type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return thread->Suspend();
+		}
+
+		GetScriptParams(thread, 1);
+		GetInstance().ScriptEngine.CleoVariables[varIdx].dwParam = opcodeParams[0].dwParam;
 		return OR_CONTINUE;
 	}
 
 	//0AB4=2,%2d% = get_cleo_shared_var %1d%
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript *thread)
 	{
-		DWORD varId;
-		*thread >> varId;
-		*thread << GetInstance().ScriptEngine.CleoVariables[varId].dwParam;
+		auto varIdx = OPCODE_READ_PARAM_INT();
+
+		const auto VarCount = _countof(CScriptEngine::CleoVariables);
+		if (varIdx < 0 || varIdx >= VarCount)
+		{
+			SHOW_ERROR("Variable index '%d' out of supported range in script %s\nScript suspended.", varIdx, ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return thread->Suspend();
+		}
+
+		auto paramType = thread->PeekDataType();
+		if (!IsVariable(paramType))
+		{
+			SHOW_ERROR("Invalid result argument type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return thread->Suspend();
+		}
+
+		opcodeParams[0].dwParam = GetInstance().ScriptEngine.CleoVariables[varIdx].dwParam;
+		CLEO_RecordOpcodeParams(thread, 1);
 		return OR_CONTINUE;
 	}
 
