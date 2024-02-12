@@ -16,19 +16,21 @@
   - added/fixed support of all file stream opcodes in legacy mode (Cleo3)
   - new opcode **2300 ([get_file_position](https://library.sannybuilder.com/#/sa/file/2300))**
   - new opcode **2301 ([read_block_from_file](https://library.sannybuilder.com/#/sa/file/2301))**
+  - **2302 ([resolve_filepath](https://library.sannybuilder.com/#/sa/file/2302))**
+  - **2303 ([get_script_filename](https://library.sannybuilder.com/#/sa/file/2303))**
 - new [MemoryOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/MemoryOperations) plugin
   - memory related opcodes moved from CLEO into separated plugin
   - validation of input and output parameters for all opcodes
+  - opcode **0A8C ([write_memory](https://library.sannybuilder.com/#/sa/memory/0A8C))** now supports strings
   - new opcode **2400 ([copy_memory](https://library.sannybuilder.com/#/sa/memory/2400))**
   - new opcode **2401 ([read_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2401))**
   - new opcode **2402 ([writememory_with_offset](https://library.sannybuilder.com/#/sa/memory/2402))**
   - new opcode **2403 ([forget_memory](https://library.sannybuilder.com/#/sa/memory/2403))**
-  - new opcode **2404 ([get_last_created_custom_script](https://library.sannybuilder.com/#/sa/memory/2404))**  
+  - new opcode **2404 ([get_last_created_custom_script](https://library.sannybuilder.com/#/sa/memory/2404))**
+  - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
 - new and updated opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
-  - **2000 ([resolve_filepath](https://library.sannybuilder.com/#/sa/CLEO/2000))**
-  - **2001 ([get_script_filename](https://library.sannybuilder.com/#/sa/CLEO/2001))**
   - **2002 ([cleo_return_with](https://library.sannybuilder.com/#/sa/CLEO/2002))**
   - **2003 ([cleo_return_fail](https://library.sannybuilder.com/#/sa/CLEO/2003))**
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`

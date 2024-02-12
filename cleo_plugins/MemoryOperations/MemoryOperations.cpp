@@ -58,6 +58,7 @@ public:
         CLEO_RegisterOpcode(0x2402, opcode_2402); // write_memory_with_offset
         CLEO_RegisterOpcode(0x2403, opcode_2403); // forget_memory
         CLEO_RegisterOpcode(0x2404, opcode_2404); // get_last_created_custom_script
+        CLEO_RegisterOpcode(0x2405, opcode_2405); // is_script_running
 
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
@@ -175,7 +176,38 @@ public:
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
         auto size = OPCODE_READ_PARAM_INT();
-        auto value = OPCODE_READ_PARAM_UINT();
+
+        // value param
+        const void* source;
+        auto paramType = thread->PeekDataType();
+        bool sourceText = false;
+        if (IsVariable(paramType))
+        {
+            source = CLEO_GetPointerToScriptVariable(thread);
+        }
+        else if (IsImmString(paramType) || IsVarString(paramType))
+        {
+            static char buffer[MAX_STR_LEN];
+
+            if (size > MAX_STR_LEN)
+            {
+                SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN, ScriptInfoStr(thread).c_str());
+                return thread->Suspend();
+            }
+
+            ZeroMemory(buffer, size); // padd with zeros if size > length
+            source = CLEO_ReadStringOpcodeParam(thread, buffer, sizeof(buffer));
+            sourceText = true;
+        }
+        else
+        {
+            static SCRIPT_VAR value;
+
+            CLEO_RetrieveOpcodeParams(thread, 1);
+            value = CLEO_GetParamsCollectiveArray()[0];
+            source = &value;
+        }
+
         auto virtualProtect = OPCODE_READ_PARAM_BOOL();
 
         // validate params
@@ -200,11 +232,18 @@ public:
             VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
         }
 
-        // that's how it worked since ever...
-        if (size == 2 || size == 4)
-            memcpy(address, &value, size);
+        if (!sourceText)
+        {
+            // that's how it worked since ever...
+            if (size == 2 || size == 4)
+                memcpy(address, source, size);
+            else
+                memset(address, *((int*)source), size);
+        }
         else
-            memset(address, value, size);
+        {
+            memcpy(address, source, size);
+        }
 
         return OR_CONTINUE;
     }
@@ -714,6 +753,17 @@ public:
 
         OPCODE_WRITE_PARAM_PTR(address);
         OPCODE_CONDITION_RESULT(address != nullptr);
+        return OR_CONTINUE;
+    }
+
+    //2405=1, is_script_running %1d%
+    static OpcodeResult __stdcall opcode_2405(CLEO::CScriptThread* thread)
+    {
+        auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_INT();
+
+        auto name = CLEO_GetScriptFilename(address);
+
+        OPCODE_CONDITION_RESULT(name != nullptr);
         return OR_CONTINUE;
     }
 } Memory;

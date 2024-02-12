@@ -221,13 +221,14 @@ public:
         }
         else if(IsImmString(paramType) || IsVarString(paramType))
         {
+            static char buffer[MAX_STR_LEN];
+
             if (size > MAX_STR_LEN)
             {
                 SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN, ScriptInfoStr(thread).c_str());
                 return thread->Suspend();
             }
 
-            static char buffer[MAX_STR_LEN];
             ZeroMemory(buffer, size); // padd with zeros if size > length
             source = CLEO_ReadStringOpcodeParam(thread, buffer, sizeof(buffer));
         }

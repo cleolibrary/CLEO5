@@ -42,12 +42,9 @@ terminate_this_custom_script
                 does_file_exist 5@ // files only
             then
                 stream_custom_script 5@
-                11@ = 0
                 get_last_created_custom_script 11@
 
-                // wait for script to end
-                12@v = ""
-                while 12@v = get_script_filename 11@ {fullPath} false // valid script pointer?
+                while is_script_running 11@
                     wait 0
                 end
             end
