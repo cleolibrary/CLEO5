@@ -130,7 +130,8 @@ namespace CLEO
         void LoadState(int saveSlot);
         void SaveState();
 
-        CRunningScript* FindScriptNamed(const char* threadName, bool standardScripts, bool customScripts, size_t resultIndex = 0);
+        CRunningScript* FindScriptNamed(const char* threadName, bool standardScripts, bool customScripts, size_t resultIndex = 0); // can be called multiple times to find more scripts named threadName. resultIndex should be incremented until the method returns nullptr
+        CRunningScript* FindScriptByFilename(const char* path, size_t resultIndex = 0); // if path is not absolute it will be resolved with cleo directory as root
         bool IsValidScriptPtr(const CRunningScript*) const; // leads to active script? (regular or custom)
         void AddCustomScript(CCustomScript*);
         void RemoveCustomScript(CCustomScript*);

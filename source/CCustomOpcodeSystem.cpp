@@ -2177,7 +2177,7 @@ extern "C"
 		return result;
 	}
 
-	SCRIPT_VAR* WINAPI CLEO_GetParamsCollectiveArray()
+	SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray()
 	{
 		return opcodeParams;
 	}
@@ -2356,6 +2356,11 @@ extern "C"
 	CLEO::CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
 	{
 		return GetInstance().ScriptEngine.FindScriptNamed(threadName, standardScripts, customScripts, resultIndex);
+	}
+
+	CLEO::CRunningScript* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex)
+	{
+		return GetInstance().ScriptEngine.FindScriptByFilename(path, resultIndex);
 	}
 
 	void WINAPI CLEO_AddScriptDeleteDelegate(FuncScriptDeleteDelegateT func)

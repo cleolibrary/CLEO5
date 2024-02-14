@@ -481,7 +481,7 @@ DWORD WINAPI CLEO_GetVarArgCount(CRunningScript* thread); // peek remaining var-
 extern SCRIPT_VAR* opcodeParams;
 extern SCRIPT_VAR* missionLocals;
 
-SCRIPT_VAR* WINAPI CLEO_GetParamsCollectiveArray(); // get pointer to 'SCRIPT_VAR[32] opcodeParams'. Used by Retrieve/Record opcode params functions
+SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray(); // get pointer to 'SCRIPT_VAR[32] opcodeParams'. Used by Retrieve/Record opcode params functions
 BYTE WINAPI CLEO_GetParamsHandledCount(); // number of already read/written opcode parameters since current opcode handler was called
 
 // param read
@@ -513,7 +513,8 @@ void WINAPI CLEO_SetScriptDebugMode(CRunningScript* thread, BOOL enabled);
 
 CRunningScript* WINAPI CLEO_CreateCustomScript(CRunningScript* fromThread, const char* script_name, int label);
 CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript();
-CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex = 0); // returns nullptr if no more scripts found
+CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex = 0); // can be called multiple times to find more scripts named threadName. resultIndex should be incremented until the method returns nullptr
+CRunningScript* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex = 0); // can be absolute, partial path or just filename
 
 // scripts deletion callback
 void WINAPI CLEO_AddScriptDeleteDelegate(FuncScriptDeleteDelegateT func);

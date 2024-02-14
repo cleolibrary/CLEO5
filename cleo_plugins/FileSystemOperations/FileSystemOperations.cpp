@@ -241,7 +241,7 @@ public:
             }
 
             CLEO_RetrieveOpcodeParams(thread, 1);
-            source = CLEO_GetParamsCollectiveArray();
+            source = CLEO_GetOpcodeParamsArray();
         }
 
         File::write(handle, source, size);

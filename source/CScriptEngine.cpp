@@ -1089,6 +1089,61 @@ namespace CLEO
         return nullptr;
     }
 
+    CRunningScript* CScriptEngine::FindScriptByFilename(const char* path, size_t resultIndex)
+    {
+        if (path == nullptr) return nullptr;
+
+        auto pathLen = strlen(path);
+        auto CheckScript = [&](CRunningScript* script)
+        {
+            if (script == nullptr) return false;
+
+            auto cs = (CCustomScript*)script;
+            std::string scriptPath = cs->GetScriptFileDir();
+            scriptPath += '\\';
+            scriptPath += cs->GetScriptFileName();
+
+            if (scriptPath.length() < pathLen) return false;
+
+            auto startPos = scriptPath.length() - pathLen;
+            if (_strnicmp(path, scriptPath.c_str() + startPos, pathLen) == 0)
+            {
+                if (startPos > 0 && path[startPos - 1] != '\\') return false; // whole file/dir name must match
+
+                return true;
+            }
+        };
+
+        // standard scripts
+        for (auto script = *activeThreadQueue; script; script = script->GetNext())
+        {
+            if (CheckScript(script))
+            {
+                if (resultIndex == 0) return script;
+                else resultIndex--;
+            }
+        }
+
+        // custom scripts
+        if (CheckScript(CustomMission))
+        {
+            if (resultIndex == 0) return CustomMission;
+            else resultIndex--;
+        }
+
+        for (auto it = CustomScripts.begin(); it != CustomScripts.end(); ++it)
+        {
+            auto cs = *it;
+            if (CheckScript(cs))
+            {
+                if (resultIndex == 0) return cs;
+                else resultIndex--;
+            }
+        }
+
+        return nullptr;
+    }
+
     bool CScriptEngine::IsValidScriptPtr(const CRunningScript* ptr) const
     {
         for (auto script = *activeThreadQueue; script != nullptr; script = script->GetNext())

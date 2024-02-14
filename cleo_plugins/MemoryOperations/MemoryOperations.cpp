@@ -102,7 +102,7 @@ public:
         numPop *= 4; // bytes peer argument
 
         // retrieve parameters
-        auto scriptParams = CLEO_GetParamsCollectiveArray();
+        auto scriptParams = CLEO_GetOpcodeParamsArray();
         for (size_t i = 0; i < (size_t)numArg; i++)
         {
             auto& param = arguments[i];
@@ -204,7 +204,7 @@ public:
             static SCRIPT_VAR value;
 
             CLEO_RetrieveOpcodeParams(thread, 1);
-            value = CLEO_GetParamsCollectiveArray()[0];
+            value = CLEO_GetOpcodeParamsArray()[0];
             source = &value;
         }
 
