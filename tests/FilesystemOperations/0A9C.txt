@@ -1,0 +1,49 @@
+{$CLEO .s}
+{$USE debug}
+{$USE file}
+{$USE bitwise}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0A9C" // get_file_size
+debug_on
+
+trace "0A9A (get_file_size)"
+
+
+wait 0
+// try open non existing file
+if
+    0@ = open_file "cleo.asi" {mode} "r" // tested opcode
+then
+    trace "~g~~h~~h~0A9C (get_file_size), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A9C (get_file_size), #0 FAILED! Failed to open file."
+end
+
+
+wait 0
+0A9C: get_file_size 0@ {size} 1@ // tested opcode
+if
+    1@ > 0
+then
+    trace "~g~~h~~h~0A9C (get_file_size), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A9C (get_file_size), #1 FAILED! File size: %d" 1@
+end
+
+
+close_file 0@
+trace "~g~~h~~h~0A9C (get_file_size), #2 PASSED"
+
+
+terminate_this_custom_script

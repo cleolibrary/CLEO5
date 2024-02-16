@@ -3,8 +3,6 @@
 {$USE memory}
 {$USE file}
 
-define function RUN_TESTS_DIR(pathStr :string, dir :string)
-
 script_name 'CleoTest'
 debug_on
 
