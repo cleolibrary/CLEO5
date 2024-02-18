@@ -59,6 +59,8 @@ public:
         CLEO_RegisterOpcode(0x2403, opcode_2403); // forget_memory
         CLEO_RegisterOpcode(0x2404, opcode_2404); // get_custom_script_just_created
         CLEO_RegisterOpcode(0x2405, opcode_2405); // is_script_running
+        CLEO_RegisterOpcode(0x2406, opcode_2406); // get_script_struct_from_filename
+        
 
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
@@ -746,7 +748,7 @@ public:
         return OR_CONTINUE; // done
     }
 
-    //2404=1, get_custom_script_just_created %1d%
+    //2404=1,  get_custom_script_just_created %1d%
     static OpcodeResult __stdcall opcode_2404(CLEO::CScriptThread* thread)
     {
         auto address = CLEO_GetLastCreatedCustomScript();
@@ -756,7 +758,7 @@ public:
         return OR_CONTINUE;
     }
 
-    //2405=1, is_script_running %1d%
+    //2405=1,  is_script_running %1d%
     static OpcodeResult __stdcall opcode_2405(CLEO::CScriptThread* thread)
     {
         auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_INT();
@@ -764,6 +766,18 @@ public:
         auto name = CLEO_GetScriptFilename(address);
 
         OPCODE_CONDITION_RESULT(name != nullptr);
+        return OR_CONTINUE;
+    }
+
+    //2406=1,  get_script_struct_from_filename %1s%
+    static OpcodeResult __stdcall opcode_2406(CLEO::CScriptThread* thread)
+    {
+        auto filename = OPCODE_READ_PARAM_STRING();
+
+        auto address = CLEO_GetScriptByFilename(filename);
+
+        OPCODE_WRITE_PARAM_PTR(address);
+        OPCODE_CONDITION_RESULT(address != nullptr);
         return OR_CONTINUE;
     }
 } Memory;

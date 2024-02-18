@@ -28,6 +28,7 @@
   - new opcode **2403 ([forget_memory](https://library.sannybuilder.com/#/sa/memory/2403))**
   - new opcode **2404 ([get_custom_script_just_created](https://library.sannybuilder.com/#/sa/memory/2404))**
   - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
+  - new opcode **2406 ([get_script_struct_from_filename](https://library.sannybuilder.com/#/sa/memory/2406))**
 - new and updated opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
