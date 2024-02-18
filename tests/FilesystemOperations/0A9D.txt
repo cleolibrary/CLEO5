@@ -1,0 +1,114 @@
+{$CLEO .s}
+{$USE debug}
+{$USE file}
+{$USE bitwise}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+
+script_name "0A9D" // read_from_file
+debug_on
+
+trace "0A9D (read_from_file)"
+
+
+wait 0
+// open the file
+if
+    0@ = open_file "cleo.asi" {mode} "r"
+then
+    trace "~g~~h~~h~0A9D (read_from_file), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A9D (read_from_file), #0 FAILED! Failed to open file."
+end
+
+
+wait 0
+// read 0 bytes
+1@ = 0xcccccccc
+2@ = 0xdddddddd
+3@ = 0xeeeeeeee
+
+0A9D: read_from_file 0@ {size} 0 {destination} 2@ // tested opcode
+
+if and
+    1@ == 0xcccccccc
+    2@ == 0x00000000
+    3@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~0A9D (read_from_file), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A9D (read_from_file), #1 FAILED!~n~cccccccc 00000000 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
+end
+
+
+wait 0
+// read 2 bytes
+1@ = 0xcccccccc
+2@ = 0xdddddddd
+3@ = 0xeeeeeeee
+
+0A9D: read_from_file 0@ {size} 2 {destination} 2@ // tested opcode
+
+if and
+    1@ == 0xcccccccc
+    2@ == 0x00005A4D // DOS "MZ" header
+    3@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~0A9D (read_from_file), #2 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A9D (read_from_file), #2 FAILED!~n~cccccccc 00005A4D eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
+end
+
+
+wait 0
+close_file 0@
+trace "~g~~h~~h~0A9D (read_from_file), #3 PASSED"
+
+
+wait 0
+// open the file
+if
+    0@ = open_file "cleo.asi" {mode} "r"
+then
+    trace "~g~~h~~h~0A9D (read_from_file), #3 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A9D (read_from_file), #3 FAILED! Failed to open file."
+end
+
+
+wait 0
+// read 2 bytes into array
+1@ = 0xcccccccc
+2@ = 0xdddddddd
+3@ = 0xeeeeeeee
+4@ = 2 // array index
+
+0A9D: read_from_file 0@ {size} 2 {destination} 0@(4@,32i) // tested opcode
+
+if and
+    1@ == 0xcccccccc
+    2@ == 0x00005A4D // DOS "MZ" header
+    3@ == 0xeeeeeeee
+then
+    trace "~g~~h~~h~0A9D (read_from_file), #4 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A9D (read_from_file), #4 FAILED!~n~cccccccc 00005A4D eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
+end
+
+
+wait 0
+close_file 0@
+trace "~g~~h~~h~0A9D (read_from_file), #5 PASSED"
+
+
+terminate_this_custom_script
