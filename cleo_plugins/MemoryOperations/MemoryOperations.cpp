@@ -57,7 +57,7 @@ public:
         CLEO_RegisterOpcode(0x2401, opcode_2401); // read_memory_with_offset
         CLEO_RegisterOpcode(0x2402, opcode_2402); // write_memory_with_offset
         CLEO_RegisterOpcode(0x2403, opcode_2403); // forget_memory
-        CLEO_RegisterOpcode(0x2404, opcode_2404); // get_last_created_custom_script
+        CLEO_RegisterOpcode(0x2404, opcode_2404); // get_custom_script_just_created
         CLEO_RegisterOpcode(0x2405, opcode_2405); // is_script_running
 
         // register event callbacks
@@ -746,7 +746,7 @@ public:
         return OR_CONTINUE; // done
     }
 
-    //2404=1, get_last_created_custom_script %1d%
+    //2404=1, get_custom_script_just_created %1d%
     static OpcodeResult __stdcall opcode_2404(CLEO::CScriptThread* thread)
     {
         auto address = CLEO_GetLastCreatedCustomScript();

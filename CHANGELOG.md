@@ -26,7 +26,7 @@
   - new opcode **2401 ([read_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2401))**
   - new opcode **2402 ([writememory_with_offset](https://library.sannybuilder.com/#/sa/memory/2402))**
   - new opcode **2403 ([forget_memory](https://library.sannybuilder.com/#/sa/memory/2403))**
-  - new opcode **2404 ([get_last_created_custom_script](https://library.sannybuilder.com/#/sa/memory/2404))**
+  - new opcode **2404 ([get_custom_script_just_created](https://library.sannybuilder.com/#/sa/memory/2404))**
   - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
 - new and updated opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
@@ -69,7 +69,7 @@
 - new SDK method: CLEO_SkipUnusedVarArgs
 - new SDK method: CLEO_ReadParamsFormatted
 - new SDK method: CLEO_ReadStringParamWriteBuffer
-- new SDK method: CLEO_GetParamsCollectiveArray
+- new SDK method: CLEO_GetOpcodeParamsArray
 - new SDK method: CLEO_GetParamsHandledCount
 - new SDK method: CLEO_GetScriptVersion
 - new SDK method: CLEO_GetScriptInfoStr
@@ -78,9 +78,11 @@
 - new SDK method: CLEO_SetScriptWorkDir
 - new SDK method: CLEO_ResolvePath
 - new SDK method: CLEO_GetScriptByName
+- new SDK method: CLEO_GetScriptByFilename
 - new SDK method: CLEO_GetScriptDebugMode
 - new SDK method: CLEO_SetScriptDebugMode
 - new SDK method: CLEO_Log
+
 
 #### CLEO internal
 - project migrated to VS 2022
