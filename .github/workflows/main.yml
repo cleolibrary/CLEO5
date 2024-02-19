@@ -52,6 +52,7 @@ jobs:
           copy third-party\bass\bass.dll .output\Release\bass.dll
           copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
+          copy cleo_plugins\.output\*.cleo5 .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
 
           @REM install Silent's ASI Loader
