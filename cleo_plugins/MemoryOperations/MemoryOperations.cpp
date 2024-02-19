@@ -57,7 +57,7 @@ public:
         CLEO_RegisterOpcode(0x2401, opcode_2401); // read_memory_with_offset
         CLEO_RegisterOpcode(0x2402, opcode_2402); // write_memory_with_offset
         CLEO_RegisterOpcode(0x2403, opcode_2403); // forget_memory
-        CLEO_RegisterOpcode(0x2404, opcode_2404); // get_custom_script_just_created
+        CLEO_RegisterOpcode(0x2404, opcode_2404); // get_script_just_created
         CLEO_RegisterOpcode(0x2405, opcode_2405); // is_script_running
         CLEO_RegisterOpcode(0x2406, opcode_2406); // get_script_struct_from_filename
         
@@ -748,13 +748,16 @@ public:
         return OR_CONTINUE; // done
     }
 
-    //2404=1,  get_custom_script_just_created %1d%
+    //2404=1,get_script_just_created %1d%
     static OpcodeResult __stdcall opcode_2404(CLEO::CScriptThread* thread)
     {
-        auto address = CLEO_GetLastCreatedCustomScript();
+        auto head = thread;
+        while(head->Previous)
+        {
+            head = head->Previous;
+        }
 
-        OPCODE_WRITE_PARAM_PTR(address);
-        OPCODE_CONDITION_RESULT(address != nullptr);
+        OPCODE_WRITE_PARAM_PTR(head);
         return OR_CONTINUE;
     }
 

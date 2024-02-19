@@ -26,7 +26,7 @@
   - new opcode **2401 ([read_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2401))**
   - new opcode **2402 ([writememory_with_offset](https://library.sannybuilder.com/#/sa/memory/2402))**
   - new opcode **2403 ([forget_memory](https://library.sannybuilder.com/#/sa/memory/2403))**
-  - new opcode **2404 ([get_custom_script_just_created](https://library.sannybuilder.com/#/sa/memory/2404))**
+  - new opcode **2404 ([get_script_just_created](https://library.sannybuilder.com/#/sa/memory/2404))**
   - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
   - new opcode **2406 ([get_script_struct_from_filename](https://library.sannybuilder.com/#/sa/memory/2406))**
 - new and updated opcodes
