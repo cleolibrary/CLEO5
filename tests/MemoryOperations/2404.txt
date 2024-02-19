@@ -13,22 +13,22 @@ var 8@ : Integer
 var 9@ : Integer
 var 10@ : Integer
 
-script_name "2404" // get_script_just_created
+script_name "2404" // get_script_struct_just_created
 debug_on
 
-trace "2404 (get_script_just_created)"
+trace "2404 (get_script_struct_just_created)"
 
 // no wait!
-2404: get_script_just_created 0@ // tested opcode
+2404: get_script_struct_just_created 0@ // tested opcode
 
 get_this_script_struct 1@
 
 if
     0@ == 1@ // this script is last created one
 then
-    trace "~g~~h~~h~2404 (get_script_just_created), #0 PASSED"
+    trace "~g~~h~~h~2404 (get_script_struct_just_created), #0 PASSED"
 else
-    breakpoint "~r~~h~~h~~h~2404 (get_script_just_created), #0 FAILED!~n~%08x Expected~n~%08x Occured" 1@ 0@
+    breakpoint "~r~~h~~h~~h~2404 (get_script_struct_just_created), #0 FAILED!~n~%08x Expected~n~%08x Occured" 1@ 0@
 end
 
 
