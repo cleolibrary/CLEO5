@@ -823,13 +823,13 @@ namespace CLEO
 				auto paramType = *(eDataType*)arg;
 				if (IsVarString(paramType))
 				{
-					WriteStringParam(thread, arguments[i].pcParam);
+					OPCODE_WRITE_PARAM_STRING(arguments[i].pcParam);
 				} 
 				else if (IsVariable(paramType))
 				{
 					if (argumentIsStr[i]) // source was string, write it into provided buffer ptr
 					{
-						auto ok = WriteStringParam(thread, arguments[i].pcParam); OPCODE_VALIDATE_STR_ARG_WRITE(ok)
+						OPCODE_WRITE_PARAM_STRING(arguments[i].pcParam);
 					}
 					else
 						*thread << arguments[i].dwParam;
