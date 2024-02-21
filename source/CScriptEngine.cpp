@@ -175,6 +175,33 @@ namespace CLEO
             if (len < buffLen) buff[len] = '\0'; // add terminator if possible
             return buff;
         }
+        else if (IsImmString(paramType))
+        {
+            thread->IncPtr(1); // already processed paramType
+
+            auto str = (char*)thread->GetBytePointer();
+
+            switch (paramType)
+            {
+                case DT_TEXTLABEL:
+                {
+                    auto len = min((int)strnlen(str, 8), buffLen);
+                    memcpy(buff, str, len);
+                    if (len < buffLen) buff[len] = '\0'; // add terminator if possible
+                    thread->IncPtr(8); // text data
+                    return buff;
+                }
+
+                case DT_STRING:
+                {
+                    auto len = min((int)strnlen(str, 16), buffLen);
+                    memcpy(buff, str, len);
+                    if (len < buffLen) buff[len] = '\0'; // add terminator if possible
+                    thread->IncPtr(16); // text data
+                    return buff;
+                }
+            }
+        }
         else if (IsVarString(paramType))
         {
             switch (paramType)
@@ -185,8 +212,9 @@ namespace CLEO
                 case DT_VAR_TEXTLABEL_ARRAY:
                 case DT_LVAR_TEXTLABEL_ARRAY:
                 {
-                    auto len = min((int)strnlen(opcodeParams[0].pcParam, 8), buffLen);
-                    memcpy(buff, opcodeParams[0].pcParam, len);
+                    auto str = (char*)GetScriptParamPointer(thread);
+                    auto len = min((int)strnlen(str, 8), buffLen);
+                    memcpy(buff, str, len);
                     if (len < buffLen) buff[len] = '\0'; // add terminator if possible
                     return buff;
                 }
@@ -197,8 +225,9 @@ namespace CLEO
                 case DT_VAR_STRING_ARRAY:
                 case DT_LVAR_STRING_ARRAY:
                 {
-                    auto len = min((int)strnlen(opcodeParams[0].pcParam, 16), buffLen);
-                    memcpy(buff, opcodeParams[0].pcParam, len);
+                    auto str = (char*)GetScriptParamPointer(thread);
+                    auto len = min((int)strnlen(str, 16), buffLen);
+                    memcpy(buff, str, len);
                     if (len < buffLen) buff[len] = '\0'; // add terminator if possible
                     return buff;
                 }
@@ -206,8 +235,8 @@ namespace CLEO
         }
 
         // unsupported param type
-        GetScriptParams(thread, 1); // skip unhandled param
         LOG_WARNING(thread, "Argument #%d expected to be string, got %s in script %s", CLEO_GetParamsHandledCount(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
+        GetScriptParams(thread, 1); // try skip unhandled param
         return nullptr; // error
     }
 
