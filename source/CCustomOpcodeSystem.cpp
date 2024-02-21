@@ -22,6 +22,7 @@ namespace CLEO
 	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval);
 	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
 
+
 	OpcodeResult __stdcall opcode_0A92(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A94(CRunningScript *thread);
@@ -435,77 +436,9 @@ namespace CLEO
 	{
 		static char internal_buf[MAX_STR_LEN];
 		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
-		const auto bufLength = bufSize ? bufSize - 1 : 0; // max text length (minus terminator char)
+		int bufLength = (int)bufSize - 1; // max text length (minus terminator char), -1 for unknown
 
-		CCustomOpcodeSystem::lastErrorMsg.clear();
-
-		auto paramType = CLEO_GetOperandType(thread);
-		if (IsImmInteger(paramType) || IsVariable(paramType)) // TODO: it is possible to differentiate between int/float arrays
-		{
-			GetScriptParams(thread, 1);
-
-			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
-			{
-				CCustomOpcodeSystem::lastErrorMsg = (opcodeParams[0].dwParam == 0) ?
-					"Reading string from 'null' pointer argument" :
-					stringPrintf("Reading string from invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
-
-				return nullptr; // error, target buffer untouched
-			}
-
-			char* str = opcodeParams[0].pcParam;
-			auto length = strlen(str);
-
-			if (length > bufLength)
-			{
-				CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
-				length = bufLength; // clamp to target buffer size
-			}
-
-			if (length) strncpy(buf, str, length);
-
-			if (bufSize > 0) buf[length] = '\0'; // string terminator
-			return buf;
-		}
-		else
-		if(IsImmString(paramType) || IsVarString(paramType))
-		{
-			if (paramType == DT_VARLEN_STRING)
-			{
-				// prococess here as GetScriptStringParam can not obtain strings with lenght greater than 128
-				thread->IncPtr(1); // already processed paramType
-
-				DWORD length = (BYTE)*thread->GetBytePointer(); // as unsigned byte! 
-				thread->IncPtr(1); // length info
-
-				char* str = (char*)thread->GetBytePointer();
-				thread->IncPtr(length); // text data
-
-				if (length > bufLength)
-				{
-					CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole string (%d) from argument", bufLength, length);
-					length = bufLength; // clamp to target buffer size
-				}
-
-				if (length) strncpy(buf, str, length);
-				if (bufSize > 0) buf[length] = '\0'; // string terminator
-			}
-			else
-			{
-				size_t maxSize = 16 + 1; // long string and terminator
-				maxSize = min(maxSize, bufSize);
-				ZeroMemory(buf, maxSize);
-
-				GetScriptStringParam(thread, buf, (BYTE)min(bufSize, 0xFF)); // standard game's function
-			}
-
-			return buf;
-		}
-
-		// unsupported param type
-		GetScriptParams(thread, 1); // skip unhandled param
-		CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Reading string argument, got %s", ToKindStr(paramType));
-		return nullptr; // error, target buffer untouched
+		return CLEO::GetScriptStringParam(thread, 0, buf, bufLength);
 	}
 
 	// write output\result string parameter

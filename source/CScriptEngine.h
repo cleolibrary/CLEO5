@@ -154,8 +154,9 @@ namespace CLEO
     extern void(__thiscall * SetScriptParams)(CRunningScript *, int count);
     extern void(__thiscall * SetScriptCondResult)(CRunningScript *, bool);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer1)(CRunningScript *);
-    extern void(__thiscall * GetScriptStringParam)(CRunningScript *, char* buf, BYTE len);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
+
+    char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen);
 
     inline SCRIPT_VAR * GetScriptParamPointer(CRunningScript *thread)
     {

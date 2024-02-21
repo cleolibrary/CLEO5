@@ -16,7 +16,6 @@ namespace CLEO
     DWORD FUNC_SetScriptParams;
     DWORD FUNC_SetScriptCondResult;
     DWORD FUNC_GetScriptParamPointer1;
-    DWORD FUNC_GetScriptStringParam;
     DWORD FUNC_GetScriptParamPointer2;
 
     void(__thiscall * AddScriptToQueue)(CRunningScript *, CRunningScript **queue);
@@ -28,7 +27,6 @@ namespace CLEO
     void(__thiscall * SetScriptParams)(CRunningScript *, int count);
     void(__thiscall * SetScriptCondResult)(CRunningScript *, bool);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
-    void(__thiscall * GetScriptStringParam)(CRunningScript *, char* buf, BYTE len);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
 
 	void RunScriptDeleteDelegate(CRunningScript *script);
@@ -131,15 +129,86 @@ namespace CLEO
         return (SCRIPT_VAR*)((size_t)result + pScript->GetBasePointer());
     }
 
-    void __fastcall _GetScriptStringParam(CRunningScript *pScript, int dummy, char *buf, int len)
+    char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
     {
-        _asm
+        if (buff == nullptr || buffLen == 0)
+            return buff;
+
+        if (buffLen > 0)
+            ZeroMemory(buff, buffLen);
+        else
+            buffLen = 0x7FFFFFFF; // unknown - unlimited
+
+        auto paramType = thread->PeekDataType();
+        auto arrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+
+        auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
+
+        // integer address to text buffer
+        if (IsImmInteger(paramType) || isVariableInt)
         {
-            mov ecx, pScript
-            push len
-            push buf
-            call FUNC_GetScriptStringParam
+            GetScriptParams(thread, 1);
+
+            if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
+            {
+                LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument #%d in script %s", opcodeParams[0].dwParam, CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str());
+                return nullptr; // error
+            }
+
+            auto len = min((int)strlen(opcodeParams[0].pcParam), buffLen);
+            memcpy(buff, opcodeParams[0].pcParam, len);
+            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
+            return buff;
         }
+        else if (paramType == DT_VARLEN_STRING)
+        {
+            thread->IncPtr(1); // already processed paramType
+
+            DWORD length = *thread->GetBytePointer(); // as unsigned byte!
+            thread->IncPtr(1); // length info
+
+            char* str = (char*)thread->GetBytePointer();
+            thread->IncPtr(length); // text data
+
+            auto len = min((int)length, buffLen);
+            memcpy(buff, str, len);
+            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
+            return buff;
+        }
+        else if (IsVarString(paramType))
+        {
+            switch (paramType)
+            {
+                // short string variable
+                case DT_VAR_TEXTLABEL:
+                case DT_LVAR_TEXTLABEL:
+                case DT_VAR_TEXTLABEL_ARRAY:
+                case DT_LVAR_TEXTLABEL_ARRAY:
+                {
+                    auto len = min((int)strnlen(opcodeParams[0].pcParam, 8), buffLen);
+                    memcpy(buff, opcodeParams[0].pcParam, len);
+                    if (len < buffLen) buff[len] = '\0'; // add terminator if possible
+                    return buff;
+                }
+
+                // long string variable
+                case DT_VAR_STRING:
+                case DT_LVAR_STRING:
+                case DT_VAR_STRING_ARRAY:
+                case DT_LVAR_STRING_ARRAY:
+                {
+                    auto len = min((int)strnlen(opcodeParams[0].pcParam, 16), buffLen);
+                    memcpy(buff, opcodeParams[0].pcParam, len);
+                    if (len < buffLen) buff[len] = '\0'; // add terminator if possible
+                    return buff;
+                }
+            }
+        }
+
+        // unsupported param type
+        GetScriptParams(thread, 1); // skip unhandled param
+        LOG_WARNING(thread, "Argument #%d expected to be string, got %s in script %s", CLEO_GetParamsHandledCount(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
+        return nullptr; // error
     }
 
     SCRIPT_VAR * __fastcall _GetScriptParamPointer2(CRunningScript *pScript, int dummy, int unused)
@@ -765,7 +834,6 @@ namespace CLEO
         FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
         FUNC_SetScriptCondResult = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_COND_RESULT_FUNCTION);
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
-        FUNC_GetScriptStringParam = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
         AddScriptToQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_AddScriptToQueue);
@@ -777,7 +845,6 @@ namespace CLEO
         SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);
         SetScriptCondResult = reinterpret_cast<void(__thiscall*)(CRunningScript*, bool)>(_SetScriptCondResult);
         GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR * (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
-        GetScriptStringParam = reinterpret_cast<void(__thiscall*)(CRunningScript*, char*, BYTE)>(_GetScriptStringParam);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR * (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
         SaveScmData = gvm.TranslateMemoryAddress(MA_SAVE_SCM_DATA_FUNCTION);
@@ -795,6 +862,8 @@ namespace CLEO
         auto addr = gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT);
         inj.MemoryReadOffset(addr.address + 1, ProcessScript);
         inj.ReplaceFunction(HOOK_ProcessScript, addr);
+
+        inj.InjectFunction(&GetScriptStringParam, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
 
         scriptSprites = gvm.TranslateMemoryAddress(MA_SCRIPT_SPRITE_ARRAY);
         scriptDraws = gvm.TranslateMemoryAddress(MA_SCRIPT_DRAW_ARRAY);
