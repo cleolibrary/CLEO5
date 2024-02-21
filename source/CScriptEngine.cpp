@@ -140,7 +140,7 @@ namespace CLEO
             buffLen = 0x7FFFFFFF; // unknown - unlimited
 
         auto paramType = thread->PeekDataType();
-        auto arrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
         auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
 

@@ -1715,26 +1715,29 @@ namespace CLEO
 	//0ADE=2,%2d% = text_by_GXT_entry %1d%
 	OpcodeResult __stdcall opcode_0ADE(CRunningScript *thread)
 	{
-		auto gxt = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(gxt)
+		auto gxt = OPCODE_READ_PARAM_STRING();
 
-		if (*thread->GetBytePointer() >= 1 && *thread->GetBytePointer() <= 8)
-			*thread << GetInstance().TextManager.Get(gxt);
+		auto txt = GetInstance().TextManager.Get(gxt);
+
+		if (IsVarString(thread->PeekDataType()))
+		{
+			OPCODE_WRITE_PARAM_STRING(txt);
+		}
 		else
 		{
-			auto ok = WriteStringParam(thread, GetInstance().TextManager.Get(gxt)); OPCODE_VALIDATE_STR_ARG_WRITE(ok)
+			OPCODE_WRITE_PARAM_PTR(txt); // address of the text
 		}
-
 		return OR_CONTINUE;
 	}
 
 	//0ADF=2,add_dynamic_GXT_entry %1d% text %2d%
 	OpcodeResult __stdcall opcode_0ADF(CRunningScript *thread)
 	{
-		char gxtLabel[8]; // 7 + terminator character
-		auto gxtOk = ReadStringParam(thread, gxtLabel, sizeof(gxtLabel)); OPCODE_VALIDATE_STR_ARG_READ(gxtOk)
-		auto text = ReadStringParam(thread); OPCODE_VALIDATE_STR_ARG_READ(text)
+		char gxtLabel[9] = {0}; // 8 + terminator character
+		auto gxt = OPCODE_READ_PARAM_STRING_BUFF(gxtLabel, 8);
+		auto txt = OPCODE_READ_PARAM_STRING();
 
-		GetInstance().TextManager.AddFxt(gxtLabel, text);
+		GetInstance().TextManager.AddFxt(gxt, txt);
 		return OR_CONTINUE;
 	}
 
