@@ -43,13 +43,9 @@ namespace CLEO
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
 
-        static OpcodeResult CallFunctionGeneric(WORD opcode, CRunningScript* thread, bool thisCall, bool returnArg);
         static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
 
     private:
-        friend OpcodeResult __stdcall opcode_0AA2(CRunningScript *pScript);
-        friend OpcodeResult __stdcall opcode_0AA3(CRunningScript *pScript);
-
         typedef OpcodeResult(__thiscall* _OpcodeHandler)(CRunningScript* thread, WORD opcode);
 
         static const size_t OriginalOpcodeHandlersCount = (LastOriginalOpcode / 100) + 1; // 100 opcodes peer handler

@@ -1181,6 +1181,8 @@ namespace CLEO
 
                 return true;
             }
+
+            return false;
         };
 
         // standard scripts
