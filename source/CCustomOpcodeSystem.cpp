@@ -1731,8 +1731,8 @@ namespace CLEO
 	//0ADF=2,add_dynamic_GXT_entry %1d% text %2d%
 	OpcodeResult __stdcall opcode_0ADF(CRunningScript *thread)
 	{
-		char gxtLabel[9] = { 0 }; // 8 + terminator character
-		auto gxt = OPCODE_READ_PARAM_STRING_BUFF(gxtLabel, 8);
+		char gxtLabel[8] = { 0 }; // 7 + terminator character
+		auto gxt = OPCODE_READ_PARAM_STRING_BUFF(gxtLabel, 7);
 		auto txt = OPCODE_READ_PARAM_STRING();
 
 		GetInstance().TextManager.AddFxt(gxt, txt);
