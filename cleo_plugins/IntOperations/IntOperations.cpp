@@ -19,6 +19,11 @@ public:
         }
 
         //register opcodes
+        CLEO_RegisterOpcode(0x0A8E, opcode_0A8E); // x = a + b (int)
+        CLEO_RegisterOpcode(0x0A8F, opcode_0A8F); // x = a - b (int)
+        CLEO_RegisterOpcode(0x0A90, opcode_0A90); // x = a * b (int)
+        CLEO_RegisterOpcode(0x0A91, opcode_0A91); // x = a / b (int)
+
         CLEO_RegisterOpcode(0x0B10, Script_IntOp_AND);
         CLEO_RegisterOpcode(0x0B11, Script_IntOp_OR);
         CLEO_RegisterOpcode(0x0B12, Script_IntOp_XOR);
@@ -34,6 +39,54 @@ public:
         CLEO_RegisterOpcode(0x0B1C, Scr_IntOp_SHR);
         CLEO_RegisterOpcode(0x0B1D, Scr_IntOp_SHL);
         CLEO_RegisterOpcode(0x0B1E, Sign_Extend);
+    }
+
+    //0A8E=3,%3d% = %1d% + %2d% ; int
+    static OpcodeResult WINAPI opcode_0A8E(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
+
+        auto result = a + b;
+
+        OPCODE_WRITE_PARAM_INT(result);
+        return OR_CONTINUE;
+    }
+
+    //0A8F=3,%3d% = %1d% - %2d% ; int
+    static OpcodeResult WINAPI opcode_0A8F(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
+
+        auto result = a - b;
+
+        OPCODE_WRITE_PARAM_INT(result);
+        return OR_CONTINUE;
+    }
+
+    //0A90=3,%3d% = %1d% * %2d% ; int
+    static OpcodeResult WINAPI opcode_0A90(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
+
+        auto result = a * b;
+
+        OPCODE_WRITE_PARAM_INT(result);
+        return OR_CONTINUE;
+    }
+
+    //0A91=3,%3d% = %1d% / %2d% ; int
+    static OpcodeResult WINAPI opcode_0A91(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_INT();
+        auto b = OPCODE_READ_PARAM_INT();
+
+        auto result = a / b;
+
+        OPCODE_WRITE_PARAM_INT(result);
+        return OR_CONTINUE;
     }
 
     static OpcodeResult WINAPI Script_IntOp_AND(CScriptThread* thread)

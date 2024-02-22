@@ -22,10 +22,6 @@ namespace CLEO
 	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval);
 	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
 
-	OpcodeResult __stdcall opcode_0A8E(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A8F(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A90(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A91(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A92(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A94(CRunningScript *thread);
@@ -231,10 +227,6 @@ namespace CLEO
 	CCustomOpcodeSystem::CCustomOpcodeSystem()
 	{
 		// register CLEO opcodes
-		CLEO_RegisterOpcode(0x0A8E, opcode_0A8E);
-		CLEO_RegisterOpcode(0x0A8F, opcode_0A8F);
-		CLEO_RegisterOpcode(0x0A90, opcode_0A90);
-		CLEO_RegisterOpcode(0x0A91, opcode_0A91);
 		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
 		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
 		CLEO_RegisterOpcode(0x0A94, opcode_0A94);
@@ -954,42 +946,6 @@ namespace CLEO
 	/************************************************************************/
 	/*						Opcode definitions								*/
 	/************************************************************************/
-
-	//0A8E=3,%3d% = %1d% + %2d% ; int
-	OpcodeResult __stdcall opcode_0A8E(CRunningScript *thread)
-	{
-		GetScriptParams(thread, 2);
-		opcodeParams[0].nParam += opcodeParams[1].nParam;
-		SetScriptParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0A8F=3,%3d% = %1d% - %2d% ; int
-	OpcodeResult __stdcall opcode_0A8F(CRunningScript *thread)
-	{
-		GetScriptParams(thread, 2);
-		opcodeParams[0].nParam -= opcodeParams[1].nParam;
-		SetScriptParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0A90=3,%3d% = %1d% * %2d% ; int
-	OpcodeResult __stdcall opcode_0A90(CRunningScript *thread)
-	{
-		GetScriptParams(thread, 2);
-		opcodeParams[0].nParam *= opcodeParams[1].nParam;
-		SetScriptParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0A91=3,%3d% = %1d% / %2d% ; int
-	OpcodeResult __stdcall opcode_0A91(CRunningScript *thread)
-	{
-		GetScriptParams(thread, 2);
-		opcodeParams[0].nParam /= opcodeParams[1].nParam;
-		SetScriptParams(thread, 1);
-		return OR_CONTINUE;
-	}
 
 	//0A92=-1,create_custom_thread %1d%
 	OpcodeResult __stdcall opcode_0A92(CRunningScript *thread)
