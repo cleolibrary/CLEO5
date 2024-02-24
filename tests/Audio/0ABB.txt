@@ -1,0 +1,46 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0ABB" // get_audio_stream_volume
+
+debug_on
+
+trace "0ABB (get_audio_stream_volume)"
+
+
+// load the file
+wait 0
+if
+    load_audio_stream ".\Ding.mp3" store_to 0@
+then
+    trace "~g~~h~~h~0ABB (get_audio_stream_volume), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0ABB (get_audio_stream_volume), #0 FAILED!~n~Failed to load file. Handle: %d" 0@
+end
+
+
+// get stream volume
+wait 0
+0ABB: get_audio_stream_volume 0@ store_to 1@ // tested opcode
+if
+    1@ == 1.0 // default volume
+then
+    trace "~g~~h~~h~0ABB (get_audio_stream_volume), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0ABB (get_audio_stream_volume), #1 FAILED!~n~%f Expected~n~%f Occured" 1.0 1@
+end
+
+
+terminate_this_custom_script

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CleoBase.h"
+#include "Singleton.h"
 
 namespace CLEO
 {
@@ -18,11 +19,43 @@ namespace CLEO
 
     void __declspec(naked) CCleoInstance::OnUpdateGameLogics()
     {
-        //GetInstance().UpdateGameLogics(); // !
-        GetInstance().SoundSystem.Update();
+        CleoInstance.CallCallbacks(eCallbackId::GameProcess); // execute registered callbacks
+
         static DWORD dwFunc;
-        dwFunc = (DWORD)(GetInstance().UpdateGameLogics);
+        dwFunc = (DWORD)(CleoInstance.UpdateGameLogics);
         _asm jmp dwFunc
+    }
+
+    HWND CCleoInstance::OnCreateMainWnd(HINSTANCE hinst)
+    {
+        CleoSingletonCheck(); // check once for CLEO.asi duplicates
+
+        auto& base = GetInstance();
+        auto window = base.CreateMainWnd_Orig(hinst); // call original
+
+        // redirect window handling procedure
+        *((size_t*)&base.MainWndProc_Orig) = GetWindowLongPtr(window, GWLP_WNDPROC); // store original address
+        SetWindowLongPtr(window, GWLP_WNDPROC, (LONG)OnMainWndProc);
+
+        return window;
+    }
+
+    LRESULT __stdcall CCleoInstance::OnMainWndProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
+    {
+        auto& base = GetInstance();
+
+        switch (msg)
+        {
+            case WM_ACTIVATE:
+                base.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
+                break;
+
+            case WM_KILLFOCUS:
+                base.CallCallbacks(eCallbackId::MainWindowFocus, false);
+                break;
+        }
+
+        return base.MainWndProc_Orig(wnd, msg, wparam, lparam);
     }
 
     void CCleoInstance::OnScmInit1()
@@ -93,11 +126,12 @@ namespace CLEO
         GameMenu.Inject(CodeInjector);
         DmaFix.Inject(CodeInjector);
         TextManager.Inject(CodeInjector);
-        SoundSystem.Inject(CodeInjector);
         OpcodeSystem.Inject(CodeInjector);
         ScriptEngine.Inject(CodeInjector);
 
-        CodeInjector.ReplaceFunction(&OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS), &UpdateGameLogics);
+        CodeInjector.ReplaceFunction(OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig);
+
+        CodeInjector.ReplaceFunction(OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS), &UpdateGameLogics);
 
         CodeInjector.ReplaceFunction(OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig);
         CodeInjector.ReplaceFunction(OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig);
@@ -132,11 +166,7 @@ namespace CLEO
         TRACE("Starting new game, save slot: %d", saveSlot);
 
         // execute registered callbacks
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::GameBegin))
-        {
-            typedef void WINAPI callback(DWORD);
-            ((callback*)func)((DWORD)saveSlot);
-        }
+        GetInstance().CallCallbacks(eCallbackId::GameBegin, saveSlot);
 
         TextManager.LoadFxts();
     }
@@ -147,17 +177,9 @@ namespace CLEO
         m_bGameInProgress = false;
 
         TRACE("Ending current game");
-
-        // execute registered callbacks
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::GameEnd))
-        {
-            typedef void WINAPI callback(void);
-            ((callback*)func)();
-        }
-
+        GetInstance().CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
         ScriptEngine.GameEnd();
         OpcodeSystem.FinalizeScriptObjects();
-        SoundSystem.UnloadAllStreams();
         TextManager.Clear();
 
         saveSlot = -1;
@@ -173,6 +195,24 @@ namespace CLEO
         return m_callbacks[id];
     }
 
+    void CCleoInstance::CallCallbacks(eCallbackId id)
+    {
+        for (void* func : GetInstance().GetCallbacks(id))
+        {
+            typedef void WINAPI callback(void);
+            ((callback*)func)();
+        }
+    }
+
+    void CCleoInstance::CallCallbacks(eCallbackId id, DWORD arg)
+    {
+        for (void* func : GetInstance().GetCallbacks(id))
+        {
+            typedef void WINAPI callback(DWORD);
+            ((callback*)func)(arg);
+        }
+    }
+
     void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func)
     {
         GetInstance().AddCallback(id, func);
@@ -180,12 +220,7 @@ namespace CLEO
 
     void __cdecl CCleoInstance::OnDrawingFinished()
     {
-        // execute registered callbacks
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::DrawingFinished))
-        {
-            typedef void WINAPI callback(void);
-            ((callback*)func)();
-        }
+        GetInstance().CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
     }
 }
 

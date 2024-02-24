@@ -983,11 +983,7 @@ namespace CLEO
             }
         });
 
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptsLoaded))
-        {
-            typedef void WINAPI callback(void);
-            ((callback*)func)();
-        }
+        GetInstance().CallCallbacks(eCallbackId::ScriptsLoaded);
 
         TRACE("Scripts search done");
     }

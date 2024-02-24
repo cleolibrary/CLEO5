@@ -1,0 +1,46 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0AAF" // get_audio_stream_length
+
+debug_on
+
+trace "0AAF (get_audio_stream_length)"
+
+
+// load the file
+wait 0
+if
+    load_audio_stream ".\Ding.mp3" store_to 0@
+then
+    trace "~g~~h~~h~0AAF (get_audio_stream_length), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AAF (get_audio_stream_length), #0 FAILED!~n~Failed to load file. Handle: %d" 0@
+end
+
+
+// get stream length
+wait 0
+0AAF: get_audio_stream_length 0@ store_to 1@ // tested opcode
+if
+    1@ == 0 // Ding.mp3 duration is about 0.25 second, opcode returns integer with seconds
+then
+    trace "~g~~h~~h~0AAF (get_audio_stream_length), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AAF (get_audio_stream_length), #1 FAILED!~n~0 Expected~n~%d Occured" 1@
+end
+
+
+terminate_this_custom_script

@@ -1,0 +1,76 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0AC0" // set_audio_stream_looped
+
+debug_on
+
+trace "0AC0 (set_audio_stream_looped)"
+
+
+// load the file
+wait 0
+if
+    load_audio_stream ".\Ding.mp3" store_to 0@
+then
+    trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AC0 (set_audio_stream_looped), #0 FAILED!~n~Failed to load file. Handle: %d" 0@
+end
+
+
+// enable looping
+wait 0
+0AC0: set_audio_stream_looped 0@ flag true // tested opcode
+trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #1 PASSED"
+
+
+// start playback
+wait 0
+set_audio_stream_state 0@ state AudioStreamState.Play
+trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #2 PASSED"
+
+
+// get updated state
+wait 0
+get_audio_stream_state 0@ store_to 1@
+if
+    1@ == 1 // play
+then
+    trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #3 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AC0 (set_audio_stream_looped), #3 FAILED!~n~%d Expected~n~%d Occured" 1 1@
+end
+
+
+// check if still playing
+wait 400 // Ding.mp3 is 0.25s long
+get_audio_stream_state 0@ store_to 1@
+if
+    1@ == 1 // play
+then
+    trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #4 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AC0 (set_audio_stream_looped), #4 FAILED!~n~%d Expected~n~%d Occured" -1 1@
+end
+
+
+// stop playback
+wait 0
+set_audio_stream_state 0@ state AudioStreamState.Stop
+trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #5 PASSED"
+
+
+terminate_this_custom_script

@@ -1,0 +1,39 @@
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0AAD" // set_audio_stream_state
+debug_on
+
+trace "0AAD (set_audio_stream_state)"
+
+
+// load the file
+wait 0
+if
+    load_audio_stream ".\Ding.mp3" store_to 0@
+then
+    trace "~g~~h~~h~0AAD (set_audio_stream_state), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AAD (set_audio_stream_state), #0 FAILED!~n~Failed to load file. Handle: %d" 0@
+end
+
+
+// set state
+wait 0
+0AAD: set_audio_stream_state 0@ state AudioStreamState.Pause // tested opcode
+trace "~g~~h~~h~0AAD (set_audio_stream_state), #1 PASSED"
+
+
+terminate_this_custom_script

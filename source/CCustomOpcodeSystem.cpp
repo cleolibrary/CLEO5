@@ -29,10 +29,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA1(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AAC(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AAD(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AAE(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AAF(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AB0(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AB1(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript *thread);
@@ -42,19 +38,10 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB6(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AB7(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0AB8(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB9(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ABA(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ABB(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ABC(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ABD(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ABE(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ABF(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC0(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC1(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC2(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC3(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC4(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AC5(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ACA(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ACB(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0ACC(CRunningScript *thread);
@@ -214,11 +201,7 @@ namespace CLEO
 	{
 		TRACE("Cleaning up script data...");
 
-		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptsFinalize))
-		{
-			typedef void WINAPI callback(void);
-			((callback*)func)();
-		}
+		GetInstance().CallCallbacks(eCallbackId::ScriptsFinalize);
 
 		// clean up after opcode_0AB1
 		ScmFunction::Clear();
@@ -234,10 +217,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AA0, opcode_0AA0);
 		CLEO_RegisterOpcode(0x0AA1, opcode_0AA1);
 		CLEO_RegisterOpcode(0x0AA9, opcode_0AA9);
-		CLEO_RegisterOpcode(0x0AAC, opcode_0AAC);
-		CLEO_RegisterOpcode(0x0AAD, opcode_0AAD);
-		CLEO_RegisterOpcode(0x0AAE, opcode_0AAE);
-		CLEO_RegisterOpcode(0x0AAF, opcode_0AAF);
 		CLEO_RegisterOpcode(0x0AB0, opcode_0AB0);
 		CLEO_RegisterOpcode(0x0AB1, opcode_0AB1);
 		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
@@ -247,19 +226,10 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6);
 		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
 		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
-		CLEO_RegisterOpcode(0x0AB9, opcode_0AB9);
 		CLEO_RegisterOpcode(0x0ABA, opcode_0ABA);
-		CLEO_RegisterOpcode(0x0ABB, opcode_0ABB);
-		CLEO_RegisterOpcode(0x0ABC, opcode_0ABC);
 		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
 		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE);
 		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF);
-		CLEO_RegisterOpcode(0x0AC0, opcode_0AC0);
-		CLEO_RegisterOpcode(0x0AC1, opcode_0AC1);
-		CLEO_RegisterOpcode(0x0AC2, opcode_0AC2);
-		CLEO_RegisterOpcode(0x0AC3, opcode_0AC3);
-		CLEO_RegisterOpcode(0x0AC4, opcode_0AC4);
-		CLEO_RegisterOpcode(0x0AC5, opcode_0AC5);
 		CLEO_RegisterOpcode(0x0ACA, opcode_0ACA);
 		CLEO_RegisterOpcode(0x0ACB, opcode_0ACB);
 		CLEO_RegisterOpcode(0x0ACC, opcode_0ACC);
@@ -985,57 +955,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AAC=2,  %2d% = load_audiostream %1d%  // IF and SET
-	OpcodeResult __stdcall opcode_0AAC(CRunningScript *thread)
-	{
-		auto path = OPCODE_READ_PARAM_STRING();
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path);
-
-		auto stream = GetInstance().SoundSystem.LoadStream(filename.c_str());
-		*thread << stream;
-		SetScriptCondResult(thread, stream != nullptr);
-		return OR_CONTINUE;
-	}
-
-	//0AAD=2,set_audiostream %1d% perform_action %2d%
-	OpcodeResult __stdcall opcode_0AAD(CRunningScript *thread)
-	{
-		CAudioStream *stream;
-		int action;
-		*thread >> stream >> action;
-		if (stream)
-		{
-			switch (action)
-			{
-			case 0: stream->Stop();   break;
-			case 1: stream->Play();   break;
-			case 2: stream->Pause();  break;
-			case 3: stream->Resume(); break;
-			default:
-				LOG_WARNING(thread, "[0AAD] Unknown audiostream's action (%d) in script %s", action, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			}
-		}
-		return OR_CONTINUE;
-	}
-
-	//0AAE=1,release_audiostream %1d%
-	OpcodeResult __stdcall opcode_0AAE(CRunningScript *thread)
-	{
-		CAudioStream *stream;
-		*thread >> stream;
-		if (stream) GetInstance().SoundSystem.UnloadStream(stream);
-		return OR_CONTINUE;
-	}
-
-	//0AAF=2,%2d% = get_audiostream_length %1d%
-	OpcodeResult __stdcall opcode_0AAF(CRunningScript *thread)
-	{
-		CAudioStream *stream;
-		*thread >> stream;
-		*thread << (stream ? stream->GetLength() : -1);
-		return OR_CONTINUE;
-	}
-
 	//0AB0=1,  key_pressed %1d%
 	OpcodeResult __stdcall opcode_0AB0(CRunningScript *thread)
 	{
@@ -1361,15 +1280,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB9=2,get_audiostream %1d% state_to %2d%
-	OpcodeResult __stdcall opcode_0AB9(CRunningScript *thread)
-	{
-		CAudioStream *stream;
-		*thread >> stream;
-		*thread << (stream ? stream->GetState() : -1);
-		return OR_CONTINUE;
-	}
-
 	//0ABA=1,end_custom_thread_named %1d%
 	OpcodeResult __stdcall opcode_0ABA(CRunningScript *thread)
 	{
@@ -1381,25 +1291,6 @@ namespace CLEO
 			GetInstance().ScriptEngine.RemoveCustomScript(deleted_thread);
 		}
 		return deleted_thread == thread ? OR_INTERRUPT : OR_CONTINUE;
-	}
-
-	//0ABB=2,%2d% = audiostream %1d% volume
-	OpcodeResult __stdcall opcode_0ABB(CRunningScript *thread)
-	{
-		CAudioStream *stream;
-		*thread >> stream;
-		*thread << (stream ? stream->GetVolume() : 0.0f);
-		return OR_CONTINUE;
-	}
-
-	//0ABC=2,set_audiostream %1d% volume %2d%
-	OpcodeResult __stdcall opcode_0ABC(CRunningScript *thread)
-	{
-		CAudioStream *stream;
-		float volume;
-		*thread >> stream >> volume;
-		if (stream) stream->SetVolume(volume);
-		return OR_CONTINUE;
 	}
 
 	//0ABD=1,  vehicle %1d% siren_on
@@ -1435,76 +1326,6 @@ namespace CLEO
 		auto vehicle = CPools::GetVehicle(handle);
 
 		vehicle->m_nVehicleFlags.bEngineOn = state != false;
-		return OR_CONTINUE;
-	}
-
-	//0AC0=2,loop_audiostream %1d% flag %2d%
-	OpcodeResult __stdcall opcode_0AC0(CRunningScript *thread)
-	{
-		CAudioStream *stream;
-		DWORD loop;
-		*thread >> stream >> loop;
-		if (stream) stream->Loop(loop != false);
-		return OR_CONTINUE;
-	}
-
-	//0AC1=2,%2d% = load_audiostream_with_3d_support %1d% //IF and SET
-	OpcodeResult __stdcall opcode_0AC1(CRunningScript *thread)
-	{
-		auto path = OPCODE_READ_PARAM_STRING();
-
-		auto stream = GetInstance().SoundSystem.LoadStream(path, true);
-		*thread << stream;
-		SetScriptCondResult(thread, stream != nullptr);
-		return OR_CONTINUE;
-	}
-
-	//0AC2=4,set_3d_audiostream %1d% position %2d% %3d% %4d%
-	OpcodeResult __stdcall opcode_0AC2(CRunningScript *thread)
-	{
-		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
-		CVector pos;
-		pos.x = OPCODE_READ_PARAM_FLOAT();
-		pos.y = OPCODE_READ_PARAM_FLOAT();
-		pos.z = OPCODE_READ_PARAM_FLOAT();
-
-		stream->Set3dPosition(pos);
-		return OR_CONTINUE;
-	}
-
-	//0AC3=2,link_3d_audiostream %1d% to_object %2d%
-	OpcodeResult __stdcall opcode_0AC3(CRunningScript *thread)
-	{
-		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
-		auto handle = OPCODE_READ_PARAM_OBJECT_HANDLE();
-
-		auto object = CPools::GetObject(handle);
-
-		stream->Link(object);
-		return OR_CONTINUE;
-	}
-
-	//0AC4=2,link_3d_audiostream %1d% to_actor %2d%
-	OpcodeResult __stdcall opcode_0AC4(CRunningScript *thread)
-	{
-		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
-		auto handle = OPCODE_READ_PARAM_PED_HANDLE();
-
-		auto ped = CPools::GetPed(handle);
-
-		stream->Link(ped);
-		return OR_CONTINUE;
-	}
-
-	//0AC5=2,link_3d_audiostream %1d% to_vehicle %2d%
-	OpcodeResult __stdcall opcode_0AC5(CRunningScript *thread)
-	{
-		auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR();
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-
-		stream->Link(vehicle);
 		return OR_CONTINUE;
 	}
 
@@ -2199,7 +2020,7 @@ extern "C"
 
 	CLEO::HSTREAM WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* thread, DWORD stream) // arg CAudioStream *
 	{
-		return ((CAudioStream*)stream)->GetInternal();
+		return stream; // CAudioStream::streamInternal offset is 0
 	}
 
 	CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char *script_name, int label)

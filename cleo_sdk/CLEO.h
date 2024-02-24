@@ -288,6 +288,7 @@ const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory
 enum class eCallbackId : DWORD
 {
 	GameBegin, // void WINAPI OnGameBegin(DWORD saveSlot); // -1 if not started from save
+	GameProcess, // void WINAPI OnGameProcess(); // called once every frame during gameplay
 	GameEnd, // void WINAPI OnGameEnd();
 	ScriptsLoaded, // void WINAPI OnScriptsLoaded();
 	ScriptsFinalize, // void WINAPI OnScriptsFinalize();
@@ -299,6 +300,7 @@ enum class eCallbackId : DWORD
 	ScriptDraw, // void WINAPI OnScriptDraw(bool beforeFade);
 	DrawingFinished, // void WINAPI OnDrawingFinished(); // called after game rendered everything and before presenting screen buffer
 	Log, // void OnLog(eLogLevel level, const char* msg);
+	MainWindowFocus, // void WINAPI OnMainWindowFocus(bool active); // called when game main window focus changes
 };
 
 // used by CLEO_Log and Log callback

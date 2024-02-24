@@ -10,7 +10,6 @@
 #include "CScriptEngine.h"
 #include "CCustomOpcodeSystem.h"
 #include "CTextManager.h"
-#include "CSoundSystem.h"
 #include "FileEnumerator.h"
 #include "crc32.h"
 
@@ -31,11 +30,9 @@ namespace CLEO
         CTextManager			TextManager;
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
-        CSoundSystem			SoundSystem;
         CPluginSystem			PluginSystem;
         //CLegacy				Legacy;
 
-        HWND MainWnd = NULL;
         int saveSlot = -1; // -1 if not loaded from save
 
         CCleoInstance();
@@ -51,11 +48,21 @@ namespace CLEO
 
         void AddCallback(eCallbackId id, void* func);
         const std::set<void*>& GetCallbacks(eCallbackId id);
+        void CallCallbacks(eCallbackId id);
+        void CallCallbacks(eCallbackId id, DWORD arg);
 
         static void __cdecl OnDrawingFinished();
 
         void(__cdecl * UpdateGameLogics)() = nullptr;
         static void __cdecl OnUpdateGameLogics();
+
+        // call for InitInstance
+        HWND(__cdecl* CreateMainWnd_Orig)(HINSTANCE) = nullptr;
+        static HWND __cdecl OnCreateMainWnd(HINSTANCE hinst);
+
+        // main window procedure hook
+        LRESULT(__stdcall* MainWndProc_Orig)(HWND, UINT, WPARAM, LPARAM) = nullptr;
+        static LRESULT __stdcall OnMainWndProc(HWND, UINT, WPARAM, LPARAM);
 
         // calls to CTheScripts::Init
         void(__cdecl* ScmInit1_Orig)() = nullptr;

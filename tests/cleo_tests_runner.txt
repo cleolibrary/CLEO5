@@ -40,7 +40,7 @@ terminate_this_custom_script
                 does_file_exist 5@ // files only
             then
                 stream_custom_script 5@
-                get_last_created_custom_script 11@
+                get_script_struct_just_created 11@
 
                 while is_script_running 11@
                     wait 0

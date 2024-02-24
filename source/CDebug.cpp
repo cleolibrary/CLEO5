@@ -99,7 +99,7 @@ void CDebug::Error(const char* format, ...)
     SHQueryUserNotificationState(&pquns);
     bool fullscreen = (pquns == QUNS_BUSY) || (pquns == QUNS_RUNNING_D3D_FULL_SCREEN) || (pquns == QUNS_PRESENTATION_MODE);
     
-    auto mainWnd = GetInstance().MainWnd;
+    auto mainWnd = RsGlobal.ps->window;
 
     if(fullscreen)
     {

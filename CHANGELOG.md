@@ -1,6 +1,17 @@
 ## 5.0.0
 
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264
+- new [Audio](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Audio) plugin
+  - audio related opcodes moved from CLEO core into separated plugin
+  - CLEO's audio now obey game's volume settings
+  - implemented support for Doppler Effects (fast moving sound sources)
+  - implemented support for game speed changes
+  - new opcode **2500 ([is_audio_stream_playing](https://library.sannybuilder.com/#/sa/audio/2500))**
+  - new opcode **2501 ([get_audiostream_length_fine](https://library.sannybuilder.com/#/sa/audio/2501))**
+  - new opcode **2502 ([get_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2502))**
+  - new opcode **2503 ([set_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2503))**
+  - new opcode **2504 ([set_audio_stream_volume_with_transition](https://library.sannybuilder.com/#/sa/audio/2504))**
+  - new opcode **2505 ([set_audio_stream_speed_with_transition](https://library.sannybuilder.com/#/sa/audio/2505))**
 - new [DebugUtils](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/DebugUtils) plugin
   - new opcode **00C3 ([debug_on](https://library.sannybuilder.com/#/sa/debug/00C3))**
   - new opcode **00C4 ([debug_off](https://library.sannybuilder.com/#/sa/debug/00C4))**
@@ -9,7 +20,7 @@
   - new opcode **2102 ([log_to_file](https://library.sannybuilder.com/#/sa/debug/2102))**
   - implemented support of opcodes **0662**, **0663** and **0664** (original Rockstar's script debugging opcodes. See DebugUtils.ini)
 - new [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
-  - file related opcodes moved from CLEO into separated plugin
+  - file related opcodes moved from CLEO core into separated plugin
   - opcode **0A9E ([write_to_file](https://library.sannybuilder.com/#/sa/file/0A9E))** now supports literal numbers and strings
   - fixed bug preventing file stream opcodes from working correctly for read-write modes
   - fixed buffer overflows in file stream read opcodes
@@ -19,7 +30,7 @@
   - **2302 ([resolve_filepath](https://library.sannybuilder.com/#/sa/file/2302))**
   - **2303 ([get_script_filename](https://library.sannybuilder.com/#/sa/file/2303))**
 - new [MemoryOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/MemoryOperations) plugin
-  - memory related opcodes moved from CLEO into separated plugin
+  - memory related opcodes moved from CLEO core into separated plugin
   - validation of input and output parameters for all opcodes
   - opcode **0A8C ([write_memory](https://library.sannybuilder.com/#/sa/memory/0A8C))** now supports strings
   - new opcode **2400 ([copy_memory](https://library.sannybuilder.com/#/sa/memory/2400))**
