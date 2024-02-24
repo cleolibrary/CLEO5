@@ -216,7 +216,7 @@ namespace CLEO
         }
 
         BASS_ChannelGetAttribute(streamInternal, BASS_ATTRIB_FREQ, &rate);
-        BASS_ChannelSet3DAttributes(streamInternal, BASS_3DMODE_NORMAL, 5.0f, 1E+12f, -1, -1, -1.0f);
+        BASS_ChannelSet3DAttributes(streamInternal, BASS_3DMODE_NORMAL, 3.0f, 1E+12f, -1, -1, -1.0f);
         OK = true;
     }
 
@@ -380,6 +380,11 @@ namespace CLEO
         // not applicable for 2d audio
     }
 
+    void CAudioStream::Set3dSize(float radius)
+    {
+        // not applicable for 2d audio
+    }
+
     void CAudioStream::Link(CPlaceable *placable)
     {
         // not applicable for 2d audio
@@ -394,6 +399,11 @@ namespace CLEO
         position.z = pos.x;
         BASS_3DVECTOR vel = { 0.0f, 0.0f, 0.0f };
         BASS_ChannelSet3DPosition(streamInternal, &position, nullptr, &vel);
+    }
+
+    void C3DAudioStream::Set3dSize(float radius)
+    {
+        BASS_ChannelSet3DAttributes(streamInternal, BASS_3DMODE_NORMAL, radius, 1E+12f, -1, -1, -1.0f);
     }
 
     void C3DAudioStream::Link(CPlaceable *placable)

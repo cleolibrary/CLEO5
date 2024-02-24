@@ -12,6 +12,7 @@
   - new opcode **2503 ([set_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2503))**
   - new opcode **2504 ([set_audio_stream_volume_with_transition](https://library.sannybuilder.com/#/sa/audio/2504))**
   - new opcode **2505 ([set_audio_stream_speed_with_transition](https://library.sannybuilder.com/#/sa/audio/2505))**
+  - new opcode **2506 ([set_audio_stream_source_size](https://library.sannybuilder.com/#/sa/audio/2506))**
 - new [DebugUtils](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/DebugUtils) plugin
   - new opcode **00C3 ([debug_on](https://library.sannybuilder.com/#/sa/debug/00C3))**
   - new opcode **00C4 ([debug_off](https://library.sannybuilder.com/#/sa/debug/00C4))**

@@ -48,6 +48,7 @@ public:
         CLEO_RegisterOpcode(0x2503, opcode_2503); // set_audio_stream_speed
         CLEO_RegisterOpcode(0x2504, opcode_2504); // set_audio_stream_volume_with_transition
         CLEO_RegisterOpcode(0x2505, opcode_2505); // set_audio_stream_speed_with_transition
+        CLEO_RegisterOpcode(0x2506, opcode_2506); // set_audio_stream_source_size
 
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
@@ -314,6 +315,16 @@ public:
         return OR_CONTINUE;
     }
 
+    //2506=2,set_audio_stream_source_size %1d% radius %2d%
+    static OpcodeResult __stdcall opcode_2506(CScriptThread* thread)
+    {
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR(); VALIDATE_STREAM();
+        auto radius = OPCODE_READ_PARAM_FLOAT();
+
+        stream->Set3dSize(radius);
+
+        return OR_CONTINUE;
+    }
 } audioInstance;
 
 CSoundSystem Audio::soundSystem;

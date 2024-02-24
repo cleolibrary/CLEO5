@@ -116,6 +116,7 @@ namespace CLEO
 
         // overloadable actions
         virtual void Set3dPosition(const CVector& pos);
+        virtual void Set3dSize(float radius);
         virtual void Link(CPlaceable *placable = nullptr);
         virtual void Process(bool force = false);
     };
@@ -135,6 +136,7 @@ namespace CLEO
 
         // overloaded actions
         virtual void Set3dPosition(const CVector& pos);
+        virtual void Set3dSize(float radius);
         virtual void Link(CPlaceable *placable = nullptr);
         virtual void Process(bool force = false);
     };
