@@ -7,7 +7,7 @@
   - implemented support for Doppler Effects (fast moving sound sources)
   - implemented support for game speed changes
   - new opcode **2500 ([is_audio_stream_playing](https://library.sannybuilder.com/#/sa/audio/2500))**
-  - new opcode **2501 ([get_audiostream_length_fine](https://library.sannybuilder.com/#/sa/audio/2501))**
+  - new opcode **2501 ([get_audio_stream_length_fine](https://library.sannybuilder.com/#/sa/audio/2501))**
   - new opcode **2502 ([get_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2502))**
   - new opcode **2503 ([set_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2503))**
   - new opcode **2504 ([set_audio_stream_volume_with_transition](https://library.sannybuilder.com/#/sa/audio/2504))**
