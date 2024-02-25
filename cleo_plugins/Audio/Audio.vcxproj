@@ -138,12 +138,16 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CAEAudioHardware.cpp" />
     <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="C3DAudioStream.cpp" />
+    <ClCompile Include="CAudioStream.cpp" />
     <ClCompile Include="CSoundSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\cleo_sdk\CLEO.h" />
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h" />
     <ClInclude Include="bass\bass.h" />
+    <ClInclude Include="C3DAudioStream.h" />
+    <ClInclude Include="CAudioStream.h" />
     <ClInclude Include="CSoundSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

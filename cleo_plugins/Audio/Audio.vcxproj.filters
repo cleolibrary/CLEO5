@@ -39,6 +39,8 @@
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CAEAudioHardware.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="CAudioStream.cpp" />
+    <ClCompile Include="C3DAudioStream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
@@ -51,6 +53,8 @@
     <ClInclude Include="bass\bass.h">
       <Filter>bass</Filter>
     </ClInclude>
+    <ClInclude Include="CAudioStream.h" />
+    <ClInclude Include="C3DAudioStream.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="plugin_sdk">

@@ -324,7 +324,6 @@ typedef int SCRIPT_HANDLE;
 typedef SCRIPT_HANDLE HANDLE_ACTOR, ACTOR, HACTOR, PED, HPED, HANDLE_PED;
 typedef SCRIPT_HANDLE HANDLE_CAR, CAR, HCAR, VEHICLE, HVEHICLE, HANDLE_VEHICLE;
 typedef SCRIPT_HANDLE HANDLE_OBJECT, OBJECT, HOBJECT;
-typedef SCRIPT_HANDLE HSTREAM;
  
 #pragma pack(push,1)
 #ifdef __cplusplus
@@ -524,7 +523,7 @@ void WINAPI CLEO_RemoveScriptDeleteDelegate(FuncScriptDeleteDelegateT func);
 
 DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // ret RwTexture *
 
-HSTREAM WINAPI CLEO_GetInternalAudioStream(CRunningScript* thread, DWORD stream); // arg CAudioStream *
+DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* thread, DWORD stream); // arg CAudioStream *
 
 void WINAPI CLEO_ResolvePath(CRunningScript* thread, char* inOutPath, DWORD pathMaxLen); // convert to absolute (file system) path
 

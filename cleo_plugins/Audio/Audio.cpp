@@ -3,6 +3,7 @@
 #include "plugin.h"
 #include "CTheScripts.h"
 #include "CSoundSystem.h"
+#include "CAudioStream.h"
 
 using namespace CLEO;
 using namespace plugin;
@@ -65,23 +66,26 @@ public:
 
     static void __stdcall OnGameProcess()
     {
-        soundSystem.Update();
+        soundSystem.Process();
     }
 
     static void __stdcall OnGameEnd()
     {
-        soundSystem.UnloadAllStreams();
+        soundSystem.Clear();
     }
 
     static void __stdcall OnDrawingFinished()
     {
         if (CTimer::m_UserPause) // main menu visible
-            soundSystem.Update();
+            soundSystem.Process();
     }
 
     static void __stdcall OnMainWindowFocus(bool active)
     {
-        soundSystem.Update(active);
+        if (active)
+            soundSystem.Resume();
+        else
+            soundSystem.Pause();
     }
 
  
@@ -90,7 +94,7 @@ public:
     {
         auto path = OPCODE_READ_PARAM_FILEPATH();
 
-        auto ptr = soundSystem.LoadStream(path);
+        auto ptr = soundSystem.CreateStream(path);
 
         OPCODE_WRITE_PARAM_PTR(ptr);
         OPCODE_CONDITION_RESULT(ptr != nullptr);
@@ -124,7 +128,7 @@ public:
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR(); VALIDATE_STREAM();
 
-        soundSystem.UnloadStream(stream);
+        soundSystem.DestroyStream(stream);
 
         return OR_CONTINUE;
     }
@@ -135,7 +139,12 @@ public:
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR(); VALIDATE_STREAM();
 
         auto length = stream->GetLength();
-        length /= max(stream->GetSpeed(), 0.000001f); // speed corrected
+
+        auto speed = stream->GetSpeed();
+        if (speed <= 0.0f)
+            length = FLT_MAX; // it would take forever to play paused
+        else
+            length /= speed; // speed corrected
 
         OPCODE_WRITE_PARAM_INT((int)length);
         return OR_CONTINUE;
@@ -190,7 +199,7 @@ public:
     {
         auto path = OPCODE_READ_PARAM_FILEPATH();
 
-        auto ptr = soundSystem.LoadStream(path, true);
+        auto ptr = soundSystem.CreateStream(path, true);
 
         OPCODE_WRITE_PARAM_PTR(ptr);
         OPCODE_CONDITION_RESULT(ptr != nullptr);
@@ -263,7 +272,12 @@ public:
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR(); VALIDATE_STREAM();
 
         auto length = stream->GetLength();
-        length /= max(stream->GetSpeed(), 0.000001f); // speed corrected
+
+        auto speed = stream->GetSpeed();
+        if (speed <= 0.0f)
+            length = FLT_MAX; // it would take forever to play paused
+        else
+            length /= speed; // speed corrected
 
         OPCODE_WRITE_PARAM_FLOAT(length);
         return OR_CONTINUE;
