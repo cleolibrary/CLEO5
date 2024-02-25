@@ -142,12 +142,6 @@ public:
 
         auto length = stream->GetLength();
 
-        auto speed = stream->GetSpeed();
-        if (speed <= 0.0f)
-            length = FLT_MAX; // it would take forever to play paused
-        else
-            length /= speed; // speed corrected
-
         OPCODE_WRITE_PARAM_INT((int)length);
         return OR_CONTINUE;
     }
