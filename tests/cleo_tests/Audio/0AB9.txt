@@ -35,7 +35,7 @@ end
 wait 0
 0AB9: get_audio_stream_state 0@ store_to 1@ // tested opcode
 if
-    1@ == -1 // stop
+    1@ == 2 // paused by default
 then
     trace "~g~~h~~h~0AB9 (get_audio_stream_state), #1 PASSED"
 else

@@ -1,0 +1,61 @@
+{$CLEO .cs}
+nop
+
+{$CLEO .s}
+{$USE debug}
+{$USE memory}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "0AC4" // set_play_3d_audio_stream_at_char
+debug_on
+
+trace "0AC4 (set_play_3d_audio_stream_at_char)"
+
+
+// load existing file
+wait 0
+if
+    load_3d_audio_stream ".\Ding.mp3" store_to 0@
+then
+    trace "~g~~h~~h~0AC4 (set_play_3d_audio_stream_at_char), #0 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AC4 (set_play_3d_audio_stream_at_char), #0 FAILED!~n~Failed to load file. Handle: %d" 0@
+end
+
+
+// test player's actor
+wait 0
+if
+    does_char_exist $scplayer
+then
+    trace "~g~~h~~h~0AC4 (set_play_3d_audio_stream_at_char), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0AC4 (set_play_3d_audio_stream_at_char), #1 FAILED!~n~Player character does not exists!" 0@
+end
+
+
+// attach to character
+wait 0
+0AC4: set_play_3d_audio_stream_at_char 0@ character $scplayer // tested opcode
+trace "~g~~h~~h~0AC4 (set_play_3d_audio_stream_at_char), #2 PASSED"
+
+
+// play the sound
+wait 0
+print_big_formatted "AT PLAYER CHAR" {time} 300 {style} TextStyle.MiddleSmaller
+set_audio_stream_state 0@ state AudioStreamState.Play
+wait 250
+trace "~g~~h~~h~0AC4 (set_play_3d_audio_stream_at_char), #3 PASSED"
+
+
+terminate_this_custom_script

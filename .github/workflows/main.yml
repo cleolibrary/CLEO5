@@ -54,6 +54,7 @@ jobs:
           copy cleo_plugins\.output\*.cleo5 .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
+          xcopy /E /I tests\ .output\cleo
 
           @REM install Silent's ASI Loader
           curl https://silent.rockstarvision.com/uploads/silents_asi_loader_13.zip -o silents_asi_loader_13.zip
