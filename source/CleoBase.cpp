@@ -116,11 +116,11 @@ namespace CLEO
         if (m_bStarted) return; // already started
         m_bStarted = true;
 
-        FS::create_directory(Filepath_Cleo);
-        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_modules"));
-        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_plugins"));
-        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_saves"));
-        FS::create_directory(FS::path(Filepath_Cleo).append("cleo_text"));
+        FS::create_directory(FS::path(Filepath_Root).append("cleo"));
+        FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_modules"));
+        FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_plugins"));
+        FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_saves"));
+        FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_text"));
 
         CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
         GameMenu.Inject(CodeInjector);
