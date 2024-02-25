@@ -49,32 +49,11 @@ void C3DAudioStream::Link(CPlaceable* placable)
 
 void C3DAudioStream::Process()
 {
-    if (state == PlayingInactive)
-    {
-        BASS_ChannelPlay(streamInternal, FALSE);
-    }
-
-    switch (BASS_ChannelIsActive(streamInternal))
-    {
-    case BASS_ACTIVE_PAUSED:
-        state = Paused;
-        break;
-
-    case BASS_ACTIVE_PLAYING:
-    case BASS_ACTIVE_STALLED:
-        state = Playing;
-        break;
-
-    case BASS_ACTIVE_STOPPED:
-        state = Stopped;
-        break;
-    }
+    CAudioStream::Process();
 
     if (state != Playing) return; // done
 
     UpdatePosition();
-    UpdateSpeed();
-    UpdateVolume();
 }
 
 void C3DAudioStream::UpdatePosition()

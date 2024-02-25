@@ -27,15 +27,19 @@ namespace CLEO
         void Stop();
         void Resume();
 
-        void Loop(bool enable); // enable looping
+        void SetLooping(bool enable);
+        bool GetLooping() const;
 
         float GetLength() const;
 
-        void SetVolume(float val, float transitionTime = 0.0f);
-        float GetVolume() const;
+        void SetProgress(float value);
+        float GetProgress() const;
 
-        void SetSpeed(float val, float transitionTime = 0.0f);
+        void SetSpeed(float value, float transitionTime = 0.0f);
         float GetSpeed() const;
+
+        void SetVolume(float value, float transitionTime = 0.0f);
+        float GetVolume() const;
 
         // 3d
         virtual void Set3dPosition(const CVector& pos);
@@ -46,7 +50,7 @@ namespace CLEO
 
     protected:
         HSTREAM streamInternal = 0;
-        eStreamState state = Stopped;
+        eStreamState state = Paused;
         bool ok = false;
         float rate = 44100.0f; // file's sampling rate
         double speed = 1.0f;

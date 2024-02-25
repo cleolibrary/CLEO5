@@ -33,20 +33,22 @@ void CAudioStream::Play()
 
 void CAudioStream::Pause(bool changeState)
 {
-    BASS_ChannelPause(streamInternal);
-    state = changeState ? Paused : PlayingInactive;
+    if (GetState() == Playing)
+    {
+        BASS_ChannelPause(streamInternal);
+        state = changeState ? Paused : PlayingInactive;
+    }
 }
 
 void CAudioStream::Stop()
 {
     BASS_ChannelPause(streamInternal);
-    BASS_ChannelSetPosition(streamInternal, 0, BASS_POS_BYTE); // rewind
     state = Stopped;
 }
 
 void CAudioStream::Resume()
 {
-    state = PlayingInactive; // needs to be processed
+    Play();
 }
 
 float CAudioStream::GetLength() const
@@ -54,18 +56,44 @@ float CAudioStream::GetLength() const
     return (float)BASS_ChannelBytes2Seconds(streamInternal, BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE));
 }
 
+void CAudioStream::SetProgress(float value)
+{
+    value = std::clamp(value, 0.0f, 1.0f);
+    auto total = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE);
+    auto bytePos = total * value;
+    BASS_ChannelSetPosition(streamInternal, bytePos, BASS_POS_BYTE);
+}
+
+float CAudioStream::GetProgress() const
+{
+    auto total = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE);
+    auto bytePos = BASS_ChannelGetPosition(streamInternal, BASS_POS_BYTE);
+
+    float progress = (float)bytePos / total;
+    progress = std::clamp(progress, 0.0f, 1.0f);
+    return progress;
+}
+
 CAudioStream::eStreamState CAudioStream::GetState() const
 {
     return (state == PlayingInactive) ? Playing : state;
 }
 
-void CAudioStream::Loop(bool enable)
+void CAudioStream::SetLooping(bool enable)
 {
     BASS_ChannelFlags(streamInternal, enable ? BASS_SAMPLE_LOOP : 0, BASS_SAMPLE_LOOP);
 }
 
+bool CLEO::CAudioStream::GetLooping() const
+{
+    return (BASS_ChannelFlags(streamInternal, 0, 0) & BASS_SAMPLE_LOOP) != 0;
+}
+
 void CAudioStream::SetVolume(float value, float transitionTime)
 {
+    if (transitionTime > 0.0f) Resume();
+
+    value = max(value, 0.0f);
     volumeTarget = value;
 
     if (transitionTime <= 0.0)
@@ -81,8 +109,9 @@ float CAudioStream::GetVolume() const
 
 void CAudioStream::SetSpeed(float value, float transitionTime)
 {
-    if (value > 0.0f) Resume();
+    if (transitionTime > 0.0f) Resume();
 
+    value = max(value, 0.0f);
     speedTarget = value;
 
     if (transitionTime <= 0.0)
@@ -106,7 +135,11 @@ void CAudioStream::UpdateVolume()
         // check progress
         auto remaining = volumeTarget - volume;
         remaining *= (volumeTransitionStep > 0.0) ? 1.0 : -1.0;
-        if (remaining < 0.0) volume = volumeTarget; // overshoot
+        if (remaining < 0.0) // overshoot
+        {
+            volume = volumeTarget;
+            if (volume <= 0.0f) Pause();
+        }
     }
 
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, (float)volume * CSoundSystem::masterVolume);
@@ -149,22 +182,12 @@ void CAudioStream::Process()
     if (state == PlayingInactive)
     {
         BASS_ChannelPlay(streamInternal, FALSE);
+        state = Playing;
     }
 
-    switch (BASS_ChannelIsActive(streamInternal))
+    if (!GetLooping() && GetProgress() >= 1.0f) // end reached
     {
-    case BASS_ACTIVE_PAUSED:
-        state = Paused;
-        break;
-
-    case BASS_ACTIVE_PLAYING:
-    case BASS_ACTIVE_STALLED:
-        state = Playing;
-        break;
-
-    case BASS_ACTIVE_STOPPED:
         state = Stopped;
-        break;
     }
 
     if (state != Playing) return; // done
