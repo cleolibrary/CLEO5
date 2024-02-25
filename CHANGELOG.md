@@ -4,10 +4,10 @@
 - new [Audio](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Audio) plugin
   - audio related opcodes moved from CLEO core into separated plugin
   - CLEO's audio now obey game's volume settings
-  - implemented support for Doppler Effects (fast moving sound sources)
-  - implemented support for game speed changes
+  - implemented Doppler effect for 3d audio streams (fast moving sound sources)
+  - CLEO's audio now follows game speed changes
   - new opcode **2500 ([is_audio_stream_playing](https://library.sannybuilder.com/#/sa/audio/2500))**
-  - new opcode **2501 ([get_audio_stream_length_fine](https://library.sannybuilder.com/#/sa/audio/2501))**
+  - new opcode **2501 ([get_audio_stream_duration](https://library.sannybuilder.com/#/sa/audio/2501))**
   - new opcode **2502 ([get_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2502))**
   - new opcode **2503 ([set_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2503))**
   - new opcode **2504 ([set_audio_stream_volume_with_transition](https://library.sannybuilder.com/#/sa/audio/2504))**
@@ -23,7 +23,7 @@
 - new [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
   - file related opcodes moved from CLEO core into separated plugin
   - opcode **0A9E ([write_to_file](https://library.sannybuilder.com/#/sa/file/0A9E))** now supports literal numbers and strings
-  - fixed bug preventing file stream opcodes from working correctly for read-write modes
+  - fixed bug causing file stream opcodes not working correctly when read-write modes are used
   - fixed buffer overflows in file stream read opcodes
   - added/fixed support of all file stream opcodes in legacy mode (Cleo3)
   - new opcode **2300 ([get_file_position](https://library.sannybuilder.com/#/sa/file/2300))**

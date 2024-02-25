@@ -44,7 +44,7 @@ public:
         CLEO_RegisterOpcode(0x0AC5, opcode_0AC5); // set_play_3d_audio_stream_at_vehicle
 
         CLEO_RegisterOpcode(0x2500, opcode_2500); // is_audio_stream_playing
-        CLEO_RegisterOpcode(0x2501, opcode_2501); // get_audiostream_length_fine
+        CLEO_RegisterOpcode(0x2501, opcode_2501); // get_audiostream_duration
         CLEO_RegisterOpcode(0x2502, opcode_2502); // get_audio_stream_speed
         CLEO_RegisterOpcode(0x2503, opcode_2503); // set_audio_stream_speed
         CLEO_RegisterOpcode(0x2504, opcode_2504); // set_audio_stream_volume_with_transition
@@ -262,7 +262,7 @@ public:
         return OR_CONTINUE;
     }
 
-    //2501=2,%2d% = get_audiostream_length_fine %1d%
+    //2501=2,%2d% = get_audiostream_duration %1d%
     static OpcodeResult __stdcall opcode_2501(CScriptThread* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_PTR(); VALIDATE_STREAM();
