@@ -51,7 +51,6 @@ jobs:
           @REM copy files
           copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
-          copy cleo_plugins\.output\*.cleo5 .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
           xcopy /E /I tests\ .output\cleo

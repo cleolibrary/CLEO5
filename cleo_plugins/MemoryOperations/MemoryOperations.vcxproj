@@ -45,14 +45,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>MemoryOperations</TargetName>
-    <TargetExt>.cleo5</TargetExt>
+    <TargetName>SA.MemoryOperations</TargetName>
+    <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>MemoryOperations</TargetName>
-    <TargetExt>.cleo5</TargetExt>
+    <TargetName>SA.MemoryOperations</TargetName>
+    <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
@@ -84,7 +84,9 @@
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
-xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command>
+if defined GTA_SA_DIR (
+  xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -107,7 +109,9 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
-xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command>
+if defined GTA_SA_DIR (
+  xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

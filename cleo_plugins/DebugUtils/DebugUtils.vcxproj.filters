@@ -34,6 +34,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DebugUtils.ini" />
+    <None Include="SA.DebugUtils.ini" />
   </ItemGroup>
 </Project>

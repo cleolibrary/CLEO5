@@ -8,15 +8,18 @@ CLEO requires an 'ASI Loader' installed to run which is provided with the releas
 No additional files are replaced, however the following files and folders are added:
 
 - cleo\ (CLEO script directory)
-- cleo\cleo_plugins\DebugUtils.cleo (script debug utilities plugin)
-- cleo\cleo_plugins\FileSystemOperations.cleo (file system plugin)
-- cleo\cleo_plugins\IniFiles.cleo (INI config plugin)
-- cleo\cleo_plugins\IntOperations.cleo (INT operations plugin)
+- cleo\cleo_plugins\SA.Audio.cleo (audio playback utilities powered by BASS.dll library)
+- cleo\cleo_plugins\SA.DebugUtils.cleo (script debugging utilities plugin)
+- cleo\cleo_plugins\SA.FileSystemOperations.cleo (disk drive files related operations plugin)
+- cleo\cleo_plugins\SA.IniFiles.cleo (.ini config files handling plugin)
+- cleo\cleo_plugins\SA.IntOperations.cleo (additional math operations plugin)
+- cleo\cleo_plugins\SA.MemoryOperations (memory and .dll libraries utilities plugin)
 - cleo\cleo_saves\ (CLEO save directory)
 - cleo\cleo_text\ (CLEO text directory)
 - cleo.asi (core library)
 - bass.dll (audio engine library)
-- vorbisHooked.dll (Silent's ASI Loader)
+- vorbisFile.dll (Silent's ASI Loader)
+- vorbisHooked.dll (original vorbisFile.dll file)
 
 All plugins are optional, however they may be required by various CLEO scripts.
 

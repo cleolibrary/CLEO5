@@ -209,7 +209,7 @@ namespace CLEO
 
 	CCustomOpcodeSystem::CCustomOpcodeSystem()
 	{
-		// register CLEO opcodes
+		TRACE("Initializing CLEO core opcodes...");
 		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
 		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
 		CLEO_RegisterOpcode(0x0A94, opcode_0A94);

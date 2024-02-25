@@ -44,14 +44,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>IniFiles</TargetName>
-    <TargetExt>.cleo5</TargetExt>
+    <TargetName>SA.IniFiles</TargetName>
+    <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>IniFiles</TargetName>
-    <TargetExt>.cleo5</TargetExt>
+    <TargetName>SA.IniFiles</TargetName>
+    <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>

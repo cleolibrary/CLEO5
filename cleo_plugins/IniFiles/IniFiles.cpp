@@ -1,5 +1,6 @@
 #include <cstdio>
 #include "CLEO.h"
+#include "CLEO_Utils.h"
 #include <string>
 
 using namespace CLEO;
@@ -34,21 +35,14 @@ public:
 		0AF0=4,%4d% = get_int_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		char path[MAX_PATH];
-		char sectionName[100];
-		char key[100];
-		int result;
+		auto path = OPCODE_READ_PARAM_FILEPATH();
+		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
+		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		CLEO_ReadStringPointerOpcodeParam(thread, path, sizeof(path));
-		CLEO_ReadStringPointerOpcodeParam(thread, sectionName, sizeof(sectionName));
-		CLEO_ReadStringPointerOpcodeParam(thread, key, sizeof(key));
+		auto result = GetPrivateProfileInt(sectionName, key, 0x80000000, path);
 
-		CLEO_ResolvePath(thread, path, sizeof(path)); // convert to absolute path
-
-		result = GetPrivateProfileInt(sectionName, key, 0x80000000, path);
-		CLEO_SetIntOpcodeParam(thread, result);
-		CLEO_SetThreadCondResult(thread, result != 0x80000000);
-
+		OPCODE_WRITE_PARAM_INT(result);
+		OPCODE_CONDITION_RESULT(result != 0x80000000);
 		return OR_CONTINUE;
 	}
 
@@ -58,23 +52,16 @@ public:
 		0AF1=4,write_int %1d% to_ini_file %2s% section %3s% key %4s%
 		****************************************************************/
 	{
-		char path[MAX_PATH];
-		char sectionName[100];
-		char key[100];
-		DWORD value;
-		char strValue[100];
-		BOOL result;
+		auto value = OPCODE_READ_PARAM_INT();
+		auto path = OPCODE_READ_PARAM_FILEPATH();
+		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
+		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		value = CLEO_GetIntOpcodeParam(thread);
-		CLEO_ReadStringPointerOpcodeParam(thread, path, sizeof(path));
-		CLEO_ReadStringPointerOpcodeParam(thread, sectionName, sizeof(sectionName));
-		CLEO_ReadStringPointerOpcodeParam(thread, key, sizeof(key));
+		char strValue[32];
+		_itoa(value, strValue, 10);
+		auto result = WritePrivateProfileString(sectionName, key, strValue, path);
 
-		CLEO_ResolvePath(thread, path, sizeof(path)); // convert to absolute path
-
-		result = WritePrivateProfileString(sectionName, key, _itoa(value, strValue, 10), path);
-		CLEO_SetThreadCondResult(thread, result);
-
+		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
 
@@ -84,30 +71,23 @@ public:
 		0AF2=4,%4d% = get_float_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		char path[MAX_PATH];
-		char sectionName[100];
-		char key[100];
-		float value = 0.0f;
-		char strValue[100];
-		BOOL result;
+		auto path = OPCODE_READ_PARAM_FILEPATH();
+		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
+		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		CLEO_ReadStringPointerOpcodeParam(thread, path, sizeof(path));
-		CLEO_ReadStringPointerOpcodeParam(thread, sectionName, sizeof(sectionName));
-		CLEO_ReadStringPointerOpcodeParam(thread, key, sizeof(key));
-
-		CLEO_ResolvePath(thread, path, sizeof(path)); // convert to absolute path
-
-		result = GetPrivateProfileString(sectionName, key, NULL, strValue, sizeof(strValue), path);
+		auto value = 0.0f;
+		char strValue[32];
+		auto result = GetPrivateProfileString(sectionName, key, NULL, strValue, sizeof(strValue), path);
 		if (result)
 		{
 			value = (float)atof(strValue);
-			CLEO_SetFloatOpcodeParam(thread, value);
+			OPCODE_WRITE_PARAM_FLOAT(value);
 		}
 		else
-			CLEO_SkipOpcodeParams(thread, 1);
-
-		CLEO_SetThreadCondResult(thread, result);
-
+		{
+			OPCODE_SKIP_PARAMS(1);
+		}
+		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
 
@@ -117,25 +97,16 @@ public:
 		0AF3=4,write_float %1d% to_ini_file %2s% section %3s% key %4s%
 		****************************************************************/
 	{
-		char path[MAX_PATH];
-		char sectionName[100];
-		char key[100];
-		float value;
-		char strValue[100];
-		BOOL result;
+		auto value = OPCODE_READ_PARAM_FLOAT();
+		auto path = OPCODE_READ_PARAM_FILEPATH();
+		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
+		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		value = CLEO_GetFloatOpcodeParam(thread);
-		CLEO_ReadStringPointerOpcodeParam(thread, path, sizeof(path));
-		CLEO_ReadStringPointerOpcodeParam(thread, sectionName, sizeof(sectionName));
-		CLEO_ReadStringPointerOpcodeParam(thread, key, sizeof(key));
-
-		CLEO_ResolvePath(thread, path, sizeof(path)); // convert to absolute path
-
+		char strValue[32];
 		sprintf(strValue, "%g", value);
+		auto result = WritePrivateProfileString(sectionName, key, strValue, path);
 
-		result = WritePrivateProfileString(sectionName, key, strValue, path);
-		CLEO_SetThreadCondResult(thread, result);
-
+		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
 
@@ -145,40 +116,21 @@ public:
 		0AF4=4,%4d% = read_string_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		char path[MAX_PATH];
-		char sectionName[100];
-		char key[100];
-		char strValue[100];
-		char *strptr;
-		BOOL result;
+		auto path = OPCODE_READ_PARAM_FILEPATH();
+		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
+		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		CLEO_ReadStringPointerOpcodeParam(thread, path, sizeof(path));
-		CLEO_ReadStringPointerOpcodeParam(thread, sectionName, sizeof(sectionName));
-		CLEO_ReadStringPointerOpcodeParam(thread, key, sizeof(key));
-
-		CLEO_ResolvePath(thread, path, sizeof(path)); // convert to absolute path
-
-		result = GetPrivateProfileString(sectionName, key, NULL, strValue, sizeof(strValue), path);
+		char strValue[MAX_STR_LEN];
+		auto result = GetPrivateProfileString(sectionName, key, NULL, strValue, sizeof(strValue), path);
 		if (result)
 		{
-			switch (CLEO_GetOperandType(thread))
-			{
-			case DT_VAR_STRING:
-			case DT_LVAR_STRING:
-			case DT_VAR_TEXTLABEL:
-			case DT_LVAR_TEXTLABEL:
-				CLEO_WriteStringOpcodeParam(thread, strValue);
-				break;
-			default:
-				strptr = (char *)CLEO_GetIntOpcodeParam(thread);
-				strcpy(strptr, strValue);
-			}
+			OPCODE_WRITE_PARAM_STRING(strValue);
 		}
 		else
-			CLEO_SkipOpcodeParams(thread, 1);
-
-		CLEO_SetThreadCondResult(thread, result);
-
+		{
+			OPCODE_SKIP_PARAMS(1);
+		}
+		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
 
@@ -188,23 +140,14 @@ public:
 		0AF5=4,write_string %1s% to_ini_file %2s% section %3s% key %4s%
 		****************************************************************/
 	{
-		char path[MAX_PATH];
-		char sectionName[100];
-		char key[100];
-		char strValue[100];
-		BOOL result;
+		char strValue[MAX_STR_LEN]; OPCODE_READ_PARAM_STRING_BUFF(strValue, sizeof(strValue));
+		auto path = OPCODE_READ_PARAM_FILEPATH();
+		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
+		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		CLEO_ReadStringPointerOpcodeParam(thread, strValue, sizeof(strValue));
-		CLEO_ReadStringPointerOpcodeParam(thread, path, sizeof(path));
-		CLEO_ReadStringPointerOpcodeParam(thread, sectionName, sizeof(sectionName));
-		CLEO_ReadStringPointerOpcodeParam(thread, key, sizeof(key));
+		auto result = WritePrivateProfileString(sectionName, key, strValue, path);
 
-		CLEO_ResolvePath(thread, path, sizeof(path)); // convert to absolute path
-
-		result = WritePrivateProfileString(sectionName, key, strValue, path);
-
-		CLEO_SetThreadCondResult(thread, result);
-
+		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
 } iniFiles;

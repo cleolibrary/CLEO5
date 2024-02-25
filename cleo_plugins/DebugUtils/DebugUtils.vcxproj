@@ -44,14 +44,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>DebugUtils</TargetName>
-    <TargetExt>.cleo5</TargetExt>
+    <TargetName>SA.DebugUtils</TargetName>
+    <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>DebugUtils</TargetName>
-    <TargetExt>.cleo5</TargetExt>
+    <TargetName>SA.DebugUtils</TargetName>
+    <TargetExt>.cleo</TargetExt>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
@@ -132,7 +132,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClInclude Include="ScreenLog.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="DebugUtils.ini" />
+    <None Include="SA.DebugUtils.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
