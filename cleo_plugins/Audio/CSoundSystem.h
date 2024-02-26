@@ -2,8 +2,6 @@
 #include "bass.h"
 #include <set>
 
-#pragma comment(lib, "bass.lib")
-
 namespace CLEO
 {
     class CAudioStream;

@@ -47,12 +47,14 @@
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
     <TargetName>Audio</TargetName>
     <TargetExt>.cleo5</TargetExt>
+    <LibraryPath>$(ProjectDir)bass;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
     <TargetName>Audio</TargetName>
     <TargetExt>.cleo5</TargetExt>
+    <LibraryPath>$(ProjectDir)bass;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
@@ -79,7 +81,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib\;$(SolutionDir)..\cleo_sdk\;$(ProjectDir)bass\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cleo.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cleo.lib;bass.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -102,7 +104,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib\;$(SolutionDir)..\cleo_sdk\;$(ProjectDir)bass\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cleo.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cleo.lib;bass.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
