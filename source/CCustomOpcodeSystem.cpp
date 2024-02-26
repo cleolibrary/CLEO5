@@ -1551,7 +1551,7 @@ namespace CLEO
 	//0ADF=2,add_dynamic_GXT_entry %1d% text %2d%
 	OpcodeResult __stdcall opcode_0ADF(CRunningScript *thread)
 	{
-		char gxtBuff[8] = { 0 }; // 7 + terminator character
+		char gxtBuff[8]; // 7 + terminator character
 		auto gxt = OPCODE_READ_PARAM_STRING_BUFF(gxtBuff, sizeof(gxtBuff));
 		auto txt = OPCODE_READ_PARAM_STRING();
 
