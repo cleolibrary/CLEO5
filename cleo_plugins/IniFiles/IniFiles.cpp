@@ -156,5 +156,5 @@ public:
 	}
 } iniFiles;
 
-char IniFiles::section[128] = { 0 };
-char IniFiles::key[128] = { 0 };
+char IniFiles::section[128];
+char IniFiles::key[128];

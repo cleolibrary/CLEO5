@@ -19,7 +19,8 @@ namespace CLEO
             std::set<std::string> loaded;
             auto LoadPluginsDir = [&](std::string path, std::string prefix, std::string extension)
             {
-                std::set<std::pair<std::string, std::string>> found;
+                std::set<std::pair<std::string, std::string>> filesWithPrefix;
+                std::set<std::pair<std::string, std::string>> filesWithoutPrefix;
 
                 FilesWalk(path.c_str(), extension.c_str(), [&](const char* fullPath, const char* filename)
                 {
@@ -27,71 +28,39 @@ namespace CLEO
                     name.resize(name.length() - extension.length()); // cut off file type
                     std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
 
-                    found.insert({ fullPath, name });
-                });
-
-                // load with prefix first
-                if (!prefix.empty())
-                {
-                    for (const auto& entry : found)
+                    if (_strnicmp(name.c_str(), prefix.c_str(), prefix.length()) == 0)
                     {
-                        if (_strnicmp(entry.second.c_str(), prefix.c_str(), prefix.length()) != 0)
-                        {
-                            continue; // prefix missing
-                        }
-
-                        auto shortName = std::string(entry.second.c_str() + prefix.length()); // strip prefix
-
-                        if (loaded.find(shortName) == loaded.end())
-                        {
-                            TRACE("Loading plugin '%s'", entry.first.c_str());
-                            HMODULE hlib = LoadLibrary(entry.first.c_str());
-                            if (!hlib)
-                            {
-                                LOG_WARNING(0, "Error loading plugin '%s'", entry.first.c_str());
-                            }
-                            else
-                            {
-                                loaded.insert(shortName);
-                                plugins.push_back(hlib);
-                            }
-                        }
-                        else
-                        {
-                            LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", shortName.c_str(), entry.first.c_str());
-                        }
-                    }
-                }
-
-                // without prefix now
-                for (const auto& entry : found)
-                {
-                    if (!prefix.empty() && _strnicmp(entry.second.c_str(), prefix.c_str(), prefix.length()) == 0)
-                    {
-                        continue; // has prefix
-                    }
-
-                    auto& shortName = entry.second;
-
-                    if (loaded.find(shortName) == loaded.end())
-                    {
-                        TRACE("Loading plugin '%s'", entry.first.c_str());
-                        HMODULE hlib = LoadLibrary(entry.first.c_str());
-                        if (!hlib)
-                        {
-                            LOG_WARNING(0, "Error loading plugin '%s'", entry.first.c_str());
-                        }
-                        else
-                        {
-                            loaded.insert(shortName);
-                            plugins.push_back(hlib);
-                        }
+                        filesWithPrefix.insert({ fullPath, name.c_str() + prefix.length() });
                     }
                     else
                     {
-                        LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", shortName.c_str(), entry.first.c_str());
+                        filesWithoutPrefix.insert({ fullPath, name });
                     }
-                }
+                });
+
+                auto loadLib = [&](const char* fullPath, const char* name)
+                {
+                    if (loaded.find(name) != loaded.end())
+                    {
+                        LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", fullPath, name);
+                        return;
+                    }
+
+                    TRACE("Loading plugin '%s'", fullPath);
+                    HMODULE hlib = LoadLibrary(fullPath);
+                    if (!hlib)
+                    {
+                        LOG_WARNING(0, "Error loading plugin '%s'", fullPath);
+                        return;
+                    }
+
+                    loaded.insert(name);
+                    plugins.push_back(hlib);
+                };
+
+                // load with prefix first
+                for (const auto& entry : filesWithPrefix) loadLib(entry.first.c_str(), entry.second.c_str());
+                for (const auto& entry : filesWithoutPrefix) loadLib(entry.first.c_str(), entry.second.c_str());
             };
 
             TRACE("Loading plugins...");
