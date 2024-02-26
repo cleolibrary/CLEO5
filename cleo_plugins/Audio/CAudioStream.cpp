@@ -60,7 +60,7 @@ void CAudioStream::SetProgress(float value)
 {
     value = std::clamp(value, 0.0f, 1.0f);
     auto total = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE);
-    auto bytePos = total * value;
+    auto bytePos = QWORD(value * total);
     BASS_ChannelSetPosition(streamInternal, bytePos, BASS_POS_BYTE);
 }
 
