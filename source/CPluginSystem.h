@@ -40,7 +40,7 @@ namespace CLEO
                             continue; // prefix missing
                         }
 
-                        auto shortName = std::string(entry.second.c_str() + 3); // strip prefix
+                        auto shortName = std::string(entry.second.c_str() + prefix.length()); // strip prefix
 
                         if (loaded.find(shortName) == loaded.end())
                         {
