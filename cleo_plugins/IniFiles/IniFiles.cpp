@@ -29,6 +29,10 @@ public:
 		}
 	}
 
+	// resused globals to cut down allocations
+	static char section[128];
+	static char key[128];
+
 	static OpcodeResult WINAPI Script_InifileGetInt(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
@@ -36,10 +40,10 @@ public:
 		****************************************************************/
 	{
 		auto path = OPCODE_READ_PARAM_FILEPATH();
-		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
-		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
+		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		auto result = GetPrivateProfileInt(sectionName, key, 0x80000000, path);
+		auto result = GetPrivateProfileInt(section, key, 0x80000000, path);
 
 		OPCODE_WRITE_PARAM_INT(result);
 		OPCODE_CONDITION_RESULT(result != 0x80000000);
@@ -54,12 +58,12 @@ public:
 	{
 		auto value = OPCODE_READ_PARAM_INT();
 		auto path = OPCODE_READ_PARAM_FILEPATH();
-		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
-		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
+		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
 		char strValue[32];
 		_itoa(value, strValue, 10);
-		auto result = WritePrivateProfileString(sectionName, key, strValue, path);
+		auto result = WritePrivateProfileString(section, key, strValue, path);
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
@@ -72,12 +76,12 @@ public:
 		****************************************************************/
 	{
 		auto path = OPCODE_READ_PARAM_FILEPATH();
-		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
-		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
+		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
 		auto value = 0.0f;
 		char strValue[32];
-		auto result = GetPrivateProfileString(sectionName, key, NULL, strValue, sizeof(strValue), path);
+		auto result = GetPrivateProfileString(section, key, NULL, strValue, sizeof(strValue), path);
 		if (result)
 		{
 			value = (float)atof(strValue);
@@ -99,12 +103,12 @@ public:
 	{
 		auto value = OPCODE_READ_PARAM_FLOAT();
 		auto path = OPCODE_READ_PARAM_FILEPATH();
-		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
-		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
+		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
 		char strValue[32];
 		sprintf(strValue, "%g", value);
-		auto result = WritePrivateProfileString(sectionName, key, strValue, path);
+		auto result = WritePrivateProfileString(section, key, strValue, path);
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
@@ -117,11 +121,11 @@ public:
 		****************************************************************/
 	{
 		auto path = OPCODE_READ_PARAM_FILEPATH();
-		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
-		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
+		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
 		char strValue[MAX_STR_LEN];
-		auto result = GetPrivateProfileString(sectionName, key, NULL, strValue, sizeof(strValue), path);
+		auto result = GetPrivateProfileString(section, key, NULL, strValue, sizeof(strValue), path);
 		if (result)
 		{
 			OPCODE_WRITE_PARAM_STRING(strValue);
@@ -142,12 +146,15 @@ public:
 	{
 		char strValue[MAX_STR_LEN]; OPCODE_READ_PARAM_STRING_BUFF(strValue, sizeof(strValue));
 		auto path = OPCODE_READ_PARAM_FILEPATH();
-		char sectionName[64]; OPCODE_READ_PARAM_STRING_BUFF(sectionName, sizeof(sectionName));
-		char key[64]; OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
+		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
 
-		auto result = WritePrivateProfileString(sectionName, key, strValue, path);
+		auto result = WritePrivateProfileString(section, key, strValue, path);
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
 } iniFiles;
+
+char IniFiles::section[128] = { 0 };
+char IniFiles::key[128] = { 0 };
