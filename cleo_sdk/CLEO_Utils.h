@@ -32,7 +32,7 @@ namespace CLEO
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
     OPCODE_READ_PARAM_STRING() // returns char* to internal buffer. It might be overwritten by another string read!
-    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize)
+    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // always null terminated
     OPCODE_READ_PARAM_FILEPATH() // returns char* to internal buffer. It might be overwritten by another string read!
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
     OPCODE_READ_PARAM_OBJECT_HANDLE()

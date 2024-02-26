@@ -156,7 +156,8 @@ namespace CLEO
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer1)(CRunningScript *);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
 
-    char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen);
+    // reimplemented hook of original game's procedure. Null terminator ommited if not enought space in the buffer!
+    char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
 
     inline SCRIPT_VAR * GetScriptParamPointer(CRunningScript *thread)
     {

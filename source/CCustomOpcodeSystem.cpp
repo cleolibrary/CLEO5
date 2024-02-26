@@ -399,7 +399,7 @@ namespace CLEO
 		return thread;
 	}
 
-	// read string parameter according to convention on strings
+	// read string parameter according to convention on strings. Always null terminated
 	char* ReadStringParam(CRunningScript *thread, char* buf, DWORD bufSize)
 	{
 		static char internal_buf[MAX_STR_LEN];
@@ -1551,8 +1551,8 @@ namespace CLEO
 	//0ADF=2,add_dynamic_GXT_entry %1d% text %2d%
 	OpcodeResult __stdcall opcode_0ADF(CRunningScript *thread)
 	{
-		char gxtLabel[8] = { 0 }; // 7 + terminator character
-		auto gxt = OPCODE_READ_PARAM_STRING_BUFF(gxtLabel, 7);
+		char gxtBuff[8] = { 0 }; // 7 + terminator character
+		auto gxt = OPCODE_READ_PARAM_STRING_BUFF(gxtBuff, sizeof(gxtBuff));
 		auto txt = OPCODE_READ_PARAM_STRING();
 
 		GetInstance().TextManager.AddFxt(gxt, txt);
