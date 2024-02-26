@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "CleoBase.h"
-#include "CLegacy.h"
 #include "CGameVersionManager.h"
 #include "CCustomOpcodeSystem.h"
 #include "ScmFunction.h"
@@ -2018,7 +2017,7 @@ extern "C"
 		return texture;
 	}
 
-	CLEO::HSTREAM WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* thread, DWORD stream) // arg CAudioStream *
+	DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* thread, DWORD stream) // arg CAudioStream *
 	{
 		return stream; // CAudioStream::streamInternal offset is 0
 	}
