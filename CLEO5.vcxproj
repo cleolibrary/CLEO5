@@ -44,7 +44,6 @@
     <ClCompile Include="source\CDmaFix.cpp" />
     <ClCompile Include="source\CGameMenu.cpp" />
     <ClCompile Include="source\CGameVersionManager.cpp" />
-    <ClCompile Include="source\CLegacy.cpp" />
     <ClCompile Include="source\CleoBase.cpp" />
     <ClCompile Include="source\CModuleSystem.cpp" />
     <ClCompile Include="source\crc32.cpp" />
@@ -70,7 +69,6 @@
     <ClInclude Include="source\CDmaFix.h" />
     <ClInclude Include="source\CGameMenu.h" />
     <ClInclude Include="source\CGameVersionManager.h" />
-    <ClInclude Include="source\CLegacy.h" />
     <ClInclude Include="source\CleoBase.h" />
     <ClInclude Include="source\CModuleSystem.h" />
     <ClInclude Include="source\CPluginSystem.h" />

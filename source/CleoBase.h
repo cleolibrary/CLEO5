@@ -31,7 +31,6 @@ namespace CLEO
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
         CPluginSystem			PluginSystem;
-        //CLegacy				Legacy;
 
         int saveSlot = -1; // -1 if not loaded from save
 

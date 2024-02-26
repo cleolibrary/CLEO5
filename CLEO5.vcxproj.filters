@@ -81,9 +81,6 @@
     <ClCompile Include="source\CCustomOpcodeSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="source\CLegacy.cpp">
-      <Filter>source\extensions</Filter>
-    </ClCompile>
     <ClCompile Include="source\CModuleSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
@@ -135,9 +132,6 @@
       <Filter>source\core</Filter>
     </ClInclude>
     <ClInclude Include="source\CCustomOpcodeSystem.h">
-      <Filter>source\extensions</Filter>
-    </ClInclude>
-    <ClInclude Include="source\CLegacy.h">
       <Filter>source\extensions</Filter>
     </ClInclude>
     <ClInclude Include="source\CModuleSystem.h">
