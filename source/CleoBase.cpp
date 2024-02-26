@@ -121,6 +121,8 @@ namespace CLEO
         FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_plugins"));
         FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_saves"));
 
+        OpcodeInfoDb.Load(FS::path(Filepath_Root).append("cleo\\.config\\sa.json").generic_string().c_str());
+
         CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
         GameMenu.Inject(CodeInjector);
         DmaFix.Inject(CodeInjector);

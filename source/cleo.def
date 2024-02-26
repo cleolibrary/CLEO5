@@ -48,3 +48,4 @@ EXPORTS
 	_CLEO_GetScriptFilename@4				@45
 	_CLEO_GetScriptWorkDir@4				@46
 	_CLEO_SetScriptWorkDir@8				@47
+	_CLEO_RegisterCommand@8					@48

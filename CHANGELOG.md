@@ -77,6 +77,7 @@
 #### SDK AND PLUGINS
 - now all opcodes in range **0-7FFF** can be registered by plugins
 - plugins moved to _cleo\cleo_plugins_ directory
+- new SDK method: CLEO_RegisterCommand
 - new SDK method: CLEO_RegisterCallback
 - new SDK method: CLEO_GetVarArgCount
 - new SDK method: CLEO_PeekIntOpcodeParam

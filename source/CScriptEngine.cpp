@@ -779,7 +779,17 @@ namespace CLEO
 
                 ss << "offset {" << address << "}"; // Sanny offsets style
                 ss << " - ";
-                ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode << ": ...";
+                ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
+
+                auto commandName = GetInstance().OpcodeInfoDb.GetCommandName(CCustomOpcodeSystem::lastOpcode);
+                if (commandName != nullptr)
+                {
+                    ss << ": " << commandName;
+                }
+                else
+                {
+                    ss << ": ...";
+                }
             }
         }
 

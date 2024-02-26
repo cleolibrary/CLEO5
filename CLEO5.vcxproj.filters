@@ -102,6 +102,9 @@
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPools.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="source\OpcodeInfoDatabase.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -166,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="cleo_sdk\CLEO_Utils.h">
       <Filter>cleo_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="source\OpcodeInfoDatabase.h">
+      <Filter>source\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

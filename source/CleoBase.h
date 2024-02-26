@@ -12,6 +12,7 @@
 #include "CTextManager.h"
 #include "FileEnumerator.h"
 #include "crc32.h"
+#include "OpcodeInfoDatabase.h"
 
 namespace CLEO
 {
@@ -31,6 +32,7 @@ namespace CLEO
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
         CPluginSystem			PluginSystem;
+        OpcodeInfoDatabase      OpcodeInfoDb;
 
         int saveSlot = -1; // -1 if not loaded from save
 

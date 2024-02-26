@@ -169,7 +169,16 @@ namespace CLEO
 
 			if (opcode > LastOriginalOpcode)
 			{
-				SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str(), prevOpcode);
+				std::string extensionTip;
+				auto extensionName = GetInstance().OpcodeInfoDb.GetExtensionName(opcode);
+				if (extensionName != nullptr)
+				{
+					extensionTip += "Installing \"";
+					extensionTip += extensionName;
+					extensionTip += "\" CLEO extension may fix the problem.\n";
+				}
+
+				SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nPreviously called opcode: [%04X]\n%sScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str(), prevOpcode, extensionTip.c_str());
 				return thread->Suspend();
 			}
 
@@ -178,7 +187,16 @@ namespace CLEO
 
 			if(result == OR_ERROR)
 			{
-				SHOW_ERROR("Opcode [%04X] not found! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				std::string extensionTip;
+				auto extensionName = GetInstance().OpcodeInfoDb.GetExtensionName(opcode);
+				if (extensionName != nullptr)
+				{
+					extensionTip += "Installing \"";
+					extensionTip += extensionName;
+					extensionTip += "\" CLEO extension may fix the problem.\n";
+				}
+
+				SHOW_ERROR("Opcode [%04X] not found! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str(), extensionTip.c_str());
 				return thread->Suspend();
 			}
 		}
@@ -1776,6 +1794,18 @@ extern "C"
 
 	BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, CustomOpcodeHandler callback)
 	{
+		return CCustomOpcodeSystem::RegisterOpcode(opcode, callback);
+	}
+
+	BOOL WINAPI CLEO_RegisterCommand(const char* commandName, CustomOpcodeHandler callback)
+	{
+		WORD opcode = GetInstance().OpcodeInfoDb.GetOpcode(commandName);
+		if (opcode == 0xFFFF)
+		{
+			LOG_WARNING(0, "Failed to register opcode [%s]! Command name not found in the database.", commandName);
+			return false;
+		}
+
 		return CCustomOpcodeSystem::RegisterOpcode(opcode, callback);
 	}
 
