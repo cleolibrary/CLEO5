@@ -81,6 +81,7 @@
 - new SDK method: CLEO_GetVarArgCount
 - new SDK method: CLEO_PeekIntOpcodeParam
 - new SDK method: CLEO_PeekFloatOpcodeParam
+- new SDK method: CLEO_PeekPointerToScriptVariable
 - new SDK method: CLEO_SkipUnusedVarArgs
 - new SDK method: CLEO_ReadParamsFormatted
 - new SDK method: CLEO_ReadStringParamWriteBuffer
