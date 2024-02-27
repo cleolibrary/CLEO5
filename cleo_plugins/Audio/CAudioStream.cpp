@@ -44,6 +44,10 @@ void CAudioStream::Stop()
 {
     BASS_ChannelPause(streamInternal);
     state = Stopped;
+
+    // cancel ongoing transitions
+    speed = speedTarget;
+    volume = volumeTarget;
 }
 
 void CAudioStream::Resume()
