@@ -58,13 +58,13 @@ enum eDataType : BYTE
 	DT_FLOAT, // literal float 32
 	DT_VAR_ARRAY, // globalArr $(,)
 	DT_LVAR_ARRAY, // localArr @(,)
-	DT_TEXTLABEL, // literal sstring ''
+	DT_TEXTLABEL, // literal string up to 7 chars
 	DT_VAR_TEXTLABEL, // globalVarSString s$
 	DT_LVAR_TEXTLABEL, // localVarSString @s
 	DT_VAR_TEXTLABEL_ARRAY, // globalVarSStringArr s$(,)
 	DT_LVAR_TEXTLABEL_ARRAY, // localVarSStringArr @s(,)
 	DT_VARLEN_STRING, // literal vstring ""
-	DT_STRING,
+	DT_STRING, // literal string up to 15 chars
 	DT_VAR_STRING, // globalVarVString v$
 	DT_LVAR_STRING, // localVarVString @v
 	DT_VAR_STRING_ARRAY, // globalVarStringArr v$(,)
@@ -486,17 +486,18 @@ SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray(); // get pointer to 'SCRIPT_VAR[32
 BYTE WINAPI CLEO_GetParamsHandledCount(); // number of already read/written opcode parameters since current opcode handler was called
 
 // param read
-SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CRunningScript* thread); // get pointer to the variable data. Advances script to next param
+SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CRunningScript* thread); // get pointer to the variable's data, nullptr if parameter is not variable. Advances script to next param
 void WINAPI CLEO_RetrieveOpcodeParams(CRunningScript* thread, int count); // read multiple params. Stored in opcodeParams array
 DWORD WINAPI CLEO_GetIntOpcodeParam(CRunningScript* thread);
 float WINAPI CLEO_GetFloatOpcodeParam(CRunningScript* thread);
-LPSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // returns null terminated string, nullptr on fail
-LPSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // exactly same as CLEO_ReadStringOpcodeParam
+LPSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // writes null terminated string into buffer. If no buffer provided then internal one is used. Returns pointer to the result buffer or nullptr on fail
+LPSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // writes null terminated string into buffer. Whenever possible returns pointer to the original, null terminated, source string (might be longer than provided buffer). Returns nullptr on fail.
 void WINAPI CLEO_ReadStringParamWriteBuffer(CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator); // get info about the string opcode param, so it can be written latter. If outNeedsTerminator is not 0 then whole bufSize can be used as text characters. Advances script to next param
 char* WINAPI CLEO_ReadParamsFormatted(CRunningScript* thread, const char* format, char* buf = nullptr, int bufSize = 0); // consumes all var-arg params and terminator
 // get param value without advancing the script
 DWORD WINAPI CLEO_PeekIntOpcodeParam(CRunningScript* thread);
 float WINAPI CLEO_PeekFloatOpcodeParam(CRunningScript* thread);
+SCRIPT_VAR* WINAPI CLEO_PeekPointerToScriptVariable(CRunningScript* thread); // get pointer to the variable's data, nullptr if parameter is not variable
 
 // param skip without reading
 void WINAPI CLEO_SkipOpcodeParams(CRunningScript* thread, int count);

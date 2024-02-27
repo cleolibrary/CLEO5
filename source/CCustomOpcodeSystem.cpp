@@ -1821,19 +1821,108 @@ extern "C"
 		*thread << value;
 	}
 
-	LPSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char *buf, int size)
+	LPSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
 	{
-		return CLEO_ReadStringPointerOpcodeParam(thread, buf, size); // always support all string param types
-	}
+		static char internal_buf[MAX_STR_LEN];
+		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
 
-	LPSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char *buf, int size)
-	{
-		auto result = ReadStringParam(thread, buf, size);
-
+		auto result = ReadStringParam(thread, buf, bufSize);
 		if (result == nullptr)
 			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 
 		return result;
+	}
+
+	LPSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
+	{
+		static char internal_buf[MAX_STR_LEN];
+
+		// obtain pointer to the source, null terminated, string data if available
+		char* source = nullptr;
+		auto paramType = thread->PeekDataType();
+		auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+		auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
+
+		if (IsImmInteger(paramType) || isVariableInt)
+		{
+			source = (char*)CLEO_PeekIntOpcodeParam(thread); // integer address to text buffer
+
+			if ((size_t)source <= CCustomOpcodeSystem::MinValidAddress)
+			{
+				LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument #%d in script %s", opcodeParams[0].dwParam, CLEO_GetParamsHandledCount() + 1, ScriptInfoStr(thread).c_str());
+				return nullptr; // error
+			}
+		}
+		else if(IsImmString(paramType))
+		{
+			switch (paramType)
+			{
+				// always terminated in-code strings
+				case DT_TEXTLABEL:
+				case DT_STRING:
+					source = (char*)(thread->GetBytePointer() + sizeof(eDataType)); // skip type info, go to data
+						break;
+
+				case DT_VARLEN_STRING: // never terminated in-code string
+				default:
+					break;
+			}
+		}
+		else if(IsVarString(paramType))
+		{
+			auto str = (char*)CLEO_PeekPointerToScriptVariable(thread);
+			if(str != nullptr)
+			{
+				switch (paramType)
+				{
+					// short string variable
+					case DT_VAR_TEXTLABEL:
+					case DT_LVAR_TEXTLABEL:
+					case DT_VAR_TEXTLABEL_ARRAY:
+					case DT_LVAR_TEXTLABEL_ARRAY:
+						if(strnlen_s(str, 8) < 8) // if all space used by text then there is no terminator
+							source = str;
+						break;
+
+					// long string variable
+					case DT_VAR_STRING:
+					case DT_LVAR_STRING:
+					case DT_VAR_STRING_ARRAY:
+					case DT_LVAR_STRING_ARRAY:
+						if (strnlen_s(str, 16) < 16) // if all space used by text then there is no terminator
+							source = str;
+						break;
+
+					default:
+						break;
+				}
+			}
+		}
+
+		if (source != nullptr && buf == nullptr)
+		{
+			// no need to copy data, as user can not access the internal buffer anyway
+			CLEO_SkipOpcodeParams(thread, 1);
+			return source;
+		}
+		
+		if (buf == nullptr)
+		{
+			buf = internal_buf;
+
+			if (bufSize == 0) bufSize = sizeof(internal_buf);
+			else bufSize = min(bufSize, sizeof(internal_buf)); // user requested size limit
+		}
+
+		// read data into buffer
+		auto result = ReadStringParam(thread, buf, bufSize);
+		if (result == nullptr)
+		{
+			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return nullptr;
+		}
+
+		return (source != nullptr) ? source : result;
 	}
 
 	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)
@@ -1885,6 +1974,21 @@ extern "C"
 		thread->CurrentIP = ip;
 		GetInstance().OpcodeSystem.handledParamCount = count;
 		opcodeParams[0] = param;
+
+		return result;
+	}
+
+	SCRIPT_VAR* WINAPI CLEO_PeekPointerToScriptVariable(CLEO::CRunningScript* thread)
+	{
+		// store state
+		auto ip = thread->CurrentIP;
+		auto count = GetInstance().OpcodeSystem.handledParamCount;
+
+		auto result = GetScriptParamPointer(thread);
+
+		// restore state
+		thread->CurrentIP = ip;
+		GetInstance().OpcodeSystem.handledParamCount = count;
 
 		return result;
 	}
