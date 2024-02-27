@@ -214,6 +214,22 @@ namespace CLEO
         return _paramsArray[0];
     }
 
+    static SCRIPT_VAR& _readParamFloat(CRunningScript* thread)
+    {
+        auto var = _readParam(thread);
+
+        // people tend to use '0' instead '0.0' when providing literal float params in scripts
+        // binary these are equal, so can be allowed
+        if (var.dwParam == 0)
+        {
+            // fake it was ok
+            if (IsImmInteger(_lastParamType)) _lastParamType = eDataType::DT_FLOAT;
+            if (_lastParamArrayType == eArrayDataType::ADT_INT) _lastParamArrayType = eArrayDataType::ADT_FLOAT;
+        }
+
+        return var;
+    }
+
     static SCRIPT_VAR* _readParamVariable(CRunningScript* thread)
     {
         _lastParamType = thread->PeekDataType();
@@ -402,7 +418,7 @@ namespace CLEO
     #define OPCODE_READ_PARAM_UINT() _readParam(thread).dwParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument #%d expected to be integer, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
-    #define OPCODE_READ_PARAM_FLOAT() _readParam(thread).fParam; \
+    #define OPCODE_READ_PARAM_FLOAT() _readParamFloat(thread).fParam; \
         if (!_paramWasFloat()) { SHOW_ERROR("Input argument #%d expected to be float, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_READ_PARAM_STRING() _readParamText(thread); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
