@@ -394,14 +394,7 @@ public:
         auto name = OPCODE_READ_PARAM_STRING();
         auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
 
-        // validate
-        if (m_libraries.find(ptr) == m_libraries.end())
-        {
-            LOG_WARNING(thread, "Invalid '0x%X' pointer param to unknown or freed library in script %s", ptr, ScriptInfoStr(thread).c_str());
-            OPCODE_WRITE_PARAM_PTR(nullptr);
-            OPCODE_CONDITION_RESULT(false);
-            return OR_CONTINUE;
-        }
+        // allow any pointer, not just from 0AA2
 
         auto funcPtr = (void*)GetProcAddress(ptr, name);
 
