@@ -222,7 +222,7 @@ namespace CLEO
         // binary these are equal, so can be allowed
         if (var.dwParam == 0)
         {
-            // fake it was ok
+            // pretend it was float type
             if (IsImmInteger(_lastParamType)) _lastParamType = eDataType::DT_FLOAT;
             if (_lastParamArrayType == eArrayDataType::ADT_INT) _lastParamArrayType = eArrayDataType::ADT_FLOAT;
         }
