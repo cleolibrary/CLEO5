@@ -404,9 +404,11 @@ namespace CLEO
 	{
 		static char internal_buf[MAX_STR_LEN];
 		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
-		int bufLength = (int)bufSize - 1; // max text length (minus terminator char), -1 for unknown
 
-		return CLEO::GetScriptStringParam(thread, 0, buf, bufLength);
+		if (bufSize > 0) buf[bufSize - 1] = '\0'; // buffer always terminated
+		if (bufSize <= 1) return buf; // no characters to read, done
+
+		return GetScriptStringParam(thread, 0, buf, bufSize - 1); // do not overwrite buffer terminator
 	}
 
 	// write output\result string parameter
