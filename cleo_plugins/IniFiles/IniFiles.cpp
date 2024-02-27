@@ -144,7 +144,7 @@ public:
 		0AF5=4,write_string %1s% to_ini_file %2s% section %3s% key %4s%
 		****************************************************************/
 	{
-		char strValue[MAX_STR_LEN]; OPCODE_READ_PARAM_STRING_BUFF(strValue, sizeof(strValue));
+		auto strValue = OPCODE_READ_PARAM_STRING();
 		auto path = OPCODE_READ_PARAM_FILEPATH();
 		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
 		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));

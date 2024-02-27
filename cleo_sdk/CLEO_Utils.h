@@ -31,9 +31,9 @@ namespace CLEO
     OPCODE_READ_PARAM_INT()
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_STRING() // returns char* to internal buffer. It might be overwritten by another string read!
+    OPCODE_READ_PARAM_STRING() // returns pointer to raw source data or CLEO's internal buffer, which MAY be overwritten by another OPCODE_READ_PARAM_STRING call
     OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // always null terminated
-    OPCODE_READ_PARAM_FILEPATH() // returns char* to internal buffer. It might be overwritten by another string read!
+    OPCODE_READ_PARAM_FILEPATH() // returns pointer to internal buffer, which WILL be overwritten by another OPCODE_READ_PARAM_FILEPATH call
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
     OPCODE_READ_PARAM_OBJECT_HANDLE()
     OPCODE_READ_PARAM_PED_HANDLE()
@@ -295,7 +295,10 @@ namespace CLEO
             return nullptr;
         }
 
-        auto str = CLEO_ReadStringOpcodeParam(thread, buffer, bufferSize);
+        auto str = buffer != nullptr ?
+            CLEO_ReadStringOpcodeParam(thread, buffer, bufferSize) :
+            CLEO_ReadStringPointerOpcodeParam(thread, buffer, bufferSize); // return pointer to source data whenever possible
+        
         if (str == nullptr) // other error?
         {
             SHOW_ERROR("Invalid input argument #%d in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str());
@@ -309,11 +312,13 @@ namespace CLEO
 
     static char* _readParamFilepath(CRunningScript* thread)
     {
-        auto str = _readParamText(thread);
+        static char internal_buf[MAX_STR_LEN];
+
+        auto str = _readParamText(thread, internal_buf, sizeof(internal_buf));
         if (str == nullptr) return nullptr;
 
-        CLEO_ResolvePath(thread, str, MAX_STR_LEN); // uses generic readStringParam's buffer
-        return str;
+        CLEO_ResolvePath(thread, internal_buf, sizeof(internal_buf));
+        return internal_buf;
     }
 
     static bool _writeParamText(CRunningScript* thread, const char* str)
