@@ -216,18 +216,18 @@ namespace CLEO
 
     static SCRIPT_VAR& _readParamFloat(CRunningScript* thread)
     {
-        auto var = _readParam(thread);
+        _readParam(thread);
 
         // people tend to use '0' instead '0.0' when providing literal float params in scripts
         // binary these are equal, so can be allowed
-        if (var.dwParam == 0)
+        if (_paramsArray[0].dwParam == 0)
         {
             // pretend it was float type
             if (IsImmInteger(_lastParamType)) _lastParamType = eDataType::DT_FLOAT;
             if (_lastParamArrayType == eArrayDataType::ADT_INT) _lastParamArrayType = eArrayDataType::ADT_FLOAT;
         }
 
-        return var;
+        return _paramsArray[0];
     }
 
     static SCRIPT_VAR* _readParamVariable(CRunningScript* thread)
