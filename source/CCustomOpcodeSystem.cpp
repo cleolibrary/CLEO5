@@ -1074,7 +1074,8 @@ namespace CLEO
 			}
 			else if (IsImmString(paramType)) // those texts exists in script code, but without terminator character. Copy is necessary
 			{
-				scmFunc->stringParams.emplace_back(CLEO_ReadStringOpcodeParam(thread, buf, sizeof(buf)));
+				auto str = OPCODE_READ_PARAM_STRING_BUFF(buf, sizeof(buf));
+				scmFunc->stringParams.emplace_back(str);
 				arg->pcParam = (char*)scmFunc->stringParams.back().c_str();
 			}
 			else
