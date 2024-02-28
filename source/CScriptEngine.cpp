@@ -130,7 +130,7 @@ namespace CLEO
     }
 
     // always copy to buffer
-    char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
+    char* __fastcall ReadStringParamToBuffer(CRunningScript* thread, int dummy, char* buff, int buffLen)
     {
         //if (buff == nullptr || buffLen == 0) return buff;
 
@@ -880,7 +880,7 @@ namespace CLEO
         inj.MemoryReadOffset(addr.address + 1, ProcessScript);
         inj.ReplaceFunction(HOOK_ProcessScript, addr);
 
-        inj.InjectFunction(GetScriptStringParam, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
+        inj.InjectFunction(ReadStringParamToBuffer, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
         // setup ScrLog plugin to not patch it again
         auto scrLogConfig = FS::absolute("scrlog.ini");
         if (FS::is_regular_file(scrLogConfig)) WritePrivateProfileString("CONFIG", "HOOK_COLLECT_STRING", "FALSE", scrLogConfig.string().c_str());

@@ -1074,7 +1074,7 @@ namespace CLEO
 			}
 			else if (IsImmString(paramType)) // those texts exists in script code, but without terminator character. Copy is necessary
 			{
-				scmFunc->stringParams.emplace_back(GetScriptStringParam(thread, 0, buf, sizeof(buf) - 1));
+				scmFunc->stringParams.emplace_back(CLEO_ReadStringOpcodeParam(thread, buf, sizeof(buf)));
 				arg->pcParam = (char*)scmFunc->stringParams.back().c_str();
 			}
 			else
@@ -1922,7 +1922,7 @@ extern "C"
 		}
 
 		// read data into buffer
-		auto result = GetScriptStringParam(thread, 0, buf, bufSize - 1);
+		auto result = ReadStringParamToBuffer(thread, 0, buf, bufSize - 1);
 		if (result == nullptr)
 		{
 			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());

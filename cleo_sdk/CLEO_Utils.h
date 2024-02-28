@@ -413,7 +413,7 @@ namespace CLEO
 
     #define OPCODE_READ_PARAM_PTR() _readParam(thread).pParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument #%d expected to be integer, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        else if (_paramsArray[0].dwParam <= MinValidAddress) { SHOW_ERROR("Invalid poinBter '0x%X' input argument #%d in script %s \nScript suspended.", _paramsArray[0].dwParam, CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+        else if (_paramsArray[0].dwParam <= MinValidAddress) { SHOW_ERROR("Invalid pointer '0x%X' input argument #%d in script %s \nScript suspended.", _paramsArray[0].dwParam, CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_READ_PARAM_OBJECT_HANDLE() _readParam(thread).dwParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument #%d expected to be integer, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
