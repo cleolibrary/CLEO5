@@ -1906,7 +1906,6 @@ extern "C"
 		// if source is already a pointer to string, then no need to copy data
 		if (source != nullptr)
 		{
-			// no need to copy data
 			CLEO_SkipOpcodeParams(thread, 1);
 			return source;
 		}
