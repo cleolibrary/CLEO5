@@ -490,8 +490,32 @@ SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CRunningScript* thread); // g
 void WINAPI CLEO_RetrieveOpcodeParams(CRunningScript* thread, int count); // read multiple params. Stored in opcodeParams array
 DWORD WINAPI CLEO_GetIntOpcodeParam(CRunningScript* thread);
 float WINAPI CLEO_GetFloatOpcodeParam(CRunningScript* thread);
-LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // same as CLEO_ReadStringPointerOpcodeParam. left for backward compatibility
-LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // writes null terminated string into buffer. Whenever possible returns pointer to the original, null terminated, source string (might be longer than provided buffer). Returns nullptr on fail.
+
+/**
+	Reads a string from the script.
+
+	If the argument is a valid pointer, return it as is (it may point to a string longer that expected); the buffer remains unchanged.
+	if the argument is a fixed-length string, return a pointer to this string; the buffer remains unchanged.
+	if the argument is a variable-length string or string variable, copy the string to the buffer and return a pointer to it. string is always null-terminated.
+	otherwise, return nullptr.
+
+	example of usage:
+
+	char buf[MAX_STR_LEN];
+	auto str = CLEO_ReadStringOpcodeParam(thread, buf, sizeof(buf));
+	if (str != nullptr)
+	{
+		// do something with the string
+	}
+	else
+	{
+		// string was not read
+	}
+
+*/
+LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0);
+LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // same as CLEO_ReadStringOpcodeParam. left for backward compatibility
+
 void WINAPI CLEO_ReadStringParamWriteBuffer(CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator); // get info about the string opcode param, so it can be written latter. If outNeedsTerminator is not 0 then whole bufSize can be used as text characters. Advances script to next param
 char* WINAPI CLEO_ReadParamsFormatted(CRunningScript* thread, const char* format, char* buf = nullptr, int bufSize = 0); // consumes all var-arg params and terminator
 // get param value without advancing the script

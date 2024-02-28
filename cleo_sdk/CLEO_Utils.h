@@ -31,7 +31,7 @@ namespace CLEO
     OPCODE_READ_PARAM_INT()
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // reads string from script, returns pointer to a null-terminated string or nullptr if error. Clamped to the buffer size, always null terminated
+    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // uses CLEO_ReadStringOpcodeParam to read string from script, see CLEO.h for details
     OPCODE_READ_PARAM_FILEPATH() // returns const char* to resolved filepath cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_FILEPATH calls
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
     OPCODE_READ_PARAM_OBJECT_HANDLE() // read and validate game object handle
