@@ -1918,7 +1918,6 @@ extern "C"
 			else bufSize = min(bufSize, sizeof(internal_buf)); // user requested size limit
 		}
 
-		// read data into buffer
 		return ReadStringParamToBuffer(thread, 0, buf, bufSize - 1);
 	}
 
