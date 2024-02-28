@@ -1903,9 +1903,10 @@ extern "C"
 			}
 		}
 
-		if (source != nullptr && buf == nullptr)
+		// if source is already a pointer to string, then no need to copy data
+		if (source != nullptr)
 		{
-			// no need to copy data, as user can not access the internal buffer anyway
+			// no need to copy data
 			CLEO_SkipOpcodeParams(thread, 1);
 			return source;
 		}
