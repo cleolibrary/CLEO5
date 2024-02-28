@@ -1821,7 +1821,7 @@ extern "C"
 		*thread << value;
 	}
 
-	LPSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
+	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
 	{
 		static char internal_buf[MAX_STR_LEN];
 		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
@@ -1833,7 +1833,7 @@ extern "C"
 		return result;
 	}
 
-	LPSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
+	LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
 	{
 		static char internal_buf[MAX_STR_LEN];
 

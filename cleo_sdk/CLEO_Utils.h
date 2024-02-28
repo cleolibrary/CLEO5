@@ -303,7 +303,7 @@ namespace CLEO
         return IsVariable(_lastParamType);
     }
 
-    static char* _readParamText(CRunningScript* thread, char* buffer = nullptr, DWORD bufferSize = 0)
+    static const char* _readParamText(CRunningScript* thread, char* buffer = nullptr, DWORD bufferSize = 0)
     {
         _lastParamType = thread->PeekDataType();
         _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
@@ -331,7 +331,7 @@ namespace CLEO
         return str;
     }
 
-    static char* _readParamFilepath(CRunningScript* thread)
+    static const char* _readParamFilepath(CRunningScript* thread)
     {
         static char internal_buf[MAX_STR_LEN];
 
