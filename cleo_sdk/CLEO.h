@@ -490,8 +490,8 @@ SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CRunningScript* thread); // g
 void WINAPI CLEO_RetrieveOpcodeParams(CRunningScript* thread, int count); // read multiple params. Stored in opcodeParams array
 DWORD WINAPI CLEO_GetIntOpcodeParam(CRunningScript* thread);
 float WINAPI CLEO_GetFloatOpcodeParam(CRunningScript* thread);
-LPSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // writes null terminated string into buffer. If no buffer provided then internal one is used. Returns pointer to the result buffer or nullptr on fail
-LPSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // writes null terminated string into buffer. Whenever possible returns pointer to the original, null terminated, source string (might be longer than provided buffer). Returns nullptr on fail.
+LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // writes null terminated string into buffer. If no buffer provided then internal one is used. Returns pointer to the result buffer or nullptr on fail
+LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buf = nullptr, int bufSize = 0); // writes null terminated string into buffer. Whenever possible returns pointer to the original, null terminated, source string (might be longer than provided buffer). Returns nullptr on fail.
 void WINAPI CLEO_ReadStringParamWriteBuffer(CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator); // get info about the string opcode param, so it can be written latter. If outNeedsTerminator is not 0 then whole bufSize can be used as text characters. Advances script to next param
 char* WINAPI CLEO_ReadParamsFormatted(CRunningScript* thread, const char* format, char* buf = nullptr, int bufSize = 0); // consumes all var-arg params and terminator
 // get param value without advancing the script

@@ -118,7 +118,7 @@ public:
                     return thread->Suspend();
                 }
 
-                param.pcParam = OPCODE_READ_PARAM_STRING_BUFF(textParams[currTextParam], MAX_STR_LEN);
+                param.pcParam = (char*)OPCODE_READ_PARAM_STRING_BUFF(textParams[currTextParam], MAX_STR_LEN);
                 currTextParam++;
             }
             else if (IsImmInteger(paramType) || IsImmFloat(paramType) || IsVariable(paramType))
