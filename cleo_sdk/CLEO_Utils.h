@@ -31,8 +31,7 @@ namespace CLEO
     OPCODE_READ_PARAM_INT()
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_STRING() // returns const char* to cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_STRING calls
-    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // gets cstring into provided buffer, returns pointer to that buffer. Clamped to the buffer size, always null terminated
+    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // reads string from script, returns pointer to a null-terminated string or nullptr if error. Clamped to the buffer size, always null terminated
     OPCODE_READ_PARAM_FILEPATH() // returns const char* to resolved filepath cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_FILEPATH calls
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
     OPCODE_READ_PARAM_OBJECT_HANDLE() // read and validate game object handle
@@ -282,7 +281,7 @@ namespace CLEO
         return IsVariable(_lastParamType);
     }
 
-    static const char* _readParamText(CRunningScript* thread, char* buffer = nullptr, DWORD bufferSize = 0)
+    static const char* _readParamText(CRunningScript* thread, char* buffer, DWORD bufferSize)
     {
         _lastParamType = thread->PeekDataType();
         _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
@@ -295,10 +294,8 @@ namespace CLEO
             return nullptr;
         }
 
-        auto str = buffer != nullptr ?
-            CLEO_ReadStringOpcodeParam(thread, buffer, bufferSize) :
-            CLEO_ReadStringPointerOpcodeParam(thread, buffer, bufferSize); // return pointer to source data whenever possible
-        
+        auto str = CLEO_ReadStringOpcodeParam(thread, buffer, bufferSize);
+
         if (str == nullptr) // other error?
         {
             SHOW_ERROR("Invalid input argument #%d in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str());
@@ -410,15 +407,13 @@ namespace CLEO
     #define OPCODE_READ_PARAM_FLOAT() _readParam(thread).fParam; \
         if (!_paramWasFloat()) { SHOW_ERROR("Input argument #%d expected to be float, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
-    #define OPCODE_READ_PARAM_STRING() _readParamText(thread); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
-
     #define OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) _readParamText(thread, _buffer, _bufferSize); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
     #define OPCODE_READ_PARAM_FILEPATH() _readParamFilepath(thread); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
     #define OPCODE_READ_PARAM_PTR() _readParam(thread).pParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument #%d expected to be integer, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        else if (_paramsArray[0].dwParam <= MinValidAddress) { SHOW_ERROR("Invalid pointer '0x%X' input argument #%d in script %s \nScript suspended.", _paramsArray[0].dwParam, CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+        else if (_paramsArray[0].dwParam <= MinValidAddress) { SHOW_ERROR("Invalid poinBter '0x%X' input argument #%d in script %s \nScript suspended.", _paramsArray[0].dwParam, CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_READ_PARAM_OBJECT_HANDLE() _readParam(thread).dwParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument #%d expected to be integer, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \

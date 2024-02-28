@@ -67,7 +67,6 @@ namespace CLEO
         bool needTerminator = false;
     };
 
-    char* ReadStringParam(CRunningScript* thread, char* buf = nullptr, DWORD bufSize = 0); // null terminated
     StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
     int ReadFormattedString(CRunningScript* thread, char* buf, DWORD bufSize, const char* format);
 
