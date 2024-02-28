@@ -129,13 +129,8 @@ namespace CLEO
         return (SCRIPT_VAR*)((size_t)result + pScript->GetBasePointer());
     }
 
-    // always copy to buffer
     char* __fastcall ReadStringParamToBuffer(CRunningScript* thread, int dummy, char* buff, int buffLen)
     {
-        //if (buff == nullptr || buffLen == 0) return buff;
-
-        //if (buffLen < 0) buffLen = 0x7FFFFFFF; // unknown - unlimited
-
         auto paramType = thread->PeekDataType();
         auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
         auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
