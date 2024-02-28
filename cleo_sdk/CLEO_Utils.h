@@ -31,14 +31,14 @@ namespace CLEO
     OPCODE_READ_PARAM_INT()
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_STRING() // returns pointer to raw source data or CLEO's internal buffer, which MAY be overwritten by another OPCODE_READ_PARAM_STRING call
-    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // always null terminated
-    OPCODE_READ_PARAM_FILEPATH() // returns pointer to internal buffer, which WILL be overwritten by another OPCODE_READ_PARAM_FILEPATH call
+    OPCODE_READ_PARAM_STRING() // returns const char* to cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_STRING calls
+    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // gets cstring into provided buffer, returns pointer to that buffer. Clamped to the buffer size, always null terminated
+    OPCODE_READ_PARAM_FILEPATH() // returns const char* to resolved filepath cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_FILEPATH calls
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
-    OPCODE_READ_PARAM_OBJECT_HANDLE()
-    OPCODE_READ_PARAM_PED_HANDLE()
-    OPCODE_READ_PARAM_VEHICLE_HANDLE()
-    OPCODE_READ_PARAM_OUTPUT_VAR() // pointer to write result later
+    OPCODE_READ_PARAM_OBJECT_HANDLE() // read and validate game object handle
+    OPCODE_READ_PARAM_PED_HANDLE() // read and validate character (ped/actor) handle
+    OPCODE_READ_PARAM_VEHICLE_HANDLE() // read and validate vehicle handle
+    OPCODE_READ_PARAM_OUTPUT_VAR() // store variable param pointer to write result later
     OPCODE_READ_PARAM_OUTPUT_VAR_INT() // pointer to write integer result later
     OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT() // pointer to write float result later
 
