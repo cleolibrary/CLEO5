@@ -1920,14 +1920,7 @@ extern "C"
 		}
 
 		// read data into buffer
-		auto result = ReadStringParamToBuffer(thread, 0, buf, bufSize - 1);
-		if (result == nullptr)
-		{
-			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return nullptr;
-		}
-
-		return (source != nullptr) ? source : result;
+		return ReadStringParamToBuffer(thread, 0, buf, bufSize - 1);
 	}
 
 	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)
