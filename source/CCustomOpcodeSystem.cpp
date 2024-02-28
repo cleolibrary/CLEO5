@@ -1833,11 +1833,7 @@ extern "C"
 
 	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
 	{
-		auto result = CLEO_ReadStringPointerOpcodeParam(thread, buf, bufSize);
-		if (result == nullptr)
-			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
-
-		return result;
+		return CLEO_ReadStringPointerOpcodeParam(thread, buf, bufSize);
 	}
 
 	LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
