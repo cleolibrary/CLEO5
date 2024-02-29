@@ -399,16 +399,100 @@ namespace CLEO
 		return thread;
 	}
 
-	// read string parameter according to convention on strings. Always null terminated
-	char* ReadStringParam(CRunningScript *thread, char* buf, DWORD bufSize)
+	const char* ReadStringParam(CRunningScript *thread, char* buff, DWORD buffSize)
 	{
-		static char internal_buf[MAX_STR_LEN];
-		if (!buf) { buf = internal_buf; bufSize = MAX_STR_LEN; }
+		static char internal_buf[MAX_STR_LEN + 1]; // and terminator
 
-		if (bufSize > 0) buf[bufSize - 1] = '\0'; // buffer always terminated
-		if (bufSize <= 1) return buf; // no characters to read, done
+		if (buff == nullptr || buffSize <= 1)
+		{
+			CLEO_SkipOpcodeParams(thread, 1);
+			LOG_WARNING(thread, "Invalid ReadStringParam argument!");
+			return nullptr; // invalid argument
+		}
 
-		return GetScriptStringParam(thread, 0, buf, bufSize - 1); // do not overwrite buffer terminator
+		// if available obtain pointer to the source, null terminated, string data
+		char* source = nullptr;
+		auto paramType = thread->PeekDataType();
+		auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+		auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
+
+		if (IsImmInteger(paramType) || isVariableInt)
+		{
+			source = (char*)CLEO_PeekIntOpcodeParam(thread); // integer address to text buffer
+
+			if ((size_t)source <= CCustomOpcodeSystem::MinValidAddress)
+			{
+				CLEO_SkipOpcodeParams(thread, 1);
+				LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument #%d in script %s", opcodeParams[0].dwParam, CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str());
+				return nullptr; // error
+			}
+		}
+		else if (IsImmString(paramType))
+		{
+			switch (paramType)
+			{
+				// always terminated in-code strings
+			case DT_TEXTLABEL:
+			case DT_STRING:
+				source = (char*)(thread->GetBytePointer() + sizeof(eDataType)); // skip type info, go to data
+				break;
+
+			case DT_VARLEN_STRING: // never terminated in-code string
+			default:
+				break;
+			}
+		}
+		else if (IsVarString(paramType))
+		{
+			auto str = (char*)CLEO_PeekPointerToScriptVariable(thread);
+			if (str != nullptr)
+			{
+				switch (paramType)
+				{
+					// short string variable
+				case DT_VAR_TEXTLABEL:
+				case DT_LVAR_TEXTLABEL:
+				case DT_VAR_TEXTLABEL_ARRAY:
+				case DT_LVAR_TEXTLABEL_ARRAY:
+					if (strnlen_s(str, 8) < 8) // if all space used by text then there is no terminator
+						source = str;
+					break;
+
+					// long string variable
+				case DT_VAR_STRING:
+				case DT_LVAR_STRING:
+				case DT_VAR_STRING_ARRAY:
+				case DT_LVAR_STRING_ARRAY:
+					if (strnlen_s(str, 16) < 16) // if all space used by text then there is no terminator
+						source = str;
+					break;
+
+				default:
+					break;
+				}
+			}
+		}
+
+		if (source != nullptr && buff == nullptr)
+		{
+			// no need to copy data, as user can not access the internal buffer anyway
+			CLEO_SkipOpcodeParams(thread, 1);
+			return source;
+		}
+
+		if (buff == nullptr)
+		{
+			buff = internal_buf;
+
+			if (buffSize == 0) buffSize = sizeof(internal_buf);
+			else buffSize = min(buffSize, sizeof(internal_buf)); // user requested size limit
+		}
+
+		// read data into buffer
+		buff[buffSize - 1] = '\0'; // buffer always terminated
+		GetScriptStringParam(thread, 0, buff, buffSize - 1); // do not overwrite buffer terminator
+
+		return (source != nullptr) ? source : buff;
 	}
 
 	// write output\result string parameter
@@ -971,7 +1055,7 @@ namespace CLEO
 	{
 		int label = 0;
 
-		char* moduleTxt = nullptr;
+		const char* moduleTxt = nullptr;
 		auto paramType = (eDataType)*thread->GetBytePointer();
 		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
@@ -1820,108 +1904,43 @@ extern "C"
 		*thread << value;
 	}
 
-	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
+	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
 	{
-		static char internal_buf[MAX_STR_LEN + 1]; // and terminator
-		if (!buf) { buf = internal_buf; bufSize = sizeof(internal_buf); }
+		static char internal_buff[MAX_STR_LEN + 1]; // and terminator
+		if (!buff) 
+		{
+			buff = internal_buff; 
+			buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
+		}
 
-		auto result = ReadStringParam(thread, buf, bufSize);
-		if (result == nullptr)
-			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+		auto result = CLEO_ReadStringPointerOpcodeParam(thread, buff, buffSize);
 
-		return result;
+		return (result != nullptr) ? buff : nullptr;
 	}
 
-	LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char *buf, int bufSize)
+	LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
 	{
-		static char internal_buf[MAX_STR_LEN + 1]; // and terminator
+		static char internal_buff[MAX_STR_LEN + 1]; // and terminator
 
-		// obtain pointer to the source, null terminated, string data if available
-		char* source = nullptr;
-		auto paramType = thread->PeekDataType();
-		auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
-		auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
-
-		if (IsImmInteger(paramType) || isVariableInt)
+		bool userBuffer = buff != nullptr;
+		if (!userBuffer)
 		{
-			source = (char*)CLEO_PeekIntOpcodeParam(thread); // integer address to text buffer
-
-			if ((size_t)source <= CCustomOpcodeSystem::MinValidAddress)
-			{
-				LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument #%d in script %s", opcodeParams[0].dwParam, CLEO_GetParamsHandledCount() + 1, ScriptInfoStr(thread).c_str());
-				return nullptr; // error
-			}
-		}
-		else if(IsImmString(paramType))
-		{
-			switch (paramType)
-			{
-				// always terminated in-code strings
-				case DT_TEXTLABEL:
-				case DT_STRING:
-					source = (char*)(thread->GetBytePointer() + sizeof(eDataType)); // skip type info, go to data
-						break;
-
-				case DT_VARLEN_STRING: // never terminated in-code string
-				default:
-					break;
-			}
-		}
-		else if(IsVarString(paramType))
-		{
-			auto str = (char*)CLEO_PeekPointerToScriptVariable(thread);
-			if(str != nullptr)
-			{
-				switch (paramType)
-				{
-					// short string variable
-					case DT_VAR_TEXTLABEL:
-					case DT_LVAR_TEXTLABEL:
-					case DT_VAR_TEXTLABEL_ARRAY:
-					case DT_LVAR_TEXTLABEL_ARRAY:
-						if(strnlen_s(str, 8) < 8) // if all space used by text then there is no terminator
-							source = str;
-						break;
-
-					// long string variable
-					case DT_VAR_STRING:
-					case DT_LVAR_STRING:
-					case DT_VAR_STRING_ARRAY:
-					case DT_LVAR_STRING_ARRAY:
-						if (strnlen_s(str, 16) < 16) // if all space used by text then there is no terminator
-							source = str;
-						break;
-
-					default:
-						break;
-				}
-			}
+			buff = internal_buff;
+			buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
 		}
 
-		if (source != nullptr && buf == nullptr)
-		{
-			// no need to copy data, as user can not access the internal buffer anyway
-			CLEO_SkipOpcodeParams(thread, 1);
-			return source;
-		}
-		
-		if (buf == nullptr)
-		{
-			buf = internal_buf;
+		auto result = ReadStringParam(thread, buff, buffSize);
 
-			if (bufSize == 0) bufSize = sizeof(internal_buf);
-			else bufSize = min(bufSize, sizeof(internal_buf)); // user requested size limit
+		// always copy to the user's buffer
+		if (userBuffer && result != buff)
+		{
+			auto len = strlen(result);
+			len = min(len, buffSize);
+			memcpy(buff, result, len);
+			buff[len] = '\0';
 		}
 
-		// read data into buffer
-		auto result = ReadStringParam(thread, buf, bufSize);
-		if (result == nullptr)
-		{
-			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return nullptr;
-		}
-
-		return (source != nullptr) ? source : result;
+		return result;
 	}
 
 	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)

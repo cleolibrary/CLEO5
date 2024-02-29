@@ -428,7 +428,7 @@ namespace CLEO
 
     #define OPCODE_READ_PARAM_STRING(_varName) char _buff_##_varName[MAX_STR_LEN + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1, false); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen) char _buff_##_varName[_maxLen + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1, false); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen) char _buff_##_varName[_maxLen + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1, true); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
     #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; const char* ##_varName = _readParamText(thread, _buff_##_varName, 512, false, true); if(_paramWasString()) CLEO_ResolvePath(thread, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT;
 

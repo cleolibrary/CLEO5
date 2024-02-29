@@ -99,9 +99,6 @@ public:
                     LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(thread).c_str());
                     return OR_CONTINUE;
             }
-
-            CLEO_SetScriptWorkDir(thread, path);
-            return OR_CONTINUE;
         }
         else
         {
