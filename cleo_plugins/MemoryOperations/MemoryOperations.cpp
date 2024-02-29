@@ -118,7 +118,9 @@ public:
                     return thread->Suspend();
                 }
 
-                param.pcParam = (char*)OPCODE_READ_PARAM_STRING_BUFF(textParams[currTextParam], MAX_STR_LEN);
+                OPCODE_READ_PARAM_STRING_LEN(str, MAX_STR_LEN);
+                strcpy(textParams[currTextParam], str);
+                param.pcParam = textParams[currTextParam];
                 currTextParam++;
             }
             else if (IsImmInteger(paramType) || IsImmFloat(paramType) || IsVariable(paramType))
@@ -358,9 +360,9 @@ public:
     //0AA2=2, load_dynamic_library %1s% store_to %2d% // IF and SET
     static OpcodeResult __stdcall opcode_0AA2(CLEO::CRunningScript* thread)
     {
-        auto str = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(path);
 
-        auto ptr = LoadLibrary(str);
+        auto ptr = LoadLibrary(path);
         if (ptr != nullptr)
         {
             m_libraries.insert(ptr);
@@ -391,7 +393,7 @@ public:
     //0AA4=3, get_proc_address %1d% library %2d% result %3d% // IF and SET
     static OpcodeResult __stdcall opcode_0AA4(CLEO::CRunningScript* thread)
     {
-        auto name = OPCODE_READ_PARAM_STRING();
+        OPCODE_READ_PARAM_STRING(name);
         auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
 
         // allow any pointer, not just from 0AA2
@@ -448,7 +450,7 @@ public:
     //0AAA=2,  get_script_struct_named %1d% pointer %2d% // IF and SET
     static OpcodeResult __stdcall opcode_0AAA(CLEO::CRunningScript *thread)
     {
-        auto name = OPCODE_READ_PARAM_STRING();
+        OPCODE_READ_PARAM_STRING(name);
 
         auto ptr = CLEO_GetScriptByName(name, true, true, 0);
 
@@ -711,7 +713,7 @@ public:
         }
         else if (IsImmString(valueType) || IsVarString(valueType))
         {
-            auto str = OPCODE_READ_PARAM_STRING();
+            OPCODE_READ_PARAM_STRING(str);
             auto len = (int)strlen(str);
 
             memcpy(ptr + offset, str, min(size, len));
@@ -768,7 +770,7 @@ public:
     //2406=1,  get_script_struct_from_filename %1s%
     static OpcodeResult __stdcall opcode_2406(CLEO::CScriptThread* thread)
     {
-        auto filename = OPCODE_READ_PARAM_STRING();
+        OPCODE_READ_PARAM_STRING(filename);
 
         auto address = CLEO_GetScriptByFilename(filename);
 

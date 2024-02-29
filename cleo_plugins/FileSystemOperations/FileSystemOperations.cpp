@@ -105,7 +105,8 @@ public:
         }
         else
         {
-            path = OPCODE_READ_PARAM_STRING();
+            OPCODE_READ_PARAM_STRING(str);
+            path = str;
         }
 
         CLEO_SetScriptWorkDir(thread, path);
@@ -115,7 +116,7 @@ public:
     //0A9A=3,%3d% = openfile %1d% mode %2d% // IF and SET
     static OpcodeResult WINAPI opcode_0A9A(CRunningScript* thread)
     {
-        auto filename = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(filename);
 
         char mode[16];
         auto paramType = CLEO_GetOperandType(thread);
@@ -132,7 +133,8 @@ public:
         }
         else
         {
-            OPCODE_READ_PARAM_STRING_BUFF(mode, sizeof(mode));
+            OPCODE_READ_PARAM_STRING_LEN(strMode, 15);
+            strcpy(mode, strMode);
         }
 
         // either CLEO 3 or CLEO 4 made a big mistake! (they differ in one major unapparent preference)
@@ -252,7 +254,7 @@ public:
     // 0AAB=1,  does_file_exist %1s%
     static OpcodeResult WINAPI Script_FS_FileExists(CRunningScript* thread)
     {
-        auto filename = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(filename);
 
         DWORD fAttr = GetFileAttributes(filename);
         bool exists = (fAttr != INVALID_FILE_ATTRIBUTES) && !(fAttr & FILE_ATTRIBUTE_DIRECTORY);
@@ -337,7 +339,7 @@ public:
     static OpcodeResult WINAPI opcode_0AD8(CRunningScript* thread)
     {
         auto handle = READ_FILE_HANDLE_PARAM();
-        auto text = OPCODE_READ_PARAM_STRING();
+        OPCODE_READ_PARAM_STRING(text);
 
         auto ok = File::writeString(handle, text);
         if (!ok)
@@ -355,7 +357,7 @@ public:
     static OpcodeResult WINAPI opcode_0AD9(CRunningScript* thread)
     {
         auto handle = READ_FILE_HANDLE_PARAM();
-        auto format = OPCODE_READ_PARAM_STRING();
+        OPCODE_READ_PARAM_STRING(format);
         static char text[4 * MAX_STR_LEN]; CLEO_ReadParamsFormatted(thread, format, text, MAX_STR_LEN);
         
         auto ok = File::writeString(handle, text);
@@ -372,7 +374,7 @@ public:
     static OpcodeResult WINAPI opcode_0ADA(CRunningScript* thread)
     {
         auto handle = READ_FILE_HANDLE_PARAM();
-        auto format = OPCODE_READ_PARAM_STRING();
+        OPCODE_READ_PARAM_STRING(format);
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR();
 
         size_t paramCount = 0;
@@ -394,7 +396,7 @@ public:
     // 0AE4=1,  directory_exist %1s%
     static OpcodeResult WINAPI Script_FS_DirectoryExists(CRunningScript* thread)
     {
-        auto filename = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(filename);
 
         DWORD fAttr = GetFileAttributes(filename);
         bool exists = (fAttr != INVALID_FILE_ATTRIBUTES) && (fAttr & FILE_ATTRIBUTE_DIRECTORY);
@@ -406,7 +408,7 @@ public:
     // 0AE5=1,  create_directory %1s% //IF and SET
     static OpcodeResult WINAPI Script_FS_CreateDirectory(CRunningScript* thread)
     {
-        auto filename = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(filename);
 
         bool result = CreateDirectory(filename, NULL) != 0;
 
@@ -417,7 +419,7 @@ public:
     // 0AE6=3,  %2d% = find_first_file %1s% get_filename_to %3s% //IF and SET
     static OpcodeResult WINAPI Script_FS_FindFirstFile(CRunningScript* thread)
     {
-        auto filename = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(filename);
 
         WIN32_FIND_DATA ffd = { 0 };
         HANDLE handle = FindFirstFile(filename, &ffd);
@@ -483,7 +485,7 @@ public:
     // 0B00=1,  delete_file %1s% //IF and SET
     static OpcodeResult WINAPI Script_FS_DeleteFile(CScriptThread* thread)
     {
-        auto filename = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(filename);
 
         auto success = DeleteFile(filename);
 
@@ -539,7 +541,7 @@ public:
     // 0B01=1, delete_directory %1s% with_all_files_and_subdirectories %2d% //IF and SET
     static OpcodeResult WINAPI Script_FS_DeleteDirectory(CScriptThread* thread)
     {
-        auto filename = OPCODE_READ_PARAM_FILEPATH();
+        OPCODE_READ_PARAM_FILEPATH(filename);
         auto deleteContents = OPCODE_READ_PARAM_BOOL();
 
         BOOL result;
@@ -561,14 +563,12 @@ public:
     // 0B02=2, move_file %1s% to %2s% //IF and SET
     static OpcodeResult WINAPI Script_FS_MoveFile(CScriptThread* thread)
     {
-        auto tmpStr = OPCODE_READ_PARAM_FILEPATH();
-        auto filepath = std::string(tmpStr); // store before reusing buffer
+        OPCODE_READ_PARAM_FILEPATH(filepath);
+        OPCODE_READ_PARAM_FILEPATH(newFilepath);
 
-        auto newFilepath = OPCODE_READ_PARAM_FILEPATH();
-
-        BOOL result = GetFileAttributes(filepath.c_str()) & FILE_ATTRIBUTE_DIRECTORY;
+        BOOL result = GetFileAttributes(filepath) & FILE_ATTRIBUTE_DIRECTORY;
         if (!result)
-            result = MoveFile(filepath.c_str(), newFilepath);
+            result = MoveFile(filepath, newFilepath);
 
         OPCODE_CONDITION_RESULT(result);
         return OR_CONTINUE;
@@ -577,14 +577,12 @@ public:
     // 0B03=2, move_directory %1s% to %2s% //IF and SET
     static OpcodeResult WINAPI Script_FS_MoveDir(CScriptThread* thread)
     {
-        auto tmpStr = OPCODE_READ_PARAM_FILEPATH();
-        auto filepath = std::string(tmpStr); // store before reusing buffer
+        OPCODE_READ_PARAM_FILEPATH(filepath);
+        OPCODE_READ_PARAM_FILEPATH(newFilepath);
 
-        auto newFilepath = OPCODE_READ_PARAM_FILEPATH();
-
-        BOOL result = GetFileAttributes(filepath.c_str()) & FILE_ATTRIBUTE_DIRECTORY;
+        BOOL result = GetFileAttributes(filepath) & FILE_ATTRIBUTE_DIRECTORY;
         if (result)
-            result = MoveFile(filepath.c_str(), newFilepath);
+            result = MoveFile(filepath, newFilepath);
 
         OPCODE_CONDITION_RESULT(result);
         return OR_CONTINUE;
@@ -593,16 +591,14 @@ public:
     // 0B04=2, copy_file %1s% to %2s% //IF and SET
     static OpcodeResult WINAPI Script_FS_CopyFile(CScriptThread* thread)
     {
-        auto tmpStr = OPCODE_READ_PARAM_FILEPATH();
-        auto filepath = std::string(tmpStr); // store before reusing buffer
+        OPCODE_READ_PARAM_FILEPATH(filepath);
+        OPCODE_READ_PARAM_FILEPATH(newFilepath);
 
-        auto newFilepath = OPCODE_READ_PARAM_FILEPATH();
-
-        BOOL result = CopyFile(filepath.c_str(), newFilepath, FALSE);
+        BOOL result = CopyFile(filepath, newFilepath, FALSE);
         if (result)
         {
             // copy file attributes
-            DWORD fattr = GetFileAttributes(filepath.c_str());
+            DWORD fattr = GetFileAttributes(filepath);
             SetFileAttributes(newFilepath, fattr);
         }
 
@@ -664,12 +660,10 @@ public:
     // 0B05=2,  copy_directory %1d% to %2d% //IF and SET
     static OpcodeResult WINAPI Script_FS_CopyDir(CScriptThread* thread)
     {
-        auto tmpStr = OPCODE_READ_PARAM_FILEPATH();
-        auto filepath = std::string(tmpStr); // store before reusing buffer
+        OPCODE_READ_PARAM_FILEPATH(filepath);
+        OPCODE_READ_PARAM_FILEPATH(newFilepath);
 
-        auto newFilepath = OPCODE_READ_PARAM_FILEPATH();
-
-        BOOL result = CopyDir(filepath.c_str(), newFilepath);
+        BOOL result = CopyDir(filepath, newFilepath);
 
         OPCODE_CONDITION_RESULT(result);
         return OR_CONTINUE;
@@ -720,7 +714,7 @@ public:
     //2302=2,%2s% = resolve_filepath %1s%
     static OpcodeResult __stdcall opcode_2302(CRunningScript* thread)
     {
-        auto path = OPCODE_READ_PARAM_FILEPATH(); // it also resolves the path to absolute form
+        OPCODE_READ_PARAM_FILEPATH(path); // it also resolves the path to absolute form
 
         OPCODE_WRITE_PARAM_STRING(path);
         return OR_CONTINUE;

@@ -29,19 +29,15 @@ public:
 		}
 	}
 
-	// resused globals to cut down allocations
-	static char section[128];
-	static char key[128];
-
 	static OpcodeResult WINAPI Script_InifileGetInt(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		0AF0=4,%4d% = get_int_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		auto path = OPCODE_READ_PARAM_FILEPATH();
-		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
-		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_STRING(section);
+		OPCODE_READ_PARAM_STRING(key);
 
 		auto result = GetPrivateProfileInt(section, key, 0x80000000, path);
 
@@ -57,9 +53,9 @@ public:
 		****************************************************************/
 	{
 		auto value = OPCODE_READ_PARAM_INT();
-		auto path = OPCODE_READ_PARAM_FILEPATH();
-		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
-		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_STRING(section);
+		OPCODE_READ_PARAM_STRING(key);
 
 		char strValue[32];
 		_itoa(value, strValue, 10);
@@ -75,9 +71,9 @@ public:
 		0AF2=4,%4d% = get_float_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		auto path = OPCODE_READ_PARAM_FILEPATH();
-		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
-		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_STRING(section);
+		OPCODE_READ_PARAM_STRING(key);
 
 		auto value = 0.0f;
 		char strValue[32];
@@ -102,9 +98,9 @@ public:
 		****************************************************************/
 	{
 		auto value = OPCODE_READ_PARAM_FLOAT();
-		auto path = OPCODE_READ_PARAM_FILEPATH();
-		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
-		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_STRING(section);
+		OPCODE_READ_PARAM_STRING(key);
 
 		char strValue[32];
 		sprintf(strValue, "%g", value);
@@ -120,9 +116,9 @@ public:
 		0AF4=4,%4d% = read_string_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		auto path = OPCODE_READ_PARAM_FILEPATH();
-		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
-		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_STRING(section);
+		OPCODE_READ_PARAM_STRING(key);
 
 		char strValue[MAX_STR_LEN];
 		auto result = GetPrivateProfileString(section, key, NULL, strValue, sizeof(strValue), path);
@@ -144,10 +140,10 @@ public:
 		0AF5=4,write_string %1s% to_ini_file %2s% section %3s% key %4s%
 		****************************************************************/
 	{
-		auto strValue = OPCODE_READ_PARAM_STRING();
-		auto path = OPCODE_READ_PARAM_FILEPATH();
-		OPCODE_READ_PARAM_STRING_BUFF(section, sizeof(section));
-		OPCODE_READ_PARAM_STRING_BUFF(key, sizeof(key));
+		OPCODE_READ_PARAM_STRING(strValue);
+		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_STRING(section);
+		OPCODE_READ_PARAM_STRING(key);
 
 		auto result = WritePrivateProfileString(section, key, strValue, path);
 
@@ -156,5 +152,3 @@ public:
 	}
 } iniFiles;
 
-char IniFiles::section[128];
-char IniFiles::key[128];

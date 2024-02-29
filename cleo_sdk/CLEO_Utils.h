@@ -31,8 +31,8 @@ namespace CLEO
     OPCODE_READ_PARAM_INT()
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_STRING() // returns const char* to cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_STRING calls
-    OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) // gets cstring into provided buffer, returns pointer to that buffer. Clamped to the buffer size, always null terminated
+    OPCODE_READ_PARAM_STRING(varName) // reads param and creates const char* variable named 'varName' with pointer to null-terminated string
+    OPCODE_READ_PARAM_STRING_LEN(varName, maxLength) // same as above, but text length is clamped to maxLength
     OPCODE_READ_PARAM_FILEPATH() // returns const char* to resolved filepath cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_FILEPATH calls
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
     OPCODE_READ_PARAM_OBJECT_HANDLE() // read and validate game object handle
@@ -303,7 +303,7 @@ namespace CLEO
         return IsVariable(_lastParamType);
     }
 
-    static const char* _readParamText(CRunningScript* thread, char* buffer = nullptr, DWORD bufferSize = 0)
+    static const char* _readParamText(CRunningScript* thread, char* buffer, size_t bufferSize, bool clampToSize, bool alwaysCopy = false)
     {
         _lastParamType = thread->PeekDataType();
         _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
@@ -316,9 +316,7 @@ namespace CLEO
             return nullptr;
         }
 
-        auto str = buffer != nullptr ?
-            CLEO_ReadStringOpcodeParam(thread, buffer, bufferSize) :
-            CLEO_ReadStringPointerOpcodeParam(thread, buffer, bufferSize); // return pointer to source data whenever possible
+        auto str = CLEO_ReadStringPointerOpcodeParam(thread, buffer, bufferSize); // returns pointer to source data whenever possible
         
         if (str == nullptr) // other error?
         {
@@ -328,18 +326,15 @@ namespace CLEO
             return nullptr;
         }
 
+        if (alwaysCopy || 
+           (clampToSize && str != buffer && (strlen(str) + 1) > bufferSize)) // needs trim
+        {
+            if(bufferSize > 1) memcpy(buffer, str, bufferSize - 1);
+            buffer[bufferSize - 1] = '\0';
+            str = buffer;
+        }
+
         return str;
-    }
-
-    static const char* _readParamFilepath(CRunningScript* thread)
-    {
-        static char internal_buf[MAX_STR_LEN];
-
-        auto str = _readParamText(thread, internal_buf, sizeof(internal_buf));
-        if (str == nullptr) return nullptr;
-
-        CLEO_ResolvePath(thread, internal_buf, sizeof(internal_buf));
-        return internal_buf;
     }
 
     static bool _writeParamText(CRunningScript* thread, const char* str)
@@ -431,11 +426,11 @@ namespace CLEO
     #define OPCODE_READ_PARAM_FLOAT() _readParamFloat(thread).fParam; \
         if (!IsLegacyScript(thread) && !_paramWasFloat()) { SHOW_ERROR("Input argument #%d expected to be float, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
-    #define OPCODE_READ_PARAM_STRING() _readParamText(thread); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_READ_PARAM_STRING(_varName) char _buff_##_varName[MAX_STR_LEN + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1, false); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_READ_PARAM_STRING_BUFF(_buffer, _bufferSize) _readParamText(thread, _buffer, _bufferSize); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen) char _buff_##_varName[_maxLen + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1, false); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_READ_PARAM_FILEPATH() _readParamFilepath(thread); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; const char* ##_varName = _readParamText(thread, _buff_##_varName, false, true); if(_paramWasString()) CLEO_ResolvePath(thread, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT;
 
     #define OPCODE_READ_PARAM_PTR() _readParam(thread).pParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument #%d expected to be integer, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
