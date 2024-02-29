@@ -133,7 +133,7 @@ public:
         }
         else
         {
-            OPCODE_READ_PARAM_STRING_LEN(strMode, 15);
+            OPCODE_READ_PARAM_STRING_LEN(strMode, sizeof(mode) - 1); // leave space for terminator char
             strcpy(mode, strMode);
         }
 
