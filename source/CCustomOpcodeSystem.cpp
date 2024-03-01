@@ -403,7 +403,7 @@ namespace CLEO
 	{
 		static char internal_buf[MAX_STR_LEN + 1]; // and terminator
 
-		if (buff == nullptr || buffSize <= 1)
+		if (buffSize <= 1)
 		{
 			CLEO_SkipOpcodeParams(thread, 1);
 			LOG_WARNING(thread, "Invalid ReadStringParam argument!");
@@ -480,17 +480,14 @@ namespace CLEO
 			return source;
 		}
 
-		if (buff == nullptr)
+		// read data into buffer
+		if (buff == nullptr) // no user's buffer
 		{
 			buff = internal_buf;
-
-			if (buffSize == 0) buffSize = sizeof(internal_buf);
-			else buffSize = min(buffSize, sizeof(internal_buf)); // user requested size limit
+			buffSize = buffSize ? min(buffSize, sizeof(internal_buf)) : sizeof(internal_buf); // user's custom limit?
 		}
-
-		// read data into buffer
+		GetScriptStringParam(thread, 0, buff, buffSize - 1); // minus terminator
 		buff[buffSize - 1] = '\0'; // buffer always terminated
-		GetScriptStringParam(thread, 0, buff, buffSize - 1); // do not overwrite buffer terminator
 
 		return (source != nullptr) ? source : buff;
 	}
