@@ -169,16 +169,15 @@ namespace CLEO
 
 			if (opcode > LastOriginalOpcode)
 			{
-				std::string extensionTip;
-				auto extensionName = GetInstance().OpcodeInfoDb.GetExtensionName(opcode);
-				if (extensionName != nullptr)
-				{
-					extensionTip += "Installing \"";
-					extensionTip += extensionName;
-					extensionTip += "\" CLEO extension may fix the problem.\n";
-				}
+				auto extensionMsg = GetInstance().OpcodeInfoDb.GetExtensionMissingMessage(opcode);
+				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
-				SHOW_ERROR("Opcode [%04X] not registered! \nCalled in script %s\nPreviously called opcode: [%04X]\n%sScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str(), prevOpcode, extensionTip.c_str());
+				SHOW_ERROR("Custom opcode [%04X] not registered!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
+					opcode,
+					extensionMsg.c_str(),
+					((CCustomScript*)thread)->GetInfoStr().c_str(), 
+					prevOpcode);
+
 				return thread->Suspend();
 			}
 
@@ -187,16 +186,15 @@ namespace CLEO
 
 			if(result == OR_ERROR)
 			{
-				std::string extensionTip;
-				auto extensionName = GetInstance().OpcodeInfoDb.GetExtensionName(opcode);
-				if (extensionName != nullptr)
-				{
-					extensionTip += "Installing \"";
-					extensionTip += extensionName;
-					extensionTip += "\" CLEO extension may fix the problem.\n";
-				}
+				auto extensionMsg = GetInstance().OpcodeInfoDb.GetExtensionMissingMessage(opcode);
+				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
-				SHOW_ERROR("Opcode [%04X] not found! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str(), extensionTip.c_str());
+				SHOW_ERROR("Opcode [%04X] not found!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
+					opcode,
+					extensionMsg.c_str(),
+					((CCustomScript*)thread)->GetInfoStr().c_str(), 
+					prevOpcode);
+
 				return thread->Suspend();
 			}
 		}

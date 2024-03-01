@@ -25,5 +25,7 @@ public:
 
 	uint16_t GetOpcode(const char* commandName) const; // 0xFFFF if not found
 	const char* GetCommandName(uint16_t opcode) const; // nullptr if not found
+
+	std::string GetExtensionMissingMessage(uint16_t opcode) const; // extension "x" missing message if known, empty text otherwise
 };
 

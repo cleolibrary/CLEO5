@@ -181,3 +181,14 @@ const char* OpcodeInfoDatabase::GetCommandName(uint16_t opcode) const
 
 	return nullptr;
 }
+
+std::string OpcodeInfoDatabase::GetExtensionMissingMessage(uint16_t opcode) const
+{
+	auto extensionName = GetExtensionName(opcode);
+	if (extensionName == nullptr)
+	{
+		return {};
+	}
+
+	return CLEO::StringPrintf("CLEO extension plugin \"%s\" is missing!", extensionName);
+}
