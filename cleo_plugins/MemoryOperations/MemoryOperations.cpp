@@ -286,7 +286,7 @@ public:
             memcpy(&value, address, size);
         }
 
-        OPCODE_WRITE_PARAM_ANY(value);
+        OPCODE_WRITE_PARAM_ANY32(value);
         return OR_CONTINUE;
     }
 
@@ -662,7 +662,7 @@ public:
         {
             if (size == 0)
             {
-                OPCODE_WRITE_PARAM_ANY(0);
+                OPCODE_WRITE_PARAM_ANY32(0);
                 return OR_CONTINUE; // done
             }
 
@@ -674,7 +674,7 @@ public:
             }
             if (size > 0) memcpy(&result, (void*)(ptr + offset), size);
 
-            OPCODE_WRITE_PARAM_ANY(result);
+            OPCODE_WRITE_PARAM_ANY32(result);
             return OR_CONTINUE;
         }
         else if (IsVarString(resultType))
@@ -716,7 +716,7 @@ public:
                 size = sizeof(DWORD);
             }
 
-            auto value = OPCODE_READ_PARAM_ANY();
+            auto value = OPCODE_READ_PARAM_ANY32();
             memcpy(ptr + offset, &value, size);
 
             return OR_CONTINUE;

@@ -31,7 +31,7 @@ namespace CLEO
     OPCODE_READ_PARAM_INT()
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_ANY() // any regular single-slot variable (practically integers and floats)
+    OPCODE_READ_PARAM_ANY32() // any regular single-slot variable (practically integers and floats)
     OPCODE_READ_PARAM_STRING(varName) // reads param and creates const char* variable named 'varName' with pointer to null-terminated string
     OPCODE_READ_PARAM_STRING_LEN(varName, maxLength) // same as above, but text length is clamped to maxLength
     OPCODE_READ_PARAM_FILEPATH(varName) // reads param and creates const char* variable named 'varName' with pointer to resolved, null-terminated, filepath
@@ -52,7 +52,7 @@ namespace CLEO
     OPCODE_WRITE_PARAM_INT(value)
     OPCODE_WRITE_PARAM_UINT(value)
     OPCODE_WRITE_PARAM_FLOAT(value)
-    OPCODE_WRITE_PARAM_ANY(value) // any regular single-slot variable (practically integers and floats)
+    OPCODE_WRITE_PARAM_ANY32(value) // any regular single-slot variable (practically integers and floats)
     OPCODE_WRITE_PARAM_STRING(value)
     OPCODE_WRITE_PARAM_PTR(value) // memory address
     */
@@ -420,7 +420,7 @@ namespace CLEO
     #define OPCODE_READ_PARAM_FLOAT() _readParamFloat(thread).fParam; \
         if (!IsLegacyScript(thread) && !_paramWasFloat()) { SHOW_ERROR("Input argument #%d expected to be float, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
-    #define OPCODE_READ_PARAM_ANY() _readParam(thread).dwParam; \
+    #define OPCODE_READ_PARAM_ANY32() _readParam(thread).dwParam; \
         if (!_paramWasInt() && !_paramWasFloat()) { SHOW_ERROR("Input argument #%d expected to be simple-type, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_READ_PARAM_STRING(_varName) char _buff_##_varName[MAX_STR_LEN + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
@@ -479,7 +479,7 @@ namespace CLEO
     #define OPCODE_WRITE_PARAM_UINT(value) _writeParam(thread, value); \
         if (!_paramWasInt(true)) { SHOW_ERROR("Output argument #%d expected to be variable int, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_ANY(value) _writeParam(thread, value); \
+    #define OPCODE_WRITE_PARAM_ANY32(value) _writeParam(thread, value); \
         if (!_paramWasInt(true) && !_paramWasFloat(true)) { SHOW_ERROR("Output argument #%d expected to be int or float variable, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_WRITE_PARAM_FLOAT(value) _writeParam(thread, value); \
