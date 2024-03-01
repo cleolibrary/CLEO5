@@ -679,18 +679,8 @@ namespace CLEO
 						const char* str = ReadStringParam(thread, bufa, sizeof(bufa));
 						if(str == nullptr) // read error
 						{
-							if(CCustomOpcodeSystem::lastErrorMsg.find("'null' pointer") != std::string::npos)
-							{
-								static const char none[] = "(null)";
-								str = none;
-							}
-							else
-							{
-								// lastErrorMsg already set by ReadStringParam
-								SkipUnusedVarArgs(thread);
-								outputStr[written] = '\0';
-								return -1; // error
-							}
+							static const char none[] = "(INVALID_STR)";
+							str = none;
 						}
 						
 						while (*str)
