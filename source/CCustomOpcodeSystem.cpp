@@ -1655,6 +1655,7 @@ namespace CLEO
 					auto found = pool.GetRef(obj);
 					OPCODE_WRITE_PARAM_INT(found);
 					OPCODE_CONDITION_RESULT(true);
+					return OR_CONTINUE;
 				}
 			}
 		}
@@ -1698,6 +1699,7 @@ namespace CLEO
 					auto found = pool.GetRef(obj);
 					OPCODE_WRITE_PARAM_INT(found);
 					OPCODE_CONDITION_RESULT(true);
+					return OR_CONTINUE;
 				}
 			}
 		}
