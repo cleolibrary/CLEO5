@@ -129,11 +129,13 @@ namespace CLEO
         return (SCRIPT_VAR*)((size_t)result + pScript->GetBasePointer());
     }
 
-    char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
+    const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
     {
-        if (buff == nullptr || buffLen == 0) return buff;
-
-        if (buffLen < 0) buffLen = 0x7FFFFFFF; // unknown - unlimited
+        if (buff == nullptr || buffLen < 0)
+        {
+            LOG_WARNING(0, "Invalid ReadStringParam input argument! Ptr: 0x%08X, Size: %d", buff, buffLen);
+            return nullptr;
+        }
 
         auto paramType = thread->PeekDataType();
         auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
@@ -153,7 +155,7 @@ namespace CLEO
             auto len = min((int)strlen(opcodeParams[0].pcParam), buffLen);
             memcpy(buff, opcodeParams[0].pcParam, len);
             if (len < buffLen) buff[len] = '\0'; // add terminator if possible
-            return buff;
+            return opcodeParams[0].pcParam; // pointer to original data
         }
         else if (paramType == DT_VARLEN_STRING)
         {
