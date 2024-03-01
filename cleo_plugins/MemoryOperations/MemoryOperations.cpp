@@ -419,7 +419,17 @@ public:
     static OpcodeResult __stdcall opcode_0AA6(CLEO::CRunningScript* thread)
     {
         auto func = OPCODE_READ_PARAM_PTR();
-        auto obj = OPCODE_READ_PARAM_PTR();
+
+        void* obj = nullptr;
+        if (!IsLegacyScript(thread))
+        {
+            obj = OPCODE_READ_PARAM_PTR();
+        }
+        else
+        {
+            obj = (void*)OPCODE_READ_PARAM_INT(); // at least one mod used 0AA6 with 0 as struct argument (effectivly turning it into 0AA5 opcode...)
+        }
+
         auto numArgs = OPCODE_READ_PARAM_INT();
         auto numPop = OPCODE_READ_PARAM_INT();
 
