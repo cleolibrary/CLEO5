@@ -427,7 +427,7 @@ public:
         }
         else
         {
-            obj = (void*)OPCODE_READ_PARAM_INT(); // at least one mod used 0AA6 with 0 as struct argument (effectivly turning it into 0AA5 opcode...)
+            obj = (void*)OPCODE_READ_PARAM_INT(); // at least one mod used 0AA6 with 0 as struct argument (effectively turning it into 0AA5 opcode...)
         }
 
         auto numArgs = OPCODE_READ_PARAM_INT();
