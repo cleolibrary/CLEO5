@@ -23,7 +23,7 @@ trace "0A9B (close_file)"
 wait 0
 // open file
 if
-    0@ = open_file "cleo\.cleo_test.log" {mode} "r+"
+    0@ = open_file "cleo\.cleo.log" {mode} "r+"
 then
     trace "~g~~h~~h~0A9B (close_file), #0 PASSED"
 else
@@ -40,7 +40,7 @@ trace "~g~~h~~h~0A9B (close_file), #1 PASSED"
 wait 0
 // open file again
 if
-    0@ = open_file "cleo\.cleo_test.log" {mode} "r+"
+    0@ = open_file "cleo\.cleo.log" {mode} "r+"
 then
     trace "~g~~h~~h~0A9B (close_file), #2 PASSED"
 else

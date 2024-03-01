@@ -36,7 +36,7 @@ wait 0
 // try open non existing file
 if
     // test 0A9A
-    0@ = open_file "cleo\.cleo_test.log" {mode} "r" // tested opcode
+    0@ = open_file "cleo\.cleo.log" {mode} "r" // tested opcode
 then
     trace "~g~~h~~h~0A9A (open_file), #1 PASSED"
     close_file 0@

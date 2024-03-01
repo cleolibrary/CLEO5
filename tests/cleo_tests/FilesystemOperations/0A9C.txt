@@ -21,7 +21,7 @@ trace "0A9A (get_file_size)"
 
 
 wait 0
-// try open non existing file
+// try open existing file
 if
     0@ = open_file "cleo.asi" {mode} "r" // tested opcode
 then
