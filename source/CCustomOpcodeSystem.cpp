@@ -1816,7 +1816,7 @@ extern "C"
 			buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
 		}
 
-		auto result = CLEO_ReadStringPointerOpcodeParam(thread, buff, buffSize);
+		auto result = ReadStringParam(thread, buff, buffSize);
 		return (result != nullptr) ? buff : nullptr;
 	}
 
