@@ -1034,37 +1034,38 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB1(CRunningScript *thread)
 	{
 		int label = 0;
+		std::string moduleTxt;
 
-		const char* moduleTxt = nullptr;
-		auto paramType = (eDataType)*thread->GetBytePointer();
+		auto paramType = thread->PeekDataType();
 		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
 			*thread >> label; // label offset
 		}
 		else if (IsImmString(paramType) || IsVarString(paramType))
 		{
-			moduleTxt = ReadStringParam(thread); // string with module and export name
+			char tmp[MAX_STR_LEN + 1];
+			auto str = ReadStringParam(thread, tmp, sizeof(tmp)); // string with module and export name
+			if (str != nullptr) moduleTxt = str;
 		}
 		else
 		{
-			SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return thread->Suspend();
 		}
 	
 		ScmFunction* scmFunc = new ScmFunction(thread);
 		
 		// parse module reference text
-		if (moduleTxt != nullptr)
+		if (!moduleTxt.empty())
 		{
-			std::string_view str(moduleTxt);
-			auto pos = str.find('@');
-			if (pos == str.npos)
+			auto pos = moduleTxt.find('@');
+			if (pos == moduleTxt.npos)
 			{
-				SHOW_ERROR("Invalid module reference '%s' in opcode [0AB1] in script %s \nScript suspended.", moduleTxt, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid module reference '%s' in opcode [0AB1] in script %s \nScript suspended.", moduleTxt.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return thread->Suspend();
 			}
-			std::string_view strExport = str.substr(0, pos);
-			std::string_view strModule = str.substr(pos + 1);
+			std::string_view strExport = moduleTxt.substr(0, pos);
+			std::string_view strModule = moduleTxt.substr(pos + 1);
 
 			// get module's file absolute path
 			auto modulePath = std::string(strModule);
@@ -1074,7 +1075,7 @@ namespace CLEO
 			auto scriptRef = GetInstance().ModuleSystem.GetExport(modulePath, strExport);
 			if (!scriptRef.Valid())
 			{
-				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), &str[0], ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), moduleTxt.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return thread->Suspend();
 			}
 			scmFunc->moduleExportRef = scriptRef.base; // to be released on return
@@ -1087,7 +1088,7 @@ namespace CLEO
 
 		// "number of input parameters" opcode argument
 		DWORD nParams = 0;
-		paramType = (eDataType)*thread->GetBytePointer();
+		paramType = thread->PeekDataType();
 		if (paramType != DT_END)
 		{
 			if (IsImmInteger(paramType))
@@ -1096,7 +1097,7 @@ namespace CLEO
 			}
 			else
 			{
-				SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return thread->Suspend();
 			}
 		}
@@ -1146,7 +1147,9 @@ namespace CLEO
 			}
 			else if (IsImmString(paramType)) // those texts exists in script code, but without terminator character. Copy is necessary
 			{
-				scmFunc->stringParams.emplace_back(ReadStringParam(thread)); 
+				char tmp[MAX_STR_LEN + 1];
+				auto str = ReadStringParam(thread, tmp, sizeof(tmp));
+				scmFunc->stringParams.emplace_back(str);
 				arg->pcParam = (char*)scmFunc->stringParams.back().c_str();
 			}
 			else
@@ -1911,7 +1914,7 @@ extern "C"
 		if (userBuffer && result != buff)
 		{
 			auto len = strlen(result);
-			len = min(len, buffSize);
+			len = min(len, (size_t)buffSize);
 			memcpy(buff, result, len);
 			buff[len] = '\0';
 		}

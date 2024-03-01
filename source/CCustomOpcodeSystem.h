@@ -70,7 +70,7 @@ namespace CLEO
     // Read string parameter according to convention on strings. 
     // Returns pointer to null terminated string or nullptr on fail.
     // WARNING: Whenever possible contents of buff* WILL NOT BE MODIFIED, instead function returns pointer to string in its original location
-    const char* ReadStringParam(CRunningScript* thread, char* buff = nullptr, DWORD buffSize = 0);
+    const char* ReadStringParam(CRunningScript* thread, char* buff, DWORD buffSize);
 
     StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
     int ReadFormattedString(CRunningScript* thread, char* buf, DWORD bufSize, const char* format);
