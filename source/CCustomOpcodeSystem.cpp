@@ -401,12 +401,6 @@ namespace CLEO
 
 	const char* ReadStringParam(CRunningScript *thread, char* buff, int buffSize)
 	{
-		if (buff == nullptr || buffSize <= 1)
-		{
-			LOG_WARNING(0, "Invalid ReadStringParam input argument!");
-			return nullptr;
-		}
-
 		if (buffSize > 0) buff[buffSize - 1] = '\0'; // buffer always terminated
 		return GetScriptStringParam(thread, 0, buff, buffSize - 1); // minus terminator
 	}
@@ -1816,7 +1810,11 @@ extern "C"
 	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
 	{
 		static char internal_buff[MAX_STR_LEN + 1]; // and terminator
-		if (!buff) buff = internal_buff;
+		if (!buff) 
+		{
+			buff = internal_buff;
+			buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
+		}
 
 		auto result = CLEO_ReadStringPointerOpcodeParam(thread, buff, buffSize);
 		return (result != nullptr) ? buff : nullptr;

@@ -159,7 +159,7 @@ namespace CLEO
     // reimplemented hook of original game's procedure
     // returns buff on success, nullptr on fail
     // WARNING: Null terminator ommited if not enought space in the buffer!
-    char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
+    const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
 
     inline SCRIPT_VAR * GetScriptParamPointer(CRunningScript *thread)
     {
