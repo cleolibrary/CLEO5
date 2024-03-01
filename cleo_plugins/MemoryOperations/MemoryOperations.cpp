@@ -185,11 +185,11 @@ public:
         const void* source;
         auto paramType = thread->PeekDataType();
         bool sourceText = false;
-        if (IsVariable(paramType))
+        if (IsVariable(paramType) || IsVarString(paramType))
         {
             source = CLEO_GetPointerToScriptVariable(thread);
         }
-        else if (IsImmString(paramType) || IsVarString(paramType))
+        else if (IsImmString(paramType))
         {
             static char buffer[MAX_STR_LEN];
 
@@ -286,7 +286,7 @@ public:
             memcpy(&value, address, size);
         }
 
-        OPCODE_WRITE_PARAM_UINT(value);
+        OPCODE_WRITE_PARAM_ANY(value);
         return OR_CONTINUE;
     }
 
@@ -662,7 +662,7 @@ public:
         {
             if (size == 0)
             {
-                OPCODE_WRITE_PARAM_INT(0);
+                OPCODE_WRITE_PARAM_ANY(0);
                 return OR_CONTINUE; // done
             }
 
@@ -674,7 +674,7 @@ public:
             }
             if (size > 0) memcpy(&result, (void*)(ptr + offset), size);
 
-            OPCODE_WRITE_PARAM_INT(result);
+            OPCODE_WRITE_PARAM_ANY(result);
             return OR_CONTINUE;
         }
         else if (IsVarString(resultType))
@@ -716,7 +716,7 @@ public:
                 size = sizeof(DWORD);
             }
 
-            auto value = OPCODE_READ_PARAM_INT();
+            auto value = OPCODE_READ_PARAM_ANY();
             memcpy(ptr + offset, &value, size);
 
             return OR_CONTINUE;
