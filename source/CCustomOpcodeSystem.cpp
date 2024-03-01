@@ -1819,14 +1819,12 @@ extern "C"
 		if (!buff) buff = internal_buff;
 
 		auto result = CLEO_ReadStringPointerOpcodeParam(thread, buff, buffSize);
-
 		return (result != nullptr) ? buff : nullptr;
 	}
 
 	LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
 	{
 		static char internal_buff[MAX_STR_LEN + 1]; // and terminator
-
 		bool userBuffer = buff != nullptr;
 		if (!userBuffer)
 		{
@@ -1834,18 +1832,7 @@ extern "C"
 			buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
 		}
 
-		auto result = ReadStringParam(thread, buff, buffSize);
-
-		// always copy to the user's buffer
-		if (userBuffer && result != buff)
-		{
-			auto len = strlen(result);
-			len = min(len, (size_t)buffSize);
-			memcpy(buff, result, len);
-			buff[len] = '\0';
-		}
-
-		return result;
+		return ReadStringParam(thread, buff, buffSize);
 	}
 
 	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)
