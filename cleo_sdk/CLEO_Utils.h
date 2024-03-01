@@ -31,7 +31,7 @@ namespace CLEO
     OPCODE_READ_PARAM_INT()
     OPCODE_READ_PARAM_UINT()
     OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_ANY32() // any regular single-slot variable (practically integers and floats)
+    OPCODE_READ_PARAM_ANY32() // get raw data of simple-type value (practically integers and floats)
     OPCODE_READ_PARAM_STRING(varName) // reads param and creates const char* variable named 'varName' with pointer to null-terminated string
     OPCODE_READ_PARAM_STRING_LEN(varName, maxLength) // same as above, but text length is clamped to maxLength
     OPCODE_READ_PARAM_FILEPATH(varName) // reads param and creates const char* variable named 'varName' with pointer to resolved, null-terminated, filepath
@@ -52,7 +52,7 @@ namespace CLEO
     OPCODE_WRITE_PARAM_INT(value)
     OPCODE_WRITE_PARAM_UINT(value)
     OPCODE_WRITE_PARAM_FLOAT(value)
-    OPCODE_WRITE_PARAM_ANY32(value) // any regular single-slot variable (practically integers and floats)
+    OPCODE_WRITE_PARAM_ANY32(value) // write raw data into simple-type variable (practically integers and floats)
     OPCODE_WRITE_PARAM_STRING(value)
     OPCODE_WRITE_PARAM_PTR(value) // memory address
     */
