@@ -1907,11 +1907,7 @@ extern "C"
 	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
 	{
 		static char internal_buff[MAX_STR_LEN + 1]; // and terminator
-		if (!buff) 
-		{
-			buff = internal_buff; 
-			buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
-		}
+		if (!buff) buff = internal_buff;
 
 		auto result = CLEO_ReadStringPointerOpcodeParam(thread, buff, buffSize);
 
