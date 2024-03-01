@@ -480,7 +480,7 @@ namespace CLEO
         if (!_paramWasInt(true)) { SHOW_ERROR("Output argument #%d expected to be variable int, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_WRITE_PARAM_ANY(value) _writeParam(thread, value); \
-        if (!_paramWasInt(true) && !_paramWasFloat(true)) { SHOW_ERROR("Output argument #%d expected to be simple-type variable, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+        if (!_paramWasInt(true) && !_paramWasFloat(true)) { SHOW_ERROR("Output argument #%d expected to be int or float variable, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_WRITE_PARAM_FLOAT(value) _writeParam(thread, value); \
         if (!IsLegacyScript(thread) && !_paramWasFloat(true)) { SHOW_ERROR("Output argument #%d expected to be variable float, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
