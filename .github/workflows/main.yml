@@ -42,7 +42,7 @@ jobs:
         run: |
           @REM create output directory
           mkdir .output\Release\cleo
-          mkdir .output\Release\.config
+          mkdir .output\Release\cleo\.config
           mkdir .output\Release\cleo\cleo_modules
           mkdir .output\Release\cleo\cleo_plugins
           mkdir .output\Release\cleo\cleo_saves
