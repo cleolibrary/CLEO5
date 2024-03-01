@@ -33,7 +33,7 @@ namespace CLEO
     OPCODE_READ_PARAM_FLOAT()
     OPCODE_READ_PARAM_STRING(varName) // reads param and creates const char* variable named 'varName' with pointer to null-terminated string
     OPCODE_READ_PARAM_STRING_LEN(varName, maxLength) // same as above, but text length is clamped to maxLength
-    OPCODE_READ_PARAM_FILEPATH() // returns const char* to resolved filepath cstring. Uses internal buffer shared by all OPCODE_READ_PARAM_FILEPATH calls
+    OPCODE_READ_PARAM_FILEPATH(varName) // reads param and creates const char* variable named 'varName' with pointer to resolved, null-terminated, filepath
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
     OPCODE_READ_PARAM_OBJECT_HANDLE() // read and validate game object handle
     OPCODE_READ_PARAM_PED_HANDLE() // read and validate character (ped/actor) handle
