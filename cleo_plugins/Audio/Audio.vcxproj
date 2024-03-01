@@ -45,14 +45,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>Audio</TargetName>
+    <TargetName>SA.Audio</TargetName>
     <TargetExt>.cleo</TargetExt>
     <LibraryPath>$(ProjectDir)bass;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
-    <TargetName>Audio</TargetName>
+    <TargetName>SA.Audio</TargetName>
     <TargetExt>.cleo</TargetExt>
     <LibraryPath>$(ProjectDir)bass;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
