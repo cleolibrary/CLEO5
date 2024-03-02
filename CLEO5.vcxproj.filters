@@ -87,9 +87,6 @@
     <ClCompile Include="source\CScriptEngine.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\CSoundSystem.cpp">
-      <Filter>source\extensions</Filter>
-    </ClCompile>
     <ClCompile Include="source\CTextManager.cpp">
       <Filter>source\game_sa</Filter>
     </ClCompile>
@@ -104,6 +101,9 @@
     </ClCompile>
     <ClCompile Include="source\OpcodeInfoDatabase.cpp">
       <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CModLoaderSystem.cpp">
+      <Filter>source\extensions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,9 +146,6 @@
     <ClInclude Include="source\CScriptEngine.h">
       <Filter>source\core</Filter>
     </ClInclude>
-    <ClInclude Include="source\CSoundSystem.h">
-      <Filter>source\extensions</Filter>
-    </ClInclude>
     <ClInclude Include="source\CTextManager.h">
       <Filter>source\game_sa</Filter>
     </ClInclude>
@@ -172,6 +169,9 @@
     </ClInclude>
     <ClInclude Include="source\OpcodeInfoDatabase.h">
       <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\CModLoaderSystem.h">
+      <Filter>source\extensions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

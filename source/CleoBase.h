@@ -5,6 +5,7 @@
 #include "CDebug.h"
 #include "CDmaFix.h"
 #include "CGameMenu.h"
+#include "CModLoaderSystem.h"
 #include "CModuleSystem.h"
 #include "CPluginSystem.h"
 #include "CScriptEngine.h"
@@ -30,6 +31,7 @@ namespace CLEO
         CScriptEngine			ScriptEngine;
         CTextManager			TextManager;
         CCustomOpcodeSystem		OpcodeSystem;
+        CModLoaderSystem		ModLoaderSystem;
         CModuleSystem			ModuleSystem;
         CPluginSystem			PluginSystem;
         OpcodeInfoDatabase      OpcodeInfoDb;

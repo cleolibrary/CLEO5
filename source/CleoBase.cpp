@@ -129,6 +129,7 @@ namespace CLEO
         TextManager.Inject(CodeInjector);
         OpcodeSystem.Inject(CodeInjector);
         ScriptEngine.Inject(CodeInjector);
+        ModLoaderSystem.Init();
 
         CodeInjector.ReplaceFunction(OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig);
 
