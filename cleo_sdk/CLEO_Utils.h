@@ -427,7 +427,7 @@ namespace CLEO
 
     #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen) char _buff_##_varName[_maxLen + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1); if(##_varName != nullptr) ##_varName = _buff_##_varName; if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; const char* ##_varName = _readParamText(thread, _buff_##_varName, 512); if(_paramWasString()) CLEO_ResolvePath(thread, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT;
+    #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; _readParamText(thread, _buff_##_varName, 512); if(_paramWasString()) CLEO_ResolvePath(thread, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT; const char* _varName = _buff_##_varName;
 
     #define OPCODE_READ_PARAM_PTR() _readParam(thread).pParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument #%d expected to be integer, got %s in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
