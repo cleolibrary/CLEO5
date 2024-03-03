@@ -124,7 +124,8 @@ wait 0
 get_var_pointer 0@ {store_to} 1@
 0A8D: read_memory {address} 1@ {size} 4 {vp} false {result} 2@
 
-if 2@ == 125.0
+if
+    2@ == 125.0
 then
     trace "~g~~h~~h~0A8D (read_memory), #5 PASSED"
 else
