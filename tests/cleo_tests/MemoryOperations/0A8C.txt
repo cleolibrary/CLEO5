@@ -157,5 +157,21 @@ else
     breakpoint "~r~~h~~h~~h~0A8C (write_memory), #6 FAILED! Expected: cccccccc, 44444444, ee444444 Actual: %08x %08x %08x" 1@ 2@ 3@
 end
 
+wait 0
+
+// write float
+get_var_pointer 0@ {store_to} 1@
+2@ = 100.0
+
+0A8C: write_memory {address} 1@ {size} 4 {value} 2@ {vp} false // tested opcode
+
+if and
+    0@ == 100.0
+then
+    trace "~g~~h~~h~0A8C (write_memory), #7 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #7 FAILED!~n~ Expected~n~100.0 Found %f" 0@
+end
+
 
 terminate_this_custom_script

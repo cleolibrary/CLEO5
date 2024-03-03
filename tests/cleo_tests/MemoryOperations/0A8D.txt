@@ -117,7 +117,19 @@ else
     breakpoint "~r~~h~~h~~h~0A8D (read_memory), #4 FAILED!~n~cccccccc 11223344 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
 end
 
-// reading more bytes not allowed
+wait 0
+// read float value
+0@ = 125.0
+2@ = 0
+get_var_pointer 0@ {store_to} 1@
+0A8D: read_memory {address} 1@ {size} 4 {vp} false {result} 2@
+
+if 2@ == 125.0
+then
+    trace "~g~~h~~h~0A8D (read_memory), #5 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~0A8D (read_memory), #5 FAILED! Expected 125.0, Actual %f" 2@
+end
 
 terminate_this_custom_script
 
