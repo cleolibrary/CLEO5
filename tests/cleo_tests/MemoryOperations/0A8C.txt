@@ -170,7 +170,7 @@ if
 then
     trace "~g~~h~~h~0A8C (write_memory), #7 PASSED"
 else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #7 FAILED!~n~ Expected~n~100.0 Found %f" 0@
+    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #7 FAILED!~n~100.0 Expected~n~%f Occured" 0@
 end
 
 

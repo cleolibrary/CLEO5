@@ -129,7 +129,7 @@ if
 then
     trace "~g~~h~~h~0A8D (read_memory), #5 PASSED"
 else
-    breakpoint "~r~~h~~h~~h~0A8D (read_memory), #5 FAILED! Expected 125.0, Actual %f" 2@
+    breakpoint "~r~~h~~h~~h~0A8D (read_memory), #5 FAILED!~n~125.0 Expected~n~%f Occured" 2@
 end
 
 terminate_this_custom_script
