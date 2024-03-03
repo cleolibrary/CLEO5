@@ -12,7 +12,7 @@ for /f "delims=" %%i in ('dir /b /s *.s') do (
 @REM Compile all .txt files in the current directory and subdirectories
 for /f "delims=" %%i in ('dir /b /s *.txt') do (
     echo Compiling "%%i"...
-    %SANNY% --compile "%%i" "%%~pi%%~ni.s" --no-splash --mode sa_sbl
+    %SANNY% --compile "%%i" "%%~dpi%%~ni.s" --no-splash --mode sa_sbl
 )
 
 echo Done.
