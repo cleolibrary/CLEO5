@@ -5,13 +5,13 @@
 
 @REM Delete all .s files in the current directory and subdirectories
 for /f "delims=" %%i in ('dir /b /s *.s') do (
-    echo Deleting "%%i"...
+    echo Deleting "%%~ni%%~xi"...
     del "%%i"
 )
 
 @REM Compile all .txt files in the current directory and subdirectories
 for /f "delims=" %%i in ('dir /b /s *.txt') do (
-    echo Compiling "%%i"...
+    echo Compiling "%%~ni%%~xi"...
     %SANNY% --compile "%%i" "%%~dpi%%~ni.s" --no-splash --mode sa_sbl
 )
 
