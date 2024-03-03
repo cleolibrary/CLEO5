@@ -4,16 +4,14 @@ script_name "0AA4"
 debug_on
 
 trace "0AA4 get_dynamic_library_procedure"
-
 wait 0
 
-const LOAD_LIBRARY = 0x00858070
-int load_library_addr = read_memory LOAD_LIBRARY 4 false
+int load_library_addr = read_memory 0x858070 4 false
+trace "Address of LoadLibrary function is %d" load_library_addr
 
 int kernel_dll_addr = call_function_return {address} load_library_addr {numParams} 1 {pop} 0 {funcParams} "kernel32.dll" // tested opcode
 if
     // lib address can be any valid pointer, not necessarily one loaded with 0AA2 opcode
-    
     int sleep_addr = get_dynamic_library_procedure {procName} "Sleep" {DynamicLibrary} kernel_dll_addr
 then
     trace "~g~~h~~h~0AA4 (get_dynamic_library_procedure), #0 PASSED"
