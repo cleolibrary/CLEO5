@@ -1,6 +1,7 @@
 {$CLEO .s}
 {$USE debug}
 {$USE memory}
+{$USE audio}
 var 0@ : Integer
 var 1@ : Integer
 var 2@ : Integer
@@ -23,7 +24,7 @@ trace "0AB9 (get_audio_stream_state)"
 // load the file
 wait 0
 if
-    load_audio_stream ".\Ding.mp3" store_to 0@
+    load_audio_stream ".\Ding.mp3" {store_to} 0@
 then
     trace "~g~~h~~h~0AB9 (get_audio_stream_state), #0 PASSED"
 else
@@ -33,27 +34,27 @@ end
 
 // get state
 wait 0
-0AB9: get_audio_stream_state 0@ store_to 1@ // tested opcode
+0AB9: get_audio_stream_state 0@ {store_to} 1@ // tested opcode
 if
-    1@ == 2 // paused by default
+    1@ == 2 // AudioStreamState.Paused
 then
     trace "~g~~h~~h~0AB9 (get_audio_stream_state), #1 PASSED"
 else
-    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #1 FAILED!~n~%d Expected~n~%d Occured" -1 1@
+    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #1 FAILED!~n~%d Expected~n~%d Occured" 2 1@
 end
 
 
 // set new state
 wait 0
-set_audio_stream_state 0@ state AudioStreamState.Play
+set_audio_stream_state 0@ {state} AudioStreamAction.Play
 trace "~g~~h~~h~0AAD (set_audio_stream_state), #2 PASSED"
 
 
 // get updated state
 wait 0
-0AB9: get_audio_stream_state 0@ store_to 1@ // tested opcode
+0AB9: get_audio_stream_state 0@ {store_to} 1@ // tested opcode
 if
-    1@ == 1 // play
+    1@ == 1 // AudioStreamState.Playing
 then
     trace "~g~~h~~h~0AB9 (get_audio_stream_state), #3 PASSED"
 else
@@ -62,14 +63,14 @@ end
 
 
 // check if state updated after playback end
-wait 300 // Ding.mp3 is 0.25s long
-0AB9: get_audio_stream_state 0@ store_to 1@ // tested opcode
+wait 400 // Ding.mp3 is 0.25s long
+0AB9: get_audio_stream_state 0@ {store_to} 1@ // tested opcode
 if
-    1@ == -1 // AudioStreamState.Stop
+    1@ == -1 // AudioStreamState.Stopped
 then
-    trace "~g~~h~~h~0AB9 (get_audio_stream_state), #3 PASSED"
+    trace "~g~~h~~h~0AB9 (get_audio_stream_state), #4 PASSED"
 else
-    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #3 FAILED!~n~%d Expected~n~%d Occured" -1 1@
+    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #4 FAILED!~n~%d Expected~n~%d Occured" -1 1@
 end
 
 

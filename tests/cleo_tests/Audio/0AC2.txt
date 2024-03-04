@@ -1,6 +1,7 @@
 {$CLEO .s}
 {$USE debug}
 {$USE memory}
+{$USE audio}
 var 0@ : Integer
 var 1@ : Integer
 var 2@ : Integer
@@ -57,7 +58,7 @@ trace "~g~~h~~h~0AC2 (set_play_3d_audio_stream_at_coords), #3 PASSED"
 wait 0
 print_big_formatted "LEFT________________________" {time} 300 {style} TextStyle.MiddleSmaller
 set_audio_stream_volume 0@ volume 10.0
-set_audio_stream_state 0@ state AudioStreamState.Play
+set_audio_stream_state 0@ state AudioStreamAction.Play
 wait 250
 trace "~g~~h~~h~0AC2 (set_play_3d_audio_stream_at_coords), #4 PASSED"
 
@@ -78,7 +79,7 @@ trace "~g~~h~~h~0AC2 (set_play_3d_audio_stream_at_coords), #3 PASSED"
 wait 0
 print_big_formatted "________________________RIGHT" {time} 300 {style} TextStyle.MiddleSmaller
 set_audio_stream_volume 0@ volume 10.0
-set_audio_stream_state 0@ state AudioStreamState.Play
+set_audio_stream_state 0@ state AudioStreamAction.Play
 wait 250
 trace "~g~~h~~h~0AC2 (set_play_3d_audio_stream_at_coords), #4 PASSED"
 

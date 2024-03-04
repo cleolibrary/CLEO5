@@ -15,6 +15,14 @@ class Audio
 public:
     static CSoundSystem soundSystem;
 
+    enum eStreamAction
+    {
+        Stop,
+        Play,
+        Pause,
+        Resume,
+    };
+
     Audio()
     {
         auto cleoVer = CLEO_GetVersion();
@@ -113,12 +121,12 @@ public:
         {
             switch (action)
             {
-                case 0: stream->Stop(); break;
-                case 1: stream->Play(); break;
-                case 2: stream->Pause(); break;
-                case 3: stream->Resume(); break;
+                case eStreamAction::Stop: stream->Stop(); break;
+                case eStreamAction::Play: stream->Play(); break;
+                case eStreamAction::Pause: stream->Pause(); break;
+                case eStreamAction::Resume: stream->Resume(); break;
                 default:
-                    LOG_WARNING(thread, "Unknown audiostream's action (%d) in script %s", action, ScriptInfoStr(thread).c_str());
+                    LOG_WARNING(thread, "Unknown AudioStreamAction (%d) in script %s", action, ScriptInfoStr(thread).c_str());
             }
         }
 

@@ -1,6 +1,7 @@
 {$CLEO .s}
 {$USE debug}
 {$USE memory}
+{$USE audio}
 var 0@ : Integer
 var 1@ : Integer
 var 2@ : Integer
@@ -39,7 +40,7 @@ trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #1 PASSED"
 
 // start playback
 wait 0
-set_audio_stream_state 0@ state AudioStreamState.Play
+set_audio_stream_state 0@ state AudioStreamAction.Play
 trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #2 PASSED"
 
 
@@ -47,7 +48,7 @@ trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #2 PASSED"
 wait 0
 get_audio_stream_state 0@ store_to 1@
 if
-    1@ == 1 // play
+    1@ == 1 // AudioStreamState.Playing
 then
     trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #3 PASSED"
 else
@@ -59,7 +60,7 @@ end
 wait 400 // Ding.mp3 is 0.25s long
 get_audio_stream_state 0@ store_to 1@
 if
-    1@ == 1 // play
+    1@ == 1 // AudioStreamState.Playing
 then
     trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #4 PASSED"
 else
@@ -69,7 +70,7 @@ end
 
 // stop playback
 wait 0
-set_audio_stream_state 0@ state AudioStreamState.Stop
+set_audio_stream_state 0@ state AudioStreamAction.Stop
 trace "~g~~h~~h~0AC0 (set_audio_stream_looped), #5 PASSED"
 
 
