@@ -30,8 +30,9 @@
   - added/fixed support of all file stream opcodes in legacy mode (Cleo3)
   - new opcode **2300 ([get_file_position](https://library.sannybuilder.com/#/sa/file/2300))**
   - new opcode **2301 ([read_block_from_file](https://library.sannybuilder.com/#/sa/file/2301))**
-  - **2302 ([resolve_filepath](https://library.sannybuilder.com/#/sa/file/2302))**
-  - **2303 ([get_script_filename](https://library.sannybuilder.com/#/sa/file/2303))**
+  - new opcode **2302 ([write_block_to_file](https://library.sannybuilder.com/#/sa/file/2302))**
+  - new opcode **2303 ([resolve_filepath](https://library.sannybuilder.com/#/sa/file/2303))**
+  - new opcode **2304 ([get_script_filename](https://library.sannybuilder.com/#/sa/file/2304))**
 - new [MemoryOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/MemoryOperations) plugin
   - memory related opcodes moved from CLEO core into separated plugin
   - validation of input and output parameters for all opcodes
@@ -43,6 +44,7 @@
   - new opcode **2404 ([get_script_struct_just_created](https://library.sannybuilder.com/#/sa/memory/2404))**
   - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
   - new opcode **2406 ([get_script_struct_from_filename](https://library.sannybuilder.com/#/sa/memory/2406))**
+  - new opcode **2407 ([is_memory_equal](https://library.sannybuilder.com/#/sa/memory/2407))**
 - new and updated opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
@@ -102,6 +104,7 @@
 
 
 #### CLEO internal
+- introduced unit test scripts
 - project migrated to VS 2022
 - configured game debugging settings
 - plugins moved into single solution

@@ -73,8 +73,9 @@ public:
 
         CLEO_RegisterOpcode(0x2300, opcode_2300); // get_file_position
         CLEO_RegisterOpcode(0x2301, opcode_2301); // read_block_from_file
-        CLEO_RegisterOpcode(0x2302, opcode_2302); // resolve_filepath
-        CLEO_RegisterOpcode(0x2303, opcode_2303); // get_script_filename
+        CLEO_RegisterOpcode(0x2302, opcode_2302); // write_block_to_file
+        CLEO_RegisterOpcode(0x2303, opcode_2303); // resolve_filepath
+        CLEO_RegisterOpcode(0x2304, opcode_2304); // get_script_filename
 
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
@@ -209,6 +210,7 @@ public:
 
         if (size == 0)
         {
+            OPCODE_SKIP_PARAMS(1); // from
             return OR_CONTINUE; // done
         }
 
@@ -298,37 +300,19 @@ public:
 
         if (size < 0)
         {
-            auto info = ScriptInfoStr(thread);
-            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, info.c_str());
+            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
             return thread->Suspend();
         }
 
         if (size == 0)
         {
-            if (bufferSize > 0) buffer[0] = '\0';
-            OPCODE_CONDITION_RESULT(false);
+            OPCODE_CONDITION_RESULT(true);
             return OR_CONTINUE;
         }
 
-        std::vector<char> tmpBuff;
-        tmpBuff.resize(size);
-        auto data = tmpBuff.data();
+        bool ok = File::readString(handle, buffer, size) != nullptr;
 
-        bool ok = File::readString(handle, data, size) != nullptr;
-        if(!ok)
-        {
-            OPCODE_CONDITION_RESULT(false);
-            return OR_CONTINUE;
-        }
-
-        // copy into result param
-        int len = strlen(data);
-        int resultSize = min(len, bufferSize - (int)needsTerminator);
-
-        memcpy(buffer, data, resultSize);
-        if(resultSize < bufferSize) buffer[resultSize] = '\0'; // terminate string whenever possible
-
-        OPCODE_CONDITION_RESULT(true);
+        OPCODE_CONDITION_RESULT(ok);
         return OR_CONTINUE;
     }
 
@@ -686,8 +670,7 @@ public:
 
         if (size < 0)
         {
-            auto info = ScriptInfoStr(thread);
-            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, info.c_str());
+            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
             return thread->Suspend();
         }
 
@@ -708,8 +691,38 @@ public:
         return OR_CONTINUE;
     }
 
-    //2302=2,%2s% = resolve_filepath %1s%
-    static OpcodeResult __stdcall opcode_2302(CRunningScript* thread)
+    //2302=3,write_block_to_file %1d% size %2d% address %3d% // IF and SET
+    static OpcodeResult WINAPI opcode_2302(CRunningScript* thread)
+    {
+        auto handle = READ_FILE_HANDLE_PARAM();
+        auto size = OPCODE_READ_PARAM_INT();
+        auto source = OPCODE_READ_PARAM_PTR();
+
+        if (size < 0)
+        {
+            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        if (size == 0)
+        {
+            OPCODE_CONDITION_RESULT(true);
+            return OR_CONTINUE;
+        }
+
+        auto readCount = File::write(handle, source, size);
+        if (readCount != size)
+        {
+            OPCODE_CONDITION_RESULT(false);
+            return OR_CONTINUE;
+        }
+
+        OPCODE_CONDITION_RESULT(true);
+        return OR_CONTINUE;
+    }
+
+    //2303=2,%2s% = resolve_filepath %1s%
+    static OpcodeResult __stdcall opcode_2303(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(path); // it also resolves the path to absolute form
 
@@ -717,8 +730,8 @@ public:
         return OR_CONTINUE;
     }
 
-    //2303=3,%3s% = get_script_filename %1d% full_path %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_2303(CRunningScript* thread)
+    //2304=3,%3s% = get_script_filename %1d% full_path %2d% // IF and SET
+    static OpcodeResult __stdcall opcode_2304(CRunningScript* thread)
     {
         auto script = OPCODE_READ_PARAM_INT();
         auto fullPath = OPCODE_READ_PARAM_BOOL();

@@ -7,5 +7,16 @@
   <ItemGroup>
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="..\..\cleo_sdk\CLEO.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cleo_sdk">
+      <UniqueIdentifier>{a2c39c52-f49e-4ffe-bb0a-661ab07131b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

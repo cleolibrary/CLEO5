@@ -118,6 +118,8 @@ if defined GTA_SA_DIR (
     <ClCompile Include="FileUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\cleo_sdk\CLEO.h" />
+    <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>

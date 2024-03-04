@@ -1,0 +1,164 @@
+{$CLEO .s}
+{$USE debug}
+{$USE file}
+{$USE bitwise}
+var 0@ : Integer
+var 1@ : Integer
+var 2@ : Integer
+var 3@ : Integer
+var 4@ : Integer
+var 5@ : Integer
+var 6@ : Integer
+var 7@ : Integer
+var 8@ : Integer
+var 9@ : Integer
+var 10@ : Integer
+
+script_name "2407" // is_memory_equal
+debug_on
+
+trace "2407 (is_memory_equal)"
+
+
+// compare 0
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    is_memory_equal 0@ 1@ {size} 0
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #1 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #1 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 1
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    is_memory_equal 0@ 1@ {size} 1
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #2 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #2 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 2
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    is_memory_equal 0@ 1@ {size} 2
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #3 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #3 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 3
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    is_memory_equal 0@ 1@ {size} 3
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #4 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #4 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 4
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    is_memory_equal 0@ 1@ {size} 4
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #5 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #5 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 8
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    is_memory_equal 0@ 1@ {size} 8
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #6 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #6 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 9
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    not is_memory_equal 0@ 1@ {size} 9
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #7 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #7 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 16
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    not is_memory_equal 0@ 1@ {size} 16
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #8 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #8 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 8 again in case memory was modified
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    is_memory_equal 0@ 1@ {size} 8
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #9 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #9 FAILED!~n~Incorrect condition result"
+end
+
+
+// compare 9 again in case memory was modified
+wait 0
+0@ = get_label_pointer @DATA_A
+1@ = get_label_pointer @DATA_B
+if
+    not is_memory_equal 0@ 1@ {size} 9
+then
+    trace "~g~~h~~h~2407 (is_memory_equal), #10 PASSED"
+else
+    breakpoint "~r~~h~~h~~h~2407 (is_memory_equal), #10 FAILED!~n~Incorrect condition result"
+end
+
+
+terminate_this_custom_script
+
+
+:DATA_A
+hex
+    "12345678abcdef" 00
+end
+
+:DATA_B
+hex
+    "1234567812345" 00
+end

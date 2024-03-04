@@ -60,6 +60,7 @@ public:
         CLEO_RegisterOpcode(0x2404, opcode_2404); // get_script_struct_just_created
         CLEO_RegisterOpcode(0x2405, opcode_2405); // is_script_running
         CLEO_RegisterOpcode(0x2406, opcode_2406); // get_script_struct_from_filename
+        CLEO_RegisterOpcode(0x2407, opcode_2407); // is_memory_equal
         
 
         // register event callbacks
@@ -786,6 +787,30 @@ public:
 
         OPCODE_WRITE_PARAM_PTR(address);
         OPCODE_CONDITION_RESULT(address != nullptr);
+        return OR_CONTINUE;
+    }
+
+    //2407=3,  is_memory_equal address_a %1d% address_b %2d% size %d3%
+    static OpcodeResult __stdcall opcode_2407(CLEO::CScriptThread* thread)
+    {
+        auto addressA = OPCODE_READ_PARAM_PTR();
+        auto addressB = OPCODE_READ_PARAM_PTR();
+        auto size = OPCODE_READ_PARAM_INT();
+
+        if (size == 0)
+        {
+            OPCODE_CONDITION_RESULT(true);
+            return OR_CONTINUE;
+        }
+        if (size < 0)
+        {
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        auto result = memcmp(addressA, addressB, size);
+
+        OPCODE_CONDITION_RESULT(result == 0);
         return OR_CONTINUE;
     }
 } Memory;

@@ -1,4 +1,5 @@
 #include "FileUtils.h"
+#include "CLEO_Utils.h"
 #include <string>
 
 DWORD File::FUNC_fopen = 0;
@@ -84,12 +85,49 @@ bool File::flush(DWORD handle)
 
 DWORD File::open(const char* filename, const char* mode, bool legacy)
 {
+	char modeParsed[8] = { 0 };
+
+	// validate the mode argument
+	bool modeValid = false;
+	bool modeBin = false;
+	auto modeLen = mode != nullptr ? strlen(mode) : 0;
+	if (modeLen > 0 && modeLen < (sizeof(modeParsed) - 1)) // keep space for extra binary mode char
+	{
+		modeValid = true;
+
+		size_t i = 0;
+		while (i < modeLen)
+		{
+			auto& ch = mode[i];
+			if (ch == '+' || ch == 'a' || ch == 'b' || ch == 'r' || ch == 'w')
+			{
+				modeParsed[i] = ch;
+				modeBin = modeBin || ch == 'b';
+			}
+			else
+			{
+				modeValid = false;
+				break; // invalid character
+			}
+
+			i++;
+		}
+
+		if (!modeBin) modeParsed[i] = 'b'; // always open as binary mode, as text mode does not behave as expected in multiple scenarios
+	}
+	if (!modeValid)
+	{
+		LOG_WARNING(0, "Invalid mode argument '%s' while opening file \"%s\" stream!", mode, filename);
+		return 0; // invalid handle
+	}
+
 	FILE* file = nullptr;
 	if (legacy)
 	{
 		_asm
 		{
-			push mode
+			lea eax, modeParsed
+			push eax
 			push filename
 			call FUNC_fopen
 			add esp, 8
@@ -97,7 +135,7 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
 		}
 	}
 	else
-		file = fopen(filename, mode);
+		file = fopen(filename, modeParsed);
 
 	return fileToHandle(file, legacy);
 }
