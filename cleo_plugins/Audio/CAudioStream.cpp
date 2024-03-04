@@ -70,8 +70,8 @@ void CAudioStream::SetProgress(float value)
 
 float CAudioStream::GetProgress() const
 {
-    auto total = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE); // returns 0xFFF... on error
-    auto bytePos = BASS_ChannelGetPosition(streamInternal, BASS_POS_BYTE); // returns 0xFFF... on error
+    auto total = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE); // returns -1 on error
+    auto bytePos = BASS_ChannelGetPosition(streamInternal, BASS_POS_BYTE); // returns -1 on error
 
     if (bytePos == -1) bytePos = 0; // error or not available yet
 
