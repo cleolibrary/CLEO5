@@ -1,0 +1,108 @@
+
+const VAR_TEST_INDEX = 0
+const VAR_BEFORE_EACH = 1
+
+jump @_cleo_tester_skip_fns
+
+function _cleo_tester_read_var(index: int): int
+    int buf = get_label_pointer @_cleo_tester_shared_vars
+    index *= 4
+    int value = read_memory_with_offset {address} buf {offset} index {size} 4
+    return true value
+end
+
+function _cleo_tester_write_var(index: int, value: int)
+    int buf = get_label_pointer @_cleo_tester_shared_vars
+    index *= 4
+    write_memory_with_offset {address} buf {offset} index {size} 4 {value} value
+end
+
+function test(suite_name: integer, tests: int)
+    debug_on
+    
+    int suite_name_buf = get_label_pointer @_cleo_tester_test_name
+    copy_memory {src} suite_name {dest} suite_name_buf {size} 255 // used in an it trace
+    trace "Running %s test" suite_name
+    cleo_call tests
+end
+
+function it(spec_name: integer, callback: integer)
+    define function run_spec(callback: int)
+    
+    int index = _cleo_tester_read_var(VAR_TEST_INDEX)
+
+    int spec_name_buf = get_label_pointer @_cleo_tester_spec_name
+    copy_memory {src} spec_name {dest} spec_name_buf {size} 255 // used in a failed assert
+    int test_name = get_label_pointer @_cleo_tester_test_name
+    trace "#%d %s -- it %s" index test_name spec_name
+
+    wait 0
+    run_spec(callback)
+
+    trace "~g~~h~~h~#%d %s PASSED" index spec_name
+    index++
+    _cleo_tester_write_var(VAR_TEST_INDEX, index)
+    
+    return true
+    
+    
+    function run_spec(test_fn: int)
+        // ensure all local variables are reset before calling actual spec function
+
+        int loc = get_label_pointer @_run_test_a
+        write_memory_with_offset {address} loc {offset} 3 {size} 4 {value} test_fn
+        loc = 0
+        test_fn = 0
+        int before_each_cb = _cleo_tester_read_var(VAR_BEFORE_EACH)
+        if before_each_cb <> 0
+        then
+            loc = get_label_pointer @_run_test_b
+            write_memory_with_offset {address} loc {offset} 3 {size} 4 {value} before_each_cb
+            before_each_cb = 0
+            :_run_test_b
+            gosub 0.0 // 0.0 is always 4 bytes
+        end
+        :_run_test_a
+        jump 0.0
+    end
+end
+
+:_cleo_tester_shared_vars
+hex
+    00(12)
+end
+:_cleo_tester_test_name
+hex
+    00(256)
+end
+:_cleo_tester_spec_name
+hex
+    00(256)
+end
+
+function assert_eq(val1:int, val2:int)
+    if val1 <> val2
+    then
+        int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
+        int test_name = get_label_pointer @_cleo_tester_spec_name
+        breakpoint "~r~~h~~h~~h~#%d %s FAILED! %d Expected, %d Actual" test_index test_name val1 val2
+        terminate_this_custom_script
+    end
+end
+
+function assert_eqf(val1:float, val2:float)
+    if val1 <> val2
+    then
+        int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
+        int test_name = get_label_pointer @_cleo_tester_spec_name
+        breakpoint "~r~~h~~h~~h~#%d %s FAILED! %f Expected, %f Actual" test_index test_name val1 val2
+        terminate_this_custom_script
+    end
+end
+
+function before_each(callback: int)
+    _cleo_tester_write_var(VAR_BEFORE_EACH, callback)
+end
+
+
+:_cleo_tester_skip_fns

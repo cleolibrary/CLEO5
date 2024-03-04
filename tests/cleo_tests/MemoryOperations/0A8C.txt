@@ -1,180 +1,88 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.txt}
 
-script_name "0A8C" // write_memory
-debug_on
-
-trace "0A8C (write_memory)"
-
-wait 0
-// write 0 bytes
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-0A8C: write_memory {address} 0@ {size} 0 {value} 0x11223344 {vp} false // tested opcode
-
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdddddddd
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~0A8C (write_memory), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #0 FAILED!~n~cccccccc dddddddd eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 1 byte
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-0A8C: write_memory {address} 0@ {size} 1 {value} 0x11223344 {vp} false // tested opcode
-
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdddddd44
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~0A8C (write_memory), #1 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #1 FAILED!~n~cccccccc dddddd44 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 2 bytes
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-0A8C: write_memory {address} 0@ {size} 2 {value} 0x11223344 {vp} false // tested opcode
-
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdddd3344
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~0A8C (write_memory), #2 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #2 FAILED!~n~cccccccc dddd3344 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 3 bytes
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-0A8C: write_memory {address} 0@ {size} 3 {value} 0x11223344 {vp} false // tested opcode
-
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdd444444 // memset behavior
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~0A8C (write_memory), #3 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #3 FAILED!~n~cccccccc dd444444 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 4 bytes
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-0A8C: write_memory {address} 0@ {size} 4 {value} 0x11223344 {vp} false // tested opcode
-
-if and
-    1@ == 0xcccccccc
-    2@ == 0x11223344
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~0A8C (write_memory), #4 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #4 FAILED!~n~cccccccc 11223344 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 5 bytes
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-0A8C: write_memory {address} 0@ {size} 5 {value} 0x11223344 {vp} false // tested opcode
-
-if and
-    1@ == 0xcccccccc
-    2@ == 0x44444444
-    3@ == 0xeeeeee44
-then
-    trace "~g~~h~~h~0A8C (write_memory), #5 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #5 FAILED! Expected: cccccccc, 44444444, eeeeee44 Actual: %08x %08x %08x" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 7 bytes
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-0A8C: write_memory {address} 0@ {size} 7 {value} 0x11223344 {vp} false // tested opcode
-
-if and
-    1@ == 0xcccccccc
-    2@ == 0x44444444
-    3@ == 0xee444444
-then
-    trace "~g~~h~~h~0A8C (write_memory), #6 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #6 FAILED! Expected: cccccccc, 44444444, ee444444 Actual: %08x %08x %08x" 1@ 2@ 3@
-end
-
-wait 0
-
-// write float
-get_var_pointer 2@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-4@ = 100.0
-
-0A8C: write_memory {address} 0@ {size} 4 {value} 4@ {vp} false // tested opcode
-
-if
-    2@ == 100.0
-then
-    trace "~g~~h~~h~0A8C (write_memory), #7 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A8C (write_memory), #7 FAILED!~n~cccccccc 100.0 eeeeeeee Expected~n~%08x %f %08x Occured" 1@ 2@ 3@
-end
-
-
+script_name '0A8C'
+test("0A8C (write_memory)", @tests)
 terminate_this_custom_script
+
+
+function tests
+    before_each(@before)
+
+    it("should write 0 bytes", @test1)
+    it("should write 1 byte", @test2)
+    it("should write 2 bytes", @test3)
+    it("should write 3 bytes", @test4)
+    it("should write 4 bytes", @test5)
+    it("should write 5 bytes", @test6)
+    it("should write 7 bytes", @test7)
+    it("should write float", @test8)
+
+    return true
+    
+    :before
+        get_var_pointer 2@ {store_to} 0@
+        1@ = 0xcccccccc
+        2@ = 0xdddddddd
+        3@ = 0xeeeeeeee
+    0051: return
+
+    function test1
+        write_memory {address} 0@ {size} 0 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddddddd)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+    
+    function test2
+        write_memory {address} 0@ {size} 1 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddddd44)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test3
+        write_memory {address} 0@ {size} 2 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddd3344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test4
+        write_memory {address} 0@ {size} 3 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdd444444) // memset behavior
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test5
+        write_memory {address} 0@ {size} 4 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x11223344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test6
+        write_memory {address} 0@ {size} 5 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x44444444)
+        assert_eq(3@, 0xeeeeee44)
+    end
+
+    function test7
+        write_memory {address} 0@ {size} 7 {value} 0x11223344 {vp} false
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x44444444)
+        assert_eq(3@, 0xee444444)
+    end
+
+    function test8
+        4@ = 100.0
+        0A8C: write_memory {address} 0@ {size} 4 {value} 4@ {vp} false // tested opcode
+        assert_eq(1@, 0xcccccccc)
+        assert_eqf(2@, 100.0)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+
+end
