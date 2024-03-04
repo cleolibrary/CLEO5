@@ -1477,39 +1477,58 @@ namespace CLEO
 		OPCODE_READ_PARAM_STRING(src);
 		OPCODE_READ_PARAM_STRING(format);
 
-		auto resultType = thread->PeekDataType();
-		if (!IsVariable(resultType) && IsVarString(resultType))
-		{
-			SHOW_ERROR("Result parameter must be variable type, received '%s' in script %s \nScript suspended.", ToKindStr(resultType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-		int *result = (int *)GetScriptParamPointer(thread);
+		auto readCount = OPCODE_READ_PARAM_OUTPUT_VAR_INT(); // store_to
 
-		// read extra params
-		size_t cExParams = 0;
-		SCRIPT_VAR *ExParams[35];
+		// collect provided by caller store_to variables
+		size_t outputParamCount = 0;
+		SCRIPT_VAR* outputParams[35];
+		struct StringParamDesc
+		{
+			bool used = false;
+			StringParamBufferInfo target;
+			std::string str;
+		} stringParams[35];
+
 		for (int i = 0; i < 35; i++)
 		{
 			auto paramType = thread->PeekDataType();
-			if (paramType != DT_END)
+
+			if (paramType == DT_END)
 			{
-				ExParams[i] = GetScriptParamPointer(thread);
-				cExParams++;
+				outputParams[i] = nullptr;
+				continue;
 			}
-			else ExParams[i] = nullptr; // clear unused args
+
+			if (IsVarString(paramType))
+			{
+				stringParams[i].used = true;
+				stringParams[i].target = GetStringParamWriteBuffer(thread);
+				stringParams[i].str.resize(MAX_STR_LEN);
+
+				outputParams[i] = (SCRIPT_VAR*)stringParams[i].str.data();
+			}
+			else
+				outputParams[i] = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
+
+			outputParamCount++;
 		}
 		SkipUnusedVarArgs(thread); // and var args terminator
 
-		*result = sscanf(src, format,
-						 /* extra parameters (will be aligned automatically, but the limit of 35 elements maximum exists) */
-						 ExParams[0], ExParams[1], ExParams[2], ExParams[3], ExParams[4], ExParams[5],
-						 ExParams[6], ExParams[7], ExParams[8], ExParams[9], ExParams[10], ExParams[11],
-						 ExParams[12], ExParams[13], ExParams[14], ExParams[15], ExParams[16], ExParams[17],
-						 ExParams[18], ExParams[19], ExParams[20], ExParams[21], ExParams[22], ExParams[23],
-						 ExParams[24], ExParams[25], ExParams[26], ExParams[27], ExParams[28], ExParams[29],
-						 ExParams[30], ExParams[31], ExParams[32], ExParams[33], ExParams[34]);
+		*readCount = sscanf(src, format,
+						 outputParams[0], outputParams[1], outputParams[2], outputParams[3], outputParams[4], outputParams[5],
+						 outputParams[6], outputParams[7], outputParams[8], outputParams[9], outputParams[10], outputParams[11],
+						 outputParams[12], outputParams[13], outputParams[14], outputParams[15], outputParams[16], outputParams[17],
+						 outputParams[18], outputParams[19], outputParams[20], outputParams[21], outputParams[22], outputParams[23],
+						 outputParams[24], outputParams[25], outputParams[26], outputParams[27], outputParams[28], outputParams[29],
+						 outputParams[30], outputParams[31], outputParams[32], outputParams[33], outputParams[34]);
 
-		SetScriptCondResult(thread, cExParams == *result);
+		// transfer string params to target variables
+		for (auto& p : stringParams)
+		{
+			if (p.used) WriteStringParam(p.target, p.str.c_str());
+		}
+
+		OPCODE_CONDITION_RESULT(outputParamCount == *readCount);
 		return OR_CONTINUE;
 	}
 
