@@ -58,6 +58,7 @@ function it(spec_name: integer, callback: integer)
         then
             loc = get_label_pointer @_run_test_b
             write_memory_with_offset {address} loc {offset} 3 {size} 4 {value} before_each_cb
+            loc = 0
             before_each_cb = 0
             :_run_test_b
             gosub 0.0 // 0.0 is always 4 bytes
