@@ -161,11 +161,7 @@ namespace CLEO
     // WARNING: Null terminator ommited if not enought space in the buffer!
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
 
-    inline SCRIPT_VAR * GetScriptParamPointer(CRunningScript *thread)
-    {
-        SCRIPT_VAR* ptr = GetScriptParamPointer2(thread, 0);
-        return ptr;
-    }
+    inline SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread);
 
     extern "C" {
         extern CRunningScript *staticThreads;

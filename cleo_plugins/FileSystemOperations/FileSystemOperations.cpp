@@ -182,7 +182,7 @@ public:
     {
         auto handle = READ_FILE_HANDLE_PARAM();
         auto size = OPCODE_READ_PARAM_INT();
-        auto destination = OPCODE_READ_PARAM_OUTPUT_VAR();
+        auto destination = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
 
         if (size < 0)
         {
@@ -372,7 +372,7 @@ public:
     {
         auto handle = READ_FILE_HANDLE_PARAM();
         OPCODE_READ_PARAM_STRING(format);
-        auto result = OPCODE_READ_PARAM_OUTPUT_VAR();
+        auto result = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
 
         size_t paramCount = 0;
         SCRIPT_VAR* outputParams[35];

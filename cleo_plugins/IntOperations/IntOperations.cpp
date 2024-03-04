@@ -204,7 +204,7 @@ public:
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto value = OPCODE_READ_PARAM_INT();
 
-        operand->dwParam &= value;
+        *operand &= value;
         return OR_CONTINUE;
     }
 
@@ -217,7 +217,7 @@ public:
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto value = OPCODE_READ_PARAM_INT();
 
-        operand->dwParam |= value;
+        *operand |= value;
         return OR_CONTINUE;
     }
 
@@ -230,7 +230,7 @@ public:
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto value = OPCODE_READ_PARAM_INT();
 
-        operand->dwParam ^= value;
+        *operand ^= value;
         return OR_CONTINUE;
     }
 
@@ -242,7 +242,7 @@ public:
     {
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
 
-        operand->dwParam = ~operand->dwParam;
+        *operand = ~*operand;
         return OR_CONTINUE;
     }
 
@@ -255,7 +255,7 @@ public:
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto value = OPCODE_READ_PARAM_INT();
 
-        operand->dwParam %= value;
+        *operand %= value;
         return OR_CONTINUE;
     }
 
@@ -268,7 +268,7 @@ public:
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto value = OPCODE_READ_PARAM_INT();
 
-        operand->dwParam >>= value;
+        *operand >>= value;
         return OR_CONTINUE;
     }
 
@@ -281,7 +281,7 @@ public:
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto value = OPCODE_READ_PARAM_INT();
 
-        operand->dwParam <<= value;
+        *operand <<= value;
         return OR_CONTINUE;
     }
 
@@ -301,11 +301,11 @@ public:
         }
 
         size_t offset = size * 8 - 1; // bit offset of top most bit in source value
-        bool signBit = operand->dwParam & (1 << offset);
+        bool signBit = *operand & (1 << offset);
 
         if(signBit)
         {
-            operand->dwParam |= 0xFFFFFFFF << offset; // set all upper bits
+            *operand |= 0xFFFFFFFF << offset; // set all upper bits
         }
         
         return OR_CONTINUE;

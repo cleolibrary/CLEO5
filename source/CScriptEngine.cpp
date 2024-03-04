@@ -134,6 +134,7 @@ namespace CLEO
         if (buff == nullptr || buffLen < 0)
         {
             LOG_WARNING(0, "Invalid ReadStringParam input argument! Ptr: 0x%08X, Size: %d", buff, buffLen);
+            CLEO_SkipOpcodeParams(thread, 1);
             return nullptr;
         }
 
@@ -159,6 +160,7 @@ namespace CLEO
         }
         else if (paramType == DT_VARLEN_STRING)
         {
+            GetInstance().OpcodeSystem.handledParamCount++;
             thread->IncPtr(1); // already processed paramType
 
             DWORD length = *thread->GetBytePointer(); // as unsigned byte!
@@ -180,6 +182,7 @@ namespace CLEO
             {
                 case DT_TEXTLABEL:
                 {
+                    GetInstance().OpcodeSystem.handledParamCount++;
                     memcpy(buff, str, min(buffLen, 8));
                     thread->IncPtr(8); // text data
                     return buff;
@@ -187,6 +190,7 @@ namespace CLEO
 
                 case DT_STRING:
                 {
+                    GetInstance().OpcodeSystem.handledParamCount++;
                     memcpy(buff, str, min(buffLen, 16));
                     thread->IncPtr(16); // ext data
                     return buff;
@@ -225,8 +229,15 @@ namespace CLEO
 
         // unsupported param type
         LOG_WARNING(thread, "Argument #%d expected to be string, got %s in script %s", CLEO_GetParamsHandledCount(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
-        GetScriptParams(thread, 1); // try skip unhandled param
+        CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
         return nullptr; // error
+    }
+
+    SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread)
+    {
+        SCRIPT_VAR* ptr = GetScriptParamPointer2(thread, 0);
+        GetInstance().OpcodeSystem.handledParamCount++; // TODO: hook game's GetScriptParamPointer1 and GetScriptParamPointer2 procedures so this is always incremented
+        return ptr;
     }
 
     SCRIPT_VAR * __fastcall _GetScriptParamPointer2(CRunningScript *pScript, int dummy, int unused)
