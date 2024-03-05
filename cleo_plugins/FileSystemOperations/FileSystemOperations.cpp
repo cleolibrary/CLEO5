@@ -310,6 +310,7 @@ public:
             return OR_CONTINUE;
         }
 
+        // use caller's size argument, ignoring actual target type size. Intended for legacy reasons.
         bool ok = File::readString(handle, buffer, size) != nullptr;
 
         OPCODE_CONDITION_RESULT(ok);
