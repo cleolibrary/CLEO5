@@ -85,42 +85,49 @@ bool File::flush(DWORD handle)
 
 DWORD File::open(const char* filename, const char* mode, bool legacy)
 {
-	char modeParsed[8] = { 0 };
-
 	// validate the mode argument
-	bool modeValid = false;
-	bool modeBin = false;
-	auto modeLen = mode != nullptr ? strlen(mode) : 0;
-	if (modeLen > 0 && modeLen < (sizeof(modeParsed) - 1)) // keep space for extra binary mode char
+	if (!legacy)
 	{
-		modeValid = true;
+		static char modeUpdated[12];
+		const std::string allowed = "+abcnrtwxDRST"; // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen?view=msvc-170
 
-		size_t i = 0;
-		while (i < modeLen)
+		bool valid = false;
+		bool binary = false;
+		bool text = false;
+		auto modeLen = mode != nullptr ? strlen(mode) : 0;
+		if (modeLen > 0 && modeLen < (sizeof(modeUpdated) - 1)) // keep space for extra binary mode char
 		{
-			auto& ch = mode[i];
-			if (ch == '+' || ch == 'a' || ch == 'b' || ch == 'r' || ch == 'w')
+			valid = true;
+
+			for (auto ch : std::string_view(mode))
 			{
-				modeParsed[i] = ch;
-				modeBin = modeBin || ch == 'b';
-			}
-			else
-			{
-				modeValid = false;
-				break; // invalid character
+				if (allowed.find(ch) == std::string_view::npos)
+				{
+					valid = false;
+					break; // invalid character
+				}
+
+				if (ch == 'b') binary = true;
+				if (ch == 't') text = true;
 			}
 
-			i++;
+			if (binary && text) valid = false;
+
+			// By default open as binary mode.
+			// Generally text mode is not well documented in C and many file related functions has undefined behavior. For example 'ftell' returns invalid values.
+			if (valid && !binary)
+			{
+				strcpy(modeUpdated, mode);
+				strcat(modeUpdated, "b");
+				mode = modeUpdated;
+			}
 		}
 
-		// Always open as binary mode!
-		// Generally file text mode is not well documented in C and many file related functions has undefined behavior. For example 'ftell' returns invalid values.
-		if (!modeBin) modeParsed[i] = 'b'; 
-	}
-	if (!modeValid)
-	{
-		LOG_WARNING(0, "Invalid mode argument '%s' while opening file \"%s\" stream!", mode, filename);
-		return 0; // invalid handle
+		if (!valid)
+		{
+			LOG_WARNING(0, "Invalid mode argument '%s' while opening file \"%s\" stream!", mode, filename);
+			return 0; // invalid handle
+		}
 	}
 
 	FILE* file = nullptr;
@@ -128,8 +135,7 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
 	{
 		_asm
 		{
-			lea eax, modeParsed
-			push eax
+			push mode
 			push filename
 			call FUNC_fopen
 			add esp, 8
@@ -137,7 +143,7 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
 		}
 	}
 	else
-		file = fopen(filename, modeParsed);
+		file = fopen(filename, mode);
 
 	return fileToHandle(file, legacy);
 }
