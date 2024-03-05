@@ -711,13 +711,8 @@ public:
         }
 
         auto readCount = File::write(handle, source, size);
-        if (readCount != size)
-        {
-            OPCODE_CONDITION_RESULT(false);
-            return OR_CONTINUE;
-        }
 
-        OPCODE_CONDITION_RESULT(true);
+        OPCODE_CONDITION_RESULT(readCount == size);
         return OR_CONTINUE;
     }
 
