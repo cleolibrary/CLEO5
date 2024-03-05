@@ -1,6 +1,8 @@
 
 const VAR_TEST_INDEX = 0
 const VAR_BEFORE_EACH = 1
+const VAR_AFTER_EACH = 2
+const VAR_SPEC = 3
 
 jump @_cleo_tester_skip_fns
 
@@ -23,11 +25,15 @@ function test(suite_name: integer, tests: int)
     int suite_name_buf = get_label_pointer @_cleo_tester_test_name
     copy_memory {src} suite_name {dest} suite_name_buf {size} 255 // used in an it trace
     trace "Running %s test" suite_name
+    
+    _cleo_tester_write_var(VAR_BEFORE_EACH, @_cleo_tester_stub)
+    _cleo_tester_write_var(VAR_AFTER_EACH, @_cleo_tester_stub)
     cleo_call tests
 end
 
 function it(spec_name: integer, callback: integer)
-    define function run_spec(callback: int)
+    define function run_spec
+    define function inject_offset(label: int, offset: int)
     
     int index = _cleo_tester_read_var(VAR_TEST_INDEX)
 
@@ -37,7 +43,8 @@ function it(spec_name: integer, callback: integer)
     trace "#%d %s -- it %s" index test_name spec_name
 
     wait 0
-    run_spec(callback)
+    _cleo_tester_write_var(VAR_SPEC, callback)
+    run_spec
 
     trace "~g~~h~~h~#%d %s PASSED" index spec_name
     index++
@@ -45,32 +52,39 @@ function it(spec_name: integer, callback: integer)
     
     return true
     
-    
-    function run_spec(test_fn: int)
-        // ensure all local variables are reset before calling actual spec function
 
-        int loc = get_label_pointer @_run_test_a
-        write_memory_with_offset {address} loc {offset} 3 {size} 4 {value} test_fn
-        loc = 0
-        test_fn = 0
-        int before_each_cb = _cleo_tester_read_var(VAR_BEFORE_EACH)
-        if before_each_cb <> 0
-        then
-            loc = get_label_pointer @_run_test_b
-            write_memory_with_offset {address} loc {offset} 3 {size} 4 {value} before_each_cb
-            loc = 0
-            before_each_cb = 0
-            :_run_test_b
-            gosub 0.0 // 0.0 is always 4 bytes
-        end
-        :_run_test_a
-        jump 0.0
+    
+    function run_spec
+        // this function should use 0 local variables
+    
+        inject_offset(@_cleo_tester_before_each, VAR_BEFORE_EACH)
+        inject_offset(@_cleo_tester_after_each, VAR_AFTER_EACH)
+        inject_offset(@_cleo_tester_run, VAR_SPEC)
+        
+        :_cleo_tester_before_each
+        gosub @_cleo_tester_stub
+
+        :_cleo_tester_run
+        cleo_call @_cleo_tester_stub {numParams} 32 {params} 0@ 1@ 2@ 3@ 4@ 5@ 6@ 7@ 8@ 9@ 10@ 11@ 12@ 13@ 14@ 15@ 16@ 17@ 18@ 19@ 20@ 21@ 22@ 23@ 24@ 25@ 26@ 27@ 28@ 29@ 30@ 31@
+        
+        :_cleo_tester_after_each
+        gosub @_cleo_tester_stub
+    end
+    
+    // self-patch script code with new gosub/call offset
+    function inject_offset(label: int, var_index: int)
+        int function_offset = _cleo_tester_read_var(var_index)
+        int location = get_label_pointer label
+        write_memory_with_offset {address} location {offset - opcode + datatype} 3 {size} 4 {value} function_offset
     end
 end
 
+:_cleo_tester_stub
+return
+
 :_cleo_tester_shared_vars
 hex
-    00(12)
+    00(16) // 4 variables
 end
 :_cleo_tester_test_name
 hex
@@ -81,28 +95,49 @@ hex
     00(256)
 end
 
-function assert_eq(val1:int, val2:int)
-    if val1 <> val2
-    then
-        int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
-        int test_name = get_label_pointer @_cleo_tester_spec_name
-        breakpoint "~r~~h~~h~~h~#%d %s FAILED! %d Expected, %d Actual" test_index test_name val1 val2
-        terminate_this_custom_script
-    end
+:_cleo_tester_fail
+int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
+int test_name = get_label_pointer @_cleo_tester_spec_name
+breakpoint "~r~~h~~h~~h~#%d %s FAILED! %d Expected, %d Actual" test_index test_name {val1} 0@ {val2} 1@
+terminate_this_custom_script
+
+
+function assert_eq(val1: int, val2: int)
+    val1 == val2
+    jf @_cleo_tester_fail
+end
+
+function assert_neq(val1: int, val2: int)
+    val1 <> val2
+    jf @_cleo_tester_fail
 end
 
 function assert_eqf(val1:float, val2:float)
-    if val1 <> val2
-    then
-        int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
-        int test_name = get_label_pointer @_cleo_tester_spec_name
-        breakpoint "~r~~h~~h~~h~#%d %s FAILED! %f Expected, %f Actual" test_index test_name val1 val2
-        terminate_this_custom_script
-    end
+    val1 == val2
+    jf @_cleo_tester_fail
+end
+
+function assert_neqf(val1:float, val2:float)
+    val1 <> val2
+    jf @_cleo_tester_fail
+end
+
+function assert_ptr(ptr: int)
+    ptr > 0x10000  // possibly valid pointer
+    jf @_cleo_tester_fail
+end
+
+function assert(flag: int)
+    flag <> False
+    jf @_cleo_tester_fail
 end
 
 function before_each(callback: int)
     _cleo_tester_write_var(VAR_BEFORE_EACH, callback)
+end
+
+function after_each(callback: int)
+    _cleo_tester_write_var(VAR_AFTER_EACH, callback)
 end
 
 

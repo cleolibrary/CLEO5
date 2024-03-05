@@ -1,45 +1,28 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.txt}
 
-script_name "0AC6" // get_vehicle_pointer
-debug_on
-
-trace "0AC6 (get_label_pointer)"
-
-
-wait 0
-1@ = 0
-0AC6: get_label_pointer @DATA {result} 1@ // tested opcode
-
-2@ = 0xCCCCCCCC
-read_memory 1@ {size} 4 {vp} false {result} 2@
-
-if and
-    1@ > 0x10000 // possibly valid pointer
-    2@ == 0x11223344
-then
-    trace "~g~~h~~h~0AC6 (get_label_pointer), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AC6 (get_label_pointer), #0 FAILED!~n~11223344 Expected~n~%08x Occured" 2@
-end
-
-
+script_name "0AC6" // get_label_pointer
+test("0AC6 (get_label_pointer)", @tests)
 terminate_this_custom_script
 
-:DATA
-hex
-    44 33 22 11
-    "some longer testing text" 00
+function tests
+
+    it("should return valid pointer", @test1)
+    return true
+    
+    function test1
+        int ptr = 0
+        ptr = get_label_pointer @DATA
+        int number = 0xCCCCCCCC
+        number = read_memory ptr {size} 4 {vp} false
+        assert_ptr(ptr)
+        assert_eq(number, 0x11223344)
+    end
+
+    :DATA
+    hex
+        44 33 22 11
+        "some longer testing text" 00
+    end
+
 end

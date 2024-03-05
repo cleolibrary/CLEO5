@@ -1,50 +1,40 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.txt}
 
 script_name "0AC8" // allocate_memory
-debug_on
-
-trace "0AC8 (allocate_memory)"
-
-
-wait 0
-0@ = 0x11223344
-0AC8: allocate_memory {size} 4 {result} 0@ // tested opcode
-
-if and
-    0@ > 0x10000 // possibly valid pointer
-    0@ <> 0x11223344
-then
-    trace "~g~~h~~h~0AC8 (allocate_memory), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AC8 (allocate_memory), #0 FAILED!~n~11223344 Expected~n~%08x Occured" 2@
-end
-
-
-wait 0
-// in CLEO5 expect to alloceted memory be prefilled with zeros
-2@ = 0xCCCCCCCC
-read_memory 0@ {size} 4 {vp} false {result} 2@
-
-if
-    2@ == 0
-then
-    trace "~g~~h~~h~0AC8 (allocate_memory), #1 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AC8 (allocate_memory), #1 FAILED!~n~00000000 Expected~n~%08x Occured" 2@
-end
-
-
+test("0AC8 (allocate_memory)", @tests)
 terminate_this_custom_script
+
+function tests
+
+    before_each(@allocate)
+    after_each(@free)
+    
+    it("should return valid pointer", @test1)
+    it("should point to zero-filled mem in CLEO5", @test2)
+
+    return true
+
+    function test1
+        // 0@ is set in before_each callback
+        assert_ptr(0@)
+        assert_neq(0@, 0x11223344)
+    end
+    
+    function test2
+        2@ = 0xCCCCCCCC
+        2@ = read_memory 0@ {size} 4 {vp} false
+        assert_eq(2@, 0)
+    end
+
+    :allocate
+        0@ = 0x11223344
+        0@ = allocate_memory {size} 4
+    0051: return
+
+    :free
+        free_memory {address} 0@
+    0051: return
+
+
+end

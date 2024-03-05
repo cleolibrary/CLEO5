@@ -1,34 +1,20 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.txt}
 
 script_name "0A96" // get_ped_pointer
-debug_on
-
-trace "0A96 (get_ped_pointer)"
-
-wait 0
-get_player_char 0 {handle} 0@
-1@ = 0
-0A96: get_ped_pointer 0@ {address} 1@
-
-if
-    1@ > 0x10000 // possibly valid pointer
-then
-    trace "~g~~h~~h~0A96 (get_ped_pointer), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A96 (get_ped_pointer), #0 FAILED!~n~%d" 1@ 2@ 3@
-end
-
+test("0A96 (get_ped_pointer)", @tests)
 terminate_this_custom_script
+
+function tests
+
+    it("should return valid pointer", @test1)
+    
+    return true
+    
+    function test1
+        int handle = get_player_char 0
+        int ptr = get_ped_pointer handle
+        
+        assert_ptr(ptr)
+    end
+end

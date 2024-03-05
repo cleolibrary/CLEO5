@@ -1,48 +1,41 @@
 {$CLEO .s}
-{$USE debug}
-{$USE file}
-{$USE bitwise}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.txt}
 
 script_name "0A9A" // open_file
 debug_on
 
-trace "0A9A (open_file)"
-
-
-wait 0
-// try open non existing file
-if
-    // test 0A9A
-    0@ = open_file "cleo\not_a_file.txt" {mode} "r" // tested opcode
-then
-    breakpoint "~r~~h~~h~~h~0A9A (open_file), #0 FAILED! Opened non existing file?"
-else
-    trace "~g~~h~~h~0A9A (open_file), #0 PASSED"
-end
-
-
-wait 0
-// try open non existing file
-if
-    // test 0A9A
-    0@ = open_file "cleo\.cleo.log" {mode} "r" // tested opcode
-then
-    trace "~g~~h~~h~0A9A (open_file), #1 PASSED"
-    close_file 0@
-else
-    breakpoint "~r~~h~~h~~h~0A9A (open_file), #1 FAILED! Failed to open file."
-end
-
-
+test("0A9A (open_file)", @tests)
 terminate_this_custom_script
+
+
+function tests
+
+    it("should fail on a non-existing file", @test1)
+    it("should open existing file", @test2)
+
+    return true
+    
+    
+    function test1
+        if
+            0@ = open_file "cleo\not_a_file.txt" {mode} "r" // tested opcode
+        then
+            assert(false)
+        else
+            assert(true)
+        end
+    end
+    
+     function test2
+        if
+            0@ = open_file "cleo\.cleo.log" {mode} "r" // tested opcode
+        then
+            assert(true)
+            close_file 0@
+        else
+            assert(false)
+        end
+    end
+
+end
+
