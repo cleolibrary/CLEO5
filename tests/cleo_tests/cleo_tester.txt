@@ -151,6 +151,7 @@ end
 
 /// checks if value is not 0, otherwise stops the test execution
 function assert(flag: int)
+    _cleo_tester_increment_assert
     flag <> False
     jf @_cleo_tester_fail
 end
