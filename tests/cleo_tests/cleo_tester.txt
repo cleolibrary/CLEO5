@@ -3,6 +3,7 @@ const VAR_TEST_INDEX = 0
 const VAR_BEFORE_EACH = 1
 const VAR_AFTER_EACH = 2
 const VAR_SPEC = 3
+const VAR_ASSERT_INDEX = 4
 
 jump @_cleo_tester_skip_fns
 
@@ -24,34 +25,36 @@ function test(suite_name: integer, tests: int)
     
     int suite_name_buf = get_label_pointer @_cleo_tester_test_name
     copy_memory {src} suite_name {dest} suite_name_buf {size} 255 // used in an it trace
-    trace "Running %s test" suite_name
+    trace "Testing %s" suite_name
     
     _cleo_tester_write_var(VAR_BEFORE_EACH, @_cleo_tester_stub)
     _cleo_tester_write_var(VAR_AFTER_EACH, @_cleo_tester_stub)
+    _cleo_tester_write_var(VAR_TEST_INDEX, 1)
     cleo_call tests
 end
 
 function it(spec_name: integer, callback: integer)
     define function run_spec
     define function inject_offset(label: int, offset: int)
-    
+
     int index = _cleo_tester_read_var(VAR_TEST_INDEX)
 
     int spec_name_buf = get_label_pointer @_cleo_tester_spec_name
     copy_memory {src} spec_name {dest} spec_name_buf {size} 255 // used in a failed assert
     int test_name = get_label_pointer @_cleo_tester_test_name
-    trace "#%d %s -- it %s" index test_name spec_name
+    trace "Test #%d %s" index spec_name
 
     wait 0
     _cleo_tester_write_var(VAR_SPEC, callback)
+    _cleo_tester_write_var(VAR_ASSERT_INDEX, 0)
+    
     run_spec
 
-    trace "~g~~h~~h~#%d %s PASSED" index spec_name
+    trace "~g~~h~~h~Test #%d PASSED" index
     index++
     _cleo_tester_write_var(VAR_TEST_INDEX, index)
     
     return true
-    
 
     
     function run_spec
@@ -84,7 +87,7 @@ return
 
 :_cleo_tester_shared_vars
 hex
-    00(16) // 4 variables
+    00(20) // 5 variables
 end
 :_cleo_tester_test_name
 hex
@@ -98,36 +101,48 @@ end
 :_cleo_tester_fail
 int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
 int test_name = get_label_pointer @_cleo_tester_spec_name
-breakpoint "~r~~h~~h~~h~#%d %s FAILED! %d Expected, %d Actual" test_index test_name {val1} 0@ {val2} 1@
+int assert_index = _cleo_tester_read_var(VAR_ASSERT_INDEX)
+breakpoint "~r~~h~~h~~h~Test #%d Assert #%d FAILED! %d Expected, %d Actual" test_index assert_index {val1} 0@ {val2} 1@
 terminate_this_custom_script
 
+function _cleo_tester_increment_assert
+    int index = _cleo_tester_read_var(VAR_ASSERT_INDEX)
+    index++
+    _cleo_tester_write_var(VAR_ASSERT_INDEX, index)
+end
 
 function assert_eq(val1: int, val2: int)
+    _cleo_tester_increment_assert
     val1 == val2
     jf @_cleo_tester_fail
 end
 
 function assert_neq(val1: int, val2: int)
+    _cleo_tester_increment_assert
     val1 <> val2
     jf @_cleo_tester_fail
 end
 
 function assert_eqf(val1:float, val2:float)
+    _cleo_tester_increment_assert
     val1 == val2
     jf @_cleo_tester_fail
 end
 
 function assert_neqf(val1:float, val2:float)
+    _cleo_tester_increment_assert
     val1 <> val2
     jf @_cleo_tester_fail
 end
 
 function assert_ptr(ptr: int)
+    _cleo_tester_increment_assert
     ptr > 0x10000  // possibly valid pointer
     jf @_cleo_tester_fail
 end
 
 function assert(flag: int)
+    _cleo_tester_increment_assert
     flag <> False
     jf @_cleo_tester_fail
 end
