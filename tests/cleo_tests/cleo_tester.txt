@@ -20,7 +20,9 @@ function _cleo_tester_write_var(index: int, value: int)
     write_memory_with_offset {address} buf {offset} index {size} 4 {value} value
 end
 
-function test(suite_name: integer, tests: int)
+/// registers new test suite (collection of unit tests)
+/// use it(...) for individual unit tests
+function test(suite_name: integer, callback: int)
     debug_on
     
     int suite_name_buf = get_label_pointer @_cleo_tester_test_name
@@ -30,10 +32,12 @@ function test(suite_name: integer, tests: int)
     _cleo_tester_write_var(VAR_BEFORE_EACH, @_cleo_tester_stub)
     _cleo_tester_write_var(VAR_AFTER_EACH, @_cleo_tester_stub)
     _cleo_tester_write_var(VAR_TEST_INDEX, 1)
-    cleo_call tests
+    cleo_call callback
 end
 
-function it(spec_name: integer, callback: integer)
+/// registers new unit test in a test suite
+/// use assert_*(...) to validate result
+function it(spec_name: integer, callback: int)
     define function run_spec
     define function inject_offset(label: int, offset: int)
 
@@ -56,7 +60,6 @@ function it(spec_name: integer, callback: integer)
     
     return true
 
-    
     function run_spec
         // this function should use 0 local variables
     
@@ -111,46 +114,53 @@ function _cleo_tester_increment_assert
     _cleo_tester_write_var(VAR_ASSERT_INDEX, index)
 end
 
+/// checks if two int values are equal, otherwise stops the test execution
 function assert_eq(val1: int, val2: int)
     _cleo_tester_increment_assert
     val1 == val2
     jf @_cleo_tester_fail
 end
 
+/// checks if two int values are not equal, otherwise stops the test execution
 function assert_neq(val1: int, val2: int)
     _cleo_tester_increment_assert
     val1 <> val2
     jf @_cleo_tester_fail
 end
 
+/// checks if two float values are equal, otherwise stops the test execution
 function assert_eqf(val1:float, val2:float)
     _cleo_tester_increment_assert
     val1 == val2
     jf @_cleo_tester_fail
 end
 
+/// checks if two float values are not equal, otherwise stops the test execution
 function assert_neqf(val1:float, val2:float)
     _cleo_tester_increment_assert
     val1 <> val2
     jf @_cleo_tester_fail
 end
 
+/// checks if value is a valid pointer, otherwise stops the test execution
 function assert_ptr(ptr: int)
     _cleo_tester_increment_assert
     ptr > 0x10000  // possibly valid pointer
     jf @_cleo_tester_fail
 end
 
+/// checks if value is not 0, otherwise stops the test execution
 function assert(flag: int)
-    _cleo_tester_increment_assert
     flag <> False
     jf @_cleo_tester_fail
 end
 
+/// registers a callback that runs before each unit test (test setup)
 function before_each(callback: int)
     _cleo_tester_write_var(VAR_BEFORE_EACH, callback)
 end
 
+/// registers a callback that runs after each unit test (test teardown)
 function after_each(callback: int)
     _cleo_tester_write_var(VAR_AFTER_EACH, callback)
 end
