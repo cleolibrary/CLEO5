@@ -199,13 +199,13 @@ public:
         std::string name = "";
 
         // bool param - blocking
-        auto paramType = CLEO_GetOperandType(thread);
+        auto paramType = thread->PeekDataType();
         if(paramType == DT_BYTE)
         {
             blocking = CLEO_GetIntOpcodeParam(thread) != 0;
         }
 
-        paramType = CLEO_GetOperandType(thread);
+        paramType = thread->PeekDataType();
         if (paramType == eDataType::DT_END)
         {
             thread->IncPtr(); // consume arguments terminator

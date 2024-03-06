@@ -86,7 +86,7 @@ public:
     {
         const char* path;
 
-        auto paramType = CLEO_GetOperandType(thread);
+        auto paramType = thread->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
         {
             // numbered predefined paths
@@ -117,7 +117,7 @@ public:
         OPCODE_READ_PARAM_FILEPATH(filename);
 
         char mode[16];
-        auto paramType = CLEO_GetOperandType(thread);
+        auto paramType = thread->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
         {
             // integer param (for backward compatibility with CLEO 3)
@@ -361,7 +361,7 @@ public:
 
         size_t paramCount = 0;
         SCRIPT_VAR* outputParams[35];
-        while (CLEO_GetOperandType(thread) != eDataType::DT_END)
+        while (thread->PeekDataType() != eDataType::DT_END)
         {
             // TODO: if target param is string variable it should be handled correctly
             outputParams[paramCount++] = CLEO_GetPointerToScriptVariable(thread);

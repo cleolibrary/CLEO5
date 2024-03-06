@@ -467,7 +467,7 @@ namespace CLEO
 		StringParamBufferInfo result;
 		CCustomOpcodeSystem::lastErrorMsg.clear();
 
-		auto paramType = CLEO_GetOperandType(thread);
+		auto paramType = thread->PeekDataType();
 		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
 			// address to output buffer
@@ -570,7 +570,7 @@ namespace CLEO
 							char *buffiter = bufa;
 
 							//get width
-							if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
+							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 							GetScriptParams(thread, 1);
 							_itoa(opcodeParams[0].dwParam, buffiter, 10);
 							while (*buffiter)
@@ -592,7 +592,7 @@ namespace CLEO
 						if (*iter == '*')
 						{
 							char *buffiter = bufa;
-							if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
+							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 							GetScriptParams(thread, 1);
 							_itoa(opcodeParams[0].dwParam, buffiter, 10);
 							while (*buffiter)
@@ -610,7 +610,7 @@ namespace CLEO
 					{
 					case 's':
 					{
-						if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
+						if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 
 						const char* str = ReadStringParam(thread, bufa, sizeof(bufa));
 						if(str == nullptr) // read error
@@ -630,7 +630,7 @@ namespace CLEO
 
 					case 'c':
 						if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
-						if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
+						if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 						GetScriptParams(thread, 1);
 						*outIter++ = (char)opcodeParams[0].nParam;
 						iter++;
@@ -643,7 +643,7 @@ namespace CLEO
 						char *bufaiter = bufa;
 						if (*iter == 'p' || *iter == 'P')
 						{
-							if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
+							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 							GetScriptParams(thread, 1);
 							sprintf(bufaiter, "%08X", opcodeParams[0].dwParam);
 						}
@@ -656,13 +656,13 @@ namespace CLEO
 								*iter == 'f' || *iter == 'F' ||
 								*iter == 'g' || *iter == 'G')
 							{
-								if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
+								if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 								GetScriptParams(thread, 1);
 								sprintf(bufaiter, fmtbufa, opcodeParams[0].fParam);
 							}
 							else
 							{
-								if (CLEO_GetOperandType(thread) == DT_END) goto _ReadFormattedString_ArgMissing;
+								if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 								GetScriptParams(thread, 1);
 								sprintf(bufaiter, fmtbufa, opcodeParams[0].pParam);
 							}
@@ -691,7 +691,7 @@ namespace CLEO
 		}
 
 		// still more var-args available
-		if (CLEO_GetOperandType(thread) != DT_END)
+		if (thread->PeekDataType() != DT_END)
 		{
 			CCustomOpcodeSystem::lastErrorMsg = "More params than slots in formatted string";
 			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
@@ -825,7 +825,7 @@ namespace CLEO
 
 	void SkipUnusedVarArgs(CRunningScript *thread)
 	{
-		while (CLEO_GetOperandType(thread) != DT_END)
+		while (thread->PeekDataType() != DT_END)
 			CLEO_SkipOpcodeParams(thread, 1);
 
 		thread->IncPtr(); // skip terminator
@@ -836,7 +836,7 @@ namespace CLEO
 		const auto ip = thread->GetBytePointer();
 
 		DWORD count = 0;
-		while (CLEO_GetOperandType(thread) != DT_END)
+		while (thread->PeekDataType() != DT_END)
 		{
 			CLEO_SkipOpcodeParams(thread, 1);
 			count++;
@@ -2031,9 +2031,9 @@ extern "C"
 		ThreadJump(thread, labelPtr);
 	}
 
-	eDataType WINAPI CLEO_GetOperandType(const CLEO::CRunningScript* thread)
+	int WINAPI CLEO_GetOperandType(const CLEO::CRunningScript* thread)
 	{
-		return (eDataType )*thread->GetBytePointer();
+		return (int)thread->PeekDataType();
 	}
 
 	void WINAPI CLEO_RetrieveOpcodeParams(CLEO::CRunningScript *thread, int count)

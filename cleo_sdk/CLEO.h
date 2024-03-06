@@ -477,7 +477,7 @@ void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
 void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);
 
-eDataType WINAPI CLEO_GetOperandType(const CRunningScript* thread); // peek parameter data type
+int WINAPI CLEO_GetOperandType(const CRunningScript* thread); // peek parameter data type. Returns int for legacy reason, should be eDataType.
 DWORD WINAPI CLEO_GetVarArgCount(CRunningScript* thread); // peek remaining var-args count
 
 extern SCRIPT_VAR* opcodeParams;
