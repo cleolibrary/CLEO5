@@ -15,7 +15,6 @@ function tests
 
     return true
     
-    
     function test1
         if
             0@ = open_file "cleo\not_a_file.txt" {mode} "r" // tested opcode

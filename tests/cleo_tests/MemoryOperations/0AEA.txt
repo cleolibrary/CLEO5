@@ -1,37 +1,25 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.txt}
 
 script_name "0AEA" // get_ped_ref
-debug_on
-
-trace "0AEA (get_ped_ref)"
-
-
-wait 0
-get_player_char 0 {handle} 0@
-get_ped_pointer 0@ {address} 1@
-
-0AEA: get_ped_ref 1@ {result} 2@ // tested opcode
-
-if
-    0@ == 2@
-then
-    trace "~g~~h~~h~0AEA (get_ped_ref), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AEA (get_ped_ref), #0 FAILED!~n~%08x Expected~n~%08x Occured" 0@ 2@
-end
-
-
+test("0AEA (get_ped_ref)", @tests)
 terminate_this_custom_script
+
+function tests
+    it("should return ped handle for pointer", @test1)
+    return true
+    
+    function test1
+        int handle = get_player_char 0
+        int ptr = get_ped_pointer handle
+        int handle2 = get_ped_ref ptr
+
+        if
+            handle == handle2
+        then
+            assert(true)
+        else
+            assert(false)
+        end
+    end
+end
