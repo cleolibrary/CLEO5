@@ -33,19 +33,20 @@ EXPORTS
 	_CLEO_ReadParamsFormatted@16			@30
 	_CLEO_GetScriptVersion@4				@31
 	_CLEO_GetScriptInfoStr@16				@32
-	_CLEO_ResolvePath@12					@33
-	_CLEO_GetScriptDebugMode@4				@34
-	_CLEO_SetScriptDebugMode@8				@35
-	_CLEO_Log@8								@36
-	_CLEO_ReadStringParamWriteBuffer@16		@37
-	_CLEO_GetOpcodeParamsArray@0			@38
-	_CLEO_GetParamsHandledCount@0			@39
-	_CLEO_PeekIntOpcodeParam@4				@40
-	_CLEO_PeekFloatOpcodeParam@4			@41
-	_CLEO_PeekPointerToScriptVariable@4		@42
-	_CLEO_GetScriptByName@16				@43
-	_CLEO_GetScriptByFilename@8				@44
-	_CLEO_GetScriptFilename@4				@45
-	_CLEO_GetScriptWorkDir@4				@46
-	_CLEO_SetScriptWorkDir@8				@47
-	_CLEO_RegisterCommand@8					@48
+	_CLEO_GetScriptParamInfoStr@12			@33
+	_CLEO_ResolvePath@12					@34
+	_CLEO_GetScriptDebugMode@4				@35
+	_CLEO_SetScriptDebugMode@8				@36
+	_CLEO_Log@8								@37
+	_CLEO_ReadStringParamWriteBuffer@16		@38
+	_CLEO_GetOpcodeParamsArray@0			@39
+	_CLEO_GetParamsHandledCount@0			@40
+	_CLEO_PeekIntOpcodeParam@4				@41
+	_CLEO_PeekFloatOpcodeParam@4			@42
+	_CLEO_PeekPointerToScriptVariable@4		@43
+	_CLEO_GetScriptByName@16				@44
+	_CLEO_GetScriptByFilename@8				@45
+	_CLEO_GetScriptFilename@4				@46
+	_CLEO_GetScriptWorkDir@4				@47
+	_CLEO_SetScriptWorkDir@8				@48
+	_CLEO_RegisterCommand@8					@49

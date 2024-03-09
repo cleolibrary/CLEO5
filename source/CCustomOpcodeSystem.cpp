@@ -2166,4 +2166,18 @@ extern "C"
 
 		std::memcpy(buf, text.c_str(), text.length() + 1); // with terminator
 	}
+
+	void WINAPI CLEO_GetScriptParamInfoStr(int idexOffset, char* buf, DWORD bufSize)
+	{
+		auto curr = idexOffset - 1 + GetInstance().OpcodeSystem.handledParamCount;
+		auto name = GetInstance().OpcodeInfoDb.GetArgumentName(GetInstance().OpcodeSystem.lastOpcode, curr);
+
+		curr++; // 1-based argument index display
+
+		std::string msg;
+		if (name != nullptr) msg = StringPrintf("#%d \"%s\"", curr, name);
+		else msg = StringPrintf("#%d", curr);
+
+		strncpy(buf, msg.c_str(), bufSize);
+	}
 }

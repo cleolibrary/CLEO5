@@ -2,6 +2,7 @@
 #include "OpcodeInfoDatabase.h"
 #include "json.hpp"
 #include <fstream>
+#include <vector>
 
 using namespace std;
 using namespace json;
@@ -33,7 +34,7 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 		return false;
 	}
 
-	std::string text;
+	string text;
 	text.resize((size_t)size);
 	file.read(text.data(), size);
 	file.close();
@@ -49,7 +50,7 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 	{
 		root = JSON::Load(text.c_str());
 	}
-	catch (const std::exception& ex)
+	catch (const exception& ex)
 	{
 		TRACE("Error while parsing opcodes database '%s' file:\n%s", filepath, ex.what());
 		return false;
@@ -82,18 +83,45 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 				continue; // invalid command
 			}
 
-			auto id = std::stoul(commandId.ToString(), nullptr, 16);
-			if (id > 0x7FFF)
+			auto idLong = stoul(commandId.ToString(), nullptr, 16);
+			if (idLong > 0x7FFF)
 			{
 				continue; // opcode out of bounds
 			}
+			auto id = (uint16_t)idLong;
 
-			extension.opcodes[(uint16_t)id] = commandName.ToString();
+			extension.opcodes.emplace(piecewise_construct, make_tuple(id), make_tuple(id, commandName.ToString()));
+			auto& opcode = extension.opcodes.at(id);
+
+			// read arguments info
+			auto inputArgs = c["input"];
+			if (inputArgs.JSONType() == JSON::Class::Array)
+			{
+				for (auto& p : inputArgs.ArrayRange())
+				{
+					if(p.JSONType() == JSON::Class::Object && p["name"].JSONType() == JSON::Class::String)
+					{
+						opcode.arguments.emplace_back(p["name"].ToString().c_str());
+					}
+				}
+			}
+
+			auto outputArgs = c["output"];
+			if (outputArgs.JSONType() == JSON::Class::Array)
+			{
+				for (auto& p : outputArgs.ArrayRange())
+				{
+					if (p.JSONType() == JSON::Class::Object && p["name"].JSONType() == JSON::Class::String)
+					{
+						opcode.arguments.emplace_back(p["name"].ToString().c_str());
+					}
+				}
+			}
 		}
 
 		if (!extension.opcodes.empty())
 		{
-			extensions[extension.name] = std::move(extension);
+			extensions[extension.name] = move(extension);
 		}
 	}
 
@@ -131,7 +159,7 @@ const char* OpcodeInfoDatabase::GetExtensionName(const char* commandName) const
 
 			for (auto& opcode : opcodes)
 			{
-				if (_strcmpi(commandName, opcode.second.c_str()) == 0)
+				if (_strcmpi(commandName, opcode.second.name.c_str()) == 0)
 				{
 					return extension.name.c_str();
 				}
@@ -153,7 +181,7 @@ uint16_t OpcodeInfoDatabase::GetOpcode(const char* commandName) const
 
 			for (auto& opcode : opcodes)
 			{
-				if (_strcmpi(commandName, opcode.second.c_str()) == 0)
+				if (_strcmpi(commandName, opcode.second.name.c_str()) == 0)
 				{
 					return opcode.first;
 				}
@@ -174,7 +202,28 @@ const char* OpcodeInfoDatabase::GetCommandName(uint16_t opcode) const
 
 			if (opcodes.find(opcode) != opcodes.end())
 			{
-				return opcodes.at(opcode).c_str();
+				return opcodes.at(opcode).name.c_str();
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+const char* OpcodeInfoDatabase::GetArgumentName(uint16_t opcode, size_t paramIdx) const
+{
+	if (ok)
+	{
+		for (auto& entry : extensions)
+		{
+			auto& opcodes = entry.second.opcodes;
+
+			if (opcodes.find(opcode) != opcodes.end())
+			{
+				if(paramIdx < opcodes.at(opcode).arguments.size())
+				{
+					return opcodes.at(opcode).arguments[paramIdx].name.c_str();
+				}
 			}
 		}
 	}
@@ -192,3 +241,4 @@ std::string OpcodeInfoDatabase::GetExtensionMissingMessage(uint16_t opcode) cons
 
 	return CLEO::StringPrintf("CLEO extension plugin \"%s\" is missing!", extensionName);
 }
+

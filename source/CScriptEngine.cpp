@@ -149,7 +149,7 @@ namespace CLEO
 
             if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
             {
-                LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument #%d in script %s", opcodeParams[0].dwParam, CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str());
+                LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument %s in script %s", opcodeParams[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
                 return nullptr; // error
             }
 
@@ -228,7 +228,7 @@ namespace CLEO
         }
 
         // unsupported param type
-        LOG_WARNING(thread, "Argument #%d expected to be string, got %s in script %s", CLEO_GetParamsHandledCount(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
+        LOG_WARNING(thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
         CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
         return nullptr; // error
     }
