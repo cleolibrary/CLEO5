@@ -58,7 +58,7 @@ function it(spec_name: integer, callback: int)
     index++
     _cleo_tester_write_var(VAR_TEST_INDEX, index)
     
-    return true
+    return
 
     function run_spec
         // this function should use 0 local variables

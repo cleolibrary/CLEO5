@@ -8,7 +8,7 @@ terminate_this_custom_script
 function tests
 
     it("should return address of Sleep function from kernel32.dll", @test1)
-    return true
+    return
     
     function test1
         int load_library_addr = read_memory 0x858070 4 false
