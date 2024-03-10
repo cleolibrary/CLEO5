@@ -115,7 +115,7 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
 
 			// By default open as binary mode.
 			// Generally text mode is not well documented in C and many file related functions has undefined behavior. For example 'ftell' returns invalid values.
-			if (valid && !binary)
+			if (valid && (!binary && !text))
 			{
 				strcpy(modeUpdated, mode);
 				strcat(modeUpdated, "b");
