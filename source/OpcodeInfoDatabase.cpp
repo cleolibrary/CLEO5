@@ -3,24 +3,19 @@
 #include "json.hpp"
 #include <fstream>
 #include <vector>
+#include <thread>
 
 using namespace std;
 using namespace json;
 
-void OpcodeInfoDatabase::Clear()
-{
-	ok = false;
-	extensions.clear();
-}
-
-bool OpcodeInfoDatabase::Load(const char* filepath)
+bool OpcodeInfoDatabase::_Load(const std::string filepath)
 {
 	Clear();
 
-	ifstream file(filepath);
+	ifstream file(filepath.c_str());
 	if (file.fail())
 	{
-		TRACE("Failed to open opcodes database '%s' file.", filepath);
+		TRACE("Failed to open opcodes database '%s' file.", filepath.c_str());
 		return false;
 	}
 
@@ -30,7 +25,7 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 
 	if (size > 8 * 1024 * 1024) // 8MB is reasonable json file size upper limit
 	{
-		TRACE("Opcodes database '%s' file too large to load.", filepath);
+		TRACE("Opcodes database '%s' file too large to load.", filepath.c_str());
 		return false;
 	}
 
@@ -41,7 +36,7 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 
 	if (file.fail())
 	{
-		TRACE("Error while reading opcodes database '%s' file.", filepath);
+		TRACE("Error while reading opcodes database '%s' file.", filepath.c_str());
 		return false;
 	}
 
@@ -52,13 +47,13 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 	}
 	catch (const exception& ex)
 	{
-		TRACE("Error while parsing opcodes database '%s' file:\n%s", filepath, ex.what());
+		TRACE("Error while parsing opcodes database '%s' file:\n%s", filepath.c_str(), ex.what());
 		return false;
 	}
 
 	if (root.IsNull() || root["extensions"].JSONType() != JSON::Class::Array)
 	{
-		TRACE("Invalid opcodes database '%s' file.", filepath);
+		TRACE("Invalid opcodes database '%s' file.", filepath.c_str());
 		return false;
 	}
 
@@ -99,7 +94,7 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 			{
 				for (auto& p : inputArgs.ArrayRange())
 				{
-					if(p.JSONType() == JSON::Class::Object && p["name"].JSONType() == JSON::Class::String)
+					if (p.JSONType() == JSON::Class::Object && p["name"].JSONType() == JSON::Class::String)
 					{
 						opcode.arguments.emplace_back(p["name"].ToString().c_str());
 					}
@@ -127,6 +122,17 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 
 	ok = true;
 	return true;
+}
+
+void OpcodeInfoDatabase::Clear()
+{
+	ok = false;
+	extensions.clear();
+}
+
+void OpcodeInfoDatabase::Load(const char* filepath)
+{
+	thread(&OpcodeInfoDatabase::_Load, this, std::string(filepath)).detach(); // asynchronic execute
 }
 
 const char* OpcodeInfoDatabase::GetExtensionName(uint16_t opcode) const

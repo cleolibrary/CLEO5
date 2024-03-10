@@ -1,6 +1,7 @@
 #pragma once
-#include <string>
+#include <atomic>
 #include <map>
+#include <string>
 
 
 class OpcodeInfoDatabase
@@ -33,14 +34,16 @@ class OpcodeInfoDatabase
 		std::map<uint16_t, Opcode> opcodes;
 	};
 
-	bool ok = false;
+	std::atomic<bool> ok = false;
 	std::map<std::string, Extension> extensions;
+
+	bool _Load(const std::string filepath);
 
 public:
 	OpcodeInfoDatabase() = default;
 
 	void Clear();
-	bool Load(const char* filepath);
+	void Load(const char* filepath); // triggers asynchronic load
 
 	const char* GetExtensionName(uint16_t opcode) const; // nullptr if not found
 	const char* GetExtensionName(const char* commandName) const; // nullptr if not found
