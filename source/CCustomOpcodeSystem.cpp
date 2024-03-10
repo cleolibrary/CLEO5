@@ -2156,6 +2156,11 @@ extern "C"
 		}
 
 		auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
+
+		if (GetInstance().ModLoaderSystem.IsActive())
+		{
+			resolved = GetInstance().ModLoaderSystem.ResolvePath(resolved.c_str());
+		}
 		
 		if (resolved.length() >= pathMaxLen)
 			resolved.resize(pathMaxLen - 1); // and terminator character

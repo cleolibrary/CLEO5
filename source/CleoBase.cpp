@@ -171,6 +171,7 @@ namespace CLEO
         GetInstance().CallCallbacks(eCallbackId::GameBegin, saveSlot);
 
         TextManager.LoadFxts();
+        ModLoaderSystem.Update();
     }
 
     void CCleoInstance::GameEnd()
