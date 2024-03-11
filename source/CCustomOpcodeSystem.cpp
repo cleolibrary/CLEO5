@@ -21,8 +21,6 @@ namespace CLEO
 	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
 
 
-	OpcodeResult __stdcall opcode_0051(CRunningScript * thread); // GOSUB return
-
 	OpcodeResult __stdcall opcode_0A92(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread);
 	OpcodeResult __stdcall opcode_0A94(CRunningScript *thread);
@@ -227,8 +225,6 @@ namespace CLEO
 	CCustomOpcodeSystem::CCustomOpcodeSystem()
 	{
 		TRACE("Initializing CLEO core opcodes...");
-
-		CLEO_RegisterOpcode(0x0051, opcode_0051);
 		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
 		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
 		CLEO_RegisterOpcode(0x0A94, opcode_0A94);
@@ -853,22 +849,6 @@ namespace CLEO
 	/************************************************************************/
 	/*						Opcode definitions								*/
 	/************************************************************************/
-
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript* thread) // GOSUB return
-	{
-		if (thread->SP == 0 && thread->IsCustom() && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
-		{
-			return opcode_0AB2(thread); // try CLEO's function return
-		}
-
-		if (thread->SP == 0)
-		{
-			SHOW_ERROR("`return` used without preceding `gosub` call in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-
-		return originalOpcodeHandlers[0x0051](thread, 0x0051); // call game's original
-	}
 
 	//0A92=-1,create_custom_thread %1d%
 	OpcodeResult __stdcall opcode_0A92(CRunningScript *thread)
