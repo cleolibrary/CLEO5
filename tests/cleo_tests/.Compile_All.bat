@@ -13,11 +13,9 @@ for /f "delims=" %%i in ('dir /b /s *.s') do (
 
 @REM Compile all .txt files in the current directory and subdirectories
 for /f "delims=" %%i in ('dir /b /s *.txt') do (
-    if not "%%~nxi" == "cleo_tester.txt" (
-        set p=%%i 
-        echo Compiling !p:%__CD__%=!...
-        %SANNY% --compile "%%i" "%%~dpni.s" --no-splash --mode sa_sbl    
-    )
+    set p=%%i 
+    echo Compiling !p:%__CD__%=!...
+    %SANNY% --compile "%%i" "%%~dpni.s" --no-splash --mode sa_sbl
 )
 
 echo Done.

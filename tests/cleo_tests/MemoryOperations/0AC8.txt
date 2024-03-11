@@ -12,7 +12,8 @@ function tests
     
     it("should return valid pointer", @test1)
     it("should point to zero-filled mem in CLEO5", @test2)
-    return
+
+    return true
 
     function test1
         // 0@ is set in before_each callback
@@ -29,11 +30,11 @@ function tests
     :allocate
         0@ = 0x11223344
         0@ = allocate_memory {size} 4
-    return
+    0051: return
 
     :free
         free_memory {address} 0@
-    return
+    0051: return
 
 
 end

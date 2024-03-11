@@ -7,7 +7,7 @@ terminate_this_custom_script
 
 function tests
     it("should return ped handle for pointer", @test1)
-    return
+    return true
     
     function test1
         int handle = get_player_char 0

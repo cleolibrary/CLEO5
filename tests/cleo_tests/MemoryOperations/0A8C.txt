@@ -17,14 +17,15 @@ function tests
     it("should write 5 bytes", @test6)
     it("should write 7 bytes", @test7)
     it("should write float", @test8)
-    return
+
+    return true
     
     :before
         get_var_pointer 2@ {store_to} 0@
         1@ = 0xcccccccc
         2@ = 0xdddddddd
         3@ = 0xeeeeeeee
-    return
+    0051: return
 
     function test1
         write_memory {address} 0@ {size} 0 {value} 0x11223344 {vp} false

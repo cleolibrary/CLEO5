@@ -7,7 +7,7 @@ terminate_this_custom_script
 
 function tests
     it("should return vehicle handle for pointer", @test1)
-    return
+    return true
 
     function test1
         request_model 333 // golf club

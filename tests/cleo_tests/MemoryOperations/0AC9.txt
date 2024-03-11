@@ -8,7 +8,7 @@ terminate_this_custom_script
 function tests
 
     it("should free allocated memory", @test1)
-    return
+    return true
     
     function test1
         int ptr = 0x11223344

@@ -8,7 +8,7 @@ terminate_this_custom_script
 function tests
 
     it("should return a valid pointer", @test1)
-    return
+    return true
     
     function test1
         request_model 400

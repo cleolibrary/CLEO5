@@ -8,7 +8,7 @@ terminate_this_custom_script
 function tests
 
     it("should return valid pointer", @test1)
-    return
+    return true
     
     function test1
         int ptr = 0
