@@ -867,8 +867,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		size_t tableIdx = 0x0051 / 100; // 100 opcodes peer handler table
-		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
+		return originalOpcodeHandlers[0x0051](thread, 0x0051); // call game's original
 	}
 
 	//0A92=-1,create_custom_thread %1d%
