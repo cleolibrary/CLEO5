@@ -2159,7 +2159,11 @@ extern "C"
 
 		if (GetInstance().ModLoaderSystem.IsActive())
 		{
-			resolved = GetInstance().ModLoaderSystem.ResolvePath(resolved.c_str());
+			auto moded = GetInstance().ModLoaderSystem.ResolvePath(thread, resolved.c_str());
+			if (!moded.empty())
+			{
+				resolved = moded;
+			}
 		}
 		
 		if (resolved.length() >= pathMaxLen)

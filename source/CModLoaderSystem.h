@@ -6,11 +6,13 @@
 
 namespace CLEO
 {
+    class CRunningScript;
+
     class CModLoaderSystem
     {
         bool active = false; // ModLoader present?
+        std::filesystem::path gameDir;
         std::filesystem::path modloaderDir;
-        std::filesystem::path cleoDir;
 
         struct ModDesc 
         { 
@@ -31,7 +33,8 @@ namespace CLEO
         void Update(); // reload config and mods
 
         bool IsActive() const;
+        bool HasMod(const char* name) const;
 
-        std::string ResolvePath(const char* path) const;
+        std::string ResolvePath(CRunningScript* thread, const char* path) const;
     };
 }
