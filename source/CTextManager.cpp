@@ -133,15 +133,12 @@ namespace CLEO
             std::string str = key;
             std::transform(str.begin(), str.end(), str.begin(), ::toupper);
             fxts[str.c_str()] = new FxtEntry(value, !dynamic);
-
-            TRACE("Added FXT[%s]", str.c_str());
         }
         return true;
     }
 
     bool CTextManager::RemoveFxt(const char *key)
     {
-        TRACE("Deleting FXT[%s]", key);
         return fxts.erase(key) != 0;
     }
 
@@ -174,7 +171,7 @@ namespace CLEO
 
     CTextManager::~CTextManager()
     {
-        TRACE("Deleting fxts...");
+        TRACE("Deleting FXTs...");
         size_t count = 0;
         for (auto it = fxts.begin(); it != fxts.end();)
         {
@@ -195,7 +192,8 @@ namespace CLEO
             try
             {
                 std::ifstream stream(fullPath);
-                ParseFxtFile(stream);
+                auto result = ParseFxtFile(stream);
+                TRACE("Added %d new FXT entries from file %s", result, fullPath);
             }
             catch (std::exception& ex)
             {
@@ -229,12 +227,13 @@ namespace CLEO
     {
     }
 
-    void CTextManager::ParseFxtFile(std::istream& stream)
+    size_t CTextManager::ParseFxtFile(std::istream& stream)
     {
         static char buf[0x100];
         char *key_iterator, *value_iterator, *value_start, *key_start;
         stream.exceptions(std::ios::badbit);
 
+        size_t addedCount = 0;
         while (true)
         {
             if (stream.eof()) break;
@@ -264,12 +263,19 @@ namespace CLEO
                         break;
                         value_iterator++;
                     }
+
                     // register found fxt entry
-                    AddFxt(key_start, value_start, false);
+                    if (AddFxt(key_start, value_start, false))
+                    {
+                        addedCount++;
+                    }
+
                     break;
                 }
                 key_iterator++;
             }
         }
+
+        return addedCount;
     }
 }
