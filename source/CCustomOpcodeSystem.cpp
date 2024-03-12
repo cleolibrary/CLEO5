@@ -1501,11 +1501,20 @@ namespace CLEO
 
 			if (IsVarString(paramType))
 			{
-				stringParams[i].used = true;
-				stringParams[i].target = GetStringParamWriteBuffer(thread);
-				stringParams[i].str.resize(MAX_STR_LEN);
+				if (IsLegacyScript(thread))
+				{
+					// older CLEOs did not carred about string variable size limitations
+					// just give pointer to the variable's data and allow overflow depending on input data
+					outputParams[i] = GetScriptParamPointer(thread);
+				}
+				else
+				{
+					stringParams[i].used = true;
+					stringParams[i].target = GetStringParamWriteBuffer(thread);
+					stringParams[i].str.resize(MAX_STR_LEN);
 
-				outputParams[i] = (SCRIPT_VAR*)stringParams[i].str.data();
+					outputParams[i] = (SCRIPT_VAR*)stringParams[i].str.data();
+				}
 			}
 			else
 				outputParams[i] = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
