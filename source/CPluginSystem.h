@@ -42,7 +42,7 @@ namespace CLEO
                 {
                     if (loaded.find(name) != loaded.end())
                     {
-                        LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", fullPath, name);
+                        LOG_WARNING(0, "Plugin `%s` already loaded. Skipping '%s'", name, fullPath);
                         return;
                     }
 
