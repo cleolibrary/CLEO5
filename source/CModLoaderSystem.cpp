@@ -18,10 +18,17 @@ void CLEO::CModLoaderSystem::Init()
 
 	active = GetModuleHandleA("modloader.asi") != INVALID_HANDLE_VALUE;
 	active = active && FS::is_directory(modloaderDir);
+
+	if (active)
+	{
+		TRACE("ModLoader detetected! Support activated.");
+	}
 }
 
 void CLEO::CModLoaderSystem::Update()
 {
+	TRACE("Updating ModLoader data...");
+
 	mods.clear();
 
 	// load ModLoader configuration from ini file
@@ -30,7 +37,7 @@ void CLEO::CModLoaderSystem::Update()
 	char profile[64] = { 0 };
 	if (GetPrivateProfileString("Folder.Config", "Profile", "", profile, sizeof(profile), configFilepath.string().c_str()) == 0)
 	{
-		LOG_WARNING(0, "Failed to read ModLoader configuration file!");
+		LOG_WARNING(0, "Failed to read Profile from ModLoader configuration file!");
 		return;
 	}
 
@@ -86,7 +93,7 @@ void CLEO::CModLoaderSystem::Update()
 		}
 	}
 
-	int b = 0;
+	TRACE("%d active ModLoader mods detected.", std::distance(mods.begin(), mods.end()));
 }
 
 bool CLEO::CModLoaderSystem::IsActive() const

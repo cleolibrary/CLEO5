@@ -64,6 +64,7 @@ namespace CLEO
             };
 
             TRACE("Loading plugins...");
+            LoadPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "SA.", ".cleo5"); // prioritize with prefix
             LoadPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "SA.", ".cleo"); // prioritize with prefix
             LoadPluginsDir(Filepath_Cleo.c_str(), "SA.", ".cleo"); // legacy plugins location
         }

@@ -46,14 +46,14 @@
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
     <TargetName>SA.Audio</TargetName>
-    <TargetExt>.cleo</TargetExt>
+    <TargetExt>.cleo5</TargetExt>
     <LibraryPath>$(ProjectDir)bass;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
     <TargetName>SA.Audio</TargetName>
-    <TargetExt>.cleo</TargetExt>
+    <TargetExt>.cleo5</TargetExt>
     <LibraryPath>$(ProjectDir)bass;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup>

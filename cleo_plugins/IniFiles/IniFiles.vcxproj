@@ -45,13 +45,13 @@
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
     <TargetName>SA.IniFiles</TargetName>
-    <TargetExt>.cleo</TargetExt>
+    <TargetExt>.cleo5</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\</OutDir>
     <IntDir>$(ProjectDir).obj\$(Configuration)\</IntDir>
     <TargetName>SA.IniFiles</TargetName>
-    <TargetExt>.cleo</TargetExt>
+    <TargetExt>.cleo5</TargetExt>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
