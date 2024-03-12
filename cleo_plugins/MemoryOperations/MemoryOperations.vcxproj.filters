@@ -39,5 +39,6 @@
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
       <Filter>cleo_sdk</Filter>
     </ClInclude>
+    <ClInclude Include="AntiHacks.h" />
   </ItemGroup>
 </Project>

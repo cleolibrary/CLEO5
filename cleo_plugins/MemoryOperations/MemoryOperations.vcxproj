@@ -141,6 +141,7 @@ if defined GTA_SA_DIR (
   <ItemGroup>
     <ClInclude Include="..\..\cleo_sdk\CLEO.h" />
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h" />
+    <ClInclude Include="AntiHacks.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
