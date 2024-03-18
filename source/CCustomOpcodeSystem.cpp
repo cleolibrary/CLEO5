@@ -1093,17 +1093,11 @@ namespace CLEO
 			{
 				*thread >> arg->fParam;
 			}
-			else if (IsVarString(paramType))
+			else if (IsImmString(paramType) || IsVarString(paramType))
 			{
-				arg->pParam = GetScriptParamPointer(thread);
-				if (arg->pParam >= locals && arg->pParam < localsEnd) // correct scoped variable's pointer
-				{
-					arg->dwParam -= (DWORD)locals;
-					arg->dwParam += (DWORD)storedLocals;
-				}
-			}
-			else if (IsImmString(paramType)) // those texts exists in script code, but without terminator character. Copy is necessary
-			{
+				// imm string texts exists in script code, but without terminator character.
+				// For strings stored in variables there is no guarantee these will end with terminator.
+				// In both cases copy is necessary to create proper c-string
 				char tmp[MAX_STR_LEN + 1];
 				auto str = ReadStringParam(thread, tmp, sizeof(tmp));
 				scmFunc->stringParams.emplace_back(str);
