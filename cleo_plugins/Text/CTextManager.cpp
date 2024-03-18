@@ -1,13 +1,16 @@
 #include "CTextManager.h"
 #include "..\cleo_sdk\CLEO_Utils.h"
+#include "CFileMgr.h"
 #include "CText.h"
 #include <wtypes.h>
 #include <direct.h>
+#include <filesystem>
 #include <fstream>
 #include <set>
 #include <sstream>
 #include <string>
 
+namespace FS = std::filesystem;
 
 namespace CLEO
 {
@@ -89,6 +92,9 @@ namespace CLEO
 
     void CTextManager::LoadFxts()
     {
+        // create FXT directory if not present yet
+        FS::create_directory(FS::path(CFileMgr::ms_rootDirName).append("cleo\\cleo_text"));
+
         // load whole FXT files directory
         auto list = CLEO::CLEO_ListDirectory(nullptr, "cleo\\cleo_text\\*.fxt", false, true);
         for (DWORD i = 0; i < list.count; i++)
