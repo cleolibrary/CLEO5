@@ -1,5 +1,5 @@
 {$CLEO .s}
-{$INCLUDE_ONCE ../cleo_tester.txt}
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AC7" // get_var_pointer
 test("0AC7 (get_var_pointer)", @tests)

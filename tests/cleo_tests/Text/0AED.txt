@@ -1,0 +1,17 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AED'
+test("0AED (string_float_format)", @tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should print float", @test1)
+    return
+
+    function test1
+        0@v = string_float_format {number} 1.66666 {format} "Float %0.3f"
+        assert_eqs(0@v, "Float 1.667") // successfully removed
+    end
+end

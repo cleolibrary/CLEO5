@@ -126,7 +126,6 @@ namespace CLEO
         CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
         GameMenu.Inject(CodeInjector);
         DmaFix.Inject(CodeInjector);
-        TextManager.Inject(CodeInjector);
         OpcodeSystem.Inject(CodeInjector);
         ScriptEngine.Inject(CodeInjector);
 
@@ -168,8 +167,6 @@ namespace CLEO
 
         // execute registered callbacks
         GetInstance().CallCallbacks(eCallbackId::GameBegin, saveSlot);
-
-        TextManager.LoadFxts();
     }
 
     void CCleoInstance::GameEnd()
@@ -181,7 +178,6 @@ namespace CLEO
         GetInstance().CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
         ScriptEngine.GameEnd();
         OpcodeSystem.FinalizeScriptObjects();
-        TextManager.Clear();
 
         saveSlot = -1;
     }

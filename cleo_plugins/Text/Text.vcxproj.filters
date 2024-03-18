@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Text.cpp" />
+    <ClCompile Include="CTextManager.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CText.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CHud.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CMessages.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CModelInfo.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="crc32.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CGame.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\GameVersion.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\DynAddress.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\Patch.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CTextManager.h" />
+    <ClInclude Include="..\..\cleo_sdk\CLEO.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="crc32.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cleo_sdk">
+      <UniqueIdentifier>{ac453a2b-f585-4a63-8f3b-70646198f496}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="plugin_sdk">
+      <UniqueIdentifier>{72d65844-4b83-4ef4-9736-ff17836a8cfa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

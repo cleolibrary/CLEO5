@@ -1,0 +1,79 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2602'
+test("2602 (is_text_in_text)", @tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should contain sub-text", @test1)
+    it("should NOT contain sub-text", @test2)
+    return
+
+    function test1
+        is_text_in_text {text} "the_longer test_text" {subText} "the_longer test_text" {ignoreCase} false
+        assert_result_true()
+        
+        is_text_in_text {text} "the_longer test_text" {subText} "the_longer test_text" {ignoreCase} true
+        assert_result_true()
+        
+        is_text_in_text {text} "the_longer test_text" {subText} "long" {ignoreCase} false
+        assert_result_true()
+
+        is_text_in_text {text} "the_longer test_text" {subText} "long" {ignoreCase} true
+        assert_result_true()
+        
+        is_text_in_text {text} "the_longer test_text" {subText} "_" {ignoreCase} false
+        assert_result_true()
+
+        is_text_in_text {text} "the_longer test_text" {subText} "_" {ignoreCase} true
+        assert_result_true()
+        
+        is_text_in_text {text} "the_longer test_text" {subText} "" {ignoreCase} false
+        assert_result_true()
+
+        is_text_in_text {text} "the_longer test_text" {subText} "" {ignoreCase} true
+        assert_result_true()
+        
+        is_text_in_text {text} "" {subText} "" {ignoreCase} false
+        assert_result_true()
+
+        is_text_in_text {text} "" {subText} "" {ignoreCase} true
+        assert_result_true()
+        
+        // case mismatch
+        is_text_in_text {text} "the_longer test_text" {subText} "THE" {ignoreCase} true
+        assert_result_true()
+        
+        is_text_in_text {text} "the_longer test_text" {subText} "LonGer" {ignoreCase} true
+        assert_result_true()
+    end
+
+    function test2
+        is_text_in_text {text} "long" {subText} "the_longer test_text" {ignoreCase} false
+        assert_result_false()
+        
+        is_text_in_text {text} "long" {subText} "the_longer test_text" {ignoreCase} true
+        assert_result_false()
+        
+        is_text_in_text {text} "the_longer test_text" {subText} "other" {ignoreCase} false
+        assert_result_false()
+        
+        is_text_in_text {text} "the_longer test_text" {subText} "other" {ignoreCase} true
+        assert_result_false()
+        
+        is_text_in_text {text} "" {subText} "other" {ignoreCase} false
+        assert_result_false()
+
+        is_text_in_text {text} "" {subText} "other" {ignoreCase} true
+        assert_result_false()
+        
+        // case mismatch
+        is_text_in_text {text} "the_longer test_text" {subText} "THE" {ignoreCase} false
+        assert_result_false()
+
+        is_text_in_text {text} "the_longer test_text" {subText} "LonGer" {ignoreCase} false
+        assert_result_false()
+    end
+end

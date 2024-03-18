@@ -3,12 +3,14 @@
 #include "CGameVersionManager.h"
 #include "CCustomOpcodeSystem.h"
 #include "ScmFunction.h"
-#include "CTextManager.h"
+#include "CCheat.h"
 #include "CModelInfo.h"
 
 #include <tlhelp32.h>
 #include <sstream>
 #include <forward_list>
+#include <set>
+#include <string>
 
 #define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
 #define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
@@ -23,54 +25,44 @@ namespace CLEO
 
 	OpcodeResult __stdcall opcode_0051(CRunningScript * thread); // GOSUB return
 
-	OpcodeResult __stdcall opcode_0A92(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A94(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0A95(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA1(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB0(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB1(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB2(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB3(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB4(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB5(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB6(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB7(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AB8(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ABA(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ABD(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ABE(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ABF(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ACA(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ACB(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ACC(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ACD(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ACE(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ACF(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD0(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD1(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD2(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD3(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AD4(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ADB(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ADC(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ADD(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ADE(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0ADF(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AE0(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AE1(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AE2(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AE3(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AED(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AEE(CRunningScript *thread);
-	OpcodeResult __stdcall opcode_0AEF(CRunningScript *thread);
+	OpcodeResult __stdcall opcode_0A92(CRunningScript* thread); // stream_custom_script
+	OpcodeResult __stdcall opcode_0A93(CRunningScript* thread); // terminate_this_custom_script
+	OpcodeResult __stdcall opcode_0A94(CRunningScript* thread); // load_and_launch_custom_mission
+	OpcodeResult __stdcall opcode_0A95(CRunningScript* thread); // save_this_custom_script
+	OpcodeResult __stdcall opcode_0AA0(CRunningScript* thread); // gosub_if_false
+	OpcodeResult __stdcall opcode_0AA1(CRunningScript* thread); // return_if_false
+	OpcodeResult __stdcall opcode_0AA9(CRunningScript* thread); // is_game_version_original
+	OpcodeResult __stdcall opcode_0AB0(CRunningScript* thread); // is_key_pressed
+	OpcodeResult __stdcall opcode_0AB1(CRunningScript* thread); // cleo_call
+	OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
+	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
+	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
+	OpcodeResult __stdcall opcode_0AB5(CRunningScript* thread); // store_closest_entities
+	OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread); // get_target_blip_coords
+	OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread); // get_car_number_of_gears
+	OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread); // get_car_current_gear
+	OpcodeResult __stdcall opcode_0ABA(CRunningScript* thread); // terminate_all_custom_scripts_with_this_name
+	OpcodeResult __stdcall opcode_0ABD(CRunningScript* thread); // is_car_siren_on
+	OpcodeResult __stdcall opcode_0ABE(CRunningScript* thread); // is_car_engine_on
+	OpcodeResult __stdcall opcode_0ABF(CRunningScript* thread); // cleo_set_car_engine_on
+
+	OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread); // get_char_player_is_targeting
+
+	OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread); // test_cheat
+	OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread); // spawn_vehicle_by_cheating
+
+	OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread); // get_random_char_in_sphere_no_save_recursive
+	OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread); // get_random_car_in_sphere_no_save_recursive
+	OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread); // get_random_object_in_sphere_no_save_recursive
+
+	OpcodeResult __stdcall opcode_0AEE(CRunningScript* thread); // pow
+	OpcodeResult __stdcall opcode_0AEF(CRunningScript* thread); // log
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 	// 2000 free slot
 	// 2001 free slot
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
+
 
 	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript *script);
 	struct ScriptDeleteDelegate {
@@ -119,7 +111,6 @@ namespace CLEO
 	CHandling	* Handling;
 
 	CPlayerPed * (__cdecl * GetPlayerPed)(DWORD);
-	CBaseModelInfo **Models;
 
 	void(__cdecl * SpawnCar)(DWORD);
 
@@ -249,27 +240,12 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
 		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE);
 		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF);
-		CLEO_RegisterOpcode(0x0ACA, opcode_0ACA);
-		CLEO_RegisterOpcode(0x0ACB, opcode_0ACB);
-		CLEO_RegisterOpcode(0x0ACC, opcode_0ACC);
-		CLEO_RegisterOpcode(0x0ACD, opcode_0ACD);
-		CLEO_RegisterOpcode(0x0ACE, opcode_0ACE);
-		CLEO_RegisterOpcode(0x0ACF, opcode_0ACF);
-		CLEO_RegisterOpcode(0x0AD0, opcode_0AD0);
-		CLEO_RegisterOpcode(0x0AD1, opcode_0AD1);
 		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2);
-		CLEO_RegisterOpcode(0x0AD3, opcode_0AD3);
-		CLEO_RegisterOpcode(0x0AD4, opcode_0AD4);
-		CLEO_RegisterOpcode(0x0ADB, opcode_0ADB);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
 		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
-		CLEO_RegisterOpcode(0x0ADE, opcode_0ADE);
-		CLEO_RegisterOpcode(0x0ADF, opcode_0ADF);
-		CLEO_RegisterOpcode(0x0AE0, opcode_0AE0);
 		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
 		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
 		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
-		CLEO_RegisterOpcode(0x0AED, opcode_0AED);
 		CLEO_RegisterOpcode(0x0AEE, opcode_0AEE);
 		CLEO_RegisterOpcode(0x0AEF, opcode_0AEF);
 
@@ -308,7 +284,6 @@ namespace CLEO
 		FindGroundZ = gvm.TranslateMemoryAddress(MA_FIND_GROUND_Z_FUNCTION);
 		GetPlayerPed = gvm.TranslateMemoryAddress(MA_GET_PLAYER_PED_FUNCTION);
 		Handling = gvm.TranslateMemoryAddress(MA_HANDLING);
-		Models = gvm.TranslateMemoryAddress(MA_MODELS);
 		SpawnCar = gvm.TranslateMemoryAddress(MA_SPAWN_CAR_FUNCTION);
 
 		// TODO: consider version-agnostic code
@@ -529,12 +504,10 @@ namespace CLEO
 		char* outIter = outputStr;
 		char bufa[MAX_STR_LEN + 1], fmtbufa[64], *fmta;
 
-		CCustomOpcodeSystem::lastErrorMsg.clear();
-
 		// invalid input arguments
 		if(outputStr == nullptr || len == 0)
 		{
-			CCustomOpcodeSystem::lastErrorMsg = "Need target buffer to read formatted string";
+			LOG_WARNING(thread, "ReadFormattedString invalid input arg(s)");
 			SkipUnusedVarArgs(thread);
 			return -1; // error
 		}
@@ -688,7 +661,7 @@ namespace CLEO
 		{
 		_ReadFormattedString_OutOfMemory: // jump here on error
 
-			CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Target buffer too small (%d) to read whole formatted string", len);
+			LOG_WARNING(thread, "Target buffer too small (%d) to read whole formatted string in script %s", len, ((CCustomScript*)thread)->GetInfoStr().c_str());
 			SkipUnusedVarArgs(thread);
 			outputStr[len - 1] = '\0';
 			return -1; // error
@@ -697,8 +670,7 @@ namespace CLEO
 		// still more var-args available
 		if (thread->PeekDataType() != DT_END)
 		{
-			CCustomOpcodeSystem::lastErrorMsg = "More params than slots in formatted string";
-			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(thread, "More params than slots in formatted string in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
 		}
 		SkipUnusedVarArgs(thread); // skip terminator too
 
@@ -706,7 +678,7 @@ namespace CLEO
 		return (int)written;
 
 	_ReadFormattedString_ArgMissing: // jump here on error
-		CCustomOpcodeSystem::lastErrorMsg = "Less params than slots in formatted string";
+		LOG_WARNING(thread, "Less params than slots in formatted string in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
 		thread->IncPtr(); // skip vararg terminator
 		outputStr[written] = '\0';
 		return -1; // error
@@ -1093,17 +1065,11 @@ namespace CLEO
 			{
 				*thread >> arg->fParam;
 			}
-			else if (IsVarString(paramType))
+			else if (IsImmString(paramType) || IsVarString(paramType))
 			{
-				arg->pParam = GetScriptParamPointer(thread);
-				if (arg->pParam >= locals && arg->pParam < localsEnd) // correct scoped variable's pointer
-				{
-					arg->dwParam -= (DWORD)locals;
-					arg->dwParam += (DWORD)storedLocals;
-				}
-			}
-			else if (IsImmString(paramType)) // those texts exists in script code, but without terminator character. Copy is necessary
-			{
+				// imm string texts exists in script code, but without terminator character.
+				// For strings stored in variables there is no guarantee these will end with terminator.
+				// In both cases copy is necessary to create proper c-string
 				char tmp[MAX_STR_LEN + 1];
 				auto str = ReadStringParam(thread, tmp, sizeof(tmp));
 				scmFunc->stringParams.emplace_back(str);
@@ -1354,89 +1320,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0ACA=1,show_text_box %1d%
-	OpcodeResult __stdcall opcode_0ACA(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(text);
-		PrintHelp(text);
-		return OR_CONTINUE;
-	}
-
-	//0ACB=3,show_styled_text %1d% time %2d% style %3d%
-	OpcodeResult __stdcall opcode_0ACB(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(text);
-		auto time = OPCODE_READ_PARAM_INT();
-		auto style = OPCODE_READ_PARAM_INT();
-
-		PrintBig(text, time, style);
-		return OR_CONTINUE;
-	}
-
-	//0ACC=2,show_text_lowpriority %1d% time %2d%
-	OpcodeResult __stdcall opcode_0ACC(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(text);
-		auto time = OPCODE_READ_PARAM_INT();
-
-		Print(text, time);
-		return OR_CONTINUE;
-	}
-
-	//0ACD=2,show_text_highpriority %1d% time %2d%
-	OpcodeResult __stdcall opcode_0ACD(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(text);
-		auto time = OPCODE_READ_PARAM_INT();
-
-		PrintNow(text, time);
-		return OR_CONTINUE;
-	}
-
-	//0ACE=-1,show_formatted_text_box %1d%
-	OpcodeResult __stdcall opcode_0ACE(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(format);
-		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
-
-		PrintHelp(text);
-		return OR_CONTINUE;
-	}
-
-	//0ACF=-1,show_formatted_styled_text %1d% time %2d% style %3d%
-	OpcodeResult __stdcall opcode_0ACF(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(format);
-		auto time = OPCODE_READ_PARAM_INT();
-		auto style = OPCODE_READ_PARAM_INT();
-		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
-
-		PrintBig(text, time, style);
-		return OR_CONTINUE;
-	}
-
-	//0AD0=-1,show_formatted_text_lowpriority %1d% time %2d%
-	OpcodeResult __stdcall opcode_0AD0(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(format);
-		auto time = OPCODE_READ_PARAM_INT();
-		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
-
-		Print(text, time);
-		return OR_CONTINUE;
-	}
-
-	//0AD1=-1,show_formatted_text_highpriority %1d% time %2d%
-	OpcodeResult __stdcall opcode_0AD1(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(format);
-		auto time = OPCODE_READ_PARAM_INT();
-		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
-
-		PrintNow(text, time);
-		return OR_CONTINUE;
-	}
-
 	//0AD2=2,  %2d% = player %1d% targeted_actor //IF and SET
 	OpcodeResult __stdcall opcode_0AD2(CRunningScript *thread)
 	{
@@ -1460,136 +1343,37 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AD3=-1,string %1d% format %2d% ...
-	OpcodeResult __stdcall opcode_0AD3(CRunningScript *thread)
-	{
-		auto resultArg = GetStringParamWriteBuffer(thread); OPCODE_VALIDATE_STR_ARG_WRITE(resultArg.data)
-		OPCODE_READ_PARAM_STRING(format);
-		char text[MAX_STR_LEN]; OPCODE_READ_FORMATTED_STRING(thread, text, sizeof(text), format)
-
-		WriteStringParam(resultArg, text);
-		return OR_CONTINUE;
-	}
-
-	//0AD4=-1,%3d% = scan_string %1d% format %2d%  //IF and SET
-	OpcodeResult __stdcall opcode_0AD4(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(src);
-		OPCODE_READ_PARAM_STRING(format);
-
-		auto resultType = thread->PeekDataType();
-		if (!IsVariable(resultType) && IsVarString(resultType))
-		{
-			SHOW_ERROR("Result parameter must be variable type, received '%s' in script %s \nScript suspended.", ToKindStr(resultType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
-		}
-		int *result = (int *)GetScriptParamPointer(thread);
-
-		// read extra params
-		size_t cExParams = 0;
-		SCRIPT_VAR *ExParams[35];
-		for (int i = 0; i < 35; i++)
-		{
-			auto paramType = thread->PeekDataType();
-			if (paramType != DT_END)
-			{
-				ExParams[i] = GetScriptParamPointer(thread);
-				cExParams++;
-			}
-			else ExParams[i] = nullptr; // clear unused args
-		}
-		SkipUnusedVarArgs(thread); // and var args terminator
-
-		*result = sscanf(src, format,
-						 /* extra parameters (will be aligned automatically, but the limit of 35 elements maximum exists) */
-						 ExParams[0], ExParams[1], ExParams[2], ExParams[3], ExParams[4], ExParams[5],
-						 ExParams[6], ExParams[7], ExParams[8], ExParams[9], ExParams[10], ExParams[11],
-						 ExParams[12], ExParams[13], ExParams[14], ExParams[15], ExParams[16], ExParams[17],
-						 ExParams[18], ExParams[19], ExParams[20], ExParams[21], ExParams[22], ExParams[23],
-						 ExParams[24], ExParams[25], ExParams[26], ExParams[27], ExParams[28], ExParams[29],
-						 ExParams[30], ExParams[31], ExParams[32], ExParams[33], ExParams[34]);
-
-		SetScriptCondResult(thread, cExParams == *result);
-		return OR_CONTINUE;
-	}
-
-	//0ADB=2,%2d% = car_model %1d% name
-	OpcodeResult __stdcall opcode_0ADB(CRunningScript *thread)
-	{
-		DWORD modelIndex; *thread >> modelIndex;
-
-		CVehicleModelInfo* model;
-		// if 1.0 US, prefer GetModelInfo function  makes it compatible with fastman92's limit adjuster
-		if (CLEO::GetInstance().VersionManager.GetGameVersion() == CLEO::GV_US10)
-			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(modelIndex);
-		else
-			model = reinterpret_cast<CVehicleModelInfo*>(Models[modelIndex]);
-
-		auto str = std::string(std::string_view(model->m_szGameName, sizeof(model->m_szGameName))); // to proper cstr
-		WriteStringParam(thread, str.c_str());
-		return OR_CONTINUE;
-	}
-
-	//0ADC=1, test_cheat %1d%
+	//0ADC=1,  test_cheat %1d%
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript *thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
-		SetScriptCondResult(thread, TestCheat(text));
+
+		auto len = strlen(text);
+		if (_strnicmp(text, CCheat::m_CheatString, len) == 0)
+		{
+			CCheat::m_CheatString[0] = '\0'; // consume the cheat
+			SetScriptCondResult(thread, true);
+			return OR_CONTINUE;
+		}
+
+		SetScriptCondResult(thread, false);
 		return OR_CONTINUE;
 	}
 
 	//0ADD=1,spawn_car_with_model %1o% at_player_location 
 	OpcodeResult __stdcall opcode_0ADD(CRunningScript *thread)
 	{
-		DWORD mi;
-		*thread >> mi;
+		auto modelIndex = OPCODE_READ_PARAM_INT();
 
 		CVehicleModelInfo* model;
 		// if 1.0 US, prefer GetModelInfo function  makes it compatible with fastman92's limit adjuster
 		if (CLEO::GetInstance().VersionManager.GetGameVersion() == CLEO::GV_US10) {
-			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(mi);
+			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(modelIndex);
 		}
 		else {
-			model = reinterpret_cast<CVehicleModelInfo*>(Models[mi]);
+			model = reinterpret_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[modelIndex]);
 		}
-		if (model->m_nVehicleType != VEHICLE_TYPE_TRAIN && model->m_nVehicleType != VEHICLE_TYPE_UNKNOWN) SpawnCar(mi);
-		return OR_CONTINUE;
-	}
-
-	//0ADE=2,%2d% = text_by_GXT_entry %1d%
-	OpcodeResult __stdcall opcode_0ADE(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
-
-		auto txt = GetInstance().TextManager.Get(gxt);
-
-		if (IsVarString(thread->PeekDataType()))
-		{
-			OPCODE_WRITE_PARAM_STRING(txt);
-		}
-		else
-		{
-			OPCODE_WRITE_PARAM_PTR(txt); // address of the text
-		}
-		return OR_CONTINUE;
-	}
-
-	//0ADF=2,add_dynamic_GXT_entry %1d% text %2d%
-	OpcodeResult __stdcall opcode_0ADF(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
-		OPCODE_READ_PARAM_STRING(txt);
-
-		GetInstance().TextManager.AddFxt(gxt, txt);
-		return OR_CONTINUE;
-	}
-
-	//0AE0=1,remove_dynamic_GXT_entry %1d%
-	OpcodeResult __stdcall opcode_0AE0(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
-
-		GetInstance().TextManager.RemoveFxt(gxt);
+		if (model->m_nVehicleType != VEHICLE_TYPE_TRAIN && model->m_nVehicleType != VEHICLE_TYPE_UNKNOWN) SpawnCar(modelIndex);
 		return OR_CONTINUE;
 	}
 
@@ -1728,18 +1512,6 @@ namespace CLEO
 		last_found = 0;
 		OPCODE_WRITE_PARAM_INT(-1);
 		OPCODE_CONDITION_RESULT(false);
-		return OR_CONTINUE;
-	}
-
-	//0AED=3,%3d% = float %1d% to_string_format %2d%
-	OpcodeResult __stdcall opcode_0AED(CRunningScript *thread)
-	{
-		// this opcode is useless now
-		auto val = OPCODE_READ_PARAM_FLOAT();
-		OPCODE_READ_PARAM_STRING(format);
-		auto resultArg = GetStringParamWriteBuffer(thread); OPCODE_VALIDATE_STR_ARG_WRITE(resultArg.data)
-
-		sprintf_s(resultArg.data, resultArg.size, format, val);
 		return OR_CONTINUE;
 	}
 
@@ -1884,7 +1656,7 @@ extern "C"
 		return ReadStringParam(thread, buff, buffSize);
 	}
 
-	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator)
+	void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator)
 	{
 		if (thread == nullptr || 
 			outBuf == nullptr || 
@@ -1976,7 +1748,6 @@ extern "C"
 
 		if(ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
 		{
-			LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return nullptr; // error
 		}
 
@@ -2161,6 +1932,92 @@ extern "C"
 			resolved.resize(pathMaxLen - 1); // and terminator character
 
 		std::memcpy(inOutPath, resolved.c_str(), resolved.length() + 1); // with terminator
+	}
+
+	DirectoryList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+	{
+		DirectoryList result;
+		result.count = 0;
+		result.paths = nullptr;
+
+		if (searchPath == nullptr)
+		{
+			return result; // invalid param
+		}
+
+		if (!listDirs && !listFiles)
+		{
+			return result; // nothing to list, done
+		}
+
+		// TODO: if available call ModLoader here instead
+		// scriptFileDir, scriptWorkDir, searchPath
+
+		auto fsSearchPath = FS::path(searchPath);
+		if (!fsSearchPath.is_absolute())
+		{
+			auto workDir = (thread != nullptr) ? 
+				((CCustomScript*)thread)->GetWorkDir() :
+				Filepath_Root.c_str();
+
+			fsSearchPath = workDir / fsSearchPath;
+		}
+
+		WIN32_FIND_DATA wfd = { 0 };
+		HANDLE hSearch = FindFirstFile(searchPath, &wfd);
+		if (hSearch == INVALID_HANDLE_VALUE)
+		{
+			TRACE("No files found in: %s", searchPath);
+			return result;
+		}
+
+		std::set<std::string> found;
+		do
+		{
+			if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			{
+				continue; // skip directories
+			}
+
+			if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			{
+				continue; // skip files
+			}
+
+			auto path = FS::path(wfd.cFileName);
+			if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
+				path = fsSearchPath.parent_path() / path;
+
+			found.insert(path.string());
+		} 
+		while (FindNextFile(hSearch, &wfd));
+
+		// create results list
+		result.paths = (char**)malloc(found.size() * sizeof(DWORD)); // array of pointers
+		
+		for(auto& path : found)
+		{
+			char* str = (char*)malloc(path.length() + 1);
+			strcpy(str, path.c_str());
+
+			result.paths[result.count] = str;
+			result.count++;
+		}
+
+		return result;
+	}
+
+	void WINAPI CLEO_ListDirectoryFree(DirectoryList list)
+	{
+		if (list.count > 0 && list.paths != nullptr)
+		{
+			for (DWORD i = 0; i < list.count; i++)
+			{
+				free(list.paths[i]);
+			}
+
+			free(list.paths);
+		}
 	}
 
 	BOOL WINAPI CLEO_GetScriptDebugMode(const CLEO::CRunningScript* thread)

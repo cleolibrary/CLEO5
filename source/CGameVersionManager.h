@@ -101,28 +101,9 @@ namespace CLEO
         MA_RADAR_BLIPS,
         MA_HANDLING,
         MA_GET_PLAYER_PED_FUNCTION,
-        MA_MODELS,
         MA_SPAWN_CAR_FUNCTION,
 
-        // TextManager
-        MA_TEXT_BOX_FUNCTION,
-        MA_STYLED_TEXT_FUNCTION,
-        MA_TEXT_LOW_PRIORITY_FUNCTION,
-        MA_TEXT_HIGH_PRIORITY_FUNCTION,
-        MA_CTEXT_TKEY_LOCATE_FUNCTION,
-        MA_CALL_CTEXT_LOCATE,
-        MA_GAME_TEXTS,
-        MA_CHEAT_STRING,
-        MA_MPACK_NUMBER,
-
-        // SoundSystem
-        MA_CREATE_MAIN_WINDOW_FUNCTION,
         MA_CALL_CREATE_MAIN_WINDOW,
-        MA_CAMERA,
-        MA_CODE_PAUSE,
-        MA_USER_PAUSE,
-        MA_RW_CAMERA_PP,
-        MA_DEF_WINDOW_PROC_PTR,
 
         MA_TOTAL,
     };

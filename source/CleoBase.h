@@ -9,7 +9,6 @@
 #include "CPluginSystem.h"
 #include "CScriptEngine.h"
 #include "CCustomOpcodeSystem.h"
-#include "CTextManager.h"
 #include "FileEnumerator.h"
 #include "crc32.h"
 #include "OpcodeInfoDatabase.h"
@@ -28,7 +27,6 @@ namespace CLEO
         CCodeInjector			CodeInjector;
         CGameVersionManager		VersionManager;
         CScriptEngine			ScriptEngine;
-        CTextManager			TextManager;
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
         CPluginSystem			PluginSystem;

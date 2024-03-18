@@ -1,3 +1,4 @@
+{$USE text}
 
 const VAR_TEST_INDEX = 0
 const VAR_BEFORE_EACH = 1
@@ -27,7 +28,7 @@ function test(suite_name: integer, callback: int)
     
     int suite_name_buf = get_label_pointer @_cleo_tester_test_name
     copy_memory {src} suite_name {dest} suite_name_buf {size} 255 // used in an it trace
-    trace "Testing %s" suite_name
+    trace "~w~Testing %s" suite_name
     
     _cleo_tester_write_var(VAR_BEFORE_EACH, @_cleo_tester_stub)
     _cleo_tester_write_var(VAR_AFTER_EACH, @_cleo_tester_stub)
@@ -54,7 +55,7 @@ function it(spec_name: integer, callback: int)
     
     run_spec
 
-    trace "~g~~h~~h~Test #%d PASSED" index
+    //trace "~g~~h~~h~Test #%d PASSED" index
     index++
     _cleo_tester_write_var(VAR_TEST_INDEX, index)
     
@@ -101,12 +102,12 @@ hex
     00(256)
 end
 
-:_cleo_tester_fail
-int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
-int test_name = get_label_pointer @_cleo_tester_spec_name
-int assert_index = _cleo_tester_read_var(VAR_ASSERT_INDEX)
-breakpoint "~r~~h~~h~~h~Test #%d Assert #%d FAILED! %d Expected, %d Actual" test_index assert_index {val1} 0@ {val2} 1@
-terminate_this_custom_script
+function _cleo_tester_fail
+    int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
+    int test_name = get_label_pointer @_cleo_tester_spec_name
+    int assert_index = _cleo_tester_read_var(VAR_ASSERT_INDEX)
+    trace "~r~~h~~h~~h~Test #%d Assert #%d FAILED!" test_index assert_index
+end
 
 function _cleo_tester_increment_assert
     int index = _cleo_tester_read_var(VAR_ASSERT_INDEX)
@@ -114,46 +115,160 @@ function _cleo_tester_increment_assert
     _cleo_tester_write_var(VAR_ASSERT_INDEX, index)
 end
 
-/// checks if two int values are equal, otherwise stops the test execution
-function assert_eq(val1: int, val2: int)
+/// checks if bool value is true (different than 0)
+function assert_true(flag: int)
     _cleo_tester_increment_assert
-    val1 == val2
-    jf @_cleo_tester_fail
+	if
+		flag == false
+	then
+        _cleo_tester_fail
+        trace "TRUE expected~n~%d occured" flag
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
+/// checks if bool value is false
+function assert_false(flag: int)
+    _cleo_tester_increment_assert
+	if
+		flag <> false
+	then
+        _cleo_tester_fail
+        trace "FALSE expected~n~%d occured" flag
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
+/// checks if condition result value is true
+:assert_result_true
+    goto_if_false @_assert_result_true
+    _cleo_tester_increment_assert
+    return
+
+    :_assert_result_true
+    _cleo_tester_increment_assert
+    _cleo_tester_fail
+    trace "Condition result is FALSE, expected TRUE"
+    breakpoint
+    terminate_this_custom_script
+return
+
+/// checks if condition result value is false
+:assert_result_false
+    goto_if_false @_assert_result_false
+
+    _cleo_tester_increment_assert
+    _cleo_tester_fail
+    trace "Condition result is TRUE, expected FALSE"
+    breakpoint
+    terminate_this_custom_script
+    
+    :_assert_result_false
+    _cleo_tester_increment_assert
+return
+
+/// checks if two int values are equal, otherwise stops the test execution
+function assert_eq(actual: int, expected: int)
+    _cleo_tester_increment_assert
+	if
+		actual <> expected
+	then
+        _cleo_tester_fail
+        trace "%08X expected~n~%08X occured" expected actual
+        breakpoint
+        terminate_this_custom_script
+	end
 end
 
 /// checks if two int values are not equal, otherwise stops the test execution
-function assert_neq(val1: int, val2: int)
-    _cleo_tester_increment_assert
-    val1 <> val2
-    jf @_cleo_tester_fail
+function assert_neq(actual: int, expected: int)
+	if
+		actual == expected
+	then
+        _cleo_tester_fail
+        trace "Expected value diferent than %08X" actual
+        breakpoint
+        terminate_this_custom_script
+	end
 end
 
 /// checks if two float values are equal, otherwise stops the test execution
-function assert_eqf(val1:float, val2:float)
+function assert_eqf(actual:float, expected:float)
     _cleo_tester_increment_assert
-    val1 == val2
-    jf @_cleo_tester_fail
+	if
+		actual <> expected
+	then
+        _cleo_tester_fail
+        trace "%f expected~n~%f occured" expected actual
+        breakpoint
+        terminate_this_custom_script
+	end
 end
 
 /// checks if two float values are not equal, otherwise stops the test execution
-function assert_neqf(val1:float, val2:float)
+function assert_neqf(actual:float, expected:float)
     _cleo_tester_increment_assert
-    val1 <> val2
-    jf @_cleo_tester_fail
+	if
+		actual == expected
+	then
+        _cleo_tester_fail
+        trace "Expected value diferent than %f" actual
+        breakpoint
+        terminate_this_custom_script
+	end
 end
 
 /// checks if value is a valid pointer, otherwise stops the test execution
 function assert_ptr(ptr: int)
     _cleo_tester_increment_assert
-    ptr > 0x10000  // possibly valid pointer
-    jf @_cleo_tester_fail
+	if
+		ptr <= 0x10000 // possibly valid pointer
+	then
+        _cleo_tester_fail
+        trace "%08X is not valid pointer" ptr
+        breakpoint
+        terminate_this_custom_script
+	end
 end
 
 /// checks if value is not 0, otherwise stops the test execution
 function assert(flag: int)
     _cleo_tester_increment_assert
-    flag <> False
-    jf @_cleo_tester_fail
+	if
+		flag == 0
+	then
+        _cleo_tester_fail
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
+/// checks if two string values are equal, otherwise stops the test execution
+function assert_eqs(actual:string, expected:string)
+    _cleo_tester_increment_assert
+	if
+		not is_text_equal {text} actual {another} expected {ignoreCase} false
+	then
+        _cleo_tester_fail
+        trace "`%s` expected~n~`%s` occured" expected actual
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
+/// checks if two string values are not equal, otherwise stops the test execution
+function assert_neqs(actual:string, expected:string)
+    _cleo_tester_increment_assert
+	if
+		is_text_equal {text} actual {another} expected {ignoreCase} false
+	then
+        _cleo_tester_fail
+        trace "Expected value diferent than `%s`" actual
+        breakpoint
+        terminate_this_custom_script
+	end
 end
 
 /// registers a callback that runs before each unit test (test setup)

@@ -1,5 +1,5 @@
 {$CLEO .s}
-{$INCLUDE_ONCE ../cleo_tester.txt}
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AEB" // get_vehicle_ref
 test("0AEB (get_vehicle_ref)", @tests)

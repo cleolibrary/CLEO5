@@ -494,7 +494,7 @@ DWORD WINAPI CLEO_GetIntOpcodeParam(CRunningScript* thread);
 float WINAPI CLEO_GetFloatOpcodeParam(CRunningScript* thread);
 LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buff = nullptr, int buffSize = 0); // read always null-terminated string into buffer, clamped to its size. If no buffer provided then internal, globally shared by all CLEO_ReadStringOpcodeParam calls, is used. Returns pointer to the result buffer or nullptr on fail
 LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buff = nullptr, int buffSize = 0); // read always null-terminated string into buffer, clamped to its size. If no buffer provided then internal, globally shared by all CLEO_ReadStringPointerOpcodeParam calls, is used. WARNING: returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source) 
-void WINAPI CLEO_ReadStringParamWriteBuffer(CRunningScript* thread, char** outBuf, int* outBufSize, DWORD* outNeedsTerminator); // get info about the string opcode param, so it can be written latter. If outNeedsTerminator is not 0 then whole bufSize can be used as text characters. Advances script to next param
+void WINAPI CLEO_ReadStringParamWriteBuffer(CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator); // get info about the string opcode param, so it can be written latter. If outNeedsTerminator is not 0 then whole bufSize can be used as text characters. Advances script to next param
 char* WINAPI CLEO_ReadParamsFormatted(CRunningScript* thread, const char* format, char* buf = nullptr, int bufSize = 0); // consumes all var-arg params and terminator
 // get param value without advancing the script
 DWORD WINAPI CLEO_PeekIntOpcodeParam(CRunningScript* thread);
@@ -528,7 +528,11 @@ DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // ret R
 
 DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* thread, DWORD stream); // arg CAudioStream *
 
+// Should be always used when working with files. Provides ModLoader compatibility
 void WINAPI CLEO_ResolvePath(CRunningScript* thread, char* inOutPath, DWORD pathMaxLen); // convert to absolute (file system) path
+struct DirectoryList{ DWORD count; char** paths; };
+DirectoryList WINAPI CLEO_ListDirectory(CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles); // thread can be null, searchPath can contain wildcards. After use CLEO_ListDirectoryFree must be called on returned DirectoryList to free allocated resources
+void WINAPI CLEO_ListDirectoryFree(DirectoryList list); // releases resources allocated by CLEO_ListDirectory
 
 void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
 

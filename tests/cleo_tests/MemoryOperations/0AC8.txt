@@ -1,5 +1,5 @@
 {$CLEO .s}
-{$INCLUDE_ONCE ../cleo_tester.txt}
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AC8" // allocate_memory
 test("0AC8 (allocate_memory)", @tests)

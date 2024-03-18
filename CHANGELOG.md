@@ -45,7 +45,15 @@
   - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
   - new opcode **2406 ([get_script_struct_from_filename](https://library.sannybuilder.com/#/sa/memory/2406))**
   - new opcode **2407 ([is_memory_equal](https://library.sannybuilder.com/#/sa/memory/2407))**
+- new [Text](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Text) plugin
+  - text related opcodes moved from CLEO core into separated plugin
+  - new opcode **2600 ([is_text_empty](https://library.sannybuilder.com/#/sa/text/2600))**
+  - new opcode **2601 ([is_text_equal](https://library.sannybuilder.com/#/sa/text/2601))**
+  - new opcode **2602 ([is_text_in_text](https://library.sannybuilder.com/#/sa/text/2602))**
+  - new opcode **2603 ([is_text_prefix](https://library.sannybuilder.com/#/sa/text/2603))**
+  - new opcode **2604 ([is_text_sufix](https://library.sannybuilder.com/#/sa/text/2604))**  
 - new and updated opcodes
+  - implemented support for **memory pointer string** arguments for all game's native opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
   - **2002 ([cleo_return_with](https://library.sannybuilder.com/#/sa/CLEO/2002))**
@@ -96,6 +104,8 @@
 - new SDK method: CLEO_GetScriptWorkDir
 - new SDK method: CLEO_SetScriptWorkDir
 - new SDK method: CLEO_ResolvePath
+- new SDK method: CLEO_ListDirectory
+- new SDK method: CLEO_ListDirectoryFree
 - new SDK method: CLEO_GetScriptByName
 - new SDK method: CLEO_GetScriptByFilename
 - new SDK method: CLEO_GetScriptDebugMode

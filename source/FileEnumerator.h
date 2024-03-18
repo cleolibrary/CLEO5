@@ -1,71 +1,20 @@
 #pragma once
+#include "..\cleo_sdk\CLEO.h"
 #include <filesystem>
 
 template<typename T>
 void FilesWalk(const char* directory, const char* extension, T callback)
 {
-    /*try
+    std::string searchPath = directory;
+    if (searchPath.back() != '\\' && searchPath.back() != '/') searchPath.push_back('\\');
+    searchPath += "*";
+    searchPath += extension;
+
+    auto list = CLEO::CLEO_ListDirectory(nullptr, searchPath.c_str(), false, true);
+    for (DWORD i = 0; i < list.count; i++)
     {
-        for (auto& it : FS::directory_iterator(directory))
-        {
-            if (it.is_regular_file())
-            {
-                auto& filePath = it.path();
-
-                if (extension != nullptr)
-                {
-                    if (_stricmp(filePath.extension().string().c_str(), extension) != 0)
-                    {
-                        continue;
-                    }
-                }
-
-                auto result = FS::absolute(filePath);
-                callback(result.string().c_str(), result.filename().string().c_str());
-            }
-        }
+        auto fsPath = FS::path(list.paths[i]);
+        callback(list.paths[i], fsPath.filename().string().c_str());
     }
-    catch (const std::exception& ex)
-    {
-        TRACE("Error while iterating directory: %s", ex.what());
-    }*/
-
-    // Re-implemented with raw search APIs for compatibility with ModLoader.
-    // The ModLoader should be updated anyway to solve potential file access problems in more advanced Cleo scripts
-    
-    std::string pattern = directory;
-    if(!pattern.empty() && pattern.back() != '\\') pattern.push_back('\\');
-
-    const size_t baseDirLen = pattern.length();
-    
-    pattern.push_back('*');
-    if (extension != nullptr) pattern.append(extension);
-
-    WIN32_FIND_DATA wfd = { 0 };
-    HANDLE hSearch = FindFirstFile(pattern.c_str(), &wfd);
-
-    if (hSearch == INVALID_HANDLE_VALUE)
-    {
-        TRACE("No files found in: %s", pattern.c_str());
-        return;
-    }
-    do
-    {
-        if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        {
-            continue; // skip directories
-        }
-
-        std::string path;
-        if (FS::path(wfd.cFileName).is_absolute())
-            path = wfd.cFileName; // somebody hacked findFirstFile APIs and is providing us absolute path
-        else
-            path = pattern.substr(0, baseDirLen) + wfd.cFileName; // standard
-
-        auto result = FS::weakly_canonical(path); // will use CWD if input path was relative!
-        callback(result.string().c_str(), result.filename().string().c_str());
-
-    } while (FindNextFile(hSearch, &wfd));
-
-    FindClose(hSearch);
+    CLEO::CLEO_ListDirectoryFree(list);
 }

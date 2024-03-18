@@ -85,28 +85,10 @@ namespace CLEO
         { 0x00BA86F0,	memory_und, 0x00BA86F0, 0x00BAAD70, 0x00C36020 },		// MA_RADAR_BLIPS,
         { 0x00C2B9C8,	memory_und, 0x00C2B9C8, 0x00C2E188, 0x00CAC1E0 },		// MA_HANDLING,
         { 0x0056E210,	memory_und, 0x0056E210, 0x0056E6B0, 0x00563900 },		// MA_GET_PLAYER_PED_FUNCTION,
-        { 0x00A9B0C8,	memory_und, 0x00A9B0C8, 0x00A9D748, 0x00B0FFD8 },		// MA_MODELS,
         { 0x0043A0B0,	memory_und, 0x0043A0B0, 0x0043A136, 0x0043D3D0 },		// MA_SPAWN_CAR_FUNCTION,
 
                                                                                 // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
-        { 0x00588BE0,	memory_und, 0x00588BE0, 0x005893B0, 0x00596980 },		// MA_TEXT_BOX_FUNCTION,
-        { 0x0069F2B0,	memory_und, 0x0069F2B0, 0x0069FAD0, 0x006CBF40 },		// MA_STYLED_TEXT_FUNCTION,
-        { 0x0069F0B0,	memory_und, 0x0069F0B0, 0x0069F8D0, 0x006CBD50 },		// MA_TEXT_LOW_PRIORITY_FUNCTION,
-        { 0x0069F1E0,	memory_und, 0x0069F1E0, 0x0069FA00, 0x006CBE80 },		// MA_TEXT_HIGH_PRIORITY_FUNCTION,
-        { 0x006A0000,	memory_und, 0x006A0000, 0x006A0820, 0x006CCC90 },		// MA_CTEXT_TKEY_LOCATE_FUNCTION,
-        { 0x006A0050,	memory_und, 0x006A0050, 0x006A0870, 0x006CCCE0 },		// MA_CALL_CTEXT_LOCATE,
-        { 0x00C1B340,	memory_und, 0x00C1B340, 0x00C1DB00, 0x00946CC8 },		// MA_GAME_TEXTS,
-        { 0x00969110,	memory_und, 0x00969110, 0x0096B790, 0x009DE3F8 },		// MA_CHEAT_STRING,
-        { 0x00B72910,	memory_und, 0x00B72910, 0x00B74F90, 0x00BFF370 },		// MA_MPACK_NUMBER,
-
-                                                                                // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
-        { 0x00745560,	memory_und, 0x00745560, 0x00745D90, 0x0077F3A0 },		// MA_CREATE_MAIN_WINDOW_FUNCTION,
         { 0x007487A8,	memory_und, 0x007487F8, 0x0074907C, 0x0078276D },		// MA_CALL_CREATE_MAIN_WINDOW,
-        { 0x00B6F028,	memory_und, 0x00B6F028, 0x00B716A8, 0x00BFBBE0 },		// MA_CAMERA,
-        { 0x00B7CB48,	memory_und, 0x00B7CB48, 0x00B7F1C8, 0x00C0F4F9 },		// MA_CODE_PAUSE,
-        { 0x00B7CB49,	memory_und,	0x00B7CB49, 0x00B7F1C9, 0x00C0F4FA },		// MA_USER_PAUSE,
-        { 0x00C1703C,	memory_und,	0x00C1703C, 0x00C197FC, 0x00CA3578 },		// MA_RW_CAMERA_PP,
-        { 0x00748454,	memory_und,	0x007484A4, 0x00748D24, 0x0078240C },		// MA_DEF_WINDOW_PROC_PTR,
     };
 
     eGameVersion DetermineGameVersion()

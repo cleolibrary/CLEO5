@@ -61,13 +61,6 @@ namespace CLEO
     };
 
     extern void(__thiscall * ProcessScript)(CRunningScript*);
-    
-    struct StringParamBufferInfo
-    {
-        char* data = nullptr;
-        DWORD size = 0;
-        bool needTerminator = false;
-    };
 
     // Read null-terminated string into the buffer
     // returns pointer to string or nullptr on fail

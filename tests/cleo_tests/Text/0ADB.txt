@@ -1,0 +1,18 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0ADB'
+test("0ADB (get_name_of_vehicle_model)", @tests)
+terminate_this_custom_script
+
+function tests
+    it("should return vehicle model name", @test1)
+
+    return
+
+    function test1
+        0@v = get_name_of_vehicle_model {modelId} 400
+
+        assert_eqs(0@v, "LANDSTK")
+    end
+end

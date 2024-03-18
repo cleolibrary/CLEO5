@@ -1,0 +1,92 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2601'
+test("2601 (is_text_equal)", @tests)
+terminate_this_custom_script
+
+
+function tests
+    before_each(@prepare_tests)
+    after_each(@cleanup_tests)
+    
+    it("should texts be equal", @test1)
+    it("should texts be NOT equal", @test2)
+    return
+    
+    :prepare_tests
+        0@s = 'text-A'
+        2@s = 'text-B'
+        4@v = "text-A"
+        8@v = "text-B"
+        12@ = allocate_memory {size} 64
+        string_format {buffer} 12@ {format} "text-A"
+        13@ = allocate_memory {size} 64
+        string_format {buffer} 13@ {format} "text-B"
+        14@ = allocate_memory {size} 64
+        string_format {buffer} 14@ {format} "TEXT-A"
+        15@ = allocate_memory {size} 64
+        string_format {buffer} 15@ {format} "tExT-b"
+    return
+    
+    :cleanup_tests
+        free_memory {address} 12@
+        free_memory {address} 13@
+        free_memory {address} 14@
+        free_memory {address} 15@
+    return
+
+    function test1
+        is_text_equal {text} 0@s {another} 0@s {ignoreCase} false
+        assert_result_true()
+        
+        is_text_equal {text} 0@s {another} 0@s {ignoreCase} true
+        assert_result_true()
+        
+        is_text_equal {text} 0@s {another} 4@v {ignoreCase} false
+        assert_result_true()
+        
+        is_text_equal {text} 0@s {another} 4@v {ignoreCase} true
+        assert_result_true()
+        
+        is_text_equal {text} 0@s {another} 12@ {ignoreCase} false
+        assert_result_true()
+
+        is_text_equal {text} 0@s {another} 12@ {ignoreCase} true
+        assert_result_true()
+        
+        // case mismatch
+        is_text_equal {text} 0@s {another} 14@ {ignoreCase} true
+        assert_result_true()
+        
+        is_text_equal {text} 8@v {another} 15@ {ignoreCase} true
+        assert_result_true()
+    end
+
+    function test2
+        is_text_equal {text} 0@s {another} 2@s {ignoreCase} false
+        assert_result_false()
+
+        is_text_equal {text} 0@s {another} 2@s {ignoreCase} true
+        assert_result_false()
+
+        is_text_equal {text} 4@v {another} 8@v {ignoreCase} false
+        assert_result_false()
+
+        is_text_equal {text} 4@v {another} 8@v {ignoreCase} true
+        assert_result_false()
+
+        is_text_equal {text} 4@v {another} 13@ {ignoreCase} false
+        assert_result_false()
+
+        is_text_equal {text} 4@v {another} 13@ {ignoreCase} true
+        assert_result_false()
+
+        // case mismatch
+        is_text_equal {text} 0@s {another} 14@ {ignoreCase} false
+        assert_result_false()
+
+        is_text_equal {text} 8@v {another} 15@ {ignoreCase} false
+        assert_result_false()
+    end
+end

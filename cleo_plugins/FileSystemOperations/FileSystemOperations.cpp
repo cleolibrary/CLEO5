@@ -290,12 +290,7 @@ public:
     static OpcodeResult WINAPI opcode_0AD7(CRunningScript* thread)
     {
         auto handle = READ_FILE_HANDLE_PARAM();
-
-        char* buffer = nullptr;
-        int bufferSize = 0;
-        DWORD needsTerminator = TRUE;
-        CLEO_ReadStringParamWriteBuffer(thread, &buffer, &bufferSize, &needsTerminator);
-
+        auto result = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
         auto size = OPCODE_READ_PARAM_INT();
 
         if (size < 0)
@@ -311,7 +306,7 @@ public:
         }
 
         // use caller's size argument, ignoring actual target type size. Intended for legacy reasons.
-        bool ok = File::readString(handle, buffer, size) != nullptr;
+        bool ok = File::readString(handle, result.data, size) != nullptr;
 
         OPCODE_CONDITION_RESULT(ok);
         return OR_CONTINUE;

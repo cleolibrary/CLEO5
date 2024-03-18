@@ -1,0 +1,32 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0ADE'
+test("0ADE (get_text_label_string)", @tests)
+terminate_this_custom_script
+
+function tests
+    it("should return into variable", @test1)
+    it("should return source pointer", @test2)
+    it("should return empty", @test3)
+    return
+
+    function test1
+        0@v = get_text_label_string {key} 'DEAD'
+        assert_eqs(0@v, "Wasted")
+    end
+    
+    function test2
+        0@ = get_text_label_string {key} 'DEAD'
+        assert_ptr(0@)
+        assert_eqs(0@, "Wasted")
+    end
+    
+    function test3
+        0@v = get_text_label_string {key} 'CL_INVA' // invalid label
+        assert_eqs(0@v, "")
+        
+        0@ = get_text_label_string {key} 'CL_INVA' // invalid label
+        assert_eqs(0@, "")
+    end
+end

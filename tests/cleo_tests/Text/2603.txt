@@ -1,0 +1,79 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2603'
+test("2603 (is_text_prefix)", @tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should contain text prefix", @test1)
+    it("should NOT contain text prefix", @test2)
+    return
+
+    function test1
+        is_text_prefix {text} "the_longer test_text" {prefix} "" {ignoreCase} false
+        assert_result_true()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "" {ignoreCase} true
+        assert_result_true()
+    
+        is_text_prefix {text} "the_longer test_text" {prefix} "t" {ignoreCase} false
+        assert_result_true()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "t" {ignoreCase} true
+        assert_result_true()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "the" {ignoreCase} false
+        assert_result_true()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "the" {ignoreCase} true
+        assert_result_true()
+        
+        is_text_prefix {text} "the_longer test_text" {prefix} "the_longer " {ignoreCase} false
+        assert_result_true()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "the_longer " {ignoreCase} true
+        assert_result_true()
+        
+        is_text_prefix {text} "the_longer test_text" {prefix} "the_longer test_text" {ignoreCase} false
+        assert_result_true()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "the_longer test_text" {ignoreCase} true
+        assert_result_true()
+
+        // case mismatch
+        is_text_prefix {text} "the_longer test_text" {prefix} "THE" {ignoreCase} true
+        assert_result_true()
+        
+        is_text_prefix {text} "the_longer test_text" {prefix} "tHe_LoNgEr" {ignoreCase} true
+        assert_result_true()
+    end
+
+    function test2
+        is_text_prefix {text} "the_longer test_text" {prefix} "longer" {ignoreCase} false
+        assert_result_false()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "longer" {ignoreCase} true
+        assert_result_false()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "he" {ignoreCase} false
+        assert_result_false()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "he" {ignoreCase} true
+        assert_result_false()
+
+        is_text_prefix {text} "the" {prefix} "the_longer test_text" {ignoreCase} false
+        assert_result_false()
+
+        is_text_prefix {text} "the" {prefix} "the_longer test_text" {ignoreCase} true
+        assert_result_false()
+
+        // case mismatch
+        is_text_prefix {text} "the_longer test_text" {prefix} "THE" {ignoreCase} false
+        assert_result_false()
+
+        is_text_prefix {text} "the_longer test_text" {prefix} "tHe_LoNgEr" {ignoreCase} false
+        assert_result_false()
+    end
+end
