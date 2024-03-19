@@ -61,6 +61,9 @@ public:
         CLEO_RegisterOpcode(0x2507, opcode_2507); // get_audio_stream_progress
         CLEO_RegisterOpcode(0x2508, opcode_2508); // set_audio_stream_progress
 
+        CLEO_RegisterOpcode(0x2509, opcode_2509); // get_audio_stream_type
+        CLEO_RegisterOpcode(0x250A, opcode_250A); // set_audio_stream_type
+
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
         CLEO_RegisterCallback(eCallbackId::GameProcess, OnGameProcess);
@@ -382,6 +385,29 @@ public:
         auto speed = OPCODE_READ_PARAM_FLOAT();
 
         if (stream) stream->SetProgress(speed);
+
+        return OR_CONTINUE;
+    }
+
+    //2509=2,get_audio_stream_type %1d% store_to %2d%
+    static OpcodeResult __stdcall opcode_2509(CScriptThread* thread)
+    {
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+
+        auto type = eStreamType::None;
+        if (stream) type = stream->GetType();
+
+        OPCODE_WRITE_PARAM_INT(type);
+        return OR_CONTINUE;
+    }
+
+    //250A=2,set_audio_stream_type %1d%
+    static OpcodeResult __stdcall opcode_250A(CScriptThread* thread)
+    {
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto type = OPCODE_READ_PARAM_INT();
+
+        if (stream) stream->SetType((eStreamType)type);
 
         return OR_CONTINUE;
     }

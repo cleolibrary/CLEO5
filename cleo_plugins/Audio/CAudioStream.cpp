@@ -16,6 +16,7 @@ CAudioStream::CAudioStream(const char* filepath)
         return;
     }
 
+    SetType(CSoundSystem::defaultStreamType);
     BASS_ChannelGetAttribute(streamInternal, BASS_ATTRIB_FREQ, &rate);
     ok = true;
 }
@@ -131,6 +132,25 @@ float CAudioStream::GetSpeed() const
     return (float)speed;
 }
 
+void CLEO::CAudioStream::SetType(eStreamType value)
+{
+    switch(value)
+    {
+        case eStreamType::SoundEffect:
+        case eStreamType::Music:
+            type = value;
+            break;
+
+        default:
+            type = None;
+    }
+}
+
+eStreamType CLEO::CAudioStream::GetType() const
+{
+    return type;
+}
+
 void CAudioStream::UpdateVolume()
 {
     if (volume != volumeTarget)
@@ -148,7 +168,14 @@ void CAudioStream::UpdateVolume()
         }
     }
 
-    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, (float)volume * CSoundSystem::masterVolume);
+    float masterVolume = 1.0f;
+    switch(type)
+    {
+        case SoundEffect: masterVolume = CSoundSystem::masterVolumeSfx; break;
+        case Music: masterVolume = CSoundSystem::masterVolumeMusic; break;
+    }
+
+    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, (float)volume * masterVolume);
 }
 
 void CAudioStream::UpdateSpeed()

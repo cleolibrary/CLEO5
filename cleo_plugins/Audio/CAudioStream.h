@@ -1,4 +1,5 @@
 #pragma once
+#include "CSoundSystem.h"
 #include "plugin.h"
 #include "bass.h"
 
@@ -38,6 +39,9 @@ namespace CLEO
         void SetSpeed(float value, float transitionTime = 0.0f);
         float GetSpeed() const;
 
+        void SetType(eStreamType value);
+        eStreamType GetType() const;
+
         void SetVolume(float value, float transitionTime = 0.0f);
         float GetVolume() const;
 
@@ -51,6 +55,7 @@ namespace CLEO
     protected:
         HSTREAM streamInternal = 0;
         eStreamState state = Paused;
+        eStreamType type = None;
         bool ok = false;
         float rate = 44100.0f; // file's sampling rate
         double speed = 1.0f;

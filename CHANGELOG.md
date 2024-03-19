@@ -6,6 +6,7 @@
   - CLEO's audio now obey game's volume settings
   - implemented Doppler effect for 3d audio streams (fast moving sound sources)
   - CLEO's audio now follows game speed changes
+  - sound device can be now manually selected in .ini file
   - new opcode **2500 ([is_audio_stream_playing](https://library.sannybuilder.com/#/sa/audio/2500))**
   - new opcode **2501 ([get_audio_stream_duration](https://library.sannybuilder.com/#/sa/audio/2501))**
   - new opcode **2502 ([get_audio_stream_speed](https://library.sannybuilder.com/#/sa/audio/2502))**
@@ -15,6 +16,8 @@
   - new opcode **2506 ([set_audio_stream_source_size](https://library.sannybuilder.com/#/sa/audio/2506))**
   - new opcode **2507 ([get_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2507))**
   - new opcode **2508 ([set_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2508))**
+  - new opcode **2509 ([get_audio_stream_type](https://library.sannybuilder.com/#/sa/audio/2509))**
+  - new opcode **250A ([set_audio_stream_type](https://library.sannybuilder.com/#/sa/audio/250A))**
 - new [DebugUtils](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/DebugUtils) plugin
   - new opcode **00C3 ([debug_on](https://library.sannybuilder.com/#/sa/debug/00C3))**
   - new opcode **00C4 ([debug_off](https://library.sannybuilder.com/#/sa/debug/00C4))**

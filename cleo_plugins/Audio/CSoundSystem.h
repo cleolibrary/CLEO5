@@ -7,6 +7,13 @@ namespace CLEO
     class CAudioStream;
     class C3DAudioStream;
 
+    enum eStreamType
+    {
+        None = 0,
+        SoundEffect,
+        Music,
+    };
+
     class CSoundSystem
     {
         friend class CAudioStream;
@@ -15,7 +22,6 @@ namespace CLEO
         std::set<CAudioStream*> streams;
         BASS_INFO SoundDevice = { 0 };
         bool initialized = false;
-        int forceDevice = -1;
         bool paused = false;
 
         static bool useFloatAudio;
@@ -24,8 +30,10 @@ namespace CLEO
         static BASS_3DVECTOR vel;
         static BASS_3DVECTOR front;
         static BASS_3DVECTOR top;
+        static eStreamType defaultStreamType;
         static float masterSpeed; // game simulation speed
-        static float masterVolume;
+        static float masterVolumeSfx;
+        static float masterVolumeMusic;
 
     public:
         CSoundSystem() = default; // TODO: give to user an ability to force a sound device to use (ini-file or cmd-line?)

@@ -12,8 +12,10 @@ namespace CLEO
     BASS_3DVECTOR CSoundSystem::vel(0.0, 0.0, 0.0);
     BASS_3DVECTOR CSoundSystem::front(0.0, -1.0, 0.0);
     BASS_3DVECTOR CSoundSystem::top(0.0, 0.0, 1.0);
+    eStreamType CSoundSystem::defaultStreamType = eStreamType::SoundEffect;
     float CSoundSystem::masterSpeed = 1.0f;
-    float CSoundSystem::masterVolume = 1.0f;
+    float CSoundSystem::masterVolumeSfx = 1.0f;
+    float CSoundSystem::masterVolumeMusic = 1.0f;
 
     void EnumerateBassDevices(int& total, int& enabled, int& default_device)
     {
@@ -45,12 +47,15 @@ namespace CLEO
     {
         if (initialized) return true; // already done
 
+        auto config = GetConfigFilename();
+        defaultStreamType = (eStreamType)GetPrivateProfileInt("General", "DefaultStreamType", 0, config.c_str());
+
         int default_device, total_devices, enabled_devices;
         EnumerateBassDevices(total_devices, enabled_devices, default_device);
 
+        int forceDevice = GetPrivateProfileInt("General", "AudioDevice", -1, config.c_str());
         BASS_DEVICEINFO info = { nullptr, nullptr, 0 };
-        if (forceDevice != -1 && BASS_GetDeviceInfo(forceDevice, &info) &&
-            info.flags & BASS_DEVICE_ENABLED)
+        if (forceDevice != -1 && BASS_GetDeviceInfo(forceDevice, &info) && (info.flags & BASS_DEVICE_ENABLED))
             default_device = forceDevice;
 
         TRACE("On system found %d devices, %d enabled devices, assuming device to use: %d (%s)",
@@ -160,7 +165,8 @@ namespace CLEO
 
             // get game globals
             masterSpeed = CTimer::ms_fTimeScale;
-            masterVolume = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
+            masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
+            masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
 
             // camera movements
             CMatrixLink * pMatrix = nullptr;

@@ -86,6 +86,7 @@
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
+xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -109,6 +110,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
+xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -139,6 +141,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CVector.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CAEAudioHardware.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CFileMgr.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="C3DAudioStream.cpp" />
     <ClCompile Include="CAudioStream.cpp" />
@@ -151,6 +154,9 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     <ClInclude Include="C3DAudioStream.h" />
     <ClInclude Include="CAudioStream.h" />
     <ClInclude Include="CSoundSystem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SA.Audio.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
