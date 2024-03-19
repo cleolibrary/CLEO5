@@ -1,4 +1,3 @@
-{$USE text}
 
 const VAR_TEST_INDEX = 0
 const VAR_BEFORE_EACH = 1
