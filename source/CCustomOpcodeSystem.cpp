@@ -858,6 +858,7 @@ namespace CLEO
 	{
 		if (thread->SP == 0 && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
 		{
+			SetScriptCondResult(thread, false);
 			return GetInstance().OpcodeSystem.CleoReturnGeneric(0x0051, thread, false); // try CLEO's function return
 		}
 
