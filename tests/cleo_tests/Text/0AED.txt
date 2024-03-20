@@ -12,6 +12,6 @@ function tests
 
     function test1
         0@v = string_float_format {number} 1.66666 {format} "Float %0.3f"
-        assert_eqs(0@v, "Float 1.667") // successfully removed
+        assert_eqs(0@v, "Float 1.667")
     end
 end
