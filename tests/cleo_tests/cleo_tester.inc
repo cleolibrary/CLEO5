@@ -264,7 +264,7 @@ function assert_neqs(actual:string, expected:string)
 		is_text_equal {text} actual {another} expected {ignoreCase} false
 	then
         _cleo_tester_fail
-        trace "Expected value diferent than `%s`" actual
+        trace "Expected value different than `%s`" actual
         breakpoint
         terminate_this_custom_script
 	end
