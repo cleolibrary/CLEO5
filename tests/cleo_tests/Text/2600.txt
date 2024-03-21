@@ -17,74 +17,38 @@ function tests
 
     function test1
         1@s = ''
-        if
-            is_text_empty 1@s
-        then
-            0@ = true
-        else
-            0@ = false
-        end
-        assert_true(0@)
+        is_text_empty 1@s
+        assert_result_true()
     end
 
     function test2
         1@s = 'test'
-        if
-            is_text_empty 1@s
-        then
-            0@ = true
-        else
-            0@ = false
-        end
-        assert_false(0@)
+        is_text_empty 1@s
+        assert_result_false()
     end
     
     function test3
         1@v = ""
-        if
-            is_text_empty 1@v
-        then
-            0@ = true
-        else
-            0@ = false
-        end
-        assert_true(0@)
+        is_text_empty 1@v
+		assert_result_true()
     end
 
     function test4
         1@v = "test"
-        if
-            is_text_empty 1@s
-        then
-            0@ = true
-        else
-            0@ = false
-        end
-        assert_false(0@)
+        is_text_empty 1@s
+		assert_result_false()
     end
     
     function test5
         1@ = allocate_memory {size} 64 // 0 prefill in CLEO5
-        if
-            is_text_empty 1@
-        then
-            0@ = true
-        else
-            0@ = false
-        end
-        assert_true(0@)
+        is_text_empty 1@
+        assert_result_true()
     end
 
     function test6
         1@ = allocate_memory {size} 64
         string_format {buffer} 1@ {format} "some text"
-        if
-            is_text_empty 1@
-        then
-            0@ = true
-        else
-            0@ = false
-        end
-        assert_false(0@)
+        is_text_empty 1@
+		assert_result_false()
     end
 end
