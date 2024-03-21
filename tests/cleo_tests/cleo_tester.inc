@@ -187,7 +187,7 @@ function assert_neq(actual: int, expected: int)
 		actual == expected
 	then
         _cleo_tester_fail
-        trace "Expected value diferent than %08X" actual
+        trace "Expected value different than %08X" actual
         breakpoint
         terminate_this_custom_script
 	end
@@ -213,7 +213,7 @@ function assert_neqf(actual:float, expected:float)
 		actual == expected
 	then
         _cleo_tester_fail
-        trace "Expected value diferent than %f" actual
+        trace "Expected value different than %f" actual
         breakpoint
         terminate_this_custom_script
 	end
