@@ -401,7 +401,7 @@ public:
         return OR_CONTINUE;
     }
 
-    //250A=2,set_audio_stream_type %1d%
+    //250A=2,set_audio_stream_type %1d% type %2d%
     static OpcodeResult __stdcall opcode_250A(CScriptThread* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();

@@ -54,7 +54,7 @@
   - new opcode **2601 ([is_text_equal](https://library.sannybuilder.com/#/sa/text/2601))**
   - new opcode **2602 ([is_text_in_text](https://library.sannybuilder.com/#/sa/text/2602))**
   - new opcode **2603 ([is_text_prefix](https://library.sannybuilder.com/#/sa/text/2603))**
-  - new opcode **2604 ([is_text_suffix](https://library.sannybuilder.com/#/sa/text/2604))** 
+  - new opcode **2604 ([is_text_suffix](https://library.sannybuilder.com/#/sa/text/2604))**
 - new and updated opcodes
   - implemented support for **memory pointer string** arguments for all game's native opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
@@ -65,6 +65,8 @@
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
   - **cleo_return_\*** opcodes now can pass strings as return arguments
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
+  - fixed bug in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/text/2604))** causing data overruns when reading strins longer than target variable
+  - fixed result register not being cleared before function call in opcodes **0AA7** and **0AA8**
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 
     - `root:\` for _game root_ directory
@@ -72,7 +74,7 @@
     - `.\` for _this script file_ directory
     - `cleo:\` for _CLEO_ directory
     - `modules:\` for _CLEO\cleo_modules_ directory
-  - rewritten opcode **0A99 (set_current_directory)**. It no longer affects internal game state and other scripts
+  - rewritten opcode **0A99 (set_current_directory)**. Now it no longer affects internal game state or current directory in other scripts
 - improved error handling
   - more detailed error messages in multiple scenarios
   - some errors now cause the script to pause, instead of crashing the game
