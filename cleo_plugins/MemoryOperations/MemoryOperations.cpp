@@ -363,18 +363,21 @@ public:
     static OpcodeResult __stdcall opcode_0AA2(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(path);
+
+        HMODULE ptr = nullptr;
         
-        // get absolute path
-        // in case of just filename let LoadLibrary resolve it itself
+        // resolve absolute path and try load
         char buff[MAX_PATH];
-        if (std::filesystem::path(path).has_parent_path())
+        strncpy(buff, path, sizeof(buff));
+        CLEO_ResolvePath(thread, buff, sizeof(buff));
+        ptr = LoadLibrary(buff);
+
+        // in case of just filename let LoadLibrary resolve it itself
+        if (ptr == nullptr && !std::filesystem::path(path).has_parent_path())
         {
-            strncpy(buff, path, sizeof(buff));
-            CLEO_ResolvePath(thread, buff, sizeof(buff));
-            path = buff;
+            ptr = LoadLibrary(path);
         }
 
-        auto ptr = LoadLibrary(path);
         if (ptr != nullptr)
         {
             m_libraries.insert(ptr);
