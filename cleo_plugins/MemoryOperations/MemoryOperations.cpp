@@ -217,12 +217,6 @@ public:
         auto virtualProtect = OPCODE_READ_PARAM_BOOL();
 
         // validate params
-        if ((size_t)address <= MinValidAddress)
-        {
-            SHOW_ERROR("Invalid '0x%X' pointer param in script %s\nScript suspended.", address, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
-        }
-
         if (size < 0)
         {
             SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
@@ -263,12 +257,6 @@ public:
         auto virtualProtect = OPCODE_READ_PARAM_BOOL();
 
         // validate params
-        if ((size_t)address <= MinValidAddress)
-        {
-            SHOW_ERROR("Invalid '0x%X' pointer param of in script %s\nScript suspended.", address, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
-        }
-
         if (size < 0 || size > sizeof(SCRIPT_VAR))
         {
             SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
