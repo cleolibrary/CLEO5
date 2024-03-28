@@ -65,7 +65,7 @@
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
   - **cleo_return_\*** opcodes now can pass strings as return arguments
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
-  - fixed bug in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/text/2604))** causing data overruns when reading strins longer than target variable
+  - fixed bug in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/text/2604))** causing data overruns when reading strings longer than target variable
   - fixed result register not being cleared before function call in opcodes **0AA7** and **0AA8**
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 

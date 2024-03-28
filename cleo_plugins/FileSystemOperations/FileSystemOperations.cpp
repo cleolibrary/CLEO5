@@ -687,7 +687,7 @@ public:
         return OR_CONTINUE;
     }
 
-    //2302=3,write_block_to_file %1d% size %2d% address %3d% // IF and SET
+    //2302=3,  write_block_to_file %1d% size %2d% address %3d% // IF and SET
     static OpcodeResult WINAPI opcode_2302(CRunningScript* thread)
     {
         auto handle = READ_FILE_HANDLE_PARAM();

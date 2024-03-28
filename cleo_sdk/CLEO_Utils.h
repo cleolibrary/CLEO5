@@ -398,7 +398,7 @@ namespace CLEO
 
         if ((size_t)target.data <= MinValidAddress)
         {
-            SHOW_ERROR("Invalid '0x%X' target pointer of output string argument in script %s \nScript suspended.", str, ScriptInfoStr(thread).c_str());
+            SHOW_ERROR("Invalid '0x%X' target pointer of output string argument in script %s \nScript suspended.", target.data, ScriptInfoStr(thread).c_str());
             thread->Suspend();
             return false;
         }
