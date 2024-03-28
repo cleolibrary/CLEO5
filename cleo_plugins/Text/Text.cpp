@@ -7,6 +7,7 @@
 #include "CModelInfo.h"
 #include "CText.h"
 #include "CTextManager.h"
+#include "CTheScripts.h"
 #include <shlwapi.h>
 
 using namespace CLEO;
@@ -57,6 +58,7 @@ public:
 		CLEO_RegisterOpcode(0x2602, opcode_2602); // is_text_in_text
 		CLEO_RegisterOpcode(0x2603, opcode_2603); // is_text_prefix
 		CLEO_RegisterOpcode(0x2604, opcode_2604); // is_text_sufix
+		CLEO_RegisterOpcode(0x2605, opcode_2605); // display_text_formated
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
@@ -98,7 +100,7 @@ public:
 	}
 
 	//0ACA=1,show_text_box %1d%
-	static OpcodeResult __stdcall opcode_0ACA(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ACA(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
 
@@ -107,7 +109,7 @@ public:
 	}
 
 	//0ACB=3,show_styled_text %1d% time %2d% style %3d%
-	static OpcodeResult __stdcall opcode_0ACB(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ACB(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
 		auto time = OPCODE_READ_PARAM_INT();
@@ -120,7 +122,7 @@ public:
 	}
 
 	//0ACC=2,show_text_lowpriority %1d% time %2d%
-	static OpcodeResult __stdcall opcode_0ACC(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ACC(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
 		auto time = OPCODE_READ_PARAM_INT();
@@ -131,7 +133,7 @@ public:
 	}
 
 	//0ACD=2,show_text_highpriority %1d% time %2d%
-	static OpcodeResult __stdcall opcode_0ACD(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ACD(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
 		auto time = OPCODE_READ_PARAM_INT();
@@ -142,7 +144,7 @@ public:
 	}
 
 	//0ACE=-1,show_formatted_text_box %1d%
-	static OpcodeResult __stdcall opcode_0ACE(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ACE(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
@@ -151,7 +153,7 @@ public:
 	}
 
 	//0ACF=-1,show_formatted_styled_text %1d% time %2d% style %3d%
-	static OpcodeResult __stdcall opcode_0ACF(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ACF(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(format);
 		auto time = OPCODE_READ_PARAM_INT();
@@ -165,7 +167,7 @@ public:
 	}
 
 	//0AD0=-1,show_formatted_text_lowpriority %1d% time %2d%
-	static OpcodeResult __stdcall opcode_0AD0(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AD0(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(format);
 		auto time = OPCODE_READ_PARAM_INT();
@@ -177,7 +179,7 @@ public:
 	}
 
 	//0AD1=-1,show_formatted_text_highpriority %1d% time %2d%
-	static OpcodeResult __stdcall opcode_0AD1(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AD1(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(format);
 		auto time = OPCODE_READ_PARAM_INT();
@@ -189,7 +191,7 @@ public:
 	}
 
 	//0AD3=-1,string %1d% format %2d% ...
-	static OpcodeResult __stdcall opcode_0AD3(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AD3(CLEO::CRunningScript* thread)
 	{
 		auto result = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
 		OPCODE_READ_PARAM_STRING_FORMATTED(text);
@@ -199,7 +201,7 @@ public:
 	}
 
 	//0AD4=-1,%3d% = scan_string %1d% format %2d%  //IF and SET
-	static OpcodeResult __stdcall opcode_0AD4(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AD4(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(src);
 		OPCODE_READ_PARAM_STRING(format);
@@ -271,7 +273,7 @@ public:
 	}
 
 	//0ADB=2,%2d% = car_model %1d% name
-	static OpcodeResult __stdcall opcode_0ADB(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ADB(CLEO::CRunningScript* thread)
 	{
 		auto modelIndex = OPCODE_READ_PARAM_UINT();
 
@@ -289,7 +291,7 @@ public:
 	}
 
 	//0ADE=2,%2d% = text_by_GXT_entry %1d%
-	static OpcodeResult __stdcall opcode_0ADE(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ADE(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
 
@@ -307,7 +309,7 @@ public:
 	}
 
 	//0ADF=2,add_dynamic_GXT_entry %1d% text %2d%
-	static OpcodeResult __stdcall opcode_0ADF(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ADF(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
 		OPCODE_READ_PARAM_STRING(txt);
@@ -317,7 +319,7 @@ public:
 	}
 
 	//0AE0=1,remove_dynamic_GXT_entry %1d%
-	static OpcodeResult __stdcall opcode_0AE0(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AE0(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
 
@@ -326,7 +328,7 @@ public:
 	}
 
 	//0AED=3,%3d% = float %1d% to_string_format %2d%
-	static OpcodeResult __stdcall opcode_0AED(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AED(CLEO::CRunningScript* thread)
 	{
 		// this opcode is useless now
 		auto val = OPCODE_READ_PARAM_FLOAT();
@@ -340,7 +342,7 @@ public:
 	}
 
 	//2600=1,  is_text_empty %1s%
-	static OpcodeResult __stdcall opcode_2600(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2600(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(str);
 
@@ -349,7 +351,7 @@ public:
 	}
 
 	//2601=3,  is_text_equal %1s% another %2s% ignore_case %3d%
-	static OpcodeResult __stdcall opcode_2601(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2601(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(a);
 		OPCODE_READ_PARAM_STRING(b);
@@ -362,7 +364,7 @@ public:
 	}
 
 	//2602=3,  is_text_in_text %1s% sub_text %2s% ignore_case %3d%
-	static OpcodeResult __stdcall opcode_2602(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2602(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(str);
 		OPCODE_READ_PARAM_STRING(substr);
@@ -381,7 +383,7 @@ public:
 	}
 
 	//2603=3,  is_text_prefix %1s% prefix %2s% ignore_case %3d%
-	static OpcodeResult __stdcall opcode_2603(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2603(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(str);
 		OPCODE_READ_PARAM_STRING(prefix);
@@ -395,7 +397,7 @@ public:
 	}
 
 	//2604=3,  is_text_sufix %1s% sufix %2s% ignore_case %3d%
-	static OpcodeResult __stdcall opcode_2604(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2604(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(str);
 		OPCODE_READ_PARAM_STRING(sufix);
@@ -414,6 +416,30 @@ public:
 		auto result = ignoreCase ? _stricmp(str + offset, sufix) : strcmp(str + offset, sufix);
 
 		OPCODE_CONDITION_RESULT(result == 0);
+		return OR_CONTINUE;
+	}
+
+	//2605=-1,display_text_formated offset_left %1d% offset_top %2d% format %3d% args
+	static OpcodeResult __stdcall opcode_2605(CLEO::CRunningScript* thread)
+	{
+		auto posX = OPCODE_READ_PARAM_FLOAT();
+		auto posY = OPCODE_READ_PARAM_FLOAT();
+		OPCODE_READ_PARAM_STRING_FORMATTED(text);
+
+		// new GXT label
+		// includes unprintable character, to ensure there will be no collision with user GXT lables
+		char gxt[8] = { 0x01, 'C', 'L', 'E', 'O', '_', 0x01, 0x00 };
+		gxt[6] += CTheScripts::NumberOfIntroTextLinesThisFrame; // unique label for each possible entry
+
+		textManager.AddFxt(gxt, text);
+
+		auto& draw = CTheScripts::IntroTextLines[CTheScripts::NumberOfIntroTextLinesThisFrame];
+		memcpy(&draw.xPosition, &posX, sizeof(draw.xPosition)); // invalid type in Plugin SDK. Just copy memory
+		memcpy(&draw.yPosition, &posY, sizeof(draw.yPosition));
+		strcpy(draw.gxtEntry, gxt);
+
+		CTheScripts::NumberOfIntroTextLinesThisFrame++;
+
 		return OR_CONTINUE;
 	}
 } textInstance;
