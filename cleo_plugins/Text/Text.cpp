@@ -58,7 +58,7 @@ public:
 		CLEO_RegisterOpcode(0x2602, opcode_2602); // is_text_in_text
 		CLEO_RegisterOpcode(0x2603, opcode_2603); // is_text_prefix
 		CLEO_RegisterOpcode(0x2604, opcode_2604); // is_text_sufix
-		CLEO_RegisterOpcode(0x2605, opcode_2605); // display_text_formated
+		CLEO_RegisterOpcode(0x2605, opcode_2605); // display_text_formatted
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
@@ -419,7 +419,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	//2605=-1,display_text_formated offset_left %1d% offset_top %2d% format %3d% args
+	//2605=-1,display_text_formatted offset_left %1d% offset_top %2d% format %3d% args
 	static OpcodeResult __stdcall opcode_2605(CLEO::CRunningScript* thread)
 	{
 		auto posX = OPCODE_READ_PARAM_FLOAT();
