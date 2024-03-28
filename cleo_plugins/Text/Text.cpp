@@ -115,7 +115,7 @@ public:
 
 		auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
 		strncpy(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
-		CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style);
+		CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
 		return OR_CONTINUE;
 	}
 
@@ -160,7 +160,7 @@ public:
 
 		auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
 		strncpy(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
-		CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style);
+		CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
 		return OR_CONTINUE;
 	}
 
