@@ -5,10 +5,10 @@
 using namespace CLEO;
 using namespace plugin;
 
-class IntOperations
+class Math
 {
 public:
-    IntOperations()
+    Math()
     {
         auto cleoVer = CLEO_GetVersion();
         if (cleoVer < CLEO_VERSION)
@@ -18,11 +18,14 @@ public:
             return;
         }
 
-        //register opcodes
+        // register opcodes
         CLEO_RegisterOpcode(0x0A8E, opcode_0A8E); // x = a + b (int)
         CLEO_RegisterOpcode(0x0A8F, opcode_0A8F); // x = a - b (int)
         CLEO_RegisterOpcode(0x0A90, opcode_0A90); // x = a * b (int)
         CLEO_RegisterOpcode(0x0A91, opcode_0A91); // x = a / b (int)
+
+        CLEO_RegisterOpcode(0x0AEE, opcode_0AEE); // pow
+        CLEO_RegisterOpcode(0x0AEF, opcode_0AEF); // log
 
         CLEO_RegisterOpcode(0x0B10, Script_IntOp_AND);
         CLEO_RegisterOpcode(0x0B11, Script_IntOp_OR);
@@ -86,6 +89,30 @@ public:
         auto result = a / b;
 
         OPCODE_WRITE_PARAM_INT(result);
+        return OR_CONTINUE;
+    }
+
+    //0AEE=3,%3d% = %1d% exp %2d% // all floats
+    static OpcodeResult __stdcall opcode_0AEE(CRunningScript* thread)
+    {
+        auto base = OPCODE_READ_PARAM_FLOAT();
+        auto exponent = OPCODE_READ_PARAM_FLOAT();
+
+        auto result = (float)pow(base, exponent);
+
+        OPCODE_WRITE_PARAM_FLOAT(result);
+        return OR_CONTINUE;
+    }
+
+    //0AEF=3,%3d% = log %1d% base %2d% // all floats
+    static OpcodeResult __stdcall opcode_0AEF(CRunningScript* thread)
+    {
+        auto argument = OPCODE_READ_PARAM_FLOAT();
+        auto base = OPCODE_READ_PARAM_FLOAT();
+
+        auto exponent = log(argument) / log(base);
+
+        OPCODE_WRITE_PARAM_FLOAT(exponent);
         return OR_CONTINUE;
     }
 
@@ -310,4 +337,4 @@ public:
         
         return OR_CONTINUE;
     }
-} intOperations;
+} Math;

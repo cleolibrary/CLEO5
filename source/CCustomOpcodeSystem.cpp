@@ -55,8 +55,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread); // get_random_car_in_sphere_no_save_recursive
 	OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread); // get_random_object_in_sphere_no_save_recursive
 
-	OpcodeResult __stdcall opcode_0AEE(CRunningScript* thread); // pow
-	OpcodeResult __stdcall opcode_0AEF(CRunningScript* thread); // log
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 	// 2000 free slot
 	// 2001 free slot
@@ -246,8 +244,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
 		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
 		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
-		CLEO_RegisterOpcode(0x0AEE, opcode_0AEE);
-		CLEO_RegisterOpcode(0x0AEF, opcode_0AEF);
 
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		
@@ -1513,24 +1509,6 @@ namespace CLEO
 		last_found = 0;
 		OPCODE_WRITE_PARAM_INT(-1);
 		OPCODE_CONDITION_RESULT(false);
-		return OR_CONTINUE;
-	}
-
-	//0AEE=3,%3d% = %1d% exp %2d% //all floats
-	OpcodeResult __stdcall opcode_0AEE(CRunningScript *thread)
-	{
-		float base, arg;
-		*thread >> base >> arg;
-		*thread << (float)pow(base, arg);
-		return OR_CONTINUE;
-	}
-
-	//0AEF=3,%3d% = log %1d% base %2d% //all floats
-	OpcodeResult __stdcall opcode_0AEF(CRunningScript *thread)
-	{
-		float base, arg;
-		*thread >> arg >> base;
-		*thread << (float)(log(arg) / log(base));
 		return OR_CONTINUE;
 	}
 

@@ -36,6 +36,7 @@
   - new opcode **2302 ([write_block_to_file](https://library.sannybuilder.com/#/sa/file/2302))**
   - new opcode **2303 ([resolve_filepath](https://library.sannybuilder.com/#/sa/file/2303))**
   - new opcode **2304 ([get_script_filename](https://library.sannybuilder.com/#/sa/file/2304))**
+- new [Math](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Math) plugin
 - new [MemoryOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/MemoryOperations) plugin
   - memory related opcodes moved from CLEO core into separated plugin
   - validation of input and output parameters for all opcodes
