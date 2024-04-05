@@ -2,7 +2,7 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AC8" // allocate_memory
-test("0AC8 (allocate_memory)", @tests)
+test("0AC8 (allocate_memory)", tests)
 terminate_this_custom_script
 
 function tests
@@ -10,8 +10,8 @@ function tests
     before_each(@allocate)
     after_each(@free)
     
-    it("should return valid pointer", @test1)
-    it("should point to zero-filled mem in CLEO5", @test2)
+    it("should return valid pointer", test1)
+    it("should point to zero-filled mem in CLEO5", test2)
     return
 
     function test1

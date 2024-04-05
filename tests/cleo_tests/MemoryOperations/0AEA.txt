@@ -2,24 +2,19 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AEA" // get_ped_ref
-test("0AEA (get_ped_ref)", @tests)
+test("0AEA (get_ped_ref)", tests)
 terminate_this_custom_script
 
 function tests
-    it("should return ped handle for pointer", @test1)
+    it("should return ped handle for pointer", test1)
     return
     
     function test1
         int handle = get_player_char 0
         int ptr = get_ped_pointer handle
         int handle2 = get_ped_ref ptr
-
-        if
-            handle == handle2
-        then
-            assert(true)
-        else
-            assert(false)
-        end
+        
+        handle == handle2
+        assert_result_true()
     end
 end

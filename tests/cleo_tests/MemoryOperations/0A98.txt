@@ -2,12 +2,12 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0A98" // get_vehicle_pointer
-test("0A98 (get_object_pointer)", @tests)
+test("0A98 (get_object_pointer)", tests)
 terminate_this_custom_script
 
 function tests
 
-    it("should return a valid pointer", @test1)
+    it("should return a valid pointer", test1)
     return
 
     function test1

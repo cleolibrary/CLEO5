@@ -2,21 +2,21 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '0A8C'
-test("0A8C (write_memory)", @tests)
+test("0A8C (write_memory)", tests)
 terminate_this_custom_script
 
 
 function tests
     before_each(@before)
 
-    it("should write 0 bytes", @test1)
-    it("should write 1 byte", @test2)
-    it("should write 2 bytes", @test3)
-    it("should write 3 bytes", @test4)
-    it("should write 4 bytes", @test5)
-    it("should write 5 bytes", @test6)
-    it("should write 7 bytes", @test7)
-    it("should write float", @test8)
+    it("should write 0 bytes", test1)
+    it("should write 1 byte", test2)
+    it("should write 2 bytes", test3)
+    it("should write 3 bytes", test4)
+    it("should write 4 bytes", test5)
+    it("should write 5 bytes", test6)
+    it("should write 7 bytes", test7)
+    it("should write float", test8)
     return
     
     :before

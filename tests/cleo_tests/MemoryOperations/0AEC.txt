@@ -2,11 +2,11 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AEC" // get_object_ref
-test("0AEC (get_object_ref)", @tests)
+test("0AEC (get_object_ref)", tests)
 terminate_this_custom_script
 
 function tests
-    it("should return vehicle handle for pointer", @test1)
+    it("should return vehicle handle for pointer", test1)
     return
 
     function test1
@@ -17,13 +17,8 @@ function tests
         int handle2 = get_object_ref ptr
         mark_object_as_no_longer_needed handle
 
-        if
-            handle == handle2
-        then
-            assert(true)
-        else
-            assert(false)
-        end
+        handle == handle2
+        assert_result_true()
     end
 end
 

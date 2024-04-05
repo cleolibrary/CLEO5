@@ -2,13 +2,13 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '2602'
-test("2602 (is_text_in_text)", @tests)
+test("2602 (is_text_in_text)", tests)
 terminate_this_custom_script
 
 
 function tests
-    it("should contain sub-text", @test1)
-    it("should NOT contain sub-text", @test2)
+    it("should contain sub-text", test1)
+    it("should NOT contain sub-text", test2)
     return
 
     function test1

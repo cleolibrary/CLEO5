@@ -2,11 +2,11 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '0ADF'
-test("0ADF (add_text_label)", @tests)
+test("0ADF (add_text_label)", tests)
 terminate_this_custom_script
 
 function tests
-    it("should add dynamic GXT", @test1)
+    it("should add dynamic GXT", test1)
     return
     
     function test1

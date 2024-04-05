@@ -2,11 +2,11 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '0ADB'
-test("0ADB (get_name_of_vehicle_model)", @tests)
+test("0ADB (get_name_of_vehicle_model)", tests)
 terminate_this_custom_script
 
 function tests
-    it("should return vehicle model name", @test1)
+    it("should return vehicle model name", test1)
 
     return
 

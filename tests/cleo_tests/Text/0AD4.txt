@@ -2,16 +2,16 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '0AD4'
-test("0AD4 (scan_string)", @tests)
+test("0AD4 (scan_string)", tests)
 terminate_this_custom_script
 
 
 function tests
-    it("should scan numbers", @test1)
-    it("should scan characters", @test2)
-    it("should scan strings", @test3)
-    it("should report arg count missmatch", @test4)
-    it("should respect target string size", @test5)
+    it("should scan numbers", test1)
+    it("should scan characters", test2)
+    it("should scan strings", test3)
+    it("should report arg count missmatch", test4)
+    it("should respect target string size", test5)
     return
 
     function test1

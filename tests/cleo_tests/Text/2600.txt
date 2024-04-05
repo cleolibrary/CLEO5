@@ -2,17 +2,17 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '2600'
-test("2600 (is_text_empty)", @tests)
+test("2600 (is_text_empty)", tests)
 terminate_this_custom_script
 
 
 function tests
-    it("short string should be empty", @test1)
-    it("short string should NOT be empty", @test2)
-    it("long string should be empty", @test3)
-    it("long string should NOT be empty", @test4)
-    it("buffer string should be empty", @test5)
-    it("buffer string should NOT be empty", @test6)
+    it("short string should be empty", test1)
+    it("short string should NOT be empty", test2)
+    it("long string should be empty", test3)
+    it("long string should NOT be empty", test4)
+    it("buffer string should be empty", test5)
+    it("buffer string should NOT be empty", test6)
     return
 
     function test1

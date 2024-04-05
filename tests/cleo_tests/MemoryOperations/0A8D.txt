@@ -2,18 +2,18 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '0A8D'
-test("0A8D (read_memory)", @tests)
+test("0A8D (read_memory)", tests)
 terminate_this_custom_script
 
 function tests
     before_each(@prepare_tests)
 
-    it("should read 0 bytes", @test1)
-    it("should read 1 byte", @test2)
-    it("should read 2 bytes", @test3)
-    it("should read 3 bytes", @test4)
-    it("should read 4 bytes", @test5)
-    it("should read float", @test6)
+    it("should read 0 bytes", test1)
+    it("should read 1 byte", test2)
+    it("should read 2 bytes", test3)
+    it("should read 3 bytes", test4)
+    it("should read 4 bytes", test5)
+    it("should read float", test6)
     
     return
     

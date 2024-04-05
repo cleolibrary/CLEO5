@@ -2,12 +2,12 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AE9" // pop_float
-test("0AE9 (pop_float)", @tests)
+test("0AE9 (pop_float)", tests)
 terminate_this_custom_script
 
 function tests
 
-    it("should pop float from stack", @test1)
+    it("should pop float from stack", test1)
     return
 
 
@@ -17,14 +17,9 @@ function tests
         call_function 0x0823CEE {argCount} 1 {pop} 1 {arg} 2@ // double atof(const char *)
 
         pop_float {result} 3@
-
-        if
-            3@ == 42.5
-        then
-            assert(true)
-        else
-            assert(false)
-        end
+        
+        3@ == 42.5
+        assert_result_true()
 
     end
 end

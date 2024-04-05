@@ -2,12 +2,12 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AA4"
-test("0AA4 (get_dynamic_library_procedure)", @tests)
+test("0AA4 (get_dynamic_library_procedure)", tests)
 terminate_this_custom_script
 
 function tests
 
-    it("should return address of Sleep function from kernel32.dll", @test1)
+    it("should return address of Sleep function from kernel32.dll", test1)
     return
     
     function test1

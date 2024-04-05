@@ -2,12 +2,12 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AC6" // get_label_pointer
-test("0AC6 (get_label_pointer)", @tests)
+test("0AC6 (get_label_pointer)", tests)
 terminate_this_custom_script
 
 function tests
 
-    it("should return valid pointer", @test1)
+    it("should return valid pointer", test1)
     return
     
     function test1

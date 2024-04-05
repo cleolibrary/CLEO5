@@ -2,31 +2,24 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0A9A" // open_file
-debug_on
-
-test("0A9A (open_file)", @tests)
+test("0A9A (open_file)", tests)
 terminate_this_custom_script
 
 
 function tests
 
-    it("should fail on a non-existing file", @test1)
-    it("should open existing file", @test2)
+    it("should fail on a non-existing file", test1)
+    it("should open existing file", test2)
     return
     
     function test1
-        if
-            0@ = open_file "cleo\not_a_file.txt" {mode} "r" // tested opcode
-        then
-            assert(false)
-        else
-            assert(true)
-        end
+        0@ = open_file "cleo\\not_a_file.txt" {mode} "r" // tested opcode
+        assert_result_false()
     end
     
      function test2
         if
-            0@ = open_file "cleo\.cleo.log" {mode} "r" // tested opcode
+            0@ = open_file "cleo\\.cleo.log" {mode} "r" // tested opcode
         then
             assert(true)
             close_file 0@

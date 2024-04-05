@@ -2,13 +2,13 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '2603'
-test("2603 (is_text_prefix)", @tests)
+test("2603 (is_text_prefix)", tests)
 terminate_this_custom_script
 
 
 function tests
-    it("should contain text prefix", @test1)
-    it("should NOT contain text prefix", @test2)
+    it("should contain text prefix", test1)
+    it("should NOT contain text prefix", test2)
     return
 
     function test1

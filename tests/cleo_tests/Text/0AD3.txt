@@ -2,15 +2,15 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '0AD3'
-test("0AD3 (string_format)", @tests)
+test("0AD3 (string_format)", tests)
 terminate_this_custom_script
 
 
 function tests
-    it("should format string", @test1)
-    it("should respect short string variable size", @test2)
-    it("should respect long string variable size", @test3)
-    it("should create long text", @test4)
+    it("should format string", test1)
+    it("should respect short string variable size", test2)
+    it("should respect long string variable size", test3)
+    it("should create long text", test4)
     
     return
 

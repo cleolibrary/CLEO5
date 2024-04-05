@@ -2,7 +2,7 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '2601'
-test("2601 (is_text_equal)", @tests)
+test("2601 (is_text_equal)", tests)
 terminate_this_custom_script
 
 
@@ -10,8 +10,8 @@ function tests
     before_each(@prepare_tests)
     after_each(@cleanup_tests)
     
-    it("should texts be equal", @test1)
-    it("should texts be NOT equal", @test2)
+    it("should texts be equal", test1)
+    it("should texts be NOT equal", test2)
     return
     
     :prepare_tests

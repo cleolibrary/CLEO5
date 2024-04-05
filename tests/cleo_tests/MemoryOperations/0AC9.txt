@@ -2,12 +2,12 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AC9" // free_memory
-test("0AC9 (free_memory)", @tests)
+test("0AC9 (free_memory)", tests)
 terminate_this_custom_script
 
 function tests
 
-    it("should free allocated memory", @test1)
+    it("should free allocated memory", test1)
     return
     
     function test1
