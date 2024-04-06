@@ -8,13 +8,14 @@ CLEO requires an 'ASI Loader' installed to run which is provided with the releas
 No additional files are replaced, however the following files and folders are added:
 
 - cleo\ (CLEO script directory)
-- cleo\.config\sa.json (opcodes info file)
+- cleo\\.config\sa.json (opcodes info file)
 - cleo\cleo_plugins\SA.Audio.cleo (audio playback utilities powered by BASS.dll library)
 - cleo\cleo_plugins\SA.DebugUtils.cleo (script debugging utilities plugin)
 - cleo\cleo_plugins\SA.FileSystemOperations.cleo (disk drive files related operations plugin)
 - cleo\cleo_plugins\SA.IniFiles.cleo (.ini config files handling plugin)
 - cleo\cleo_plugins\SA.IntOperations.cleo (additional math operations plugin)
-- cleo\cleo_plugins\SA.MemoryOperations (memory and .dll libraries utilities plugin)
+- cleo\cleo_plugins\SA.MemoryOperations.cleo (memory and .dll libraries utilities plugin)
+- cleo\cleo_plugins\SA.Text.cleo (text processing plugin)
 - cleo\cleo_saves\ (CLEO save directory)
 - cleo\cleo_text\ (CLEO text directory)
 - cleo.asi (core library)
