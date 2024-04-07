@@ -1,8 +1,6 @@
 const { appendFileSync, readFileSync, writeFileSync } = require("fs");
 const { EOL } = require("os");
-const { GITHUB_OUTPUT } = process.env;
-
-const GITHUB_REF_NAME = "v5.0.0-alpha.54";
+const { GITHUB_OUTPUT, GITHUB_REF_NAME } = process.env;
 
 if (GITHUB_REF_NAME) {
   const version = GITHUB_REF_NAME.startsWith("v") ? GITHUB_REF_NAME.slice(1) : GITHUB_REF_NAME;
