@@ -2,8 +2,10 @@ name: CLEO 5 Release Build
 
 on:
   push:
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+**'
+    branches:
+      - upd1
+    # tags:
+      # - 'v[0-9]+.[0-9]+.[0-9]+**'
 
 jobs:
   build:
@@ -32,7 +34,7 @@ jobs:
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
 
-      - name: Prepare Files
+      - name: Prepare Base Files
         id: prepare_archive
         shell: cmd
         run: |
@@ -55,12 +57,19 @@ jobs:
           @REM download Sanny Builder Library json
           curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
 
+          xcopy /E /I .output\Release .output\Release_with_Silent_ASI_Loader
+          xcopy /E /I .output\Release .output\Release_with_Ultimate_ASI_Loader
+
           @REM install Silent's ASI Loader
           curl https://silent.rockstarvision.com/uploads/silents_asi_loader_13.zip -o silents_asi_loader_13.zip
-          powershell.exe -NoP -NonI -Command "Expand-Archive '.\silents_asi_loader_13.zip' '.\.output\Release'"
-          move .output\Release\ReadMe.txt ".output\Release\cleo_readme\ASI Loader Readme.txt"
-          rmdir /s /q .output\Release\advanced_plugin_management_example
-          rmdir /s /q .output\Release\scripts
+          powershell.exe -NoP -NonI -Command "Expand-Archive '.\silents_asi_loader_13.zip' '.\.output\Release_with_Silent_ASI_Loader'"
+          move .output\Release_with_Silent_ASI_Loader\ReadMe.txt ".output\Release_with_Silent_ASI_Loader\cleo_readme\ASI Loader Readme.txt"
+          rmdir /s /q .output\Release_with_Silent_ASI_Loader\advanced_plugin_management_example
+          rmdir /s /q .output\Release_with_Silent_ASI_Loader\scripts
+
+          @REM install Ultimate ASI Loader
+          curl https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/Win32-latest/vorbisFile-Win32.zip -o ual.zip
+          powershell.exe -NoP -NonI -Command "Expand-Archive '.\ual.zip' '.\.output\Release_with_Ultimate_ASI_Loader'"
 
       - name: Convert Markdown to HTML
         id: md_to_html
@@ -70,12 +79,28 @@ jobs:
           move README.html .output\Release\cleo_readme\README.html
           move CHANGELOG.html .output\Release\cleo_readme\CHANGELOG.html
 
-      - name: Pack binaries (Main)
+      - name: Pack Base Archive
         uses: ThirteenAG/zip-release@master
         with:
           path: ./.output/Release/*
           type: "zip"
-          filename: ${{ steps.read_version.outputs.archive_name }}
+          filename: ${{ steps.read_version.outputs['base'] }}
+          exclusions: "*.pdb *.lib *.exp"
+
+      - name: Pack Base + Silent's ASI Loader
+        uses: ThirteenAG/zip-release@master
+        with:
+          path: ./.output/Release_with_Silent_ASI_Loader/*
+          type: "zip"
+          filename: ${{ steps.read_version.outputs['base+silent_asi_loader'] }}
+          exclusions: "*.pdb *.lib *.exp"
+      
+      - name: Pack Base + UAL
+        uses: ThirteenAG/zip-release@master
+        with:
+          path: ./.output/Release_with_Ultimate_ASI_Loader/*
+          type: "zip"
+          filename: ${{ steps.read_version.outputs['base+ultimate_asi_loader'] }}
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Upload Release
@@ -86,4 +111,4 @@ jobs:
           bodyFile: 'changes.txt' # generated in read_version
           tag: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          artifacts: ${{ steps.read_version.outputs.archive_name }}
+          artifacts: join([steps.read_version.outputs['base'], steps.read_version.outputs['base+silent_asi_loader'], steps.read_version.outputs['base+ultimate_asi_loader']]}}

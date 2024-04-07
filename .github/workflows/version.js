@@ -1,11 +1,16 @@
 const { appendFileSync, readFileSync, writeFileSync } = require("fs");
 const { EOL } = require("os");
-const { GITHUB_OUTPUT, GITHUB_REF_NAME } = process.env;
+const { GITHUB_OUTPUT } = process.env;
+
+const GITHUB_REF_NAME = "v5.0.0-alpha.54";
 
 if (GITHUB_REF_NAME) {
   const version = GITHUB_REF_NAME.startsWith("v") ? GITHUB_REF_NAME.slice(1) : GITHUB_REF_NAME;
   addOutput("version", version);
-  addOutput("archive_name", `SA.CLEO_${GITHUB_REF_NAME}.zip`);
+  addOutput("base", `SA.CLEO_${GITHUB_REF_NAME}_(no_ASI_Loader).zip`);
+  addOutput("base+silent_asi_loader", `SA.CLEO_${GITHUB_REF_NAME}+Silent_ASI_Loader.zip`);
+  addOutput("base+ultimate_asi_loader", `SA.CLEO_${GITHUB_REF_NAME}+Ultimate_ASI_Loader.zip`);
+  addOutput("sdk", `SA.CLEO_${GITHUB_REF_NAME}_SDK.zip`);
 
   // update cleo.h to replace version
   const cleoH = readFileSync("cleo_sdk/cleo.h", { encoding: "utf-8" });
