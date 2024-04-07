@@ -2,10 +2,8 @@ name: CLEO 5 Release Build
 
 on:
   push:
-    branches:
-      - upd1
-    # tags:
-      # - 'v[0-9]+.[0-9]+.[0-9]+**'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+**'
 
 jobs:
   build:
@@ -116,7 +114,7 @@ jobs:
         with:
           path: ./cleo_sdk/*
           type: "zip"
-          filename: SA.CLEO_${{ github.ref_name }}+SDK.zip
+          filename: SA.CLEO_${{ github.ref_name }}_SDK.zip
           exclusions: "*.pdb *.exp"
           
       - name: Upload Release
@@ -125,6 +123,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ steps.read_version.outputs.version }}
           bodyFile: 'changes.txt' # generated in read_version
-          tag: 'v5.0.0-alpha.54'
-          prerelease: true
+          tag: ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           artifacts: "SA.CLEO_*.zip"
