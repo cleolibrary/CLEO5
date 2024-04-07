@@ -53,6 +53,9 @@ jobs:
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
           xcopy /E /I tests .output\Release\cleo
+
+          @REM copy SDK
+          copy .output\Release\CLEO.lib cleo_sdk\CLEO.lib
           
           @REM download Sanny Builder Library json
           curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
@@ -89,7 +92,7 @@ jobs:
         with:
           path: ./.output/Release/*
           type: "zip"
-          filename: ${{ steps.read_version.outputs['base'] }}
+          filename: SA.CLEO_${{ github.ref_name }}_no_ASI_Loader.zip
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack Base + Silent's ASI Loader
@@ -97,7 +100,7 @@ jobs:
         with:
           path: ./.output/Release_with_Silent_ASI_Loader/*
           type: "zip"
-          filename: ${{ steps.read_version.outputs['base+silent_asi_loader'] }}
+          filename: SA.CLEO_${{ github.ref_name }}+Silent_ASI_Loader.zip
           exclusions: "*.pdb *.lib *.exp"
       
       - name: Pack Base + UAL
@@ -105,7 +108,15 @@ jobs:
         with:
           path: ./.output/Release_with_Ultimate_ASI_Loader/*
           type: "zip"
-          filename: ${{ steps.read_version.outputs['base+ultimate_asi_loader'] }}
+          filename: SA.CLEO_${{ github.ref_name }}+Ultimate_ASI_Loader.zip
+          exclusions: "*.pdb *.lib *.exp"
+
+      - name: CLEO SDK
+        uses: ThirteenAG/zip-release@master
+        with:
+          path: ./cleo_sdk/*
+          type: "zip"
+          filename: SA.CLEO_${{ github.ref_name }}+SDK.zip
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Upload Release
