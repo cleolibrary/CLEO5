@@ -57,6 +57,18 @@ jobs:
           @REM download Sanny Builder Library json
           curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
 
+      - name: Convert Markdown to HTML
+        id: md_to_html
+        run: |
+          npm install showdown
+          node.exe .github/workflows/markdown.js
+          move README.html .output\Release\cleo_readme\README.html
+          move CHANGELOG.html .output\Release\cleo_readme\CHANGELOG.html
+
+      - name: Download ASI Loaders
+        id: download_asi_loaders
+        shell: cmd
+        run: |
           xcopy /E /I .output\Release .output\Release_with_Silent_ASI_Loader
           xcopy /E /I .output\Release .output\Release_with_Ultimate_ASI_Loader
 
@@ -68,16 +80,9 @@ jobs:
           rmdir /s /q .output\Release_with_Silent_ASI_Loader\scripts
 
           @REM install Ultimate ASI Loader
-          curl https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/Win32-latest/vorbisFile-Win32.zip -o ual.zip
+          curl https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/Win32-latest/vorbisFile-Win32.zip -L -o ual.zip
           powershell.exe -NoP -NonI -Command "Expand-Archive '.\ual.zip' '.\.output\Release_with_Ultimate_ASI_Loader'"
-
-      - name: Convert Markdown to HTML
-        id: md_to_html
-        run: |
-          npm install showdown
-          node.exe .github/workflows/markdown.js
-          move README.html .output\Release\cleo_readme\README.html
-          move CHANGELOG.html .output\Release\cleo_readme\CHANGELOG.html
+          rm .\.output\Release_with_Ultimate_ASI_Loader\vorbisFile-Win32.SHA512
 
       - name: Pack Base Archive
         uses: ThirteenAG/zip-release@master
@@ -110,5 +115,5 @@ jobs:
           name: ${{ steps.read_version.outputs.version }}
           bodyFile: 'changes.txt' # generated in read_version
           tag: 'v5.0.0-alpha.54'
-          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          prerelease: true
           artifacts: "SA.CLEO_*.zip"
