@@ -111,4 +111,4 @@ jobs:
           bodyFile: 'changes.txt' # generated in read_version
           tag: 'v5.0.0-alpha.54'
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          artifacts: join([steps.read_version.outputs['base'], steps.read_version.outputs['base+silent_asi_loader'], steps.read_version.outputs['base+ultimate_asi_loader']]}}
+          artifacts: ${{ join([steps.read_version.outputs['base'], steps.read_version.outputs['base+silent_asi_loader'], steps.read_version.outputs['base+ultimate_asi_loader']] }}
