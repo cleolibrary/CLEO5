@@ -55,9 +55,7 @@ jobs:
           xcopy /E /I tests .output\Release\cleo
 
           @REM copy SDK
-          mkdir .output\Release_SDK
-          xcopy /E /I cleo_sdk .output\Release_SDK
-          copy .output\Release\CLEO.lib .output\Release_SDK\CLEO.lib
+          copy .output\Release\CLEO.lib cleo_sdk\CLEO.lib
           
           @REM download Sanny Builder Library json
           curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
@@ -116,11 +114,11 @@ jobs:
       - name: CLEO SDK
         uses: ThirteenAG/zip-release@master
         with:
-          path: ./.output/Release_SDK/*
+          path: ./cleo_sdk/*
           type: "zip"
           filename: SA.CLEO_${{ github.ref_name }}+SDK.zip
-          exclusions: "*.pdb *.lib *.exp"
-
+          exclusions: "*.pdb *.exp"
+          
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
