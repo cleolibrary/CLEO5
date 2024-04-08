@@ -21,6 +21,8 @@ namespace CLEO
     
     OPCODE_CONDITION_RESULT(value) // set result
     OPCODE_SKIP_PARAMS(count) // ignore X params
+
+    OPCODE_PEEK_PARAM_TYPE() // get param type without advancing the script
     
     // reading opcode input arguments
     OPCODE_READ_PARAM_BOOL()
@@ -458,6 +460,7 @@ namespace CLEO
     }
 
     #define OPCODE_SKIP_PARAMS(_count) CLEO_SkipOpcodeParams(thread, _count)
+    #define OPCODE_PEEK_PARAM_TYPE() thread->PeekDataType()
 
     // macros for reading opcode input params. Performs type validation, throws error and suspends script if user provided invalid argument type
     // TOD: add range checks for limited size types?

@@ -3,4 +3,17 @@
   <ItemGroup>
     <ClCompile Include="Math.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cleo_sdk">
+      <UniqueIdentifier>{20ddb375-f549-46bb-814d-53e534880d23}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\cleo_sdk\CLEO.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+  </ItemGroup>
 </Project>
