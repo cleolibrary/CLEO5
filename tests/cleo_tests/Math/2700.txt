@@ -8,7 +8,7 @@ terminate_this_custom_script
 function tests
     it("should has no bit set", test1)
     it("should has all bits set", test2)
-    it("should test some bits", test2)
+    it("should test some bits", test3)
     return
     
     function test1
