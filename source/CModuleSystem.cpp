@@ -417,6 +417,13 @@ bool CModuleSystem::CModule::ModuleExport::LoadFromFile(std::ifstream& file)
 		return false;
 	}
 
+	// skip flags (1 byte) and address (4 bytes)
+	file.seekg(5, file.cur);
+	if (file.fail())
+	{
+		return false;
+	}
+
 	return true; // done
 }
 
