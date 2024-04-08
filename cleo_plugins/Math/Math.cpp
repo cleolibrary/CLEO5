@@ -47,7 +47,7 @@ public:
         CLEO_RegisterOpcode(0x2701, opcode_2701); // set_bit
         CLEO_RegisterOpcode(0x2702, opcode_2702); // clear_bit
         CLEO_RegisterOpcode(0x2703, opcode_2703); // toggle_bit
-        CLEO_RegisterOpcode(0x2704, opcode_2704); // is_null
+        CLEO_RegisterOpcode(0x2704, opcode_2704); // has_value
     }
 
     //0A8E=3,%3d% = %1d% + %2d% ; int
@@ -418,7 +418,7 @@ public:
         return OR_CONTINUE;
     }
 
-    //2704=1,  is_null value %1d%
+    //2704=1,  has_value value %1d%
     static OpcodeResult WINAPI opcode_2704(CScriptThread* thread)
     {
         auto paramType = OPCODE_PEEK_PARAM_TYPE();
@@ -426,12 +426,12 @@ public:
         if(IsImmString(paramType) || IsVarString(paramType))
         {
             OPCODE_READ_PARAM_STRING_LEN(text, 1); // one character is all we need
-            OPCODE_CONDITION_RESULT(text[0] == '\0');
+            OPCODE_CONDITION_RESULT(text[0] != '\0');
             return OR_CONTINUE;
         }
 
         auto value = OPCODE_READ_PARAM_ANY32();
-        OPCODE_CONDITION_RESULT(value == 0);
+        OPCODE_CONDITION_RESULT(value != 0);
         return OR_CONTINUE;
     }
 } Math;

@@ -2,103 +2,103 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name '2704'
-test("2704 (is_null)", tests)
+test("2704 (has_value)", tests)
 terminate_this_custom_script
 
 function tests
-    it("should test null", test1)
-    it("should test NOT null", test2)
+    it("should has NOT value", test1)
+    it("should has value", test2)
     return
     
     function test1
     // int
-        2704: is_null {value} 0
-        assert_result_true()
+        2704: has_value {value} 0
+        assert_result_false()
         
         0@ = 0
-        2704: is_null {value} 0@
-        assert_result_true()
+        2704: has_value {value} 0@
+        assert_result_false()
         
     // float
-        2704: is_null {value} 0.0
-        assert_result_true()
+        2704: has_value {value} 0.0
+        assert_result_false()
         
         0@ = 0.0
-        2704: is_null {value} 0@
-        assert_result_true()
+        2704: has_value {value} 0@
+        assert_result_false()
         
     // short string
-        2704: is_null {value} ''
-        assert_result_true()
+        2704: has_value {value} ''
+        assert_result_false()
         
         0@s = ''
-        2704: is_null {value} 0@s
-        assert_result_true()
+        2704: has_value {value} 0@s
+        assert_result_false()
         
     // long string
-        2704: is_null {value} ""
-        assert_result_true()
+        2704: has_value {value} ""
+        assert_result_false()
         
         0@v = ""
-        2704: is_null {value} 0@v
-        assert_result_true()
+        2704: has_value {value} 0@v
+        assert_result_false()
     end
     
     function test2
     // int
-        2704: is_null {value} 1
-        assert_result_false()
-        
-        0@ = 1
-        2704: is_null {value} 0@
-        assert_result_false()
-        
-        2704: is_null {value} 0x00001000
-        assert_result_false()
-        
-        2704: is_null {value} -1
-        assert_result_false()
-        
-        2704: is_null {value} 1.0
-        assert_result_false()
-        
-    // float        
-        0@ = 0.0
-        2704: is_null {value} 0@
+        2704: has_value {value} 1
         assert_result_true()
         
-        2704: is_null {value} 0.000001
-        assert_result_false()
+        0@ = 1
+        2704: has_value {value} 0@
+        assert_result_true()
+        
+        2704: has_value {value} 0x00001000
+        assert_result_true()
+        
+        2704: has_value {value} -1
+        assert_result_true()
+        
+        2704: has_value {value} 1.0
+        assert_result_true()
+        
+    // float        
+        0@ = 0.000001
+        2704: has_value {value} 0@
+        assert_result_true()
+        
+        2704: has_value {value} 0.000001
+        assert_result_true()
         
     // short string
-        2704: is_null {value} 'a'
-        assert_result_false()
+        2704: has_value {value} 'a'
+        assert_result_true()
         
         0@s = 'a'
-        2704: is_null {value} 0@s
-        assert_result_false()
+        2704: has_value {value} 0@s
+        assert_result_true()
         
-        2704: is_null {value} ' '
-        assert_result_false()
+        2704: has_value {value} ' '
+        assert_result_true()
         
-        2704: is_null {value} 'null'
-        assert_result_false()
+        2704: has_value {value} 'null'
+        assert_result_true()
         
     // long string
-        2704: is_null {value} "a"
+        2704: has_value {value} "a"
         assert_result_true()
         
         0@v = "a"
-        2704: is_null {value} 0@v
+        2704: has_value {value} 0@v
         assert_result_true()
         
-        2704: is_null {value} " "
-        assert_result_false()
+        2704: has_value {value} " "
+        assert_result_true()
         
-        2704: is_null {value} "null"
-        assert_result_false()
+        2704: has_value {value} "null"
+        assert_result_true()
         
-        2704: is_null {value} "some very long testing string"
-        assert_result_false()
+        2704: has_value {value} "some very long testing string"
+        assert_result_true()
     end    
 end
