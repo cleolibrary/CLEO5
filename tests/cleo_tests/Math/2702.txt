@@ -1,0 +1,37 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2702'
+test("2702 (clear_bit)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should clear bits", test1)
+    return
+    
+    function test1
+        0@ = 0x12345678
+        2702: clear_bit {var_number} 0@ {bitIndex} 0 // was not set
+        assert_eq(0@, 0x12345678)
+        
+        0@ = 0x12345678
+        2702: clear_bit {var_number} 0@ {bitIndex} 3
+        assert_eq(0@, 0x12345670)
+        
+        0@ = 0x12345678
+        2702: clear_bit {var_number} 0@ {bitIndex} 13 // was not set
+        assert_eq(0@, 0x12345678)
+        
+        0@ = 0x12345678
+        2702: clear_bit {var_number} 0@ {bitIndex} 14
+        assert_eq(0@, 0x12341678)
+        
+        0@ = 0x12345678
+        2702: clear_bit {var_number} 0@ {bitIndex} 28
+        assert_eq(0@, 0x02345678)
+        
+        0@ = 0x12345678
+        2702: clear_bit {var_number} 0@ {bitIndex} 31 // was not set
+        assert_eq(0@, 0x12345678)
+    end    
+end

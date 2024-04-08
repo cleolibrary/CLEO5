@@ -42,6 +42,11 @@ public:
         CLEO_RegisterOpcode(0x0B1C, Scr_IntOp_SHR);
         CLEO_RegisterOpcode(0x0B1D, Scr_IntOp_SHL);
         CLEO_RegisterOpcode(0x0B1E, Sign_Extend);
+
+        CLEO_RegisterOpcode(0x2700, opcode_2700); // is_bit_set
+        CLEO_RegisterOpcode(0x2701, opcode_2701); // set_bit
+        CLEO_RegisterOpcode(0x2702, opcode_2702); // clear_bit
+        CLEO_RegisterOpcode(0x2703, opcode_2703); // toggle_bit
     }
 
     //0A8E=3,%3d% = %1d% + %2d% ; int
@@ -335,6 +340,80 @@ public:
             *operand |= 0xFFFFFFFF << offset; // set all upper bits
         }
         
+        return OR_CONTINUE;
+    }
+
+    //2700=2,  is_bit_set value %1d% bit_index %2d%
+    static OpcodeResult WINAPI opcode_2700(CScriptThread* thread)
+    {
+        auto value = OPCODE_READ_PARAM_UINT();
+        auto bitIndex = OPCODE_READ_PARAM_INT();
+
+        if (bitIndex < 0 || bitIndex > 31)
+        {
+            SHOW_ERROR("Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        bool result = (value >> bitIndex) & 1;
+
+        OPCODE_CONDITION_RESULT(result);
+        return OR_CONTINUE;
+    }
+
+    //2701=2,set_bit value %1d% bit_index %2d%
+    static OpcodeResult WINAPI opcode_2701(CScriptThread* thread)
+    {
+        auto value = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto bitIndex = OPCODE_READ_PARAM_INT();
+
+        if (bitIndex < 0 || bitIndex > 31)
+        {
+            SHOW_ERROR("Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        *value |= 1 << bitIndex;
+
+        return OR_CONTINUE;
+    }
+
+    //2702=2,clear_bit value %1d% bit_index %2d%
+    static OpcodeResult WINAPI opcode_2702(CScriptThread* thread)
+    {
+        auto value = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto bitIndex = OPCODE_READ_PARAM_INT();
+
+        if (bitIndex < 0 || bitIndex > 31)
+        {
+            SHOW_ERROR("Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        *value &= ~(1 << bitIndex);
+
+        return OR_CONTINUE;
+    }
+
+    //2703=3,toggle_bit value %1d% bit_index %2d% state %3d%
+    static OpcodeResult WINAPI opcode_2703(CScriptThread* thread)
+    {
+        auto value = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
+        auto bitIndex = OPCODE_READ_PARAM_INT();
+        auto state = OPCODE_READ_PARAM_BOOL();
+
+        if (bitIndex < 0 || bitIndex > 31)
+        {
+            SHOW_ERROR("Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        DWORD flag = 1 << bitIndex;
+        if (state)
+            *value |= flag;
+        else
+            *value &= ~flag;
+
         return OR_CONTINUE;
     }
 } Math;

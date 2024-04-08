@@ -1,0 +1,25 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AEE'
+test("0AEE (pow)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should power numbers", test1)
+    return
+    
+    function test1
+        0AEE: pow {number} 3.0 {power} 4.0 {var_result} 0@
+        assert_eqf(0@, 81.0)
+        
+        0AEE: pow {number} 16.0 {power} 0.25 {var_result} 0@
+        assert_eqf(0@, 2.0)
+        
+        0AEE: pow {number} 3.1415 {power} 0.0 {var_result} 0@
+        assert_eqf(0@, 1.0)
+        
+        0AEE: pow {number} 3.0 {power} 1.0 {var_result} 0@
+        assert_eqf(0@, 3.0)
+    end
+end

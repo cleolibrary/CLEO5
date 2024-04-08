@@ -1,0 +1,87 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2703'
+test("2703 (toggle_bit)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should toggle bits", test1)
+    it("should handle numbers as bool", test2)
+    return
+    
+    function test1
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} true
+        assert_eq(0@, 0x12345679)
+    
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} false // was not set
+        assert_eq(0@, 0x12345678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 3 {state} true // already set
+        assert_eq(0@, 0x12345678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 3 {state} false
+        assert_eq(0@, 0x12345670)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 13 {state} true
+        assert_eq(0@, 0x12347678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 13 {state} false // was not set
+        assert_eq(0@, 0x12345678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 14 {state} true // already set
+        assert_eq(0@, 0x12345678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 14 {state} false
+        assert_eq(0@, 0x12341678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 28 {state} true // already set
+        assert_eq(0@, 0x12345678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 28 {state} false
+        assert_eq(0@, 0x02345678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 31 {state} true
+        assert_eq(0@, 0x92345678)
+        
+        0@ = 0x12345678
+        2703: toggle_bit {var_number} 0@ {bitIndex} 31 {state} false // was not set
+        assert_eq(0@, 0x12345678)
+    end
+    
+    function test2
+        0@ = 0xF
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} 0
+        assert_eq(0@, 0xE)
+        
+        0@ = 0x0
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} 1
+        assert_eq(0@, 0x1)
+        
+        0@ = 0x0
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} 2
+        assert_eq(0@, 0x1)
+        
+        0@ = 0x0
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} -1
+        assert_eq(0@, 0x1)
+        
+        0@ = 0x0
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} 0x00010000
+        assert_eq(0@, 0x1)
+        
+        0@ = 0x0
+        2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} 0x10000000
+        assert_eq(0@, 0x1)
+end

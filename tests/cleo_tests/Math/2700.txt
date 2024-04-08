@@ -1,0 +1,227 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2700'
+test("2700 (is_bit_set)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should has no bit set", test1)
+    it("should has all bits set", test2)
+    it("should test some bits", test2)
+    return
+    
+    function test1
+        0@ = 0x00000000
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 0
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 1
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 2
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 3
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 4
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 5
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 6
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 7
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 8
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 9
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 10
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 11
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 12
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 13
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 14
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 15
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 16
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 17
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 18
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 19
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 20
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 21
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 22
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 23
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 24
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 25
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 26
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 27
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 28
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 29
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 30
+        assert_result_false()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 31
+        assert_result_false()
+    end
+    
+    function test2
+        0@ = 0xFFFFFFFF
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 0
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 1
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 2
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 3
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 4
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 5
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 6
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 7
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 8
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 9
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 10
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 11
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 12
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 13
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 14
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 15
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 16
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 17
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 18
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 19
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 20
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 21
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 22
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 23
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 24
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 25
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 26
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 27
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 28
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 29
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 30
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0@ {bitIndex} 31
+        assert_result_true()
+    end
+    
+    function test3
+        2700: is_bit_set {number} 0x00000001 {bitIndex} 0
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0x00000004 {bitIndex} 2
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0x00004000 {bitIndex} 14
+        assert_result_true()
+        
+        2700: is_bit_set {number} 0x80000000 {bitIndex} 31
+        assert_result_true()
+    end
+end
