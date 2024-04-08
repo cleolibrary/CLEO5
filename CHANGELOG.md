@@ -37,13 +37,18 @@
   - new opcode **2303 ([resolve_filepath](https://library.sannybuilder.com/#/sa/file/2303))**
   - new opcode **2304 ([get_script_filename](https://library.sannybuilder.com/#/sa/file/2304))**
 - new [Math](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Math) plugin
+  - math related opcodes moved from CLEO core into separated plugin
+  - new opcode **2700 ([is_bit_set](https://library.sannybuilder.com/#/sa/math/2700))**
+  - new opcode **2701 ([set_bit](https://library.sannybuilder.com/#/sa/math/2701))**
+  - new opcode **2702 ([clear_bit](https://library.sannybuilder.com/#/sa/math/2702))**
+  - new opcode **2703 ([toggle_bit](https://library.sannybuilder.com/#/sa/math/2703))**
 - new [MemoryOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/MemoryOperations) plugin
   - memory related opcodes moved from CLEO core into separated plugin
   - validation of input and output parameters for all opcodes
   - opcode **0A8C ([write_memory](https://library.sannybuilder.com/#/sa/memory/0A8C))** now supports strings
   - new opcode **2400 ([copy_memory](https://library.sannybuilder.com/#/sa/memory/2400))**
   - new opcode **2401 ([read_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2401))**
-  - new opcode **2402 ([writememory_with_offset](https://library.sannybuilder.com/#/sa/memory/2402))**
+  - new opcode **2402 ([write_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2402))**
   - new opcode **2403 ([forget_memory](https://library.sannybuilder.com/#/sa/memory/2403))**
   - new opcode **2404 ([get_script_struct_just_created](https://library.sannybuilder.com/#/sa/memory/2404))**
   - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
