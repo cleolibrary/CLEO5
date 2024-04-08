@@ -4,8 +4,12 @@ CLEO is a hugely popular extensible library plugin which brings new possibilitie
 
 ## Installation
 
-CLEO requires an 'ASI Loader' installed to run which is provided with the release. The ASI Loader requires overwriting one original game file: vorbisFile.dll - be sure to make a backup of this file.
-No additional files are replaced, however the following files and folders are added:
+An ASI loader is required for CLEO 5 to work. CLEO 5 is bundled with several popular ASI Loaders ([Silent's ASI Loader](https://cookieplmonster.github.io/mods/gta-sa/#asiloader) and [Ultimate ASI Loader](https://github.com/ThirteenAG/Ultimate-ASI-Loader/)).
+
+Follow the instructions on the [release page](https://github.com/cleolibrary/CLEO5/releases) to choose a bundle that works best for you.
+
+The ASI Loader replaces one original game file: `vorbisFile.dll` - be sure to make a backup of this file.
+CLEO itself does not replace any game file, however the following files and folders are added:
 
 - cleo\ (CLEO script directory)
 - cleo\\.config\sa.json (opcodes info file)
@@ -20,8 +24,6 @@ No additional files are replaced, however the following files and folders are ad
 - cleo\cleo_text\ (CLEO text directory)
 - cleo.asi (core library)
 - bass.dll (audio engine library)
-- vorbisFile.dll (Silent's ASI Loader)
-- vorbisHooked.dll (original vorbisFile.dll file)
 
 All plugins are optional, however they may be required by various CLEO scripts.
 
@@ -44,8 +46,6 @@ CLEO is continually being improved and extended over time. In very rare circumst
 ## Credits
 
 The author and original developer of the CLEO library is Seemann. Development of CLEO 4 was led by Alien and Deji, later turned into CLEO 5 by Miran. Today the CLEO library is an open-source project being maintained at https://github.com/cleolibrary
-
-The author of the ASI Loader is Silent. Find out more at: https://gtaforums.com/topic/523982-relopensrc-silents-asi-loader/
 
 Special thanks to:
 
