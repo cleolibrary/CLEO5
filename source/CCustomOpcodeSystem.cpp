@@ -1347,10 +1347,11 @@ namespace CLEO
 	//0ADC=1,  test_cheat %1d%
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript *thread)
 	{
-		OPCODE_READ_PARAM_STRING(text);
-
-		auto len = strlen(text);
-		if (_strnicmp(text, CCheat::m_CheatString, len) == 0)
+		OPCODE_READ_PARAM_STRING_LEN(text, sizeof(CCheat::m_CheatString));
+		
+		_strrev(_buff_text); // reverse
+		auto len = strlen(_buff_text);
+		if (_strnicmp(_buff_text, CCheat::m_CheatString, len) == 0)
 		{
 			CCheat::m_CheatString[0] = '\0'; // consume the cheat
 			SetScriptCondResult(thread, true);
