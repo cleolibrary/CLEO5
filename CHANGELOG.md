@@ -64,12 +64,12 @@
   - **2003 ([cleo_return_fail](https://library.sannybuilder.com/#/sa/CLEO/2003))**
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
-  - **cleo_return_\*** opcodes now can pass strings as return arguments
+  - **cleo*return*\*** opcodes now can pass strings as return arguments
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
   - fixed bug in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/text/2604))** causing data overruns when reading strings longer than target variable
   - fixed result register not being cleared before function call in opcodes **0AA7** and **0AA8**
 - changes in file operations
-  - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations: 
+  - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations:
     - `root:\` for _game root_ directory
     - `userfiles:\` for _game save files_ directory
     - `.\` for _this script file_ directory
@@ -82,6 +82,7 @@
 - updated included Silent's ASI Loader to version 1.3
 
 ### Bug Fixes
+
 - fixed error in **004E (terminate_this_script)** allowing to run multiple missions
 - fixed handling of strings longer than 128 characters causing errors in some cases
 - fixed error in handling of first string argument in **0AF5 (write_string to_ini_file)**
@@ -91,35 +92,37 @@
 - fixed invalid 7 characters length limit of **0AAA (get_script_struct_named)**
 
 #### SDK AND PLUGINS
+
 - now all opcodes in range **0-7FFF** can be registered by plugins
 - plugins moved to _cleo\cleo_plugins_ directory
-- new SDK method: CLEO_RegisterCommand
-- new SDK method: CLEO_RegisterCallback
-- new SDK method: CLEO_GetVarArgCount
-- new SDK method: CLEO_PeekIntOpcodeParam
-- new SDK method: CLEO_PeekFloatOpcodeParam
-- new SDK method: CLEO_PeekPointerToScriptVariable
-- new SDK method: CLEO_SkipUnusedVarArgs
-- new SDK method: CLEO_ReadParamsFormatted
-- new SDK method: CLEO_ReadStringParamWriteBuffer
-- new SDK method: CLEO_GetOpcodeParamsArray
-- new SDK method: CLEO_GetParamsHandledCount
-- new SDK method: CLEO_GetScriptVersion
-- new SDK method: CLEO_GetScriptInfoStr
-- new SDK method: CLEO_GetScriptFilename
-- new SDK method: CLEO_GetScriptWorkDir
-- new SDK method: CLEO_SetScriptWorkDir
-- new SDK method: CLEO_ResolvePath
-- new SDK method: CLEO_ListDirectory
-- new SDK method: CLEO_ListDirectoryFree
-- new SDK method: CLEO_GetScriptByName
-- new SDK method: CLEO_GetScriptByFilename
-- new SDK method: CLEO_GetScriptDebugMode
-- new SDK method: CLEO_SetScriptDebugMode
-- new SDK method: CLEO_Log
-
+- new SDK methods:
+  - CLEO_RegisterCommand
+  - CLEO_RegisterCallback
+  - CLEO_GetVarArgCount
+  - CLEO_PeekIntOpcodeParam
+  - CLEO_PeekFloatOpcodeParam
+  - CLEO_PeekPointerToScriptVariable
+  - CLEO_SkipUnusedVarArgs
+  - CLEO_ReadParamsFormatted
+  - CLEO_ReadStringParamWriteBuffer
+  - CLEO_GetOpcodeParamsArray
+  - CLEO_GetParamsHandledCount
+  - CLEO_GetScriptVersion
+  - CLEO_GetScriptInfoStr
+  - CLEO_GetScriptFilename
+  - CLEO_GetScriptWorkDir
+  - CLEO_SetScriptWorkDir
+  - CLEO_ResolvePath
+  - CLEO_ListDirectory
+  - CLEO_ListDirectoryFree
+  - CLEO_GetScriptByName
+  - CLEO_GetScriptByFilename
+  - CLEO_GetScriptDebugMode
+  - CLEO_SetScriptDebugMode
+  - CLEO_Log
 
 #### CLEO internal
+
 - introduced unit test scripts
 - project migrated to VS 2022
 - configured game debugging settings
@@ -128,7 +131,9 @@
 - added setup_env.bat script
 
 #### Special Thanks
+
 - **123nir** for the alpha-testing, troubleshooting and valuable bug reports
 
 ## Older
+
 For previous changes, see [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
