@@ -396,12 +396,23 @@ public:
     //0AA4=3, get_proc_address %1d% library %2d% result %3d% // IF and SET
     static OpcodeResult __stdcall opcode_0AA4(CLEO::CRunningScript* thread)
     {
-        OPCODE_READ_PARAM_STRING(name);
-        auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
+        void* funcPtr = nullptr;
 
-        // allow any pointer, not just from 0AA2
+        auto paramType = thread->PeekDataType();
+        if (IsImmInteger(paramType) || IsVariable(paramType))
+        {
+            auto procedure = OPCODE_READ_PARAM_UINT(); // text pointer or export index - see GetProcAddress docs
+            auto module = (HMODULE)OPCODE_READ_PARAM_PTR();
 
-        auto funcPtr = (void*)GetProcAddress(ptr, name);
+            funcPtr = (void*)GetProcAddress(module, (LPCSTR)procedure);
+        }
+        else
+        {
+            OPCODE_READ_PARAM_STRING(name);
+            auto module = (HMODULE)OPCODE_READ_PARAM_PTR();
+
+            funcPtr = (void*)GetProcAddress(module, name);
+        }
 
         OPCODE_WRITE_PARAM_PTR(funcPtr);
         OPCODE_CONDITION_RESULT(funcPtr != nullptr);
