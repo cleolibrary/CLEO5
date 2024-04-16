@@ -56,7 +56,8 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread); // get_random_object_in_sphere_no_save_recursive
 
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
-	// 2000 free slot
+
+	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // cleo_arg_count
 	// 2001 free slot
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
@@ -247,7 +248,8 @@ namespace CLEO
 
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		
-		// 2000, 2001 free
+		CLEO_RegisterOpcode(0x2000, opcode_2000); // cleo_arg_count
+		// 2001 free
 		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
 		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
 	}
@@ -1042,6 +1044,7 @@ namespace CLEO
 				return thread->Suspend();
 			}
 		}
+		scmFunc->callArgCount = (BYTE)nParams;
 
 		static SCRIPT_VAR arguments[32];
 		SCRIPT_VAR* locals = thread->IsMission() ? missionLocals : thread->GetVarPtr();
@@ -1049,11 +1052,11 @@ namespace CLEO
 		SCRIPT_VAR* storedLocals = scmFunc->savedTls;
 
 		// collect arguments
-		for (DWORD i = 0; i < min(nParams, 32); i++)
+		for (DWORD i = 0; i < nParams; i++)
 		{
 			SCRIPT_VAR* arg = arguments + i;
 
-			auto paramType = (eDataType)*thread->GetBytePointer();
+			auto paramType = thread->PeekDataType();
 			if (IsImmInteger(paramType) || IsVariable(paramType))
 			{
 				*thread >> arg->dwParam;
@@ -1078,10 +1081,6 @@ namespace CLEO
 				return thread->Suspend();
 			}
 		}
-
-		// skip unused args
-		if (nParams > 32) 
-			GetScriptParams(thread, nParams - 32);
 
 		// all arguments read
 		scmFunc->retnAddress = thread->GetBytePointer();
@@ -1517,6 +1516,22 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread)
 	{
 		*thread << PLATFORM_WINDOWS;
+		return OR_CONTINUE;
+	}
+
+	//2000=1, %1d% = cleo_arg_count
+	OpcodeResult __stdcall opcode_2000(CRunningScript* thread)
+	{
+		auto cs = reinterpret_cast<CCustomScript*>(thread);
+
+		ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
+		if (scmFunc == nullptr)
+		{
+			SHOW_ERROR("Quering argument count without preceding CLEO function call in script %s\nScript suspended.", cs->GetInfoStr().c_str());
+			return thread->Suspend();
+		}
+
+		OPCODE_WRITE_PARAM_INT(scmFunc->callArgCount);
 		return OR_CONTINUE;
 	}
 

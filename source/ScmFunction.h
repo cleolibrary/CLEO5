@@ -17,6 +17,9 @@ namespace CLEO
 		static void Clear();
 
 		unsigned short prevScmFunctionId, thisScmFunctionId;
+		BYTE callArgCount = 0; // args provided to cleo_call
+
+		// saved nesting context state
 		void* savedBaseIP;
 		BYTE* retnAddress;
 		BYTE* savedStack[8]; // gosub stack
