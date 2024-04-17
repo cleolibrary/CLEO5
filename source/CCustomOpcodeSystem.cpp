@@ -57,7 +57,7 @@ namespace CLEO
 
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 
-	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // cleo_arg_count
+	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // get_cleo_arg_count
 	// 2001 free slot
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
@@ -248,7 +248,7 @@ namespace CLEO
 
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 		
-		CLEO_RegisterOpcode(0x2000, opcode_2000); // cleo_arg_count
+		CLEO_RegisterOpcode(0x2000, opcode_2000); // get_cleo_arg_count
 		// 2001 free
 		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
 		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
@@ -1519,7 +1519,7 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//2000=1, %1d% = cleo_arg_count
+	//2000=1, %1d% = get_cleo_arg_count
 	OpcodeResult __stdcall opcode_2000(CRunningScript* thread)
 	{
 		auto cs = reinterpret_cast<CCustomScript*>(thread);

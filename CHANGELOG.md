@@ -67,7 +67,7 @@
   - implemented support for **memory pointer string** arguments for all game's native opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
   - **0DD5 ([get_game_platform](https://library.sannybuilder.com/#/sa/CLEO/0DD5))**
-  - **2000 ([cleo_arg_count](https://library.sannybuilder.com/#/sa/CLEO/2000))**
+  - **2000 ([get_cleo_arg_count](https://library.sannybuilder.com/#/sa/CLEO/2000))**
   - **2002 ([cleo_return_with](https://library.sannybuilder.com/#/sa/CLEO/2002))**
   - **2003 ([cleo_return_fail](https://library.sannybuilder.com/#/sa/CLEO/2003))**
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
