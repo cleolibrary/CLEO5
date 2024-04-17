@@ -378,9 +378,20 @@ namespace CLEO
 
         auto str = CLEO_ReadStringPointerOpcodeParam(thread, buffer, bufferSize); // returns pointer to source data whenever possible
         
-        if (str == nullptr) // other error?
+        if (str == nullptr) // reading string failed
         {
-            SHOW_ERROR("Invalid input argument %s in script %s\nScript suspended.", GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
+            auto isVariableInt = IsVariable(_lastParamType) && (_lastParamArrayType == eArrayDataType::ADT_NONE || _lastParamArrayType == eArrayDataType::ADT_INT);
+            if ((IsImmInteger(_lastParamType) || isVariableInt) && // pointer argument type?
+                CLEO_GetOpcodeParamsArray()->dwParam <= MinValidAddress)
+            {
+                SHOW_ERROR("Invalid '0x%X' pointer of input string argument %s in script %s", CLEO_GetOpcodeParamsArray()->dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
+            }
+            else
+            {
+                // other error
+                SHOW_ERROR("Invalid input argument %s in script %s\nScript suspended.", GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
+            }
+
             thread->Suspend();
             _lastParamType = DT_INVALID; // mark error
             return nullptr;
