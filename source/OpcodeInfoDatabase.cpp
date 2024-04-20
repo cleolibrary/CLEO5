@@ -78,6 +78,16 @@ bool OpcodeInfoDatabase::_Load(const std::string filepath)
 				continue; // invalid command
 			}
 
+			auto attributes = c["attrs"];
+			if (attributes.JSONType() == JSON::Class::Object)
+			{
+				auto unsupported = attributes["is_unsupported"];
+				if (unsupported.JSONType() == JSON::Class::Boolean && unsupported.ToBool())
+				{
+					continue; // command defined as unsupported
+				}
+			}
+
 			auto idLong = stoul(commandId.ToString(), nullptr, 16);
 			if (idLong > 0x7FFF)
 			{
