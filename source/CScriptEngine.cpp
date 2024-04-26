@@ -2,6 +2,7 @@
 #include "CleoBase.h"
 #include "CFileMgr.h"
 #include "CGame.h"
+#include <CTheScripts.h>
 
 #include <sstream>
 
