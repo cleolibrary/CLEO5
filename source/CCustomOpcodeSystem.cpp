@@ -24,6 +24,7 @@ namespace CLEO
 
 
 	OpcodeResult __stdcall opcode_0051(CRunningScript * thread); // GOSUB return
+	OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
 
 	OpcodeResult __stdcall opcode_0A92(CRunningScript* thread); // stream_custom_script
 	OpcodeResult __stdcall opcode_0A93(CRunningScript* thread); // terminate_this_custom_script
@@ -219,6 +220,7 @@ namespace CLEO
 		TRACE("Initializing CLEO core opcodes...");
 
 		CLEO_RegisterOpcode(0x0051, opcode_0051);
+		CLEO_RegisterOpcode(0x0417, opcode_0417);
 		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
 		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
 		CLEO_RegisterOpcode(0x0A94, opcode_0A94);
@@ -840,6 +842,13 @@ namespace CLEO
 
 		size_t tableIdx = 0x0051 / 100; // 100 opcodes peer handler table
 		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
+	}
+
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread) // load_and_launch_mission_internal
+	{
+		MissionIndex = CLEO_PeekIntOpcodeParam(thread);
+		size_t tableIdx = 0x0417 / 100; // 100 opcodes peer handler table
+		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
 	}
 
 	//0A92=-1,create_custom_thread %1d%

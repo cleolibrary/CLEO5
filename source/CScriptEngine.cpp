@@ -298,6 +298,7 @@ namespace CLEO
     BYTE *scmBlock;
     BYTE *MissionLoaded;
     BYTE *missionBlock;
+    int MissionIndex;
     BOOL *onMissionFlag;
     CTexture *scriptSprites;
     BYTE *scriptDraws;
@@ -783,12 +784,27 @@ namespace CLEO
             }
             else
             {
-                auto address = (DWORD)BaseIP;
-                if (address == 0) address = GetInstance().VersionManager.TranslateMemoryAddress(MA_SCM_BLOCK);
-                //address = (DWORD)CurrentIP - address; // processed position
-                address = (DWORD)CCustomOpcodeSystem::lastOpcodePtr - address; // opcode position
+                auto base = (DWORD)BaseIP;
+                if (base == 0) base = (DWORD)scmBlock;
+                auto currPos = (DWORD)CCustomOpcodeSystem::lastOpcodePtr;
 
-                ss << "offset {" << address << "}"; // Sanny offsets style
+                if (IsMission() && !IsCustom())
+                {
+                    if (currPos >= (DWORD)missionBlock)
+                    {
+                        // we are in mission code buffer
+                        // native missions are loaded from script file into mission block area
+                        currPos += ((DWORD*)CTheScripts::MultiScriptArray)[MissionIndex]; // start offset of this mission within source script file
+                    }
+                    else
+                    {
+                        base = (DWORD)scmBlock; // seems that mission uses main scm code
+                    }
+                }
+
+                auto offset = currPos - base;
+
+                ss << "offset {" << offset << "}"; // Sanny offsets style
                 ss << " - ";
                 ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
 
@@ -1524,6 +1540,7 @@ namespace CLEO
                     if (*MissionLoaded)
                         throw std::logic_error("Starting of custom mission when other mission loaded");
                     *MissionLoaded = 1;
+                    MissionIndex = -1;
                     BaseIP = CurrentIP = missionBlock;
                 }
                 else {

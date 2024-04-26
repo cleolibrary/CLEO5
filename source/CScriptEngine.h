@@ -168,6 +168,7 @@ namespace CLEO
     }
 
     extern BYTE *scmBlock, *missionBlock;
+    extern int MissionIndex;
 
 	extern float VectorSqrMagnitude(CVector vector);
 }
