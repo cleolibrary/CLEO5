@@ -114,16 +114,31 @@ public:
             auto paramType = thread->PeekDataType();
             if (IsImmString(paramType) || IsVarString(paramType))
             {
-                if (currTextParam >= Max_Text_Params)
-                {
-                    SHOW_ERROR("Provided more (%d) than supported (%d) string arguments in script %s\nScript suspended.", currTextParam + 1, Max_Text_Params, CLEO::ScriptInfoStr(thread).c_str());
-                    return thread->Suspend();
-                }
 
-                OPCODE_READ_PARAM_STRING_LEN(str, MAX_STR_LEN);
-                strcpy(textParams[currTextParam], str);
-                param.pcParam = textParams[currTextParam];
-                currTextParam++;
+                if (IsLegacyScript(thread) && IsVarString(paramType))
+                {
+                    /*
+                        Preserving behavior of CLEO 4 where string variables were always passed as pointers.
+                        It allowed for neat tricks like: 
+                        0@ = 0
+                        call_function 0x12345678 num_params 3 pop 0 0@v // pass pointer to 0@
+                        // read result from 0@
+                    */
+                    param.pParam = CLEO_GetPointerToScriptVariable(thread);
+				}   		  
+                else
+                {
+                    if (currTextParam >= Max_Text_Params)
+                    {
+                        SHOW_ERROR("Provided more (%d) than supported (%d) string arguments in script %s\nScript suspended.", currTextParam + 1, Max_Text_Params, CLEO::ScriptInfoStr(thread).c_str());
+                        return thread->Suspend();
+                    }
+
+                    OPCODE_READ_PARAM_STRING_LEN(str, MAX_STR_LEN);
+                    strcpy(textParams[currTextParam], str);
+                    param.pcParam = textParams[currTextParam];
+                    currTextParam++;
+                }
             }
             else if (IsImmInteger(paramType) || IsImmFloat(paramType) || IsVariable(paramType))
             {
