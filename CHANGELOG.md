@@ -72,7 +72,7 @@
   - **2003 ([cleo_return_fail](https://library.sannybuilder.com/#/sa/CLEO/2003))**
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
-  - **cleo*return*\*** opcodes now can pass strings as return arguments
+  - SCM functions can return string literals and string variables
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
   - fixed bug in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/text/2604))** causing data overruns when reading strings longer than target variable
   - fixed result register not being cleared before function call in opcodes **0AA7** and **0AA8**
