@@ -1001,8 +1001,8 @@ namespace CLEO
 				SHOW_ERROR("Invalid module reference '%s' in opcode [0AB1] in script %s \nScript suspended.", moduleTxt.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return thread->Suspend();
 			}
-			std::string_view strExport = moduleTxt.substr(0, pos);
-			std::string_view strModule = moduleTxt.substr(pos + 1);
+			auto strExport = std::string_view(moduleTxt.data(), pos);
+			auto strModule = std::string_view(moduleTxt.data() + pos + 1);
 
 			// get module's file absolute path
 			auto modulePath = std::string(strModule);
