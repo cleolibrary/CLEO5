@@ -57,36 +57,39 @@ static const unsigned long crcTable[256] = {
     0x2d02ef8dUL
 };
 
-unsigned long crc32FromUpcaseString(const char *str)
-{
-    unsigned long crc = 0xFFFFFFFF;
-    while (*str)
-        crc = crcTable[(crc^toupper(*str++)) & 0xff] ^ (crc >> 8);
-    return crc;
-}
 
-unsigned long crc32FromUpcaseStdString(const std::string& str)
-{
-    return crc32FromUpcaseString(str.c_str());
-}
+unsigned long crc32FromUpcaseString(const char *str) {
+        unsigned long crc = 0xFFFFFFFF;
+        while (*str) {
+            crc = crcTable[(crc^toupper(*str++)) & 0xff] ^ (crc >> 8);
+        }
+        return crc;
+    }
 
-unsigned long crc32FromString(const char *str)
-{
-    unsigned long crc = 0xFFFFFFFF;
-    while (*str)
-        crc = crcTable[(crc ^ (*str++)) & 0xff] ^ (crc >> 8);
-    return crc;
-}
+unsigned long crc32FromUpcaseStdString(const std::string& str) {
+        return crc32FromUpcaseString(str.c_str());
+    }
 
-unsigned long crc32FromStdString(const std::string& str)
-{
-    return crc32FromString(str.c_str());
-}
+unsigned long crc32FromString(const char *str) {
+        unsigned long crc = 0xFFFFFFFF;
+        while (*str) {
+            crc = crcTable[(crc ^ (*str++)) & 0xff] ^ (crc >> 8);
+        }
+        return crc;
+    }
 
-unsigned long crc32(const unsigned char *buf, unsigned long len)
-{
-    unsigned long crc = 0xFFFFFFFF;
-    for (unsigned i = 0; i < len; i++)
-        crc = crcTable[(crc^buf[i]) & 0xFF] ^ (crc >> 8);
-    return crc;
+unsigned long crc32FromStdString(const std::string& str) {
+        return crc32FromString(str.c_str());
+    }
+
+unsigned long crc32(const unsigned char *buf, unsigned long len) {
+        if (len > sizeof(crcTable)) {
+            throw std::runtime_error("Buffer length exceeds CRC table size");
+        }
+        unsigned long crc = 0xFFFFFFFF;
+        for (unsigned i = 0; i < len; i++) {
+            crc = crcTable[(crc^buf[i]) & 0xFF] ^ (crc >> 8);
+        }
+        return crc;
+    }
 }
