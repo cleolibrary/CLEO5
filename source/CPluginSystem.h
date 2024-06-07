@@ -26,7 +26,7 @@ namespace CLEO
                 {
                     std::string name = filename;
                     name.resize(name.length() - extension.length()); // cut off file type
-                    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return ::tolower(c); });
+                    std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::tolower(c); });
 
                     if (_strnicmp(name.c_str(), prefix.c_str(), prefix.length()) == 0)
                     {
