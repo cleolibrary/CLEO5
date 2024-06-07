@@ -109,7 +109,7 @@ void CModuleSystem::NormalizePath(std::string& path)
 			c = '\\';
 
 		// lower case
-		c = std::tolower(c);
+		c = ::tolower(c);
 	};
 }
 
@@ -431,6 +431,6 @@ void CModuleSystem::CModule::ModuleExport::NormalizeName(std::string& name)
 {
 	for (auto& ch : name)
 	{
-		ch = std::tolower(ch);
+		ch = ::tolower(ch);
 	}
 }
