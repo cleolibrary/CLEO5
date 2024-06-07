@@ -359,10 +359,18 @@ namespace CLEO
         BYTE* ip = script->GetBytePointer();
 
         *outArrVarOffset = script->ReadDataWord();
-        WORD arrayIndexVar = script->ReadDataVarIndex();
-        bool isGlobalIndexVar = script->ReadDataVarIndex() < 0; // high bit set
+        WORD arrayIndexVar = script->ReadDataWord();
+        script->IncPtr(); // skip size
+		BYTE arrayType = script->ReadDataByte();
+        eArrayDataType elementType = static_cast<eArrayDataType>(arrayType & ArrayDataTypeMask);
+        bool isGlobalIndex = arrayType >> 7; // is high bit set
 
-        if (isGlobalIndexVar) {
+        if (elementType == ADT_POP) {
+			*outArrElemIdx = GetInstance().StackPop();
+			return;
+        }
+
+        if (isGlobalIndex) {
             *outArrElemIdx = *reinterpret_cast<int*>(&scmBlock[arrayIndexVar]);
         }
         else {
@@ -409,6 +417,9 @@ namespace CLEO
                 ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
                 opcodeParams[i] = *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx);
                 break;
+            case DT_POP:
+                opcodeParams[i].dwParam = GetInstance().StackPop();
+				break;
             }
         }
     }
@@ -453,6 +464,9 @@ namespace CLEO
                 ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
                 *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx) = opcodeParams[i];
                 break;
+            case DT_PUSH:
+				GetInstance().StackPush(opcodeParams[i].dwParam);
+				break;
             }
         }
     }
@@ -480,119 +494,12 @@ namespace CLEO
         return script->GetVarPtr(final_index);
     }
 
-
-    #define TEXTLABEL_SIZE 8
-    #define STRING_SIZE 16
-
-    void CRunningScript::ReadTextLabelFromScript(CRunningScript* script, char* buffer, BYTE nBufferLength) {
-        WORD arrVarOffset;
-        int  arrElemIdx;
-
-        BYTE type = script->ReadDataType();
-        switch (type) {
-        case DT_TEXTLABEL:
-            for (int i = 0; i < TEXTLABEL_SIZE; i++)
-                buffer[i] = script->ReadDataByte();
-            break;
-
-        case DT_VAR_TEXTLABEL:
-        {
-            WORD index = script->ReadDataVarIndex();
-            strncpy(buffer, (char*)&scmBlock[index], TEXTLABEL_SIZE);
-            break;
-        }
-
-        case DT_LVAR_TEXTLABEL:
-        {
-            TRACE("DT_LVAR_TEXTLABEL");
-            WORD index = script->ReadDataVarIndex();
-            strncpy(buffer, (char*)GetPointerToLocalVariable(script, index), TEXTLABEL_SIZE);
-            break;
-        }
-
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING_ARRAY:
-            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
-            if (type == DT_VAR_TEXTLABEL_ARRAY)
-                strncpy(buffer, (char*)&scmBlock[TEXTLABEL_SIZE * arrElemIdx + arrVarOffset], TEXTLABEL_SIZE);
-            else
-                strncpy(buffer, (char*)&scmBlock[STRING_SIZE * arrElemIdx + arrVarOffset], min(nBufferLength, STRING_SIZE));
-            break;
-
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING_ARRAY:
-            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
-            if (type == DT_LVAR_TEXTLABEL_ARRAY)
-                strncpy(buffer, (char*)GetPointerToLocalArrayElement(script, arrVarOffset, arrElemIdx, 2), TEXTLABEL_SIZE);
-            else {
-                BYTE bufferLength = min(nBufferLength, STRING_SIZE);
-                strncpy(buffer, (char*)GetPointerToLocalArrayElement(script, arrVarOffset, arrElemIdx, 4), bufferLength);
-            }
-            break;
-
-        case DT_VARLEN_STRING:
-        {
-            short nStringLen = script->ReadDataByte();
-            for (int i = 0; i < nStringLen; i++)
-                buffer[i] = script->ReadDataByte();
-
-            if (nStringLen < nBufferLength)
-                memset(&buffer[nStringLen], 0, (nBufferLength - nStringLen));
-            break;
-        }
-
-        case DT_STRING:
-            strncpy(buffer, (const char*)script->GetBytePointer(), min(nBufferLength, STRING_SIZE));
-            script->IncPtr(STRING_SIZE);
-            break;
-
-        case DT_VAR_STRING:
-        {
-            WORD index = script->ReadDataVarIndex();
-            strncpy(buffer, (char*)&scmBlock[index], min(nBufferLength, STRING_SIZE));
-            break;
-        }
-
-        case DT_LVAR_STRING:
-        {
-            WORD index = script->ReadDataVarIndex();
-            strncpy(buffer, (char*)GetPointerToLocalVariable(script, index), min(nBufferLength, STRING_SIZE));
-            break;
-        }
-
-        default:
-            break;
-        }
-    }
-
-    // wrapper around CRunningScript::ReadTextLabelFromScript to preserve the value of ecx register
-    static void __declspec(naked) HOOK_CRunningScript__ReadTextLabelFromScript()
-    {
-        _asm
-        {
-            mov eax, [esp+4]            // buffer
-            mov edx, [esp+8]            // nBufferLength
-
-            push ecx                    // save ecx
-
-            push edx                    // nBufferLength
-            push eax                    // buffer
-            push ecx					// script
-            call CRunningScript::ReadTextLabelFromScript
-            pop ecx                     // restore ecx     
-            retn 8
-        }
-    }
-
-
     DWORD CRunningScript::CollectNextParameterWithoutIncreasingPC(CRunningScript* script) {
         WORD arrVarOffset;
         int arrElemIdx;
 
         SCRIPT_VAR result;
         result.dwParam = -1;
-
-        TRACE("Calling CollectNextParam");
 
         BYTE* ip = script->GetBytePointer();
 
@@ -630,6 +537,8 @@ namespace CLEO
             ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
             result = *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx);
             break;
+        case DT_POP:
+            break;
         }
 
         script->SetIp(ip);
@@ -647,6 +556,77 @@ namespace CLEO
             call CRunningScript::CollectNextParameterWithoutIncreasingPC
             pop ecx                     // restore ecx     
             retn
+        }
+    }
+
+
+    SCRIPT_VAR* CRunningScript::GetPointerToScriptVariable(CRunningScript* script, BYTE type) {
+        BYTE arrElemSize;
+        WORD arrVarOffset;
+        int  arrElemIdx;
+
+        int dt = script->ReadDataByte();
+        switch (dt) {
+            case DT_VAR:
+            case DT_VAR_STRING:
+            case DT_VAR_TEXTLABEL:
+            {
+                auto index = script->ReadDataWord();
+                return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[index]);
+            }
+            case DT_LVAR:
+            case DT_LVAR_STRING:
+            case DT_LVAR_TEXTLABEL:
+            {
+                auto index = script->ReadDataWord();
+                return GetPointerToLocalVariable(script, index);
+            }
+            case DT_VAR_ARRAY:
+            case DT_VAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            {
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                if (dt == DT_VAR_STRING_ARRAY)
+                    return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[16 * arrElemIdx + arrVarOffset]);
+                else if (dt == DT_VAR_TEXTLABEL_ARRAY)
+                    return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[8 * arrElemIdx + arrVarOffset]);
+                else // DT_VAR_ARRAY
+                    return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[4 * arrElemIdx + arrVarOffset]);
+            }
+            case DT_LVAR_ARRAY:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            {
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                if (dt == DT_LVAR_STRING_ARRAY)
+                    arrElemSize = 4;
+                else if (dt == DT_LVAR_TEXTLABEL_ARRAY)
+                    arrElemSize = 2;
+                else // DT_LVAR_ARRAY
+                    arrElemSize = 1;
+                return GetPointerToLocalArrayElement(script, arrVarOffset, arrElemIdx, arrElemSize);
+            }
+            case DT_PUSH:
+            {
+				GetInstance().StackPush(0); // allocate space for the variable
+				return reinterpret_cast<SCRIPT_VAR*>(&GetInstance().CleoStack.top());
+            }
+            case DT_POP:
+                return reinterpret_cast<SCRIPT_VAR*>(&GetInstance().CleoStack.top());
+        }
+    }
+
+    // wrapper around CRunningScript::CollectNextParameterWithoutIncreasingPC to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__GetPointerToScriptVariable()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push dword ptr[esp + 8]       // type
+            push ecx					// script
+            call CRunningScript::GetPointerToScriptVariable
+            pop ecx                     // restore ecx     
+            retn 4
         }
     }
 
@@ -1250,7 +1230,7 @@ namespace CLEO
         inj.InjectFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
         inj.InjectFunction(&HOOK_CRunningScript__CollectNextParameterWithoutIncreasingPC, gvm.TranslateMemoryAddress(MA_GET_NEXT_SCRIPT_PARAM_NO_UPDATE_FUNCTION));
         inj.InjectFunction(&HOOK_CRunningScript__StoreParams, gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION));
-        inj.InjectFunction(&HOOK_CRunningScript__ReadTextLabelFromScript, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__GetPointerToScriptVariable, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION));
     }
 
     CScriptEngine::~CScriptEngine()

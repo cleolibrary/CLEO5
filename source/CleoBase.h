@@ -12,6 +12,7 @@
 #include "FileEnumerator.h"
 #include "crc32.h"
 #include "OpcodeInfoDatabase.h"
+#include <stack>
 
 namespace CLEO
 {
@@ -32,6 +33,7 @@ namespace CLEO
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
         OpcodeInfoDatabase		OpcodeInfoDb;
+        std::stack<int>         CleoStack;
 
         int saveSlot = -1; // -1 if not loaded from save
 
@@ -51,6 +53,9 @@ namespace CLEO
         const std::set<void*>& GetCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id, DWORD arg);
+
+        void StackPush(int val);
+        int StackPop();
 
         static void __cdecl OnDrawingFinished();
 
