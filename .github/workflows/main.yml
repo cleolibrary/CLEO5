@@ -32,14 +32,14 @@ jobs:
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
 
-      - uses: x87/code-sign-action@develop
-        with:
-          certificate: '${{ secrets.DIG_KEY_CERT }}'
-          password: '${{ secrets.DIG_KEY_PWD }}'
-          certificatename: 'Seemann'
-          description: 'CLEO 5'
-          timestampUrl: 'http://timestamp.digicert.com'
-          filename: './.output/Release/cleo.asi'
+      # - uses: x87/code-sign-action@develop
+      #   with:
+      #     certificate: '${{ secrets.DIG_KEY_CERT }}'
+      #     password: '${{ secrets.DIG_KEY_PWD }}'
+      #     certificatename: 'Seemann'
+      #     description: 'CLEO 5'
+      #     timestampUrl: 'http://timestamp.digicert.com'
+      #     filename: './.output/Release/cleo.asi'
 
       - name: Prepare Base Files
         id: prepare_archive
