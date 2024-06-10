@@ -186,9 +186,9 @@ namespace CLEO
         auto msg = TraceVArg(CLEO::eLogLevel::Error, format, args);
         va_end(args);
 
-        QUERY_USER_NOTIFICATION_STATE pquns;
-        SHQueryUserNotificationState(&pquns);
-        bool fullscreen = (pquns == QUNS_BUSY) || (pquns == QUNS_RUNNING_D3D_FULL_SCREEN) || (pquns == QUNS_PRESENTATION_MODE);
+        auto mainWnd = (HWND*)0x001C9055C; // PluginSDK: RsGlobal.ps->window
+        auto style = GetWindowLong(RsGlobal.ps->window, GWL_STYLE);
+        bool fullscreen = (style & (WS_BORDER | WS_CAPTION)) != 0;
 
         if (fullscreen)
         {
