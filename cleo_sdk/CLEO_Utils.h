@@ -187,7 +187,7 @@ namespace CLEO
         va_end(args);
 
         auto mainWnd = (HWND*)0x001C9055C; // PluginSDK: RsGlobal.ps->window
-        auto style = GetWindowLong(RsGlobal.ps->window, GWL_STYLE);
+        auto style = GetWindowLong(*mainWnd, GWL_STYLE);
         bool fullscreen = (style & (WS_BORDER | WS_CAPTION)) != 0;
 
         if (fullscreen)
