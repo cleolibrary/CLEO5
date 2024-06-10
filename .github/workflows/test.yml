@@ -24,7 +24,7 @@ jobs:
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
+          msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
           
       - name: Build CLEO plugins
         shell: cmd
