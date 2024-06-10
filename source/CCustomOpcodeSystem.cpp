@@ -963,7 +963,7 @@ namespace CLEO
 		DWORD key;
 		*thread >> key;
 
-		SHORT(__stdcall * GTA_GetKeyState)(int nVirtKey) = memory_pointer(0x0081E64C); // use ingame function as GetKeyState might look like keyloger to some AV software
+		SHORT(__stdcall * GTA_GetKeyState)(int nVirtKey) = memory_pointer(0x0081E64C); // use ingame function as GetKeyState might look like keylogger to some AV software
 		bool isDown = (GTA_GetKeyState(key) & 0x8000) != 0;
 
 		SetScriptCondResult(thread, isDown);
