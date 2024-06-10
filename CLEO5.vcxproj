@@ -166,23 +166,24 @@
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>$(SolutionDir)source\cleo.def</ModuleDefinitionFile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalOptions>/Brepro %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(OutDir)$(TargetName).lib" "$(SolutionDir)cleo_sdk\" 
 if defined GTA_SA_DIR (
 taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
 xcopy /Y "$(OutDir)$(TargetName).asi" "$(GTA_SA_DIR)\" 
-xcopy /Y "$(OutDir)$(TargetName).pdb" "$(GTA_SA_DIR)\"
 )</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
