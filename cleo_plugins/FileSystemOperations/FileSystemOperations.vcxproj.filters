@@ -19,4 +19,7 @@
       <UniqueIdentifier>{a2c39c52-f49e-4ffe-bb0a-661ab07131b9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Resource.rc" />
+  </ItemGroup>
 </Project>

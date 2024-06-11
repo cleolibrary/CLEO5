@@ -3,4 +3,7 @@
   <ItemGroup>
     <ClCompile Include="IniFiles.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Resource.rc" />
+  </ItemGroup>
 </Project>

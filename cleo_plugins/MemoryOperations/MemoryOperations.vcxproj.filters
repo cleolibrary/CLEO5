@@ -40,4 +40,7 @@
       <Filter>cleo_sdk</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Resource.rc" />
+  </ItemGroup>
 </Project>
