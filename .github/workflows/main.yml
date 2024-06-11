@@ -52,23 +52,23 @@ jobs:
           vt_api_key: ${{ secrets.VT_KEY }}
           files: |
             ./.output/Release/CLEO.asi
-          
+
       - name: Plugins - Build
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
-          
+
       - name: Plugins - Sign
         uses: x87/code-sign-action@develop
         with:
           certificate: '${{ secrets.DIG_KEY_CERT }}'
           password: '${{ secrets.DIG_KEY_PWD }}'
           certificatename: 'Seemann'
-          description: 'CLEO 5'
+          description: 'CLEO 5 Plugin'
           timestampUrl: 'http://timestamp.digicert.com'
-          folder: './cleo_plugins/.output',
+          folder: './cleo_plugins/.output'
           recursive: true
           
       - name: Plugins - VirusTotal Scan
