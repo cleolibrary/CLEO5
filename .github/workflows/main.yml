@@ -24,13 +24,13 @@ jobs:
       - name: Read Version Tag
         id: read_version
         run: node.exe .github/workflows/version.js
-        
+
       - name: Core - Build
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
-          
+
       - name: Core - Sign
         uses: x87/code-sign-action@develop
         with:
@@ -123,7 +123,7 @@ jobs:
           type: "zip"
           filename: SA.CLEO_${{ github.ref_name }}+Silent_ASI_Loader.zip
           exclusions: "*.pdb *.lib *.exp"
-      
+
       - name: Pack Base + UAL
         uses: ThirteenAG/zip-release@master
         with:
