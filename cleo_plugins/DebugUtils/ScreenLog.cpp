@@ -7,7 +7,6 @@ DWORD ScreenLog::timeDisplay = 1000;
 
 ScreenLog::ScreenLog()
 {
-    scrollOffset = 0.0f;
     Init();
 }
 
@@ -19,7 +18,7 @@ void ScreenLog::Init()
     level = (eLogLevel)GetPrivateProfileInt("ScreenLog", "Level", (UINT)eLogLevel::None, config.c_str());
     maxMessages = GetPrivateProfileInt("ScreenLog", "MessagesMax", 40, config.c_str());
     timeDisplay = GetPrivateProfileInt("ScreenLog", "MessageTime", 6000, config.c_str());
-    timeFadeout = 3000;
+    timeFadeout = 200;
     fontSize = 0.01f * GetPrivateProfileInt("ScreenLog", "FontSize", 60, config.c_str());
 }
 
@@ -39,46 +38,31 @@ void ScreenLog::Add(eLogLevel level, const char* msg)
     {
         entries.push_front(std::move(entry));
 
-        bool full = entries.size() >= maxMessages;
-        if (full) entries.resize(maxMessages);
+        // remove older messages if necessary
+        auto lines = CountLines(entry.msg);
+        for (size_t i = 1; i < entries.size(); i++)
+        {
+            lines += CountLines(entries[i].msg);
 
-        // update scroll pos
-        float sizeY = fontSize * RsGlobal.maximumHeight / 448.0f;
-        size_t lines = CountLines(std::string(msg));
-
-        if(!full)
-            scrollOffset += 18.0f * lines * sizeY;
-        else
-            scrollOffset = 0.0f; // do not animate if list was full
+            if (lines > maxMessages)
+            {
+                entries.resize(i);
+                break;
+            }
+        }
     }
 }
 
 void ScreenLog::Draw()
 {
-    // scroll animation
-    static DWORD prevTime;
-    DWORD currTime = GetTickCount(); // game independent
-    if (scrollOffset > 0.001f)
+    // remove expired messages
+    while (!entries.empty() && entries.back().timeLeft < (-0.001f * timeFadeout))
     {
-        float delta = 0.01f * (currTime - prevTime);
-        scrollOffset *= max(0.9f - delta, 0.0f);
-    }
-    else
-        scrollOffset = 0.0f;
-    prevTime = currTime;
-
-    // clean up expired entries
-    while(!entries.empty())
-    {
-        if(entries.back().timeLeft < (-0.001f * timeFadeout))
-            entries.pop_back();
-        else
-            break;
+        entries.pop_back();
     }
 
     if (entries.empty())
     {
-        scrollOffset = 0.0f;
         return; // nothing to print
     }
 
@@ -92,48 +76,54 @@ void ScreenLog::Draw()
     float sizeX = fontSize * 0.55f * RsGlobal.maximumWidth / 640.0f / aspect;
     float sizeY = fontSize * RsGlobal.maximumHeight / 448.0f;
     CFont::SetScale(sizeX, sizeY);
+    const float Row_Height = 18.0f;
+
+    // calculate animation scroll pos
+    float scroll = 0.0f;
+    auto last = entries.back();
+    if (last.timeLeft < 0.0f)
+    {
+        float progress = -last.timeLeft / (0.001f * timeFadeout);
+        scroll = progress * CountLines(last.msg) * Row_Height * sizeY;
+    }
 
     CFont::SetOrientation(ALIGN_LEFT);
     float posX = 15.0f * sizeX;
-    float posY = 7.0f * sizeY - scrollOffset;
+    float posY = 7.0f * sizeY - scroll;
 
-    // count total lines
     int lines = 0;
-    for (auto& entry : entries)
-    {
-        lines += CountLines(entry.msg);
-    }
-
     float elapsed = 0.001f * (CTimer::m_snTimeInMilliseconds - CTimer::m_snPreviousTimeInMilliseconds);
     float elapsedAlt = elapsed;
     float rowTime = -0.001f * timeFadeout;
-    for(auto it = entries.rbegin(); it != entries.rend(); it++) // draw from oldest
+    for(auto it = entries.rbegin(); it != entries.rend(); it++) // draw oldest on top
     {
         auto& entry = *it;
 
         if(entry.timeLeft > 0.0f)
         {
             if(entry.timeLeft < elapsedAlt)
-                entry.timeLeft = 0.0f; // do not skip fade
+                entry.timeLeft = 0.0f;
             else
                 entry.timeLeft -= elapsedAlt;
         }
         else
-            entry.timeLeft -= elapsed; // fade out
+        {
+            if (it == entries.rbegin()) entry.timeLeft -= elapsed; // fade out only oldest
+        }
 
-        elapsedAlt *= 0.98f; // keep every next line longer
+        elapsedAlt *= 0.9f; // keep every next line longer
 
         rowTime = max(rowTime, entry.timeLeft); // carred on from older entries
         
         BYTE alpha = 255;
-        if (rowTime < 0)
+        /*if (rowTime < 0)
         {
             float fadeProgress = -rowTime / (0.001f * timeFadeout);
             fadeProgress = std::clamp(fadeProgress, 0.0f, 1.0f);
             fadeProgress = 1.0f - fadeProgress; // fade out
             fadeProgress = sqrtf(fadeProgress);
             alpha = (BYTE)(fadeProgress * 0xFF);
-        };
+        };*/
 
         auto color = fontColor[(size_t)entry.level];
         alpha = min(alpha, color.a);
@@ -144,8 +134,8 @@ void ScreenLog::Draw()
         alpha = std::clamp(int(alpha * alpha) / 255, 0, 255); // corrected for fadeout
         CFont::SetDropColor(CRGBA(0, 0, 0, alpha));
 
-        lines -= CountLines(entry.msg);
-        float y = posY + 18.0f * sizeY * lines;
+        float y = posY + Row_Height * sizeY * lines;
+        lines += CountLines(entry.msg);
 
         CFont::PrintString(posX, y, entry.GetMsg());
     }

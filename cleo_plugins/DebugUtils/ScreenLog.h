@@ -106,7 +106,7 @@ private:
 
         void ResetTime()
         {
-            timeLeft = min(msg.length(), 200) * 0.06f; // 16 letters peer second reading speed
+            timeLeft = min(msg.length(), 200) * 0.05f; // 20 letters peer second reading speed
             timeLeft = max(timeLeft, 0.001f * ScreenLog::timeDisplay); // not shorter than defined in config
         }
 
@@ -125,5 +125,4 @@ private:
     static DWORD GetTime();
 
     std::deque<Entry> entries;
-    float scrollOffset;
 };
