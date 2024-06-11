@@ -20,26 +20,36 @@ jobs:
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
-      - name: Build CLEO core
+      - name: Core - Build
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
           
-      - name: Build CLEO plugins
-        shell: cmd
-        run: |
-          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
-          
-      - name: VirusTotal Scan
+      - name: Core - Sign
+        uses: x87/code-sign-action@develop
+        with:
+          certificate: '${{ secrets.DIG_KEY_CERT }}'
+          password: '${{ secrets.DIG_KEY_PWD }}'
+          certificatename: 'Seemann'
+          description: 'CLEO 5'
+          timestampUrl: 'http://timestamp.digicert.com'
+          filename: './.output/Release/cleo.asi'
+
+      - name: Core - VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
           files: |
             ./.output/Release/CLEO.asi
+          
+      - name: Plugins - Build
+        shell: cmd
+        run: |
+          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
+          msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
 
-      - name: Prepare Files
+      - name: Gather Output Files
         id: prepare_archive
         shell: cmd
         run: |
@@ -53,7 +63,8 @@ jobs:
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload Result
+        uses: actions/upload-artifact@v4
         with:
           compression-level: 0
           name: SA.CLEO5
