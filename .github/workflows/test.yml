@@ -27,16 +27,6 @@ jobs:
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
 
-      - name: Core - Sign
-        uses: x87/code-sign-action@develop
-        with:
-          certificate: '${{ secrets.DIG_KEY_CERT }}'
-          password: '${{ secrets.DIG_KEY_PWD }}'
-          certificatename: 'Seemann'
-          description: 'CLEO 5'
-          timestampUrl: 'http://timestamp.digicert.com'
-          filename: './.output/Release/cleo.asi'
-
       - name: Core - VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
         with:
