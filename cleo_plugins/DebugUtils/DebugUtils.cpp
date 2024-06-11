@@ -74,6 +74,8 @@ public:
 
     static void WINAPI OnDrawingFinished()
     {
+        auto GTA_GetKeyState = (SHORT (__stdcall*)(int))0x0081E64C; // use ingame function as GetKeyState might look like keylogger to some AV software
+
         // log messages
         screenLog.Draw();
 
@@ -109,7 +111,7 @@ public:
             keysReleased = true;
             for (size_t i = 0; i < KeyCount; i++)
             {
-                auto state = GetKeyState(KeyFirst + i);
+                auto state = GTA_GetKeyState(KeyFirst + i);
                 if (state & 0x8000) // key down
                 {
                     keysReleased = false;
@@ -122,7 +124,7 @@ public:
             const size_t count = min(pausedScripts.size(), KeyCount);
             for (size_t i = 0; i < count; i++)
             {
-                auto state = GetKeyState(KeyFirst + i);
+                auto state = GTA_GetKeyState(KeyFirst + i);
                 if (state & 0x8000) // key down
                 {
                     keysReleased = false;
