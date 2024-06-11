@@ -21,7 +21,7 @@ jobs:
       - name: Select Windows SDK
         uses: GuillaumeFalourd/setup-windows10-sdk-action@v2
         with:
-          sdk-version: 22000
+          sdk-version: 22621 # 18362, 19041, 20348, 22000, 22621
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
