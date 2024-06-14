@@ -17,11 +17,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
-          
-#      - name: Select Windows SDK
-#        uses: GuillaumeFalourd/setup-windows10-sdk-action@v2
-#        with:
-#          sdk-version: 22000 # 18362, 19041, 20348, 22000, 22621
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
@@ -32,25 +27,43 @@ jobs:
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
 
+      - name: Core - Sign
+        uses: x87/code-sign-action@develop
+        with:
+          certificate: '${{ secrets.DIG_KEY_CERT }}'
+          password: '${{ secrets.DIG_KEY_PWD }}'
+          certificatename: 'Seemann'
+          description: 'CLEO 5'
+          timestampUrl: 'http://timestamp.digicert.com'
+          filename: './.output/Release/cleo.asi'
+
       - name: Core - VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: |
-            ./.output/Release/CLEO.asi
-          
+          files: './.output/Release/CLEO.asi'
+
       - name: Plugins - Build
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
+
+      - name: Plugins - Sign
+        uses: x87/code-sign-action@develop
+        with:
+          certificate: '${{ secrets.DIG_KEY_CERT }}'
+          password: '${{ secrets.DIG_KEY_PWD }}'
+          certificatename: 'Seemann'
+          description: 'CLEO 5 Plugin'
+          timestampUrl: 'http://timestamp.digicert.com'
+          folder: './cleo_plugins/.output'
           
       - name: Plugins - VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: |
-            ./cleo_plugins/.output/*.cleo
+          files: './cleo_plugins/.output/*.cleo'
 
       - name: Gather Output Files
         id: prepare_archive

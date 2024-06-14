@@ -36,7 +36,7 @@ EXPORTS
 	_CLEO_GetScriptParamInfoStr@12			@33
 	_CLEO_ResolvePath@12					@34
 	_CLEO_ListDirectory@16					@35
-	_CLEO_ListDirectoryFree@8				@36
+	_CLEO_StringListFree@8					@36
 	_CLEO_GetScriptDebugMode@4				@37
 	_CLEO_SetScriptDebugMode@8				@38
 	_CLEO_Log@8								@39

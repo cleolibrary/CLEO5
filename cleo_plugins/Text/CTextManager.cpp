@@ -101,16 +101,16 @@ namespace CLEO
         {
             try
             {
-                std::ifstream stream(list.paths[i]);
+                std::ifstream stream(list.strings[i]);
                 auto result = ParseFxtFile(stream);
-                TRACE("Added %d new FXT entries from file %s", result, list.paths[i]);
+                TRACE("Added %d new FXT entries from file %s", result, list.strings[i]);
             }
             catch (std::exception& ex)
             {
-                LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", list.paths[i], ex.what());
+                LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", list.strings[i], ex.what());
             }
         }
-        CLEO::CLEO_ListDirectoryFree(list);
+        CLEO::CLEO_StringListFree(list);
     }
 
     void CTextManager::Clear()

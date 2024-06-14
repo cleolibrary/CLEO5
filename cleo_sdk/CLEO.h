@@ -528,11 +528,12 @@ DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // ret R
 
 DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* thread, DWORD stream); // arg CAudioStream *
 
+struct StringList { DWORD count; char** strings; };
+void WINAPI CLEO_StringListFree(StringList list); // releases resources used by StringList container
+
 // Should be always used when working with files. Provides ModLoader compatibility
 void WINAPI CLEO_ResolvePath(CRunningScript* thread, char* inOutPath, DWORD pathMaxLen); // convert to absolute (file system) path
-struct DirectoryList{ DWORD count; char** paths; };
-DirectoryList WINAPI CLEO_ListDirectory(CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles); // thread can be null, searchPath can contain wildcards. After use CLEO_ListDirectoryFree must be called on returned DirectoryList to free allocated resources
-void WINAPI CLEO_ListDirectoryFree(DirectoryList list); // releases resources allocated by CLEO_ListDirectory
+StringList WINAPI CLEO_ListDirectory(CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles); // thread can be null, searchPath can contain wildcards. After use CLEO_StringListFree must be called on returned StringList to free its resources
 
 void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
 

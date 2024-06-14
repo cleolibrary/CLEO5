@@ -46,6 +46,7 @@
     <ClCompile Include="source\CGameVersionManager.cpp" />
     <ClCompile Include="source\CleoBase.cpp" />
     <ClCompile Include="source\CModuleSystem.cpp" />
+    <ClCompile Include="source\CPluginSystem.cpp" />
     <ClCompile Include="source\crc32.cpp" />
     <ClCompile Include="source\CScriptEngine.cpp" />
     <ClCompile Include="source\dllmain.cpp" />

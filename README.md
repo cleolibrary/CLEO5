@@ -17,7 +17,7 @@ CLEO itself does not replace any game file, however the following files and fold
 - cleo\cleo_plugins\SA.DebugUtils.cleo (script debugging utilities plugin)
 - cleo\cleo_plugins\SA.FileSystemOperations.cleo (disk drive files related operations plugin)
 - cleo\cleo_plugins\SA.IniFiles.cleo (.ini config files handling plugin)
-- cleo\cleo_plugins\SA.IntOperations.cleo (additional math operations plugin)
+- cleo\cleo_plugins\SA.Math.cleo (additional math operations plugin)
 - cleo\cleo_plugins\SA.MemoryOperations.cleo (memory and .dll libraries utilities plugin)
 - cleo\cleo_plugins\SA.Text.cleo (text processing plugin)
 - cleo\cleo_saves\ (CLEO save directory)

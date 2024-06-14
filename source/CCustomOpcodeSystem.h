@@ -32,8 +32,9 @@ namespace CLEO
         
         void FinalizeScriptObjects();
 
-        CCustomOpcodeSystem();
+        CCustomOpcodeSystem() = default;
         virtual void Inject(CCodeInjector& inj);
+        void Init();
         ~CCustomOpcodeSystem()
         {
             TRACE("Last opcode executed: %04X", lastOpcode);
@@ -48,6 +49,8 @@ namespace CLEO
         static OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
 
     private:
+        bool initialized = false;
+
         typedef OpcodeResult(__thiscall* _OpcodeHandler)(CRunningScript* thread, WORD opcode);
 
         static const size_t OriginalOpcodeHandlersCount = (LastOriginalOpcode / 100) + 1; // 100 opcodes peer handler

@@ -87,12 +87,6 @@
     <ClCompile Include="source\CScriptEngine.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
-    <ClCompile Include="source\CSoundSystem.cpp">
-      <Filter>source\extensions</Filter>
-    </ClCompile>
-    <ClCompile Include="source\CTextManager.cpp">
-      <Filter>source\game_sa</Filter>
-    </ClCompile>
     <ClCompile Include="source\CDebug.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
@@ -106,6 +100,15 @@
       <Filter>source\utils</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTheScripts.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="source\CPluginSystem.cpp">
+      <Filter>source\extensions</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CModelInfo.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CCheat.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
   </ItemGroup>
@@ -148,12 +151,6 @@
     </ClInclude>
     <ClInclude Include="source\CScriptEngine.h">
       <Filter>source\core</Filter>
-    </ClInclude>
-    <ClInclude Include="source\CSoundSystem.h">
-      <Filter>source\extensions</Filter>
-    </ClInclude>
-    <ClInclude Include="source\CTextManager.h">
-      <Filter>source\game_sa</Filter>
     </ClInclude>
     <ClInclude Include="source\CDebug.h">
       <Filter>source\utils</Filter>

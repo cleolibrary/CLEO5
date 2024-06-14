@@ -215,47 +215,6 @@ namespace CLEO
 		ScmFunction::Clear();
 	}
 
-	CCustomOpcodeSystem::CCustomOpcodeSystem()
-	{
-		TRACE("Initializing CLEO core opcodes...");
-
-		CLEO_RegisterOpcode(0x0051, opcode_0051);
-		CLEO_RegisterOpcode(0x0417, opcode_0417);
-		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
-		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
-		CLEO_RegisterOpcode(0x0A94, opcode_0A94);
-		CLEO_RegisterOpcode(0x0A95, opcode_0A95);
-		CLEO_RegisterOpcode(0x0AA0, opcode_0AA0);
-		CLEO_RegisterOpcode(0x0AA1, opcode_0AA1);
-		CLEO_RegisterOpcode(0x0AA9, opcode_0AA9);
-		CLEO_RegisterOpcode(0x0AB0, opcode_0AB0);
-		CLEO_RegisterOpcode(0x0AB1, opcode_0AB1);
-		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
-		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
-		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
-		CLEO_RegisterOpcode(0x0AB5, opcode_0AB5);
-		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6);
-		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
-		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
-		CLEO_RegisterOpcode(0x0ABA, opcode_0ABA);
-		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
-		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE);
-		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF);
-		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2);
-		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
-		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
-		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
-		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
-		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
-
-		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
-		
-		CLEO_RegisterOpcode(0x2000, opcode_2000); // get_cleo_arg_count
-		// 2001 free
-		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
-		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
-	}
-
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
 	{
 		TRACE("Injecting CustomOpcodeSystem...");
@@ -296,6 +255,51 @@ namespace CLEO
 		{
 			RadarBlips = gvm.TranslateMemoryAddress(MA_RADAR_BLIPS);
 		}
+	}
+
+	void CCustomOpcodeSystem::Init()
+	{
+		if (initialized) return;
+
+		TRACE("Initializing CLEO core opcodes...");
+
+		CLEO_RegisterOpcode(0x0051, opcode_0051);
+		CLEO_RegisterOpcode(0x0417, opcode_0417);
+		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
+		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
+		CLEO_RegisterOpcode(0x0A94, opcode_0A94);
+		CLEO_RegisterOpcode(0x0A95, opcode_0A95);
+		CLEO_RegisterOpcode(0x0AA0, opcode_0AA0);
+		CLEO_RegisterOpcode(0x0AA1, opcode_0AA1);
+		CLEO_RegisterOpcode(0x0AA9, opcode_0AA9);
+		CLEO_RegisterOpcode(0x0AB0, opcode_0AB0);
+		CLEO_RegisterOpcode(0x0AB1, opcode_0AB1);
+		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
+		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
+		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
+		CLEO_RegisterOpcode(0x0AB5, opcode_0AB5);
+		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6);
+		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
+		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
+		CLEO_RegisterOpcode(0x0ABA, opcode_0ABA);
+		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
+		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE);
+		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF);
+		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2);
+		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
+		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
+		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
+		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
+		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
+
+		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
+
+		CLEO_RegisterOpcode(0x2000, opcode_2000); // get_cleo_arg_count
+		// 2001 free
+		CLEO_RegisterOpcode(0x2002, opcode_2002); // cleo_return_with
+		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
+
+		initialized = true;
 	}
 
 	CCustomOpcodeSystem::_OpcodeHandler CCustomOpcodeSystem::originalOpcodeHandlers[OriginalOpcodeHandlersCount];
@@ -1941,11 +1945,24 @@ extern "C"
 		std::memcpy(inOutPath, resolved.c_str(), resolved.length() + 1); // with terminator
 	}
 
-	DirectoryList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+	void WINAPI CLEO_StringListFree(StringList list)
 	{
-		DirectoryList result;
+		if (list.count > 0 && list.strings != nullptr)
+		{
+			for (DWORD i = 0; i < list.count; i++)
+			{
+				free(list.strings[i]);
+			}
+
+			free(list.strings);
+		}
+	}
+
+	StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+	{
+		StringList result;
 		result.count = 0;
-		result.paths = nullptr;
+		result.strings = nullptr;
 
 		if (searchPath == nullptr)
 		{
@@ -1956,9 +1973,6 @@ extern "C"
 		{
 			return result; // nothing to list, done
 		}
-
-		// TODO: if available call ModLoader here instead
-		// scriptFileDir, scriptWorkDir, searchPath
 
 		auto fsSearchPath = FS::path(searchPath);
 		if (!fsSearchPath.is_absolute())
@@ -1974,7 +1988,6 @@ extern "C"
 		HANDLE hSearch = FindFirstFile(searchPath, &wfd);
 		if (hSearch == INVALID_HANDLE_VALUE)
 		{
-			TRACE("No files found in: %s", searchPath);
 			return result;
 		}
 
@@ -2000,30 +2013,30 @@ extern "C"
 		while (FindNextFile(hSearch, &wfd));
 
 		// create results list
-		result.paths = (char**)malloc(found.size() * sizeof(DWORD)); // array of pointers
+		result.strings = (char**)malloc(found.size() * sizeof(DWORD)); // array of pointers
 		
 		for(auto& path : found)
 		{
 			char* str = (char*)malloc(path.length() + 1);
 			strcpy(str, path.c_str());
 
-			result.paths[result.count] = str;
+			result.strings[result.count] = str;
 			result.count++;
 		}
 
 		return result;
 	}
 
-	void WINAPI CLEO_ListDirectoryFree(DirectoryList list)
+	void WINAPI CLEO_ListDirectoryFree(StringList list)
 	{
-		if (list.count > 0 && list.paths != nullptr)
+		if (list.count > 0 && list.strings != nullptr)
 		{
 			for (DWORD i = 0; i < list.count; i++)
 			{
-				free(list.paths[i]);
+				free(list.strings[i]);
 			}
 
-			free(list.paths);
+			free(list.strings);
 		}
 	}
 

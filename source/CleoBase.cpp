@@ -145,7 +145,8 @@ namespace CLEO
 
         CodeInjector.ReplaceFunction(OnDrawingFinished, 0x00734640); // nullsub_63 - originally something like renderDebugStuff?
 
-        TRACE("CLEO instance started successfully!");
+        OpcodeSystem.Init();
+        PluginSystem.LoadPlugins();
     }
 
     void CCleoInstance::Stop()

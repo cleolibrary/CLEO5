@@ -45,14 +45,12 @@ jobs:
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: |
-            ./.output/Release/CLEO.asi
+          files: './.output/Release/CLEO.asi'
 
       - name: Plugins - Build
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
 
       - name: Plugins - Sign
@@ -64,14 +62,12 @@ jobs:
           description: 'CLEO 5 Plugin'
           timestampUrl: 'http://timestamp.digicert.com'
           folder: './cleo_plugins/.output'
-          recursive: true
           
       - name: Plugins - VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: |
-            ./cleo_plugins/.output/*.cleo
+          files: './cleo_plugins/.output/*.cleo'
 
       - name: Gather Output Files
         id: prepare_archive

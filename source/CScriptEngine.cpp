@@ -996,36 +996,51 @@ namespace CLEO
 
     void CScriptEngine::LoadCustomScripts()
     {
-        TRACE("Searching for CLEO scripts");
-        FilesWalk(Filepath_Cleo.c_str(), cs_ext, [&](const char* fullPath, const char* filename)
+        TRACE("Listing CLEO scripts:");
+
+        std::set<std::string> found;
+
+        auto processFileList = [&](StringList fileList)
         {
-            if (auto cs = LoadScript(fullPath))
+            for (DWORD i = 0; i < fileList.count; i++)
             {
-                cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
+                const auto ext = FS::path(fileList.strings[i]).extension();
+                if (ext == cs_ext || ext == cs3_ext || ext == cs4_ext)
+                {
+                    TRACE(" - '%s'", fileList.strings[i]);
+                    found.emplace(fileList.strings[i]);
+                }
             }
-        });
+        };
 
-        FilesWalk(Filepath_Cleo.c_str(), cs4_ext, [&](const char* fullPath, const char* filename)
+        auto searchPattern = Filepath_Cleo + "\\*.*";
+        auto list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
+        processFileList(list);
+        CLEO_StringListFree(list);
+
+        if (!found.empty())
         {
-            if (auto cs = LoadScript(fullPath))
-            {
-                cs->SetCompatibility(CLEO_VER_4);
-                cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
-            }
-        });
+            TRACE("Starting CLEO scripts");
 
-        FilesWalk(Filepath_Cleo.c_str(), cs3_ext, [&](const char* fullPath, const char* filename)
+            for (const auto& path : found)
+            {
+                if (auto cs = LoadScript(path.c_str()))
+                {
+                    cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
+
+                    // compatibility modes
+                    const auto ext = FS::path(path).extension();
+                    if (ext == cs4_ext) 
+                        cs->SetCompatibility(CLEO_VER_4);
+                    else if (ext == cs3_ext)
+                        cs->SetCompatibility(CLEO_VER_3);
+                }
+            }
+        }
+        else
         {
-            if (auto cs = LoadScript(fullPath))
-            {
-                cs->SetCompatibility(CLEO_VER_3);
-                cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
-            }
-        });
-
-        GetInstance().CallCallbacks(eCallbackId::ScriptsLoaded);
-
-        TRACE("Scripts search done");
+            TRACE(" - nothing found");
+        }
     }
 
     CCustomScript * CScriptEngine::LoadScript(const char * szFilePath)
