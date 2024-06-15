@@ -25,12 +25,19 @@ void CPluginSystem::LoadPlugins()
 
         for (DWORD i = 0; i < files.count; i++)
         {
+            if (std::find(filenames.begin(), filenames.end(), files.strings[i]) != filenames.end())
+                continue; // file already listed
+
             auto name = FS::path(files.strings[i]).filename().string();
             name = name.substr(prefix.length()); // cut off prefix
             name.resize(name.length() - extension.length()); // cut off extension
-            std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return std::toupper(c); });
 
-            if (names.find(name) == names.end())
+            // case insensitive search in already listed plugin names
+            auto found = std::find_if(names.begin(), names.end(), [&](const std::string& s) {
+                return _stricmp(s.c_str(), name.c_str()) == 0;
+            });
+
+            if (found == names.end())
             {
                 names.insert(name);
                 filenames.emplace_back(files.strings[i]);
@@ -38,7 +45,7 @@ void CPluginSystem::LoadPlugins()
             }
             else
             {
-                LOG_WARNING(0, " - '%s' skipped, duplicate of `%s` plugin.", files.strings[i], name.c_str());
+                LOG_WARNING(0, " - '%s' skipped, duplicate of `%s` plugin", files.strings[i], name.c_str());
             }
         }
 
@@ -53,7 +60,7 @@ void CPluginSystem::LoadPlugins()
     // reverse order, so opcodes from CLEO5 plugins can overwrite opcodes from legacy plugins
     if (!filenames.empty())
     {
-        for (auto it = filenames.crbegin(); it < filenames.crend(); it++)
+        for (auto it = filenames.crbegin(); it != filenames.crend(); it++)
         {
             const auto filename = it->c_str();
             TRACE("Loading plugin '%s'", filename);
