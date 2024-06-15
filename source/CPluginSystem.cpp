@@ -50,7 +50,7 @@ void CPluginSystem::LoadPlugins()
     ScanPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "", ".cleo"); // legacy plugins in new location
     ScanPluginsDir(Filepath_Cleo, "", ".cleo"); // legacy plugins in old location
 
-    // reverse order, so most important plugins can overwrite already registered opcodes
+    // reverse order, so opcodes from CLEO5 plugins can overwrite opcodes from legacy plugins
     if (!filenames.empty())
     {
         for (auto it = filenames.crbegin(); it < filenames.crend(); it++)
