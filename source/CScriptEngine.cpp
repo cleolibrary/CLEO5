@@ -1013,8 +1013,18 @@ namespace CLEO
             }
         };
 
-        auto searchPattern = Filepath_Cleo + "\\*.*";
+        auto searchPattern = Filepath_Cleo + "\\*" + cs_ext;
         auto list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
+        processFileList(list);
+        CLEO_StringListFree(list);
+
+        searchPattern = Filepath_Cleo + "\\*" + cs3_ext;
+        list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
+        processFileList(list);
+        CLEO_StringListFree(list);
+
+        searchPattern = Filepath_Cleo + "\\*" + cs4_ext;
+        list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
         processFileList(list);
         CLEO_StringListFree(list);
 
