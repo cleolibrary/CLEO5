@@ -1864,11 +1864,6 @@ extern "C"
 		return texture;
 	}
 
-	DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* thread, DWORD stream) // arg CAudioStream *
-	{
-		return stream; // CAudioStream::streamInternal offset is 0
-	}
-
 	CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char *script_name, int label)
 	{
 		auto filename = reinterpret_cast<CCustomScript*>(fromThread)->ResolvePath(script_name, DIR_CLEO); // legacy: default search location is game\cleo directory
@@ -1928,116 +1923,6 @@ extern "C"
 	void WINAPI CLEO_RemoveScriptDeleteDelegate(FuncScriptDeleteDelegateT func)
 	{
 		scriptDeleteDelegate -= func;
-	}
-
-	void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
-	{
-		if (thread == nullptr || inOutPath == nullptr || pathMaxLen < 2)
-		{
-			return; // invalid param
-		}
-
-		auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
-		
-		if (resolved.length() >= pathMaxLen)
-			resolved.resize(pathMaxLen - 1); // and terminator character
-
-		std::memcpy(inOutPath, resolved.c_str(), resolved.length() + 1); // with terminator
-	}
-
-	void WINAPI CLEO_StringListFree(StringList list)
-	{
-		if (list.count > 0 && list.strings != nullptr)
-		{
-			for (DWORD i = 0; i < list.count; i++)
-			{
-				free(list.strings[i]);
-			}
-
-			free(list.strings);
-		}
-	}
-
-	StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
-	{
-		StringList result;
-		result.count = 0;
-		result.strings = nullptr;
-
-		if (searchPath == nullptr)
-		{
-			return result; // invalid param
-		}
-
-		if (!listDirs && !listFiles)
-		{
-			return result; // nothing to list, done
-		}
-
-		auto fsSearchPath = FS::path(searchPath);
-		if (!fsSearchPath.is_absolute())
-		{
-			auto workDir = (thread != nullptr) ? 
-				((CCustomScript*)thread)->GetWorkDir() :
-				Filepath_Root.c_str();
-
-			fsSearchPath = workDir / fsSearchPath;
-		}
-
-		WIN32_FIND_DATA wfd = { 0 };
-		HANDLE hSearch = FindFirstFile(searchPath, &wfd);
-		if (hSearch == INVALID_HANDLE_VALUE)
-		{
-			return result;
-		}
-
-		std::set<std::string> found;
-		do
-		{
-			if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-			{
-				continue; // skip directories
-			}
-
-			if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-			{
-				continue; // skip files
-			}
-
-			auto path = FS::path(wfd.cFileName);
-			if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
-				path = fsSearchPath.parent_path() / path;
-
-			found.insert(path.string());
-		} 
-		while (FindNextFile(hSearch, &wfd));
-
-		// create results list
-		result.strings = (char**)malloc(found.size() * sizeof(DWORD)); // array of pointers
-		
-		for(auto& path : found)
-		{
-			char* str = (char*)malloc(path.length() + 1);
-			strcpy(str, path.c_str());
-
-			result.strings[result.count] = str;
-			result.count++;
-		}
-
-		return result;
-	}
-
-	void WINAPI CLEO_ListDirectoryFree(StringList list)
-	{
-		if (list.count > 0 && list.strings != nullptr)
-		{
-			for (DWORD i = 0; i < list.count; i++)
-			{
-				free(list.strings[i]);
-			}
-
-			free(list.strings);
-		}
 	}
 
 	BOOL WINAPI CLEO_GetScriptDebugMode(const CLEO::CRunningScript* thread)
