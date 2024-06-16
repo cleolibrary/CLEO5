@@ -256,19 +256,11 @@ namespace CLEO
 
     StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
     {
-        StringList result;
-        result.count = 0;
-        result.strings = nullptr;
-
         if (searchPath == nullptr)
-        {
-            return result; // invalid param
-        }
+            return {}; // invalid param
 
         if (!listDirs && !listFiles)
-        {
-            return result; // nothing to list, done
-        }
+            return {}; // nothing to list, done
 
         auto fsSearchPath = FS::path(searchPath);
         if (!fsSearchPath.is_absolute())
@@ -281,24 +273,18 @@ namespace CLEO
         }
 
         WIN32_FIND_DATA wfd = { 0 };
-        HANDLE hSearch = FindFirstFile(searchPath, &wfd);
+        HANDLE hSearch = FindFirstFile(fsSearchPath.string().c_str(), &wfd);
         if (hSearch == INVALID_HANDLE_VALUE)
-        {
-            return result;
-        }
+            return {}; // nothing found
 
         std::set<std::string> found;
         do
         {
-            if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-            {
+            if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
                 continue; // skip directories
-            }
 
             if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-            {
                 continue; // skip files
-            }
 
             auto path = FS::path(wfd.cFileName);
             if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
@@ -307,19 +293,9 @@ namespace CLEO
             found.insert(path.string());
         } while (FindNextFile(hSearch, &wfd));
 
-        // create results list
-        result.strings = (char**)malloc(found.size() * sizeof(DWORD)); // array of pointers
+        FindClose(hSearch);
 
-        for (auto& path : found)
-        {
-            char* str = (char*)malloc(path.length() + 1);
-            strcpy(str, path.c_str());
-
-            result.strings[result.count] = str;
-            result.count++;
-        }
-
-        return result;
+        return CreateStringList(found);
     }
 }
 

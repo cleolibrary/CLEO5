@@ -245,6 +245,30 @@ namespace CLEO
         return (void*)original;
     }
 
+    template <typename T>
+    static StringList CreateStringList(const T& container)
+    {
+        StringList result;
+        result.count = 0;
+        result.strings = nullptr;
+
+        if (container.size() > 0)
+        {
+            result.strings = (char**)malloc(container.size() * sizeof(DWORD)); // array of pointers
+            for (const std::string& s : container)
+            {
+                auto size = s.length() + 1; // and terminator character
+                auto str = (char*)malloc(size);
+                memcpy(str, s.c_str(), size);
+
+                result.strings[result.count] = str;
+                result.count++;
+            }
+        }
+
+        return result;
+    }
+
     #define TRACE(format,...) {CLEO::Trace(CLEO::eLogLevel::Default, format, __VA_ARGS__);}
     #define LOG_WARNING(script, format, ...) {CLEO::Trace(script, CLEO::eLogLevel::Error, format, __VA_ARGS__);}
     #define SHOW_ERROR(a,...) {CLEO::ShowError(a, __VA_ARGS__);}

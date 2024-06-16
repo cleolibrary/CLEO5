@@ -15,7 +15,8 @@ void CPluginSystem::LoadPlugins()
     if (pluginsLoaded) return; // already done
 
     std::set<std::string> names;
-    std::vector<std::string> filenames;
+    std::vector<std::string> paths;
+    std::set<std::string> skippedPaths;
 
     // load plugins from main CLEO directory
     auto ScanPluginsDir = [&](std::string path, const std::string prefix, const std::string extension)
@@ -25,8 +26,11 @@ void CPluginSystem::LoadPlugins()
 
         for (DWORD i = 0; i < files.count; i++)
         {
-            if (std::find(filenames.begin(), filenames.end(), files.strings[i]) != filenames.end())
+            if (std::find(paths.begin(), paths.end(), files.strings[i]) != paths.end())
                 continue; // file already listed
+
+            if (skippedPaths.find(files.strings[i]) != skippedPaths.end())
+                continue; // file already skipped
 
             auto name = FS::path(files.strings[i]).filename().string();
             name = name.substr(prefix.length()); // cut off prefix
@@ -40,11 +44,12 @@ void CPluginSystem::LoadPlugins()
             if (found == names.end())
             {
                 names.insert(name);
-                filenames.emplace_back(files.strings[i]);
+                paths.emplace_back(files.strings[i]);
                 TRACE(" - '%s'", files.strings[i]);
             }
             else
             {
+                skippedPaths.emplace(files.strings[i]);
                 LOG_WARNING(0, " - '%s' skipped, duplicate of `%s` plugin", files.strings[i], name.c_str());
             }
         }
@@ -58,9 +63,9 @@ void CPluginSystem::LoadPlugins()
     ScanPluginsDir(Filepath_Cleo, "", ".cleo"); // legacy plugins in old location
 
     // reverse order, so opcodes from CLEO5 plugins can overwrite opcodes from legacy plugins
-    if (!filenames.empty())
+    if (!paths.empty())
     {
-        for (auto it = filenames.crbegin(); it != filenames.crend(); it++)
+        for (auto it = paths.crbegin(); it != paths.crend(); it++)
         {
             const auto filename = it->c_str();
             TRACE("Loading plugin '%s'", filename);
