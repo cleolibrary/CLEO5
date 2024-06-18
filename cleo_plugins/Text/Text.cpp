@@ -112,7 +112,7 @@ public:
 	static OpcodeResult __stdcall opcode_0ACB(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
-		auto time = OPCODE_READ_PARAM_INT();
+		auto time = OPCODE_READ_PARAM_UINT();
 		auto style = OPCODE_READ_PARAM_INT();
 
 		auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
@@ -125,7 +125,7 @@ public:
 	static OpcodeResult __stdcall opcode_0ACC(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
-		auto time = OPCODE_READ_PARAM_INT();
+		auto time = OPCODE_READ_PARAM_UINT();
 
 		strncpy(msgBuffLow, text, sizeof(msgBuffLow));
 		CMessages::AddMessage(msgBuffLow, time, false, false);
@@ -136,7 +136,7 @@ public:
 	static OpcodeResult __stdcall opcode_0ACD(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(text);
-		auto time = OPCODE_READ_PARAM_INT();
+		auto time = OPCODE_READ_PARAM_UINT();
 
 		strncpy(msgBuffHigh, text, sizeof(msgBuffHigh));
 		CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
@@ -156,7 +156,7 @@ public:
 	static OpcodeResult __stdcall opcode_0ACF(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(format);
-		auto time = OPCODE_READ_PARAM_INT();
+		auto time = OPCODE_READ_PARAM_UINT();
 		auto style = OPCODE_READ_PARAM_INT();
 		OPCODE_READ_PARAMS_FORMATTED(format, text);
 
@@ -170,7 +170,7 @@ public:
 	static OpcodeResult __stdcall opcode_0AD0(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(format);
-		auto time = OPCODE_READ_PARAM_INT();
+		auto time = OPCODE_READ_PARAM_UINT();
 		OPCODE_READ_PARAMS_FORMATTED(format, text);
 
 		strncpy(msgBuffLow, text, sizeof(msgBuffLow));
@@ -182,7 +182,7 @@ public:
 	static OpcodeResult __stdcall opcode_0AD1(CLEO::CRunningScript* thread)
 	{
 		OPCODE_READ_PARAM_STRING(format);
-		auto time = OPCODE_READ_PARAM_INT();
+		auto time = OPCODE_READ_PARAM_UINT();
 		OPCODE_READ_PARAMS_FORMATTED(format, text);
 
 		strncpy(msgBuffHigh, text, sizeof(msgBuffHigh));
