@@ -116,6 +116,8 @@
   - CLEO_ReadStringParamWriteBuffer
   - CLEO_GetOpcodeParamsArray
   - CLEO_GetParamsHandledCount
+  - CLEO_IsScriptRunning
+  - CLEO_TerminateScript
   - CLEO_GetScriptVersion
   - CLEO_GetScriptInfoStr
   - CLEO_GetScriptFilename
