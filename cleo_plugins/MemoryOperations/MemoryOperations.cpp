@@ -44,6 +44,8 @@ public:
 
         CLEO_RegisterOpcode(0x0AAA, opcode_0AAA); // get_script_struct_named
 
+        CLEO_RegisterOpcode(0x0ABA, opcode_0ABA); // terminate_all_custom_scripts_with_this_name
+
         CLEO_RegisterOpcode(0x0AC6, opcode_0AC6); // get_label_pointer
         CLEO_RegisterOpcode(0x0AC7, opcode_0AC7); // get_var_pointer
         CLEO_RegisterOpcode(0x0AC8, opcode_0AC8); // allocate_memory
@@ -62,6 +64,7 @@ public:
         CLEO_RegisterOpcode(0x2405, opcode_2405); // is_script_running
         CLEO_RegisterOpcode(0x2406, opcode_2406); // get_script_struct_from_filename
         CLEO_RegisterOpcode(0x2407, opcode_2407); // is_memory_equal
+        CLEO_RegisterOpcode(0x2408, opcode_2408); // terminate_script
         
 
         // register event callbacks
@@ -498,6 +501,27 @@ public:
         return OR_CONTINUE;
     }
 
+    //0ABA=1,terminate_all_custom_scripts_with_this_name %1d%
+    static OpcodeResult __stdcall opcode_0ABA(CLEO::CRunningScript* thread)
+    {
+        OPCODE_READ_PARAM_STRING(threadName);
+
+        bool terminateCurrent = false;
+        while (true)
+        {
+            auto found = CLEO_GetScriptByName(threadName, false, true, 0);
+            if (found == nullptr)
+                break;
+
+            if (found == thread)
+                terminateCurrent = true;
+
+            CLEO_TerminateScript(found);
+        }
+
+        return terminateCurrent ? OR_INTERRUPT : OR_CONTINUE;
+    }
+
     //0AC6=2,get_label_pointer %1d% store_to %2d%
     static OpcodeResult __stdcall opcode_0AC6(CLEO::CRunningScript* thread)
     {
@@ -798,7 +822,7 @@ public:
     //2405=1,  is_script_running %1d%
     static OpcodeResult __stdcall opcode_2405(CLEO::CScriptThread* thread)
     {
-        auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_INT();
+        auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_INT(); // allow invalid pointers too
 
         auto running = CLEO_IsScriptRunning(address);
 
@@ -840,6 +864,16 @@ public:
 
         OPCODE_CONDITION_RESULT(result == 0);
         return OR_CONTINUE;
+    }
+
+    //2408=1,terminate_script %1d%
+    static OpcodeResult __stdcall opcode_2408(CLEO::CScriptThread* thread)
+    {
+        auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_PTR();
+
+        CLEO_TerminateScript(address);
+
+        return (address == thread) ? OR_INTERRUPT : OR_CONTINUE;
     }
 } Memory;
 

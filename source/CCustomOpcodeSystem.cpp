@@ -42,7 +42,7 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread); // get_target_blip_coords
 	OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread); // get_car_number_of_gears
 	OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread); // get_car_current_gear
-	OpcodeResult __stdcall opcode_0ABA(CRunningScript* thread); // terminate_all_custom_scripts_with_this_name
+
 	OpcodeResult __stdcall opcode_0ABD(CRunningScript* thread); // is_car_siren_on
 	OpcodeResult __stdcall opcode_0ABE(CRunningScript* thread); // is_car_engine_on
 	OpcodeResult __stdcall opcode_0ABF(CRunningScript* thread); // cleo_set_car_engine_on
@@ -281,7 +281,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6);
 		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
 		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
-		CLEO_RegisterOpcode(0x0ABA, opcode_0ABA);
 		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
 		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE);
 		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF);
@@ -1283,19 +1282,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0ABA=1,end_custom_thread_named %1d%
-	OpcodeResult __stdcall opcode_0ABA(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING(threadName);
-
-		auto deleted_thread = (CCustomScript*)GetInstance().ScriptEngine.FindScriptNamed(threadName, false, true, 0);
-		if (deleted_thread)
-		{
-			GetInstance().ScriptEngine.RemoveCustomScript(deleted_thread);
-		}
-		return deleted_thread == thread ? OR_INTERRUPT : OR_CONTINUE;
-	}
-
 	//0ABD=1,  vehicle %1d% siren_on
 	OpcodeResult __stdcall opcode_0ABD(CRunningScript *thread)
 	{
@@ -1832,6 +1818,11 @@ extern "C"
 	void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)
 	{
 		ThreadJump(thread, labelPtr);
+	}
+
+	void WINAPI CLEO_TerminateScript(CLEO::CRunningScript* thread)
+	{
+		GetInstance().ScriptEngine.RemoveScript(thread);
 	}
 
 	int WINAPI CLEO_GetOperandType(const CLEO::CRunningScript* thread)

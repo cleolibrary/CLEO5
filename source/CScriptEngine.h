@@ -135,6 +135,7 @@ namespace CLEO
         bool IsActiveScriptPtr(const CRunningScript*) const; // leads to active script? (regular or custom)
         bool IsValidScriptPtr(const CRunningScript*) const; // leads to any script? (regular or custom)
         void AddCustomScript(CCustomScript*);
+        void RemoveScript(CRunningScript*); // native or custom
         void RemoveCustomScript(CCustomScript*);
         void RemoveAllCustomScripts();
         void UnregisterAllScripts();

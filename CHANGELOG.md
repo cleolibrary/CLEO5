@@ -55,6 +55,7 @@
   - new opcode **2405 ([is_script_running](https://library.sannybuilder.com/#/sa/memory/2405))**
   - new opcode **2406 ([get_script_struct_from_filename](https://library.sannybuilder.com/#/sa/memory/2406))**
   - new opcode **2407 ([is_memory_equal](https://library.sannybuilder.com/#/sa/memory/2407))**
+  - new opcode **2408 ([terminate_script](https://library.sannybuilder.com/#/sa/memory/2408))**
 - new [Text](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Text) plugin
   - text related opcodes moved from CLEO core into separated plugin
   - new opcode **2600 ([is_text_empty](https://library.sannybuilder.com/#/sa/text/2600))**
