@@ -1935,6 +1935,11 @@ extern "C"
 		reinterpret_cast<CCustomScript*>(thread)->SetDebugMode(enabled);
 	}
 
+	BOOL WINAPI CLEO_IsScriptRunning(const CLEO::CRunningScript* thread)
+	{
+		return GetInstance().ScriptEngine.IsActiveScriptPtr(thread);
+	}
+
 	void WINAPI CLEO_GetScriptInfoStr(CLEO::CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize)
 	{
 		if (thread == nullptr || buf == nullptr || bufSize < 2)

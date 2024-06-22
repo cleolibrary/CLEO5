@@ -800,9 +800,9 @@ public:
     {
         auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_INT();
 
-        auto name = CLEO_GetScriptFilename(address);
+        auto running = CLEO_IsScriptRunning(address);
 
-        OPCODE_CONDITION_RESULT(name != nullptr);
+        OPCODE_CONDITION_RESULT(running);
         return OR_CONTINUE;
     }
 

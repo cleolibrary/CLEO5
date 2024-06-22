@@ -52,3 +52,4 @@ EXPORTS
 	_CLEO_GetScriptWorkDir@4				@49
 	_CLEO_SetScriptWorkDir@8				@50
 	_CLEO_RegisterCommand@8					@51
+	_CLEO_IsScriptRunning@4					@52
