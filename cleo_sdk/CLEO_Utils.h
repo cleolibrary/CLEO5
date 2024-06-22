@@ -1,5 +1,15 @@
-// some utilities usefull when creating CLEO plugins
-// requires adding "CPools.cpp" from GTA Plugin SDK to the project
+// Some optional utilities usefull when creating CLEO plugins
+//
+// Add following lines to "Additional Include Directories" in project config:
+//   $(PLUGIN_SDK_DIR)\plugin_sa\
+//   $(PLUGIN_SDK_DIR)\shared\game\
+//   $(PLUGIN_SDK_DIR)\plugin_sa\game_sa\
+// 
+// Add following lines to "Preprocesor Definitions": 
+//   GTASA
+//   TARGET_NAME=R"($(TargetName))"
+// 
+// Depending on used functions, may require adding "CPools.cpp" from GTA Plugin SDK to the project files
 
 #pragma once
 #include "CLEO.h"
@@ -17,7 +27,7 @@ namespace CLEO
     SHOW_ERROR(a,...) // message box, log to file
 
     Macros to use inside opcode handler functions. Performs types validation, printing warnings and suspending script on critical errors.
-    Please mind those might expand into multiple lines, so should, for example, not be used as body of 'if' statements without brackets!
+    Please mind those expand into multiple lines, so CAN NOT be used in places where single code line is expected! (like 'if' condition body without brackets)
     
     OPCODE_CONDITION_RESULT(value) // set result
     OPCODE_SKIP_PARAMS(count) // ignore X params
@@ -196,7 +206,7 @@ namespace CLEO
             ShowWindow(NULL, SW_MINIMIZE);
         }
 
-        MessageBox(NULL, msg, "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
+        MessageBoxA(NULL, msg, "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
 
         if (fullscreen)
         {

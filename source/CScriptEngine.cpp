@@ -962,7 +962,7 @@ namespace CLEO
 
         if (CGame::bMissionPackGame == 0) // regular main game
         {
-            MainScriptFileDir = FS::path(Filepath_Cleo).append("data\\script").string();
+            MainScriptFileDir = FS::path(Filepath_Root).append("data\\script").string();
             MainScriptFileName = "main.scm";
         }
         else // mission pack
