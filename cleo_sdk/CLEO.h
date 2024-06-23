@@ -279,7 +279,7 @@ static eLogicalOperation& operator--(eLogicalOperation& o)
 
 // CLEO virtual path prefixes. Expandable with CLEO_ResolvePath
 const char DIR_GAME[] = "root:"; // game root directory
-const char DIR_USER[] = "userfiles:"; // game save directory
+const char DIR_USER[] = "user:"; // game save directory
 const char DIR_SCRIPT[] = "."; // current script directory
 const char DIR_CLEO[] = "cleo:"; // game\cleo directory
 const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory

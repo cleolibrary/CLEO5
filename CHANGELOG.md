@@ -81,7 +81,7 @@
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations:
     - `root:\` for _game root_ directory
-    - `userfiles:\` for _game save files_ directory
+    - `user:\` for _game save files_ directory
     - `.\` for _this script file_ directory
     - `cleo:\` for _CLEO_ directory
     - `modules:\` for _CLEO\cleo_modules_ directory
