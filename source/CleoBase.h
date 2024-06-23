@@ -30,7 +30,7 @@ namespace CLEO
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
         CPluginSystem			PluginSystem;
-        OpcodeInfoDatabase      OpcodeInfoDb;
+        OpcodeInfoDatabase		OpcodeInfoDb;
 
         int saveSlot = -1; // -1 if not loaded from save
 

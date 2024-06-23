@@ -77,6 +77,7 @@
   - SCM functions **(0AB1)** now keep their own GOSUB's call stack
   - fixed bug in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/text/2604))** causing data overruns when reading strings longer than target variable
   - fixed result register not being cleared before function call in opcodes **0AA7** and **0AA8**
+  - fixed **0ABA ([terminate_all_custom_scripts_with_this_name](https://library.sannybuilder.com/#/sa/CLEO/0ABA))** terminating only first found script
 - changes in file operations
   - file paths can now use 'virtual absolute paths'. Use prefix in file path strings to access predefined locations:
     - `root:\` for _game root_ directory

@@ -16,6 +16,7 @@ namespace CLEO
 
     public:
         CPluginSystem() = default;
+        CPluginSystem(const CPluginSystem&) = delete; // no copying
         ~CPluginSystem();
 
         void LoadPlugins();

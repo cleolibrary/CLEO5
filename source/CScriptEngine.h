@@ -55,7 +55,9 @@ namespace CLEO
         inline DWORD& GetLastSearchPed() { return LastSearchPed; }
         inline DWORD& GetLastSearchVehicle() { return LastSearchCar; }
         inline DWORD& GetLastSearchObject() { return LastSearchObj; }
-		CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
+
+        CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
+        CCustomScript(const CCustomScript&) = delete; // no copying
         ~CCustomScript();
 
         void Process();
@@ -83,6 +85,9 @@ namespace CLEO
         // filename with type extension of script's source file
         const char* GetScriptFileName() const;
         void SetScriptFileName(const char* filename);
+
+        // absolute path to the script file
+        std::string GetScriptFileFullPath() const;
 
         // current working directory of this script. Can be changed ith 0A99
         const char* GetWorkDir() const;
@@ -117,6 +122,7 @@ namespace CLEO
         static SCRIPT_VAR CleoVariables[0x400];
 
         CScriptEngine() = default;
+        CScriptEngine(const CScriptEngine&) = delete; // no copying
         ~CScriptEngine();
         
         virtual void Inject(CCodeInjector&);

@@ -658,6 +658,14 @@ namespace CLEO
             scriptFileName = filename;
     }
 
+    std::string CCustomScript::GetScriptFileFullPath() const
+    {
+        std::string path = GetScriptFileDir();
+        path += '\\';
+        path += GetScriptFileName();
+        return path;
+    }
+
     const char* CCustomScript::GetWorkDir() const
     {
         if (!bIsCustom)
@@ -1235,9 +1243,7 @@ namespace CLEO
             if (script == nullptr) return false;
 
             auto cs = (CCustomScript*)script;
-            std::string scriptPath = cs->GetScriptFileDir();
-            scriptPath += '\\';
-            scriptPath += cs->GetScriptFileName();
+            std::string scriptPath = cs->GetScriptFileFullPath();
 
             if (scriptPath.length() < pathLen) return false;
 

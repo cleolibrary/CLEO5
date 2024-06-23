@@ -33,6 +33,7 @@ namespace CLEO
         void FinalizeScriptObjects();
 
         CCustomOpcodeSystem() = default;
+        CCustomOpcodeSystem(const CCustomOpcodeSystem&) = delete; // no copying
         virtual void Inject(CCodeInjector& inj);
         void Init();
         ~CCustomOpcodeSystem()

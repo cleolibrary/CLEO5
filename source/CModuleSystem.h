@@ -20,6 +20,9 @@ namespace CLEO
 	class CModuleSystem
 	{
 	public:
+		CModuleSystem() = default;
+		CModuleSystem(const CModuleSystem&) = delete; // no copying
+
 		void Clear();
 
 		// registers module reference. Needs to be released with ReleaseModuleRef
@@ -66,6 +69,7 @@ namespace CLEO
 
 		public:
 			CModule();
+			CModule(const CModule&) = delete; // no copying
 			~CModule();
 
 			void Clear();
