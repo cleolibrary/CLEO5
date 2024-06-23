@@ -8,6 +8,7 @@
 namespace CLEO
 {
     bool CSoundSystem::useFloatAudio = false;
+    bool CSoundSystem::allowNetworkSources = true;
     BASS_3DVECTOR CSoundSystem::pos(0.0, 0.0, 0.0);
     BASS_3DVECTOR CSoundSystem::vel(0.0, 0.0, 0.0);
     BASS_3DVECTOR CSoundSystem::front(0.0, -1.0, 0.0);
@@ -27,6 +28,12 @@ namespace CLEO
             TRACE("Found sound device %d%s: %s", total, default_device == total ?
                 " (default)" : "", info.name);
         }
+    }
+
+    bool isNetworkSource(const char* path)
+    {
+        return _strnicmp("http:", path, 5) == 0 ||
+            _strnicmp("https:", path, 6) == 0;
     }
 
     CSoundSystem::~CSoundSystem()
@@ -49,6 +56,7 @@ namespace CLEO
 
         auto config = GetConfigFilename();
         defaultStreamType = (eStreamType)GetPrivateProfileInt("General", "DefaultStreamType", 0, config.c_str());
+        allowNetworkSources = GetPrivateProfileInt("General", "AllowNetworkSources", 1, config.c_str()) != 0;
 
         int default_device, total_devices, enabled_devices;
         EnumerateBassDevices(total_devices, enabled_devices, default_device);

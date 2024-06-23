@@ -25,6 +25,7 @@ namespace CLEO
         bool paused = false;
 
         static bool useFloatAudio;
+        static bool CSoundSystem::allowNetworkSources;
 
         static BASS_3DVECTOR pos;
         static BASS_3DVECTOR vel;
@@ -52,4 +53,6 @@ namespace CLEO
         void Resume();
         void Process();
     };
+
+    bool isNetworkSource(const char* path);
 }

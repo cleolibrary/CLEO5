@@ -6,13 +6,19 @@ using namespace CLEO;
 
 CAudioStream::CAudioStream(const char* filepath)
 {
+    if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
+    {
+        TRACE("Loading of audiostream '%s' failed. Support of network sources was disabled in SA.Audio.ini", filepath);
+        return;
+    }
+
     unsigned flags = BASS_SAMPLE_SOFTWARE;
     if (CSoundSystem::useFloatAudio) flags |= BASS_SAMPLE_FLOAT;
 
     if (!(streamInternal = BASS_StreamCreateFile(FALSE, filepath, 0, 0, flags)) &&
         !(streamInternal = BASS_StreamCreateURL(filepath, 0, flags, 0, nullptr)))
     {
-        LOG_WARNING(0, "Loading audiostream %s failed. Error code: %d", filepath, BASS_ErrorGetCode());
+        LOG_WARNING(0, "Loading of audiostream '%s' failed. Error code: %d", filepath, BASS_ErrorGetCode());
         return;
     }
 

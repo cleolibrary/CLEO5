@@ -107,10 +107,8 @@ public:
     {
         OPCODE_READ_PARAM_STRING_LEN(path, 511);
 
-        if (_strnicmp("http:", path, 5) != 0 && _strnicmp("https:", path, 6) != 0)
-        {
-            CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path)); // regular file
-        }
+        if (!isNetworkSource(path))
+            CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path));
 
         auto ptr = soundSystem.CreateStream(path);
 
@@ -214,10 +212,8 @@ public:
     {
         OPCODE_READ_PARAM_STRING_LEN(path, 511);
 
-        if (_strnicmp("http:", path, 5) != 0 && _strnicmp("https:", path, 6) != 0)
-        {
-            CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path)); // regular file
-        }
+        if (!isNetworkSource(path))
+            CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path));
 
         auto ptr = soundSystem.CreateStream(path, true);
 
@@ -424,4 +420,3 @@ public:
 } audioInstance;
 
 CSoundSystem Audio::soundSystem;
-
