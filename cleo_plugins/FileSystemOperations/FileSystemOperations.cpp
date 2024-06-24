@@ -76,6 +76,7 @@ public:
         CLEO_RegisterOpcode(0x2302, opcode_2302); // write_block_to_file
         CLEO_RegisterOpcode(0x2303, opcode_2303); // resolve_filepath
         CLEO_RegisterOpcode(0x2304, opcode_2304); // get_script_filename
+        CLEO_RegisterOpcode(0x2305, opcode_2305); // get_file_write_time
 
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
@@ -757,6 +758,45 @@ public:
             OPCODE_WRITE_PARAM_STRING(absolute.c_str());
         }
 
+        OPCODE_CONDITION_RESULT(true);
+        return OR_CONTINUE;
+    }
+
+    //2305=8,  get_file_write_time %1s% year %2d% month %3d% day %3d% hour %4d% minute %5d% second %6d% milisecond %7d% // IF and SET
+    static OpcodeResult __stdcall opcode_2305(CRunningScript* thread)
+    {
+        OPCODE_READ_PARAM_FILEPATH(path);
+
+        HANDLE file = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+        if (file == INVALID_HANDLE_VALUE)
+        {
+            OPCODE_SKIP_PARAMS(7);
+            OPCODE_CONDITION_RESULT(false);
+            return OR_CONTINUE;
+        }
+
+        FILETIME writeTime;
+        if (!GetFileTime(file, nullptr, nullptr, &writeTime))
+        {
+            CloseHandle(file);
+            OPCODE_SKIP_PARAMS(7);
+            OPCODE_CONDITION_RESULT(false);
+            return OR_CONTINUE;
+        }
+        CloseHandle(file);
+
+        // convert to local time
+        SYSTEMTIME timeUTC, timeLocal;
+        FileTimeToSystemTime(&writeTime, &timeUTC);
+        SystemTimeToTzSpecificLocalTime(NULL, &timeUTC, &timeLocal);
+
+        OPCODE_WRITE_PARAM_INT(timeLocal.wYear);
+        OPCODE_WRITE_PARAM_INT(timeLocal.wMonth);
+        OPCODE_WRITE_PARAM_INT(timeLocal.wDay);
+        OPCODE_WRITE_PARAM_INT(timeLocal.wHour);
+        OPCODE_WRITE_PARAM_INT(timeLocal.wMinute);
+        OPCODE_WRITE_PARAM_INT(timeLocal.wSecond);
+        OPCODE_WRITE_PARAM_INT(timeLocal.wMilliseconds);
         OPCODE_CONDITION_RESULT(true);
         return OR_CONTINUE;
     }
