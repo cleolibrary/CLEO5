@@ -1,0 +1,110 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "2305" // get_file_write_time
+test("2305 (get_file_write_time)", tests)
+terminate_this_custom_script
+
+
+function tests
+    const Test_File_Path = ".\test_file.ini"
+    
+    before_each(@prepare)
+    after_each(@finalize)
+    
+    it("should fail", test1)
+    it("should return valid data", test2)
+    it("should work with already opened file", test3)
+    it("should return correct time", test4)
+    return
+    
+    :prepare
+        1@ = 0x11111111
+        2@ = 0x22222222
+        3@ = 0x33333333
+        4@ = 0x44444444
+        5@ = 0x55555555
+        6@ = 0x66666666
+        7@ = 0x77777777
+        write_int_to_ini_file {value} 1234 {path} Test_File_Path {section} "general" {key} "test"
+    return
+
+    :finalize
+        delete_file {fileName} Test_File_Path
+    return
+    
+    function test1
+        1@, 2@, 3@, 4@, 5@, 6@, 7@ = get_file_write_time {path} ".\not_existing.ini"
+        assert_result_false()
+        assert_eq(1@, 0x11111111)
+        assert_eq(2@, 0x22222222)
+        assert_eq(3@, 0x33333333)
+        assert_eq(4@, 0x44444444)
+        assert_eq(5@, 0x55555555)
+        assert_eq(6@, 0x66666666)
+        assert_eq(7@, 0x77777777)
+    end
+    
+    function test2
+        1@, 2@, 3@, 4@, 5@, 6@, 7@ = get_file_write_time {path} Test_File_Path
+        assert_result_true()
+        assert_range(1@, 2000, 2100) // year
+        assert_range(2@, 1, 12) // month
+        assert_range(3@, 1, 31) // day
+        assert_range(4@, 0, 23) // hour
+        assert_range(5@, 0, 59) // minute
+        assert_range(6@, 0, 59) // second
+        assert_range(7@, 0, 999) // milisedond
+        trace "~g~~h~~h~Read time: %04d-%02d-%02d %02d:%02d:%02d.%03d" 1@ 2@ 3@ 4@ 5@ 6@ 7@
+    end
+    
+    function test3
+        1@, 2@, 3@, 4@, 5@, 6@, 7@ = get_file_write_time {path} "root:\cleo.asi"
+        assert_result_true()
+        assert_range(1@, 2000, 2100) // year
+        assert_range(2@, 1, 12) // month
+        assert_range(3@, 1, 31) // day
+        assert_range(4@, 0, 23) // hour
+        assert_range(5@, 0, 59) // minute
+        assert_range(6@, 0, 59) // second
+        assert_range(7@, 0, 999) // milisecond
+    end
+    
+    function test4
+        var 0@ : Integer
+        var 1@ : Integer
+        var 2@ : Integer
+        var 3@ : Integer
+        var 4@ : Integer
+        var 5@ : Integer
+        var 6@ : Integer
+        var 7@ : Integer
+        var 8@ : Integer
+
+        0@, 0@, 0@, 1@, 2@, 3@, 4@ = get_file_write_time {path} Test_File_Path
+        assert_result_true()
+        
+        // calculate small time stamp
+        2@ *= 60000 // minutes to ms
+        3@ *= 1000 // seconds to ms
+        4@ += 2@
+        4@ += 3@
+        
+        wait 500
+        write_int_to_ini_file {value} 1234 {path} Test_File_Path {section} "general" {key} "test4"
+        
+        0@, 0@, 0@, 5@, 6@, 7@, 8@ = get_file_write_time {path} Test_File_Path
+        assert_result_true()
+        assert_eq(5@, 1@) // hour did not changed meanwhile
+        
+        // calculate small time stamp
+        6@ *= 60000 // minutes to ms
+        7@ *= 1000 // seconds to ms
+        8@ += 6@
+        8@ += 7@
+        
+        // timestamps delta
+        8@ -= 4@
+        assert_range(8@, 450, 550) // expected 500 plus some margin
+    end
+end

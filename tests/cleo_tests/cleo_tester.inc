@@ -198,6 +198,19 @@ function assert_neq(actual: int, expected: int)
 	end
 end
 
+/// checks if int value is within specified range, otherwise stops the test execution
+function assert_range(actual: int, expectedMin: int, expectedMax: int)
+    _cleo_tester_increment_assert()
+	if
+		actual < expectedMin
+	then
+        _cleo_tester_fail()
+        trace "%08X to %08X expected~n~%08X occured" expectedMin expectedMax actual
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
 /// checks if two float values are equal, otherwise stops the test execution
 function assert_eqf(actual: float, expected: float)
     _cleo_tester_increment_assert()
