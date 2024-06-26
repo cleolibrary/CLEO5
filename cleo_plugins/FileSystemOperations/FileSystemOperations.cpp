@@ -8,10 +8,8 @@
 using namespace CLEO;
 using namespace plugin;
 
-#define READ_FILE_HANDLE_PARAM() CLEO_GetIntOpcodeParam(thread); \
-    if((size_t)handle <= MinValidAddress) \
-    { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); } \
-    else if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); }
+#define OPCODE_READ_PARAM_FILE_HANDLE(handle) auto handle = (DWORD)OPCODE_READ_PARAM_PTR() \
+    if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); }
 
 class FileSystemOperations 
 {
@@ -158,7 +156,7 @@ public:
     //0A9B=1,closefile %1d%
     static OpcodeResult WINAPI opcode_0A9B(CRunningScript* thread)
     {
-        DWORD handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
         if (m_hFiles.find(handle) != m_hFiles.end())
         {
@@ -171,7 +169,7 @@ public:
     //0A9C=2,get_file_size %1d% store_to %2d%
     static OpcodeResult WINAPI opcode_0A9C(CRunningScript* thread)
     {
-        DWORD handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
         auto size = File::getSize(handle);
 
@@ -182,7 +180,7 @@ public:
     //0A9D=3,read_from_file %1d% size %2d% store_to %3d%
     static OpcodeResult WINAPI opcode_0A9D(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
         auto destination = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
 
@@ -200,7 +198,7 @@ public:
     //0A9E=3,write_to_file %1d% size %2d% from %3d%
     static OpcodeResult WINAPI opcode_0A9E(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
 
         if (size < 0)
@@ -266,7 +264,7 @@ public:
     //0AD5=3,  file_seek %1d% offset %2d% origin %3d% //IF and SET
     static OpcodeResult WINAPI opcode_0AD5(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto offset = OPCODE_READ_PARAM_INT();
         auto origin = OPCODE_READ_PARAM_UINT();
 
@@ -279,7 +277,7 @@ public:
     //0AD6=1,  is_end_of_file_reached %1d%
     static OpcodeResult WINAPI opcode_0AD6(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
         bool end = !File::isOk(handle) || File::isEndOfFile(handle);
 
@@ -290,7 +288,7 @@ public:
     //0AD7=3,  read_string_from_file %1d% to %2d% size %3d% //IF and SET
     static OpcodeResult WINAPI opcode_0AD7(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
         auto size = OPCODE_READ_PARAM_INT();
 
@@ -316,7 +314,7 @@ public:
     //0AD8=2,  write_string_to_file %1d% from %2d% //IF and SET
     static OpcodeResult WINAPI opcode_0AD8(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(text);
 
         auto ok = File::writeString(handle, text);
@@ -334,7 +332,7 @@ public:
     //0AD9=-1,write_formated_text %2d% to_file %1d%
     static OpcodeResult WINAPI opcode_0AD9(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(format);
         static char text[4 * MAX_STR_LEN]; CLEO_ReadParamsFormatted(thread, format, text, MAX_STR_LEN);
         
@@ -351,7 +349,7 @@ public:
     //0ADA=-1,  %3d% = scan_file %1d% format %2d% //IF and SET
     static OpcodeResult WINAPI opcode_0ADA(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+        OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(format);
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
 
@@ -650,7 +648,7 @@ public:
     //2300=2,get_file_position %1d% store_to %2d%
     static OpcodeResult WINAPI opcode_2300(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
         auto pos = File::getPos(handle);
 
@@ -661,7 +659,7 @@ public:
     //2301=3,read_block_from_file %1d% size %2d% buffer %3d% // IF and SET
     static OpcodeResult WINAPI opcode_2301(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
         auto destination = OPCODE_READ_PARAM_PTR();
 
@@ -691,7 +689,7 @@ public:
     //2302=3,  write_block_to_file %1d% size %2d% address %3d% // IF and SET
     static OpcodeResult WINAPI opcode_2302(CRunningScript* thread)
     {
-        auto handle = READ_FILE_HANDLE_PARAM();
+OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
         auto source = OPCODE_READ_PARAM_PTR();
 
