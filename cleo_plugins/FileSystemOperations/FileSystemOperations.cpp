@@ -8,7 +8,7 @@
 using namespace CLEO;
 using namespace plugin;
 
-#define OPCODE_READ_PARAM_FILE_HANDLE(handle) auto handle = (DWORD)OPCODE_READ_PARAM_PTR() \
+#define OPCODE_READ_PARAM_FILE_HANDLE(handle) auto handle = (DWORD)OPCODE_READ_PARAM_PTR(); \
     if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); }
 
 class FileSystemOperations 
