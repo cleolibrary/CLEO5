@@ -67,13 +67,13 @@ jobs:
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: './cleo_plugins/.output/*.cleo'
+          files: './cleo_plugins/.output/*.cleo5'
 
       - name: ModLoader plugin - Build
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild -m cleo_plugins/modloader_plugin/CLEO_ModLoader_Plugin.sln /property:Configuration=Release /property:Platform=x86
+          msbuild -m modloader_plugin/CLEO_ModLoader_Plugin.sln /property:Configuration=Release /property:Platform=x86
 
       - name: ModLoader plugin - Sign
         uses: x87/code-sign-action@develop
@@ -109,7 +109,7 @@ jobs:
 
           @REM copy files
           copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
-          copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
+          copy cleo_plugins\.output\*.cleo5 .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
           copy modloader_plugin\.output\Release\CLEO5_Provider.dll .output\Release\modloader\.data\plugins\CLEO5_Provider.dll
