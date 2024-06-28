@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CLEO_ModLoader_Plugin", "CLEO_ModLoader_Plugin.vcxproj", "{E04BB51D-A37D-491E-BAA0-D95D0D5C1563}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E04BB51D-A37D-491E-BAA0-D95D0D5C1563}.Debug|x86.ActiveCfg = Debug|Win32
+		{E04BB51D-A37D-491E-BAA0-D95D0D5C1563}.Debug|x86.Build.0 = Debug|Win32
+		{E04BB51D-A37D-491E-BAA0-D95D0D5C1563}.Release|x86.ActiveCfg = Release|Win32
+		{E04BB51D-A37D-491E-BAA0-D95D0D5C1563}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {27E214E3-AE89-40E1-9B76-0C5C9DB3452C}
+	EndGlobalSection
+EndGlobal

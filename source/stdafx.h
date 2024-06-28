@@ -31,8 +31,7 @@ static std::string GetApplicationDirectory()
 }
 static const std::string Filepath_Root = GetApplicationDirectory();
 
-//static const std::string Filepath_Cleo = FS::path(Filepath_Root).append("cleo").string(); // absolute path
-static const std::string Filepath_Cleo = "cleo"; // relative path - allow mod loaders to affect it
+static const std::string Filepath_Cleo = FS::path(Filepath_Root).append("cleo").string(); // absolute path
 
 static const std::string Filepath_Config = FS::path(Filepath_Cleo).append(".cleo_config.ini").string();
 static const std::string Filepath_Log = FS::path(Filepath_Cleo).append(".cleo.log").string();
