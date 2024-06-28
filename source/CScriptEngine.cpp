@@ -1016,20 +1016,18 @@ namespace CLEO
             }
         };
 
-        auto searchPattern = Filepath_Cleo + "\\*" + cs_ext;
+        auto searchPattern = Filepath_Cleo + "\\*.*";
         auto list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
         processFileList(list);
         CLEO_StringListFree(list);
 
-        searchPattern = Filepath_Cleo + "\\*" + cs3_ext;
-        list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
-        processFileList(list);
-        CLEO_StringListFree(list);
-
-        searchPattern = Filepath_Cleo + "\\*" + cs4_ext;
-        list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
-        processFileList(list);
-        CLEO_StringListFree(list);
+        auto& modLoader = GetInstance().ModLoaderSystem;
+        if (modLoader.IsActive())
+        {
+            list = modLoader.ListCleoFiles("cleo\\*");
+            processFileList(list);
+            modLoader.StringListFree(list);
+        }
 
         if (!found.empty())
         {

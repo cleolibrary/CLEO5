@@ -105,6 +105,9 @@
     <ClCompile Include="source\CPluginSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
+    <ClCompile Include="source\CModLoaderSystem.cpp">
+      <Filter>source\extensions</Filter>
+    </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CModelInfo.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
@@ -172,6 +175,9 @@
     </ClInclude>
     <ClInclude Include="source\OpcodeInfoDatabase.h">
       <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\CModLoaderSystem.h">
+      <Filter>source\extensions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
