@@ -33,7 +33,7 @@ namespace CLEO
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
         OpcodeInfoDatabase		OpcodeInfoDb;
-        std::stack<int>         CleoStack;
+        std::stack<int>		    CleoStack;
 
         int saveSlot = -1; // -1 if not loaded from save
 
