@@ -542,7 +542,7 @@ public:
     static OpcodeResult __stdcall opcode_0AC7(CLEO::CRunningScript* thread)
     {
         auto resultType = thread->PeekDataType();
-        if (!IsVariable(resultType) && IsVarString(resultType))
+        if (!IsVariable(resultType) && !IsVarString(resultType))
         {
             SHOW_ERROR("Input argument #%d expected to be variable, got constant in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str());
             return thread->Suspend();
