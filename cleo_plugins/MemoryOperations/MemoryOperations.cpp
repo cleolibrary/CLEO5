@@ -85,7 +85,7 @@ public:
     // opcodes 0AA5 - 0AA8
     static OpcodeResult CallFunctionGeneric(CLEO::CRunningScript* thread, void* func, void* obj, int numArg, int numPop, bool returnArg)
     {
-        int inputArgCount = (int)CLEO_GetVarArgCount(thread);
+        auto inputArgCount = (int)CLEO_GetVarArgCount(thread) - returnArg; // return slot not counted as input argument
 
         constexpr size_t Max_Args = 32;
         if (inputArgCount > Max_Args)
@@ -94,11 +94,9 @@ public:
             return thread->Suspend();
         }
 
-        inputArgCount -= returnArg; // return slot not counted as input argument
-
         if (numArg != inputArgCount && !IsLegacyScript(thread)) // CLEO4 ignored param count missmatch (by providing zeros for missing)
         {
-            SHOW_ERROR("Declared %d input args, but provided %d in script %s\nScript suspended.", numArg, inputArgCount, CLEO::ScriptInfoStr(thread).c_str());
+            SHOW_ERROR("Declared %d input args, but provided %d in script %s\nScript suspended.\n\nTo ignore this error, change the file extension from .cs to .cs4 and restart the game.", numArg, inputArgCount, CLEO::ScriptInfoStr(thread).c_str());
             return thread->Suspend();
         }
 
