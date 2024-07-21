@@ -366,8 +366,8 @@ namespace CLEO
         bool isGlobalIndex = arrayType >> 7; // is high bit set
 
         if (elementType == ADT_POP) {
-			*outArrElemIdx = GetInstance().StackPop();
-			return;
+            *outArrElemIdx = GetInstance().StackPop();
+            return;
         }
 
         if (isGlobalIndex) {
@@ -419,7 +419,7 @@ namespace CLEO
                 break;
             case DT_POP:
                 opcodeParams[i].dwParam = GetInstance().StackPop();
-				break;
+                break;
             }
         }
     }
@@ -465,8 +465,8 @@ namespace CLEO
                 *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx) = opcodeParams[i];
                 break;
             case DT_PUSH:
-				GetInstance().StackPush(opcodeParams[i].dwParam);
-				break;
+                GetInstance().StackPush(opcodeParams[i].dwParam);
+                break;
             }
         }
     }
@@ -608,10 +608,11 @@ namespace CLEO
             }
             case DT_PUSH:
             {
-				GetInstance().StackPush(0); // allocate space for the variable
-				return reinterpret_cast<SCRIPT_VAR*>(&GetInstance().CleoStack.top());
+                GetInstance().StackPush(0); // allocate space for the variable
+                return reinterpret_cast<SCRIPT_VAR*>(&GetInstance().CleoStack.top());
             }
             case DT_POP:
+                // todo: does not work, value should be popped from stack
                 return reinterpret_cast<SCRIPT_VAR*>(&GetInstance().CleoStack.top());
         }
     }

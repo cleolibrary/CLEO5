@@ -309,17 +309,16 @@ namespace CLEO
         FindClose(hSearch);
 
         return CreateStringList(found);
-
     }
 
     void CCleoInstance::StackPush(int val) {
-		GetInstance().CleoStack.push(val);
+        GetInstance().CleoStack.push(val);
     }
 
     int CCleoInstance::StackPop() {
         int val = GetInstance().CleoStack.top();
         GetInstance().CleoStack.pop();
-		return val;
+        return val;
     }
 }
 
