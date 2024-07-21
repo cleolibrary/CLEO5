@@ -156,13 +156,22 @@ public:
     //0A9B=1,closefile %1d%
     static OpcodeResult WINAPI opcode_0A9B(CRunningScript* thread)
     {
-        OPCODE_READ_PARAM_FILE_HANDLE(handle);
+        auto handle = OPCODE_READ_PARAM_INT();
 
         if (m_hFiles.find(handle) != m_hFiles.end())
         {
             File::close(handle);
             m_hFiles.erase(handle);
         }
+        else
+        {
+            if (!IsLegacyScript(thread))
+            {
+                SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.\n\nTo ignore this error, change the file extension from .cs to .cs4 and restart the game.", handle, ScriptInfoStr(thread).c_str());
+                return thread->Suspend();
+            }
+        }
+
         return OR_CONTINUE;
     }
 
