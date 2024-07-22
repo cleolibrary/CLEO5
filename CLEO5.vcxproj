@@ -178,7 +178,6 @@
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>$(SolutionDir)source\cleo.def</ModuleDefinitionFile>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
-      <AdditionalOptions>/Brepro %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(OutDir)$(TargetName).lib" "$(SolutionDir)cleo_sdk\" 
