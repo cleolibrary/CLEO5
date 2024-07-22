@@ -6,7 +6,6 @@
 #include "CCheat.h"
 #include "CModelInfo.h"
 
-#include <tlhelp32.h>
 #include <sstream>
 #include <forward_list>
 #include <set>
@@ -70,30 +69,8 @@ namespace CLEO
 		template<class FuncScriptDeleteDelegateT> void operator+=(FuncScriptDeleteDelegateT mFunc) { funcs.push_back(mFunc); }
 		template<class FuncScriptDeleteDelegateT> void operator-=(FuncScriptDeleteDelegateT mFunc) { funcs.erase(std::remove(funcs.begin(), funcs.end(), mFunc), funcs.end()); }
 		void operator()(CRunningScript *script)
-		{ 
-			for (auto& f : funcs)
-			{
-				// check if function pointer lays within any of currently loaded modules (.asi or .cleo plugins)
-				void* ptr = f;
-				MODULEENTRY32 module;
-				module.dwSize = sizeof(MODULEENTRY32);
-				HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
-				Module32First(snapshot, &module);
-				if (snapshot != INVALID_HANDLE_VALUE)
-				{
-					size_t count = 0;
-					do
-					{
-						if(ptr >= module.modBaseAddr && ptr <= (module.modBaseAddr + module.modBaseSize))
-						{
-							f(script);
-							break;
-						}
-					} while (Module32Next(snapshot, &module));
-					CloseHandle(snapshot);
-				}
-			}
-			
+		{
+			for (auto& f : funcs) f(script);
 		}
 	};
 	ScriptDeleteDelegate scriptDeleteDelegate;

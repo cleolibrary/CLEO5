@@ -22,14 +22,15 @@ namespace CLEO
         std::map<eCallbackId, std::set<void*>> m_callbacks;
 
     public:
+        // order here defines init and deinit and order!
         CDmaFix					DmaFix;
         CGameMenu				GameMenu;
         CCodeInjector			CodeInjector;
+        CPluginSystem			PluginSystem;
         CGameVersionManager		VersionManager;
         CScriptEngine			ScriptEngine;
         CCustomOpcodeSystem		OpcodeSystem;
         CModuleSystem			ModuleSystem;
-        CPluginSystem			PluginSystem;
         OpcodeInfoDatabase		OpcodeInfoDb;
 
         int saveSlot = -1; // -1 if not loaded from save
