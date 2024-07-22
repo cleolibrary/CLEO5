@@ -150,7 +150,7 @@ void CModuleSystem::CModule::Update()
 		auto file = filepath;
 		auto result = LoadFromFile(file.c_str());
 		updateNeeded = false;
-		Debug.Trace(eLogLevel::Debug, "Module reload %s '%s'", result ? "OK" : "FAILED", file.c_str());
+		Trace(eLogLevel::Debug, "Module reload %s '%s'", result ? "OK" : "FAILED", file.c_str());
 	}
 }
 

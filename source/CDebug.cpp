@@ -23,33 +23,7 @@ std::string stringPrintf(const char* format, ...)
     return result;
 }
 
-void CDebug::Trace(eLogLevel level, const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    TraceVArg(level, format, args);
-    va_end(args);
-}
-
-void CDebug::Trace(const CLEO::CRunningScript* thread, CLEO::eLogLevel level, const char* format, ...)
-{
-    if(thread != nullptr && thread->IsCustom())
-    {
-        const auto cs = (CCustomScript*)thread;
-
-        if(cs->GetCompatibility() < CLEO_VER_5)
-        {
-            return; // do not log this in older versions
-        }
-    }
-
-    va_list args;
-    va_start(args, format);
-    TraceVArg(level, format, args);
-    va_end(args);
-}
-
-const char* CDebug::TraceVArg(CLEO::eLogLevel level, const char* format, va_list args)
+void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
 {
     std::lock_guard<std::mutex> guard(mutex);
 
@@ -61,8 +35,7 @@ const char* CDebug::TraceVArg(CLEO::eLogLevel level, const char* format, va_list
     sprintf(szBuf, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
     char* stampEnd = szBuf + strlen(szBuf);
 
-    // put params into format
-    vsprintf(stampEnd, format, args);
+    strcpy(stampEnd, msg);
 
     // output to file
     if(m_hFile.good())
@@ -84,42 +57,12 @@ const char* CDebug::TraceVArg(CLEO::eLogLevel level, const char* format, va_list
             ((callback*)func)(level, stampEnd);
         }
     }
-
-    return stampEnd;
-}
-
-void CDebug::Error(const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    auto msg = TraceVArg(eLogLevel::Error, format, args);
-    va_end(args);
-
-    QUERY_USER_NOTIFICATION_STATE pquns;
-    SHQueryUserNotificationState(&pquns);
-    bool fullscreen = (pquns == QUNS_BUSY) || (pquns == QUNS_RUNNING_D3D_FULL_SCREEN) || (pquns == QUNS_PRESENTATION_MODE);
-    
-    auto mainWnd = RsGlobal.ps->window;
-
-    if(fullscreen)
-    {
-        PostMessage(mainWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-        ShowWindow(mainWnd, SW_MINIMIZE);
-    }
-
-    MessageBox(mainWnd, msg, "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
-
-    if (fullscreen)
-    {
-        PostMessage(mainWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-        ShowWindow(mainWnd, SW_RESTORE);
-    }
 }
 
 extern "C" 
 {
     void WINAPI CLEO_Log(eLogLevel level, const char* msg)
     {
-        Debug.Trace(level, "%s", msg);
+        Debug.Trace(level, msg);
     }
 }
