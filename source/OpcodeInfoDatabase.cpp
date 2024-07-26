@@ -1,124 +1,96 @@
 #include "stdafx.h"
 #include "OpcodeInfoDatabase.h"
-#include "json.hpp"
-#include <fstream>
+#include "simdjson.h"
 #include <vector>
-#include <thread>
 
 using namespace std;
-using namespace json;
+using namespace simdjson;
 
-bool OpcodeInfoDatabase::_Load(const std::string filepath)
+bool OpcodeInfoDatabase::Load(const char* filepath)
 {
 	Clear();
 
-	ifstream file(filepath.c_str());
-	if (file.fail())
-	{
-		TRACE("Failed to open opcodes database '%s' file.", filepath.c_str());
+	dom::parser parser;
+	dom::element root;
+
+	auto error = parser.load(filepath).get(root);
+	if (error) 
+	{ 
+		TRACE("Failed to parse opcodes database '%s' file. Code %d", filepath, error);
 		return false;
 	}
 
-	file.seekg(0, ifstream::end);
-	auto size = file.tellg();
-	file.seekg(0, ifstream::beg);
-
-	if (size > 8 * 1024 * 1024) // 8MB is reasonable json file size upper limit
+	const char* version;
+	if (root["meta"]["version"].get_c_str().get(version))
 	{
-		TRACE("Opcodes database '%s' file too large to load.", filepath.c_str());
+		TRACE("Invalid opcodes database '%s' file.", filepath);
 		return false;
 	}
 
-	string text;
-	text.resize((size_t)size);
-	file.read(text.data(), size);
-	file.close();
-
-	if (file.fail())
+	dom::array ext;
+	if (root["extensions"].get_array().get(ext))
 	{
-		TRACE("Error while reading opcodes database '%s' file.", filepath.c_str());
+		TRACE("Invalid opcodes database '%s' file.", filepath);
 		return false;
 	}
 
-	JSON root;
-	try
+	for (auto& e : ext)
 	{
-		root = JSON::Load(text.c_str());
-	}
-	catch (const exception& ex)
-	{
-		TRACE("Error while parsing opcodes database '%s' file:\n%s", filepath.c_str(), ex.what());
-		return false;
-	}
+		Extension extension;
 
-	if (root.IsNull() || root["extensions"].JSONType() != JSON::Class::Array)
-	{
-		TRACE("Invalid opcodes database '%s' file.", filepath.c_str());
-		return false;
-	}
+		const char* name;
+		if (e["name"].get_c_str().get(name))
+		{
+			continue; // invalid extension
+		}
+		extension.name = name;
 
-	for (auto& e : root["extensions"].ArrayRange())
-	{
-		auto name = e["name"];
-		auto commands = e["commands"];
-		if (name.JSONType() != JSON::Class::String || commands.JSONType() != JSON::Class::Array)
+		dom::array commands;
+		if (e["commands"].get_array().get(commands))
 		{
 			continue; // invalid extension
 		}
 
-		Extension extension;
-		extension.name = name.ToString();
-
-		for (auto& c : commands.ArrayRange())
+		for (auto& c : commands)
 		{
-			auto commandId = c["id"];
-			auto commandName = c["name"];
-			if (commandId.JSONType() != JSON::Class::String || commandName.JSONType() != JSON::Class::String)
+			bool unsupported;
+			if (!c["attrs"]["is_unsupported"].get_bool().get(unsupported) && unsupported)
+			{
+				continue; // command defined as unsupported
+			}
+
+			const char* commandId;
+			if (c["id"].get_c_str().get(commandId))
 			{
 				continue; // invalid command
 			}
 
-			auto attributes = c["attrs"];
-			if (attributes.JSONType() == JSON::Class::Object)
+			const char* commandName;
+			if (c["name"].get_c_str().get(commandName))
 			{
-				auto unsupported = attributes["is_unsupported"];
-				if (unsupported.JSONType() == JSON::Class::Boolean && unsupported.ToBool())
-				{
-					continue; // command defined as unsupported
-				}
+				continue; // invalid command
 			}
 
-			auto idLong = stoul(commandId.ToString(), nullptr, 16);
+			auto idLong = stoul(commandId, nullptr, 16);
 			if (idLong > 0x7FFF)
 			{
 				continue; // opcode out of bounds
 			}
 			auto id = (uint16_t)idLong;
 
-			extension.opcodes.emplace(piecewise_construct, make_tuple(id), make_tuple(id, commandName.ToString()));
+			extension.opcodes.emplace(piecewise_construct, make_tuple(id), make_tuple(id, commandName));
 			auto& opcode = extension.opcodes.at(id);
 
 			// read arguments info
-			auto inputArgs = c["input"];
-			if (inputArgs.JSONType() == JSON::Class::Array)
+			dom::array inputArgs;
+			if (!c["input"].get_array().get(inputArgs))
 			{
-				for (auto& p : inputArgs.ArrayRange())
+				for (auto& p : inputArgs)
 				{
-					if (p.JSONType() == JSON::Class::Object && p["name"].JSONType() == JSON::Class::String)
+					const char* argName;
+					if (!p["name"].get_c_str().get(argName))
 					{
-						opcode.arguments.emplace_back(p["name"].ToString().c_str());
-					}
-				}
-			}
-
-			auto outputArgs = c["output"];
-			if (outputArgs.JSONType() == JSON::Class::Array)
-			{
-				for (auto& p : outputArgs.ArrayRange())
-				{
-					if (p.JSONType() == JSON::Class::Object && p["name"].JSONType() == JSON::Class::String)
-					{
-						opcode.arguments.emplace_back(p["name"].ToString().c_str());
+						opcode.arguments.emplace_back(argName);
 					}
 				}
 			}
@@ -130,6 +102,7 @@ bool OpcodeInfoDatabase::_Load(const std::string filepath)
 		}
 	}
 
+	TRACE("Opcodes database version %s loaded from '%s'", version, filepath);
 	ok = true;
 	return true;
 }
@@ -138,11 +111,6 @@ void OpcodeInfoDatabase::Clear()
 {
 	ok = false;
 	extensions.clear();
-}
-
-void OpcodeInfoDatabase::Load(const char* filepath)
-{
-	thread(&OpcodeInfoDatabase::_Load, this, std::string(filepath)).detach(); // asynchronic execute
 }
 
 const char* OpcodeInfoDatabase::GetExtensionName(uint16_t opcode) const

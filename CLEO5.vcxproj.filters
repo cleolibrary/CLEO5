@@ -7,9 +7,6 @@
     <Filter Include="cleo_sdk">
       <UniqueIdentifier>{d188d452-fbc6-48b5-bd49-d4036c989109}</UniqueIdentifier>
     </Filter>
-    <Filter Include="plugin_sdk">
-      <UniqueIdentifier>{5cead5cc-9a75-4d2e-99b5-ebbc8f9d6d86}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\utils">
       <UniqueIdentifier>{3104a2cb-d9c5-4eb5-9910-cf77d903db30}</UniqueIdentifier>
     </Filter>
@@ -22,6 +19,15 @@
     <Filter Include="source\extensions">
       <UniqueIdentifier>{9c8be703-c930-47b1-b0cb-7c4b80922a48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{d2916069-8bff-46e6-9a07-6b845c4361dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\simdjson">
+      <UniqueIdentifier>{2fba67c2-5ab9-4f75-82ed-e1024b272094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\plugin_sdk">
+      <UniqueIdentifier>{5cead5cc-9a75-4d2e-99b5-ebbc8f9d6d86}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\dllmain.cpp">
@@ -31,31 +37,31 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CFileMgr.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CGame.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\DynAddress.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\GameVersion.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\Patch.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\PluginBase.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\game\CRGBA.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CFont.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="source\crc32.cpp">
       <Filter>source\utils</Filter>
@@ -94,22 +100,25 @@
       <Filter>source\extensions</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPools.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="source\OpcodeInfoDatabase.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTheScripts.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="source\CPluginSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CModelInfo.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CCheat.cpp">
-      <Filter>plugin_sdk</Filter>
+      <Filter>third_party\plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party\simdjson\simdjson.cpp">
+      <Filter>third_party\simdjson</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +181,9 @@
     </ClInclude>
     <ClInclude Include="source\OpcodeInfoDatabase.h">
       <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\simdjson\simdjson.h">
+      <Filter>third_party\simdjson</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

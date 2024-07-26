@@ -72,6 +72,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="third-party\simdjson\simdjson.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cleo_sdk\CLEO.h" />
@@ -94,6 +98,7 @@
     <ClInclude Include="source\ScmFunction.h" />
     <ClInclude Include="source\Singleton.h" />
     <ClInclude Include="source\stdafx.h" />
+    <ClInclude Include="third-party\simdjson\simdjson.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\cleo.def" />
@@ -139,14 +144,14 @@
     <IntDir>$(SolutionDir).output\.obj\$(Configuration)\</IntDir>
     <TargetName>CLEO</TargetName>
     <TargetExt>.asi</TargetExt>
-    <IncludePath>$(PLUGIN_SDK_DIR)\shared\;$(PLUGIN_SDK_DIR)\shared\game\;$(SolutionDir)third-party\SimpleJSON;$(IncludePath)</IncludePath>
+    <IncludePath>$(PLUGIN_SDK_DIR)\shared\;$(PLUGIN_SDK_DIR)\shared\game\;F:\Projects\GTA_SA\CLEO_5\third-party\simdjson;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir).output\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir).output\.obj\$(Configuration)\</IntDir>
     <TargetName>CLEO</TargetName>
     <TargetExt>.asi</TargetExt>
-    <IncludePath>$(PLUGIN_SDK_DIR)\shared\;$(PLUGIN_SDK_DIR)\shared\game\;$(SolutionDir)third-party\SimpleJSON;$(IncludePath)</IncludePath>
+    <IncludePath>$(PLUGIN_SDK_DIR)\shared\;$(PLUGIN_SDK_DIR)\shared\game\;F:\Projects\GTA_SA\CLEO_5\third-party\simdjson;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>

@@ -37,13 +37,11 @@ class OpcodeInfoDatabase
 	std::atomic<bool> ok = false;
 	std::map<std::string, Extension> extensions;
 
-	bool _Load(const std::string filepath);
-
 public:
 	OpcodeInfoDatabase() = default;
 
 	void Clear();
-	void Load(const char* filepath); // triggers asynchronic load
+	bool Load(const char* filepath); // triggers asynchronic load
 
 	const char* GetExtensionName(uint16_t opcode) const; // nullptr if not found
 	const char* GetExtensionName(const char* commandName) const; // nullptr if not found
