@@ -29,7 +29,6 @@ namespace CLEO
 		bool savedCondResult;
 		eLogicalOperation savedLogicalOp;
 		bool savedNotFlag;
-		void* moduleExportRef = 0; // modules switching. Points to modules baseIP in case if this is export call
 		std::string savedScriptFileDir; // modules switching
 		std::string savedScriptFileName; // modules switching
 

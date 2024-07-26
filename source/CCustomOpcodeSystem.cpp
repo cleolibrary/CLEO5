@@ -726,7 +726,6 @@ namespace CLEO
 
 		// handle program flow
 		scmFunc->Return(cs); // jump back to cleo_call, right after last input param. Return slot var args starts here
-		if (scmFunc->moduleExportRef != nullptr) GetInstance().ModuleSystem.ReleaseModuleRef((char*)scmFunc->moduleExportRef); // exiting export - release module
 		delete scmFunc;
 
 		if (returnArgs)
@@ -998,7 +997,6 @@ namespace CLEO
 				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), moduleTxt.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return thread->Suspend();
 			}
-			scmFunc->moduleExportRef = scriptRef.base; // to be released on return
 
 			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileDir(FS::path(modulePath).parent_path().string().c_str());
 			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileName(FS::path(modulePath).filename().string().c_str());

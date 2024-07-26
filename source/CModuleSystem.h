@@ -32,10 +32,6 @@ namespace CLEO
 		bool LoadDirectory(const char* const path); // all modules in directory
 		bool LoadCleoModules(); // all in cleo\cleo_modules
 
-		// marking modules usage
-		void AddModuleRef(const char* baseIP);
-		void ReleaseModuleRef(const char* baseIP);
-
 	private:
 		static void NormalizePath(std::string& path);
 
@@ -58,19 +54,10 @@ namespace CLEO
 			std::vector<char> data;
 			std::map<std::string, ModuleExport> exports;
 
-			// hot reloading when source file modified
-			std::atomic<int> refCount = 0;
-			FS::file_time_type fileTime; // last write time of source file
-			void Update();
-			std::atomic<bool> updateActive = true;
-			std::atomic<bool> updateNeeded = false;
-			std::mutex updateMutex;
-			std::thread updateThread;
-
 		public:
-			CModule();
+			CModule() = default;
 			CModule(const CModule&) = delete; // no copying
-			~CModule();
+			~CModule() = default;
 
 			void Clear();
 			const char* GetFilepath() const;

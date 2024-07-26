@@ -35,10 +35,6 @@ const ScriptDataRef CModuleSystem::GetExport(std::string modulePath, std::string
 	auto& module = it->second;
 
 	auto e = module.GetExport(std::string(exportName));
-	if (e.Valid())
-	{
-		module.refCount++;
-	}
 	return e;
 }
 
@@ -72,34 +68,6 @@ bool CModuleSystem::LoadCleoModules()
 	return LoadDirectory(path.c_str());
 }
 
-void CLEO::CModuleSystem::AddModuleRef(const char* baseIP)
-{
-	for (auto& it : modules)
-	{
-		auto& module = it.second;
-
-		if (module.data.data() == baseIP)
-		{
-			module.refCount++;
-			return;
-		}
-	}
-}
-
-void CLEO::CModuleSystem::ReleaseModuleRef(const char* baseIP)
-{
-	for (auto& it : modules)
-	{
-		auto& module = it.second;
-
-		if (module.data.data() == baseIP)
-		{
-			module.refCount--;
-			return;
-		}
-	}
-}
-
 void CModuleSystem::NormalizePath(std::string& path)
 {
 	for (char& c : path)
@@ -113,73 +81,11 @@ void CModuleSystem::NormalizePath(std::string& path)
 	};
 }
 
-void CModuleSystem::CModule::Update()
-{
-	while (updateActive)
-	{
-		if (!updateNeeded)
-		{
-			FS::file_time_type time;
-			try
-			{
-				time = FS::last_write_time(filepath);
-			}
-			catch (...)
-			{
-				time = {};
-			}
-
-			// file not exists or up to date
-			if (time == FS::file_time_type{} || time == fileTime)
-			{
-				// query files once a second
-				for(size_t i = 0; i < 100 && updateActive; i++)
-					std::this_thread::sleep_for(std::chrono::milliseconds(10));
-
-				continue; 
-			}
-
-			updateNeeded = true;
-		}
-
-		if (refCount != 0)
-		{
-			continue; // module currently in use
-		}
-
-		auto file = filepath;
-		auto result = LoadFromFile(file.c_str());
-		updateNeeded = false;
-		Trace(eLogLevel::Debug, "Module reload %s '%s'", result ? "OK" : "FAILED", file.c_str());
-	}
-}
-
-CModuleSystem::CModule::CModule() :
-	updateThread(&CModuleSystem::CModule::Update, this)
-{
-}
-
-CModuleSystem::CModule::~CModule()
-{
-	updateActive = false;
-	updateThread.join();
-}
-
 void CModuleSystem::CModule::Clear()
 {
-	if (refCount != 0)
-	{
-		TRACE("Warning! Module '%s' cleared despite in use %d time(s)", filepath.c_str(), refCount.load());
-	}
-
-	std::lock_guard<std::mutex> guard(updateMutex);
-
 	filepath.clear();
 	data.clear();
 	exports.clear();
-
-	refCount = 0;
-	fileTime = {};
 }
 
 const char* CModuleSystem::CModule::GetFilepath() const
@@ -190,19 +96,7 @@ const char* CModuleSystem::CModule::GetFilepath() const
 bool CModuleSystem::CModule::LoadFromFile(const char* path)
 {
 	Clear();
-
-	std::lock_guard<std::mutex> guard(updateMutex);
-
 	filepath = path;
-
-	try
-	{
-		fileTime = FS::last_write_time(path);
-	}
-	catch(...)
-	{
-		fileTime = {};
-	}
 
 	std::ifstream file(path, std::ios::binary);
 	if (!file.good())
