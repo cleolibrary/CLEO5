@@ -59,6 +59,8 @@ public:
 		CLEO_RegisterOpcode(0x2603, opcode_2603); // is_text_prefix
 		CLEO_RegisterOpcode(0x2604, opcode_2604); // is_text_sufix
 		CLEO_RegisterOpcode(0x2605, opcode_2605); // display_text_formatted
+		CLEO_RegisterOpcode(0x2606, opcode_2606); // load_fxt
+		CLEO_RegisterOpcode(0x2607, opcode_2607); // unload_fxt
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
@@ -427,7 +429,7 @@ public:
 		OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
 		// new GXT label
-		// includes unprintable character, to ensure there will be no collision with user GXT lables
+		// includes unprintable character, to ensure there will be no collision with user GXT labels
 		char gxt[8] = { 0x01, 'C', 'L', 'E', 'O', '_', 0x01, 0x00 };
 		gxt[6] += CTheScripts::NumberOfIntroTextLinesThisFrame; // unique label for each possible entry
 
@@ -440,6 +442,46 @@ public:
 
 		CTheScripts::NumberOfIntroTextLinesThisFrame++;
 
+		return OR_CONTINUE;
+	}
+
+	//2606=1,  load_fxt %1d%
+	static OpcodeResult __stdcall opcode_2606(CLEO::CRunningScript* thread)
+	{
+		OPCODE_READ_PARAM_FILEPATH(filename);
+
+		size_t added = 0;
+		try
+		{
+			std::ifstream stream(filename);
+			added = textManager.ParseFxtFile(stream, true, false);
+		}
+		catch (std::exception& ex)
+		{
+			LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", filename, ex.what());
+		}
+
+		OPCODE_CONDITION_RESULT(added != 0);
+		return OR_CONTINUE;
+	}
+
+	//2607=1,  unload_fxt %1d%
+	static OpcodeResult __stdcall opcode_2607(CLEO::CRunningScript* thread)
+	{
+		OPCODE_READ_PARAM_FILEPATH(filename);
+
+		size_t removed = 0;
+		try
+		{
+			std::ifstream stream(filename);
+			removed = textManager.ParseFxtFile(stream, true, true);
+		}
+		catch (std::exception& ex)
+		{
+			LOG_WARNING(0, "Unloading of FXT file '%s' failed: \n%s", filename, ex.what());
+		}
+
+		OPCODE_CONDITION_RESULT(removed != 0);
 		return OR_CONTINUE;
 	}
 } textInstance;

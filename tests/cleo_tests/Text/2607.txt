@@ -1,0 +1,74 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2607'
+test("2607 (unload_fxt)", tests)
+terminate_this_custom_script
+
+function tests
+    it("GXTs should not exists yet", test1)
+    it("should load new GXTs", test2)
+    it("should unload GXTs", test3)
+    return
+
+    function test1
+        int ptr
+        
+        ptr = get_text_label_string {key} 'CLEO_T1'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "")
+        
+        ptr = get_text_label_string {key} 'CLEO_T2'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "")
+        
+        ptr = get_text_label_string {key} 'CLEO_T3'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "")
+    end
+
+    function test2
+        load_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        assert_result_true()
+        
+        int ptr
+        
+        ptr = get_text_label_string {key} 'CLEO_T1'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "Test one")
+        
+        ptr = get_text_label_string {key} 'CLEO_T2'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "Test two")
+        
+        ptr = get_text_label_string {key} 'CLEO_T3'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "Test three")
+        
+        // load again
+        load_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        assert_result_true()
+    end
+    
+    function test3
+        2607: unload_fxt {filepath} "cleo\cleo_tests\text\non existing file.fxt"
+        assert_result_false()
+    
+        2607: unload_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        assert_result_true()
+        
+        int ptr
+        
+        ptr = get_text_label_string {key} 'CLEO_T1'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "")
+        
+        ptr = get_text_label_string {key} 'CLEO_T2'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "")
+        
+        ptr = get_text_label_string {key} 'CLEO_T3'
+        assert_ptr(ptr)
+        assert_eqs(ptr, "")
+    end
+end

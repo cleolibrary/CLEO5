@@ -25,14 +25,13 @@ namespace CLEO
 
     bool CTextManager::AddFxt(const char *key, const char *value, bool dynamic)
     {
-        // TODO: replace this part with in-place construction of FxtEntry,
-        // when it will be implemented in libstdc++
-        // ^^ me iz noob and doesnt can use GNU
-
         auto fxt = fxts.find(key);
 
         if (fxt != fxts.end())
         {
+            if (fxt->second->text.compare(value) == 0)
+                return true; // already present
+
             if (!dynamic || fxt->second->is_static)
             {
                 LOG_WARNING(0, "Attempting to add FXT \'%s\' - FAILED (GXT conflict)", key, value);
@@ -47,6 +46,7 @@ namespace CLEO
             std::transform(str.begin(), str.end(), str.begin(), ::toupper);
             fxts[str.c_str()] = new FxtEntry(value, !dynamic);
         }
+
         return true;
     }
 
@@ -122,13 +122,13 @@ namespace CLEO
     {
     }
 
-    size_t CTextManager::ParseFxtFile(std::istream& stream)
+    size_t CTextManager::ParseFxtFile(std::istream& stream, bool dynamic, bool remove)
     {
         static char buf[0x100];
         char *key_iterator, *value_iterator, *value_start, *key_start;
         stream.exceptions(std::ios::badbit);
 
-        size_t addedCount = 0;
+        size_t keyCount = 0;
         while (true)
         {
             if (stream.eof()) break;
@@ -142,11 +142,22 @@ namespace CLEO
             {
                 if (*key_iterator == '#')	// start of comment
                     break;
-                if (*key_iterator == '/' && key_iterator[1] == '/')
+                if (*key_iterator == '/' && key_iterator[1] == '/') // comment
                     break;
+
                 if (isspace(*key_iterator))
                 {
-                    *key_iterator = '\0';
+                    *key_iterator = '\0'; // terminate key string
+
+                    if (remove)
+                    {
+                        if (RemoveFxt(key_start))
+                        {
+                            keyCount++;
+                        }
+                        break;
+                    }
+
                     // while (isspace(*++key_iterator)) ; // skip leading spaces
                     value_start = value_iterator = key_iterator + 1;
                     while (*value_iterator)
@@ -162,9 +173,9 @@ namespace CLEO
                     }
 
                     // register found fxt entry
-                    if (AddFxt(key_start, value_start, false))
+                    if (AddFxt(key_start, value_start, dynamic))
                     {
-                        addedCount++;
+                        keyCount++;
                     }
 
                     break;
@@ -173,6 +184,6 @@ namespace CLEO
             }
         }
 
-        return addedCount;
+        return keyCount;
     }
 }

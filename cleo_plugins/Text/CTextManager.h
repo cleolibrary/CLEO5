@@ -35,6 +35,6 @@ namespace CLEO
         const char *LocateFxt(const char *key);
         // erase all fxts, added by scripts
         void ClearDynamicFxts();
-        size_t ParseFxtFile(std::istream& stream);
+        size_t ParseFxtFile(std::istream& stream, bool dynamic = false, bool remove = false);
     };
 }

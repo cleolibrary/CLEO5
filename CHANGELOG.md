@@ -64,6 +64,8 @@
   - new opcode **2603 ([is_text_prefix](https://library.sannybuilder.com/#/sa/text/2603))**
   - new opcode **2604 ([is_text_suffix](https://library.sannybuilder.com/#/sa/text/2604))**
   - new opcode **2605 ([display_text_formatted](https://library.sannybuilder.com/#/sa/text/2605))**
+  - new opcode **2606 ([load_fxt](https://library.sannybuilder.com/#/sa/text/2606))**
+  - new opcode **2607 ([unload_fxt](https://library.sannybuilder.com/#/sa/text/2607))**
 - new and updated opcodes
   - implemented support for **memory pointer string** arguments for all game's native opcodes
   - **0B1E ([sign_extend](https://library.sannybuilder.com/#/sa/bitwise/0B1E))**
