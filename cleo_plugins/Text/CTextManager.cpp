@@ -93,7 +93,7 @@ namespace CLEO
     void CTextManager::LoadFxts()
     {
         // create FXT directory if not present yet
-        FS::create_directory(FS::path(CFileMgr::ms_rootDirName).append("cleo\\cleo_text"));
+        FS::create_directory(FS::path(Gta_Root_Dir_Path).append("cleo\\cleo_text"));
 
         // load whole FXT files directory
         auto list = CLEO::CLEO_ListDirectory(nullptr, "cleo\\cleo_text\\*.fxt", false, true);

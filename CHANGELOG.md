@@ -26,6 +26,7 @@
   - new opcode **2102 ([log_to_file](https://library.sannybuilder.com/#/sa/debug/2102))**
   - implemented support of opcodes **0662**, **0663** and **0664** (original Rockstar's script debugging opcodes. See DebugUtils.ini)
 - new [FileSystemOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/FileSystemOperations) plugin
+  - forbidden scripts from accessing and changing any files outside game root or game settings directory
   - file related opcodes moved from CLEO core into separated plugin
   - opcode **0A9E ([write_to_file](https://library.sannybuilder.com/#/sa/file/0A9E))** now supports literal numbers and strings
   - fixed bug causing file stream opcodes not working correctly when read-write modes are used

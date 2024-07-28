@@ -3,9 +3,6 @@
   <ItemGroup>
     <ClCompile Include="DebugUtils.cpp" />
     <ClCompile Include="ScreenLog.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CFileMgr.cpp">
-      <Filter>sdk</Filter>
-    </ClCompile>
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\game\CRGBA.cpp">
       <Filter>sdk</Filter>
     </ClCompile>
