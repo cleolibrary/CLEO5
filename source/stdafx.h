@@ -93,21 +93,6 @@ public:
 
 VALIDATE_SIZE(CTextDrawer, 0x44);
 
-enum
-{
-    VEHICLE_TYPE_AUTOMOBILE,
-    VEHICLE_TYPE_PLANE,
-    VEHICLE_TYPE_BIKE,
-    VEHICLE_TYPE_HELI,
-    VEHICLE_TYPE_BOAT,
-    VEHICLE_TYPE_TRAIN,
-    VEHICLE_TYPE_TRAILER,
-    VEHICLE_TYPE_BMX,
-    VEHICLE_TYPE_MTRUCK,
-    VEHICLE_TYPE_QUAD,
-    VEHICLE_TYPE_UNKNOWN = -1,
-};
-
 inline CEntity* GetWeaponTarget(CPed* pSelf)
 {
     return reinterpret_cast<int>(pSelf->m_pTargetedObject) != -1 ? pSelf->m_pTargetedObject : nullptr;

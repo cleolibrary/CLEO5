@@ -5,6 +5,7 @@
 #include "ScmFunction.h"
 #include "CCheat.h"
 #include "CModelInfo.h"
+#include "CVehicle.h"
 
 #include <sstream>
 #include <forward_list>
@@ -1339,15 +1340,13 @@ namespace CLEO
 	{
 		auto modelIndex = OPCODE_READ_PARAM_INT();
 
-		CVehicleModelInfo* model;
-		// if 1.0 US, prefer GetModelInfo function  makes it compatible with fastman92's limit adjuster
-		if (CLEO::GetInstance().VersionManager.GetGameVersion() == CLEO::GV_US10) {
-			model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(modelIndex);
+		auto model = (CVehicleModelInfo*)CModelInfo::GetModelInfo(modelIndex); // compatible with fastman92's limit adjuster
+
+		if (model->m_nVehicleType != -1 && model->m_nVehicleType != eVehicleType::VEHICLE_TRAIN)
+		{
+			SpawnCar(modelIndex);
 		}
-		else {
-			model = reinterpret_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[modelIndex]);
-		}
-		if (model->m_nVehicleType != VEHICLE_TYPE_TRAIN && model->m_nVehicleType != VEHICLE_TYPE_UNKNOWN) SpawnCar(modelIndex);
+
 		return OR_CONTINUE;
 	}
 
