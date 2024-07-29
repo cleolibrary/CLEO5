@@ -55,7 +55,7 @@ namespace CLEO
     protected:
         HSTREAM streamInternal = 0;
         eStreamState state = Paused;
-        eStreamType type = None;
+        eStreamType type = eStreamType::SoundEffect;
         bool ok = false;
         float rate = 44100.0f; // file's sampling rate
         double speed = 1.0f;

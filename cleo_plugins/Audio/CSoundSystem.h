@@ -31,12 +31,13 @@ namespace CLEO
         static BASS_3DVECTOR vel;
         static BASS_3DVECTOR front;
         static BASS_3DVECTOR top;
-        static eStreamType defaultStreamType;
         static float masterSpeed; // game simulation speed
         static float masterVolumeSfx;
         static float masterVolumeMusic;
 
     public:
+        static eStreamType LegacyModeDefaultStreamType;
+
         CSoundSystem() = default; // TODO: give to user an ability to force a sound device to use (ini-file or cmd-line?)
         ~CSoundSystem();
 

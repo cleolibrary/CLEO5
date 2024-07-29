@@ -13,7 +13,7 @@ namespace CLEO
     BASS_3DVECTOR CSoundSystem::vel(0.0, 0.0, 0.0);
     BASS_3DVECTOR CSoundSystem::front(0.0, -1.0, 0.0);
     BASS_3DVECTOR CSoundSystem::top(0.0, 0.0, 1.0);
-    eStreamType CSoundSystem::defaultStreamType = eStreamType::SoundEffect;
+    eStreamType CSoundSystem::LegacyModeDefaultStreamType = eStreamType::None;
     float CSoundSystem::masterSpeed = 1.0f;
     float CSoundSystem::masterVolumeSfx = 1.0f;
     float CSoundSystem::masterVolumeMusic = 1.0f;
@@ -55,7 +55,7 @@ namespace CLEO
         if (initialized) return true; // already done
 
         auto config = GetConfigFilename();
-        defaultStreamType = (eStreamType)GetPrivateProfileInt("General", "DefaultStreamType", 0, config.c_str());
+        LegacyModeDefaultStreamType = (eStreamType)GetPrivateProfileInt("General", "LegacyModeDefaultStreamType", 0, config.c_str());
         allowNetworkSources = GetPrivateProfileInt("General", "AllowNetworkSources", 1, config.c_str()) != 0;
 
         int default_device, total_devices, enabled_devices;

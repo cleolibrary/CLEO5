@@ -112,6 +112,11 @@ public:
 
         auto ptr = soundSystem.CreateStream(path);
 
+        if (IsLegacyScript(thread))
+        {
+            ptr->SetType(CLEO::CSoundSystem::LegacyModeDefaultStreamType);
+        }
+
         OPCODE_WRITE_PARAM_PTR(ptr);
         OPCODE_CONDITION_RESULT(ptr != nullptr);
         return OR_CONTINUE;
@@ -216,6 +221,11 @@ public:
             CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path));
 
         auto ptr = soundSystem.CreateStream(path, true);
+
+        if (IsLegacyScript(thread))
+        {
+            ptr->SetType(CLEO::CSoundSystem::LegacyModeDefaultStreamType);
+        }
 
         OPCODE_WRITE_PARAM_PTR(ptr);
         OPCODE_CONDITION_RESULT(ptr != nullptr);

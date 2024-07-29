@@ -22,7 +22,6 @@ CAudioStream::CAudioStream(const char* filepath)
         return;
     }
 
-    SetType(CSoundSystem::defaultStreamType);
     BASS_ChannelGetAttribute(streamInternal, BASS_ATTRIB_FREQ, &rate);
     ok = true;
 }
