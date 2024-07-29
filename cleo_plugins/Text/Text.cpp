@@ -61,6 +61,7 @@ public:
 		CLEO_RegisterOpcode(0x2605, opcode_2605); // display_text_formatted
 		CLEO_RegisterOpcode(0x2606, opcode_2606); // load_fxt
 		CLEO_RegisterOpcode(0x2607, opcode_2607); // unload_fxt
+		CLEO_RegisterOpcode(0x2608, opcode_2608); // get_text_length
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
@@ -482,6 +483,17 @@ public:
 		}
 
 		OPCODE_CONDITION_RESULT(removed != 0);
+		return OR_CONTINUE;
+	}
+
+	//2608=3,get_text_length %1d% store_to %2d%
+	static OpcodeResult __stdcall opcode_2608(CLEO::CRunningScript* thread)
+	{
+		OPCODE_READ_PARAM_STRING(str);
+
+		auto result = strlen(str);
+
+		OPCODE_WRITE_PARAM_INT(result);
 		return OR_CONTINUE;
 	}
 } textInstance;

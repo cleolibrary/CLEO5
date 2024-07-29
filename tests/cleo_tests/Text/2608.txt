@@ -1,0 +1,33 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2608'
+test("2608 (get_text_length)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should return text length", test1)
+    return
+
+    function test1
+        int length
+        
+        shortstring short = 'One'
+        2608: get_text_length {text} short {length} length
+        assert_eq(length, 3)
+        
+        string_format short = ''
+        2608: get_text_length {text} short {length} length
+        assert_eq(length, 0)
+        
+        longstring long = "Longer string"
+        2608: get_text_length {text} long {length} length
+        assert_eq(length, 13)
+        
+        int buff = allocate_memory {size} 255
+        string_format buff = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc et tellus vehicula, tempus felis malesuada, commodo nunc. Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam condimentum porttitor lorem est."
+        2608: get_text_length {text} buff {length} length
+        free_memory {address} buff
+        assert_eq(length, 220)
+    end
+end
