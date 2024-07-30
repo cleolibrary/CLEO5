@@ -81,6 +81,7 @@ jobs:
           mkdir .output\Release\cleo\cleo_saves
           mkdir .output\Release\cleo\cleo_text
           mkdir .output\Release\cleo_readme
+          mkdir .output\Release\cleo_readme\examples
 
           @REM copy files
           copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
@@ -88,6 +89,7 @@ jobs:
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
           xcopy /E /I tests .output\Release\cleo
+          xcopy /E /I examples .output\Release\cleo_readme\examples
 
           @REM copy SDK
           copy .output\Release\CLEO.lib cleo_sdk\CLEO.lib
