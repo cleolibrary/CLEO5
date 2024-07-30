@@ -313,16 +313,6 @@ namespace CLEO
 
     extern "C" void __stdcall opcode_004E(CCustomScript *pScript) // terminate_this_script
     {
-        if (pScript->IsCustom())
-        {
-            if (pScript->IsMission())
-                *MissionLoaded = false;
-            else
-            {
-                LOG_WARNING(0, "Incorrect usage of opcode [004E] in script %s. Use [0A93] instead.", pScript->GetInfoStr().c_str());
-            }
-        }
-
         GetInstance().ScriptEngine.RemoveScript(pScript);
     }
 
@@ -1369,16 +1359,17 @@ namespace CLEO
 
     void CScriptEngine::RemoveScript(CRunningScript* thread)
     {
-        if (!thread->IsCustom())
+        if (thread->IsMission()) *MissionLoaded = false;
+
+        if (thread->IsCustom())
         {
-            if (thread->IsMission()) *MissionLoaded = false;
+            RemoveCustomScript((CCustomScript*)thread);
+        }
+        else // native script
+        {
             RemoveScriptFromQueue(thread, activeThreadQueue);
             AddScriptToQueue(thread, inactiveThreadQueue);
             StopScript(thread);
-        }
-        else
-        {
-            RemoveCustomScript((CCustomScript*)thread);
         }
     }
 
@@ -1397,7 +1388,7 @@ namespace CLEO
 		}
 		for (auto childThread : cs->childThreads)
 		{
-			CScriptEngine::RemoveCustomScript(childThread);
+			CScriptEngine::RemoveScript(childThread);
 		}
         if (cs == CustomMission)
         {
