@@ -142,7 +142,6 @@ namespace CLEO
         bool IsValidScriptPtr(const CRunningScript*) const; // leads to any script? (regular or custom)
         void AddCustomScript(CCustomScript*);
         void RemoveScript(CRunningScript*); // native or custom
-        void RemoveCustomScript(CCustomScript*);
         void RemoveAllCustomScripts();
         void UnregisterAllScripts();
         void ReregisterAllScripts();
@@ -151,6 +150,9 @@ namespace CLEO
 
         inline CCustomScript* GetCustomMission() { return CustomMission; }
         inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
+
+    private:
+        void RemoveCustomScript(CCustomScript*);
     };
 
     extern void(__thiscall * AddScriptToQueue)(CRunningScript *, CRunningScript **queue);

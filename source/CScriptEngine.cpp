@@ -319,7 +319,7 @@ namespace CLEO
                 *MissionLoaded = false;
             else
             {
-                TRACE("Incorrect usage of opcode [004E] in script %s.", pScript->GetName().c_str());
+                LOG_WARNING(0, "Incorrect usage of opcode [004E] in script %s. Use [0A93] instead.", pScript->GetInfoStr().c_str());
             }
         }
 
