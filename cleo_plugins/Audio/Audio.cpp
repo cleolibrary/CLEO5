@@ -112,7 +112,7 @@ public:
 
         auto ptr = soundSystem.CreateStream(path);
 
-        if (IsLegacyScript(thread))
+        if (ptr != nullptr && IsLegacyScript(thread))
         {
             ptr->SetType(CLEO::CSoundSystem::LegacyModeDefaultStreamType);
         }
@@ -222,7 +222,7 @@ public:
 
         auto ptr = soundSystem.CreateStream(path, true);
 
-        if (IsLegacyScript(thread))
+        if (ptr != nullptr && IsLegacyScript(thread))
         {
             ptr->SetType(CLEO::CSoundSystem::LegacyModeDefaultStreamType);
         }
