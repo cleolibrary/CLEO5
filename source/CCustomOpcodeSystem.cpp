@@ -864,6 +864,7 @@ namespace CLEO
 		if (thread->IsMission() || !cs->IsCustom())
 		{
 			LOG_WARNING(0, "Incorrect usage of opcode [0A93] in script %s. Use [004E] instead.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return OR_CONTINUE; // legacy behavior
 		}
 
 		GetInstance().ScriptEngine.RemoveScript(thread);
