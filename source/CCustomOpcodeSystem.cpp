@@ -1121,7 +1121,7 @@ namespace CLEO
 			returnParamCount = declaredParamCount;
 		}
 
-		return GetInstance().OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, true, returnParamCount);
+		return GetInstance().OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, !IsLegacyScript(thread), returnParamCount);
 	}
 
 	//0AB3=2,set_cleo_shared_var %1d% = %2d%
