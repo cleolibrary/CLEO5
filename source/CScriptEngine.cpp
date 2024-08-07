@@ -3,6 +3,7 @@
 #include "CFileMgr.h"
 #include "CGame.h"
 #include <CTheScripts.h>
+#include "patch.h"
 
 #include <sstream>
 
@@ -345,6 +346,289 @@ namespace CLEO
         GetInstance().ScriptEngine.UnregisterAllScripts();
         SaveScmData();
         GetInstance().ScriptEngine.ReregisterAllScripts();
+    }
+
+    SCRIPT_VAR* CRunningScript::GetPointerToLocalVariable(CRunningScript* script, int varIndex) {
+        if (IsMission())
+            return &missionLocals[varIndex];
+        else
+            return script->GetVarPtr(varIndex);
+    }
+
+    void CRunningScript::ReadArrayInformation(CRunningScript* script, WORD* outArrVarOffset, int* outArrElemIdx) {
+        BYTE* ip = script->GetBytePointer();
+
+        *outArrVarOffset = script->ReadDataWord();
+        WORD arrayIndexVar = script->ReadDataWord();
+        script->IncPtr(); // skip size
+		BYTE arrayType = script->ReadDataByte();
+        eArrayDataType elementType = static_cast<eArrayDataType>(arrayType & ArrayDataTypeMask);
+        bool isGlobalIndex = arrayType >> 7; // is high bit set
+
+        if (elementType == ADT_POP) {
+            *outArrElemIdx = GetInstance().StackPop();
+            return;
+        }
+
+        if (isGlobalIndex) {
+            *outArrElemIdx = *reinterpret_cast<int*>(&scmBlock[arrayIndexVar]);
+        }
+        else {
+            *outArrElemIdx = GetPointerToLocalVariable(script, arrayIndexVar)->dwParam;
+        }
+    }
+
+    void CRunningScript::CollectParams(CRunningScript* script, WORD count) {
+        WORD arrVarOffset;
+        int arrElemIdx;
+
+        for (int i = 0; i < count; i++) {
+            int dt = script->ReadDataByte();
+            switch (dt) {
+            case DT_DWORD:
+                opcodeParams[i].dwParam = script->ReadDataInt();
+                break;
+            case DT_VAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[index]);
+                break;
+            }
+            case DT_LVAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                opcodeParams[i] = *GetPointerToLocalVariable(script, index);
+                break;
+            }
+            case DT_BYTE:
+                opcodeParams[i].dwParam = script->ReadDataByte();
+                break;
+            case DT_WORD:
+                opcodeParams[i].dwParam = script->ReadDataWord();
+                break;
+            case DT_FLOAT:
+                opcodeParams[i].fParam = script->ReadDataFloat();
+                break;
+            case DT_VAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                opcodeParams[i] = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[arrVarOffset + (4 * arrElemIdx)]);
+                break;
+            case DT_LVAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                opcodeParams[i] = *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx);
+                break;
+            case DT_POP:
+                opcodeParams[i].dwParam = GetInstance().StackPop();
+                break;
+            }
+        }
+    }
+
+    // wrapper around CRunningScript::CollectParams to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__CollectParams()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push dword ptr[esp+8]       // count
+            push ecx					// script
+            call CRunningScript::CollectParams
+            pop ecx                     // restore ecx     
+            retn 4
+        }
+    }
+
+    void CRunningScript::StoreParams(CRunningScript* script, WORD count) {
+        WORD arrVarOffset;
+        int  arrElemIdx;
+
+        for (int i = 0; i < count; i++) {
+            switch (script->ReadDataByte()) {
+            case DT_VAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                *(SCRIPT_VAR*)(&scmBlock[index]) = opcodeParams[i];
+                break;
+            }
+            case DT_LVAR:
+            {
+                WORD index = script->ReadDataVarIndex();
+                *GetPointerToLocalVariable(script, index) = opcodeParams[i];
+                break;
+            }
+            case DT_VAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                *(SCRIPT_VAR*)(&scmBlock[arrVarOffset + 4 * arrElemIdx]) = opcodeParams[i];
+                break;
+            case DT_LVAR_ARRAY:
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx) = opcodeParams[i];
+                break;
+            case DT_PUSH:
+                GetInstance().StackPush(opcodeParams[i].dwParam);
+                break;
+            }
+        }
+    }
+
+    // wrapper around CRunningScript::StoreParams to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__StoreParams()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push dword ptr[esp + 8]       // count
+            push ecx					// script
+            call CRunningScript::StoreParams
+            pop ecx                     // restore ecx     
+            retn 4
+        }
+    }
+
+    SCRIPT_VAR* CRunningScript::GetPointerToLocalArrayElement(CRunningScript* script, int off, WORD idx, BYTE mul)
+    {
+        int final_index = off + mul * idx;
+
+        if (script->IsMission())
+            return &missionLocals[final_index];
+        return script->GetVarPtr(final_index);
+    }
+
+    DWORD CRunningScript::CollectNextParameterWithoutIncreasingPC(CRunningScript* script) {
+        WORD arrVarOffset;
+        int arrElemIdx;
+
+        SCRIPT_VAR result;
+        result.dwParam = -1;
+
+        BYTE* ip = script->GetBytePointer();
+
+        int dt = script->ReadDataByte();
+        switch (dt) {
+        case DT_DWORD:
+            result.dwParam = script->ReadDataInt();
+            break;
+        case DT_VAR:
+        {
+            WORD index = script->ReadDataVarIndex();
+            result = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[index]);
+            break;
+        }
+        case DT_LVAR:
+        {
+            WORD index = script->ReadDataVarIndex();
+            result = *GetPointerToLocalVariable(script, index);
+            break;
+        }
+        case DT_BYTE:
+            result.dwParam = script->ReadDataByte();
+            break;
+        case DT_WORD:
+            result.dwParam = script->ReadDataWord();
+            break;
+        case DT_FLOAT:
+            result.fParam = script->ReadDataFloat();
+            break;
+        case DT_VAR_ARRAY:
+            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+            result = *reinterpret_cast<SCRIPT_VAR*>(&scmBlock[arrVarOffset + (4 * arrElemIdx)]);
+            break;
+        case DT_LVAR_ARRAY:
+            ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+            result = *GetPointerToLocalVariable(script, arrVarOffset + arrElemIdx);
+            break;
+        case DT_POP:
+            break;
+        }
+
+        script->SetIp(ip);
+
+        return result.dwParam;
+    }
+
+    // wrapper around CRunningScript::CollectNextParameterWithoutIncreasingPC to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__CollectNextParameterWithoutIncreasingPC()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push ecx                    // script
+            call CRunningScript::CollectNextParameterWithoutIncreasingPC
+            pop ecx                     // restore ecx     
+            retn
+        }
+    }
+
+
+    SCRIPT_VAR* CRunningScript::GetPointerToScriptVariable(CRunningScript* script, BYTE type) {
+        BYTE arrElemSize;
+        WORD arrVarOffset;
+        int  arrElemIdx;
+
+        int dt = script->ReadDataByte();
+        switch (dt) {
+            case DT_VAR:
+            case DT_VAR_STRING:
+            case DT_VAR_TEXTLABEL:
+            {
+                auto index = script->ReadDataWord();
+                return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[index]);
+            }
+            case DT_LVAR:
+            case DT_LVAR_STRING:
+            case DT_LVAR_TEXTLABEL:
+            {
+                auto index = script->ReadDataWord();
+                return GetPointerToLocalVariable(script, index);
+            }
+            case DT_VAR_ARRAY:
+            case DT_VAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            {
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                if (dt == DT_VAR_STRING_ARRAY)
+                    return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[16 * arrElemIdx + arrVarOffset]);
+                else if (dt == DT_VAR_TEXTLABEL_ARRAY)
+                    return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[8 * arrElemIdx + arrVarOffset]);
+                else // DT_VAR_ARRAY
+                    return reinterpret_cast<SCRIPT_VAR*>(&CTheScripts::ScriptSpace[4 * arrElemIdx + arrVarOffset]);
+            }
+            case DT_LVAR_ARRAY:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            {
+                ReadArrayInformation(script, &arrVarOffset, &arrElemIdx);
+                if (dt == DT_LVAR_STRING_ARRAY)
+                    arrElemSize = 4;
+                else if (dt == DT_LVAR_TEXTLABEL_ARRAY)
+                    arrElemSize = 2;
+                else // DT_LVAR_ARRAY
+                    arrElemSize = 1;
+                return GetPointerToLocalArrayElement(script, arrVarOffset, arrElemIdx, arrElemSize);
+            }
+            case DT_PUSH:
+            {
+                GetInstance().StackPush(0); // allocate space for the variable
+                return reinterpret_cast<SCRIPT_VAR*>(&GetInstance().CleoStack.top());
+            }
+            case DT_POP:
+                // todo: does not work, value should be popped from stack
+                return reinterpret_cast<SCRIPT_VAR*>(&GetInstance().CleoStack.top());
+        }
+    }
+
+    // wrapper around CRunningScript::CollectNextParameterWithoutIncreasingPC to preserve the value of ecx register
+    static void __declspec(naked) HOOK_CRunningScript__GetPointerToScriptVariable()
+    {
+        _asm
+        {
+            push ecx                    // save ecx
+            push dword ptr[esp + 8]       // type
+            push ecx					// script
+            call CRunningScript::GetPointerToScriptVariable
+            pop ecx                     // restore ecx     
+            retn 4
+        }
     }
 
     struct CleoSafeHeader
@@ -939,6 +1223,10 @@ namespace CLEO
         inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
         inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
+        inj.InjectFunction(&HOOK_CRunningScript__CollectParams, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__CollectNextParameterWithoutIncreasingPC, gvm.TranslateMemoryAddress(MA_GET_NEXT_SCRIPT_PARAM_NO_UPDATE_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__StoreParams, gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION));
+        inj.InjectFunction(&HOOK_CRunningScript__GetPointerToScriptVariable, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION));
     }
 
     CScriptEngine::~CScriptEngine()

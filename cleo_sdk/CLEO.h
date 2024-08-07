@@ -69,6 +69,8 @@ enum eDataType : BYTE
 	DT_LVAR_STRING, // localVarVString @v
 	DT_VAR_STRING_ARRAY, // globalVarStringArr v$(,)
 	DT_LVAR_STRING_ARRAY, // localVarStringArr @v(,)
+	DT_PUSH,
+	DT_POP,
 	DT_INVALID = 0xFF // CLEO internal
 };
 
@@ -78,6 +80,7 @@ enum eArrayDataType : BYTE
 	ADT_FLOAT, // variable with integer
 	ADT_TEXTLABEL, // variable with short string (8 char)
 	ADT_STRING, // variable with long string (16 char)
+	ADT_POP,
 	ADT_NONE = 0xFF // CLEO internal
 };
 static const BYTE ArrayDataTypeMask = ADT_INT | ADT_FLOAT | ADT_TEXTLABEL | ADT_STRING; // array flags byte contains other info too. Type needs to be masked when read
@@ -159,6 +162,8 @@ static bool IsVariable(eDataType type) // can carry int, float, pointer to text
 		case DT_VAR_ARRAY:
 		case DT_LVAR:
 		case DT_LVAR_ARRAY:
+		case DT_POP:
+		case DT_PUSH:
 			return true;
 	}
 	return false;
@@ -432,12 +437,22 @@ public:
 	int ReadDataByte() { char b = *CurrentIP; ++CurrentIP; return b; }
 	short ReadDataWord() { short v = *(short*)CurrentIP; CurrentIP += 2; return v; }
 	int ReadDataInt() { int i = *(int*)CurrentIP; CurrentIP += 4; return i; }
+	float ReadDataFloat() { float f = *(float*)CurrentIP; CurrentIP += 4; return f; }
 
 	void PushStack(BYTE* ptr) { Stack[SP++] = ptr; }
 	BYTE* PopStack() { return Stack[--SP]; }
 
 	WORD GetScmFunction() const { return ScmFunction; }
 	void SetScmFunction(WORD id) { ScmFunction = id; }
+
+	SCRIPT_VAR* GetPointerToLocalVariable(CRunningScript* script, int varIndex);
+	void ReadArrayInformation(CRunningScript* script, WORD* outArrVarOffset, int* outArrElemIdx);
+	void CollectParams(CRunningScript*, WORD count);
+	void StoreParams(CRunningScript*, WORD count);
+	SCRIPT_VAR* GetPointerToLocalArrayElement(CRunningScript* script, int off, WORD idx, BYTE mul);
+	void ReadTextLabelFromScript(CRunningScript*, char* buffer, BYTE nBufferLength);
+	DWORD CollectNextParameterWithoutIncreasingPC(CRunningScript* script);
+	SCRIPT_VAR* GetPointerToScriptVariable(CRunningScript* script, BYTE type);
 
 #endif // __cplusplus
 };
