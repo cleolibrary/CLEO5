@@ -92,6 +92,9 @@ namespace CLEO
 
     void CTextManager::LoadFxts()
     {
+        TRACE(""); // separator
+        TRACE("Loading CLEO text files...");
+
         // create FXT directory if not present yet
         FS::create_directory(FS::path(Gta_Root_Dir_Path).append("cleo\\cleo_text"));
 

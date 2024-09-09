@@ -57,6 +57,7 @@ void CPluginSystem::LoadPlugins()
         CLEO_StringListFree(files);
     };
 
+    TRACE(""); // separator
     TRACE("Listing CLEO plugins:");
     ScanPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "SA.", ".cleo");
     ScanPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "", ".cleo"); // legacy plugins in new location
@@ -68,6 +69,7 @@ void CPluginSystem::LoadPlugins()
         for (auto it = paths.crbegin(); it != paths.crend(); it++)
         {
             const auto filename = it->c_str();
+            TRACE(""); // separator
             TRACE("Loading plugin '%s'", filename);
 
             HMODULE hlib = LoadLibrary(filename);
@@ -79,6 +81,7 @@ void CPluginSystem::LoadPlugins()
 
             plugins.push_back(hlib);
         }
+        TRACE(""); // separator
     }
     else
     {

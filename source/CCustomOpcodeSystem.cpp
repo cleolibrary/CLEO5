@@ -239,6 +239,7 @@ namespace CLEO
 	{
 		if (initialized) return;
 
+		TRACE(""); // separator
 		TRACE("Initializing CLEO core opcodes...");
 
 		CLEO_RegisterOpcode(0x0051, opcode_0051);

@@ -20,14 +20,22 @@ namespace CLEO
 
     void EnumerateBassDevices(int& total, int& enabled, int& default_device)
     {
+        TRACE(""); // separator
+        TRACE("Listing audio devices:");
+
         BASS_DEVICEINFO info;
-        for (default_device = -1, enabled = 0, total = 0; BASS_GetDeviceInfo(total, &info); ++total)
+        enabled = 0;
+        default_device = -1;
+        for (total = 0; BASS_GetDeviceInfo(total, &info); ++total)
         {
-            if (info.flags & BASS_DEVICE_ENABLED) ++enabled;
             if (info.flags & BASS_DEVICE_DEFAULT) default_device = total;
-            TRACE("Found sound device %d%s: %s", total, default_device == total ?
-                " (default)" : "", info.name);
+
+            bool isEnabled = info.flags & BASS_DEVICE_ENABLED;
+            if (isEnabled) ++enabled;
+
+            TRACE(" %d: %s%s", total, info.name, isEnabled ? "" : " (disabled)");
         }
+        TRACE(" Default device index: %d", default_device);
     }
 
     bool isNetworkSource(const char* path)
@@ -58,19 +66,32 @@ namespace CLEO
         LegacyModeDefaultStreamType = (eStreamType)GetPrivateProfileInt("General", "LegacyModeDefaultStreamType", 0, config.c_str());
         allowNetworkSources = GetPrivateProfileInt("General", "AllowNetworkSources", 1, config.c_str()) != 0;
 
-        int default_device, total_devices, enabled_devices;
-        EnumerateBassDevices(total_devices, enabled_devices, default_device);
+        int deviceIndex, total_devices, enabled_devices;
+        EnumerateBassDevices(total_devices, enabled_devices, deviceIndex);
 
-        int forceDevice = GetPrivateProfileInt("General", "AudioDevice", -1, config.c_str());
-        BASS_DEVICEINFO info = { nullptr, nullptr, 0 };
-        if (forceDevice != -1 && BASS_GetDeviceInfo(forceDevice, &info) && (info.flags & BASS_DEVICE_ENABLED))
-            default_device = forceDevice;
+        BASS_DEVICEINFO info = { "Unknown device", nullptr, 0 };
+        BASS_GetDeviceInfo(deviceIndex, &info);
 
-        TRACE("On system found %d devices, %d enabled devices, assuming device to use: %d (%s)",
-            total_devices, enabled_devices, default_device, BASS_GetDeviceInfo(default_device, &info) ?
-            info.name : "Unknown device");
+        int forceIndex = GetPrivateProfileInt("General", "AudioDevice", -1, config.c_str());
+        if (forceIndex != -1)
+        {
+            BASS_DEVICEINFO forceInfo = { "Unknown device", nullptr, 0 };
+            if (BASS_GetDeviceInfo(forceIndex, &forceInfo) && forceInfo.flags & BASS_DEVICE_ENABLED)
+            {
+                TRACE("Force selecting audio device #%d: %s", forceIndex, forceInfo.name);
+                deviceIndex = forceIndex;
+            }
+            else
+            {
+                LOG_WARNING(0, "Failed to force select device #%d! Selecting default audio device #%d: %s", forceIndex, deviceIndex, info.name);
+            }
+        }
+        else
+        {
+            TRACE("Selecting default audio device #%d: %s", deviceIndex, info.name);
+        }
 
-        if (BASS_Init(default_device, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
+        if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
             BASS_Set3DFactors(1.0f, 3.0f, 80.0f) &&
             BASS_Set3DPosition(&pos, &vel, &front, &top))
         {
