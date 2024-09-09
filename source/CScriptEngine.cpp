@@ -1023,7 +1023,7 @@ namespace CLEO
 
         if (!found.empty())
         {
-            TRACE("Starting CLEO scripts");
+            TRACE("Starting CLEO scripts...");
 
             for (const auto& path : found)
             {
@@ -1476,7 +1476,8 @@ namespace CLEO
         LastSearchPed(0), LastSearchCar(0), LastSearchObj(0),
         CompatVer(CLEO_VER_CUR)
     {
-        TRACE("Loading custom script %s...", szFileName);
+        TRACE(""); // separator
+        TRACE("Loading custom script '%s'...", szFileName);
 
         bIsCustom = true;
         bIsMission = bUseMissionCleanup = bIsMiss;
