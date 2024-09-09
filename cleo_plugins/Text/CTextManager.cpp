@@ -106,7 +106,7 @@ namespace CLEO
             {
                 std::ifstream stream(list.strings[i]);
                 auto result = ParseFxtFile(stream);
-                TRACE("Added %d new FXT entries from file %s", result, list.strings[i]);
+                TRACE("Added %d new FXT entries from file '%s'", result, list.strings[i]);
             }
             catch (std::exception& ex)
             {
