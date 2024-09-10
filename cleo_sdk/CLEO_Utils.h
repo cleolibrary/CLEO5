@@ -579,8 +579,8 @@ namespace CLEO
 
     #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName) char _varName[2 * MAX_STR_LEN + 1]; char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));
 
-    #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; const char* ##_varName = _readParamText(thread, _buff_##_varName, 512); if(##_varName != nullptr) ##_varName = _buff_##_varName; if(_paramWasString()) CLEO_ResolvePath(thread, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT; \
-        if(_strnicmp(##_varName, Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path)) != 0 && _strnicmp(##_varName, Gta_User_Dir_Path, strlen(Gta_User_Dir_Path)) != 0) { SHOW_ERROR("Forbidden file path '%s' outside game directories in script %s \nScript suspended.", ##_varName, ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; const char* ##_varName = _readParamText(thread, _buff_##_varName, 512); if(##_varName != nullptr) ##_varName = _buff_##_varName; if(_paramWasString()) CLEO_ResolvePath(thread, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT; //\
+        //if(_strnicmp(##_varName, Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path)) != 0 && _strnicmp(##_varName, Gta_User_Dir_Path, strlen(Gta_User_Dir_Path)) != 0) { SHOW_ERROR("Forbidden file path '%s' outside game directories in script %s \nScript suspended.", ##_varName, ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_READ_PARAM_PTR() _readParam(thread).pParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
