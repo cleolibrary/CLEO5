@@ -15,6 +15,7 @@
 #include "CLEO.h"
 #include "CPools.h" // from GTA Plugin SDK
 #include "shellapi.h" // game window minimize/maximize support
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <wtypes.h>
@@ -121,30 +122,21 @@ namespace CLEO
     // does file path points inside game directories? (game root or user files)
     static bool IsFilepathSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        // TODO: path handling should use more advanced utils from std::filesystem
-
-        if (_strnicmp(path, Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path)) == 0 || 
-            _strnicmp(path, Gta_User_Dir_Path, strlen(Gta_User_Dir_Path)) == 0)
+        auto IsSubpath = [](std::filesystem::path path, std::filesystem::path base) 
         {
-            return true; // starts with absolute path to game or user directory
-            // TODO: `..\` should be correctly collapsed first to prevent escaping
+            auto relative = std::filesystem::relative(base, path);
+            return relative.empty() || relative.native()[0] != '.';
+        };
+
+        auto fsPath = std::filesystem::path(path);
+        if (!fsPath.is_absolute())
+        {
+            fsPath = CLEO_GetScriptWorkDir(thread) / fsPath;
         }
 
-        // naive check for absolute paths
-        if (strlen(path) >= 2 && path[1] == ':')
+        if (IsSubpath(fsPath, Gta_Root_Dir_Path) || IsSubpath(fsPath, Gta_User_Dir_Path))
         {
-            return false; // some absolute path that is not one of above
-        }
-        else // relative path
-        {
-            auto workDir = CLEO_GetScriptWorkDir(thread);
-
-            if (_strnicmp(workDir, Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path) - 1) == 0 || // Gta_Root_Dir_Path includes ending path separator, ignore it
-                _strnicmp(workDir, Gta_User_Dir_Path, strlen(Gta_User_Dir_Path)) == 0)
-            {
-                return true; // starts with absolute path to game or user directory
-                // TODO: `..\` should be correctly collapsed first to prevent escaping
-            }
+            return true;
         }
 
         return false;
