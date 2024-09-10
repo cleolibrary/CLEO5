@@ -463,7 +463,9 @@ eGameVersion WINAPI CLEO_GetGameVersion();
 
 BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, _pOpcodeHandler callback);
 BOOL WINAPI CLEO_RegisterCommand(const char* commandName, _pOpcodeHandler callback); // uses cleo\.CONFIG\sa.json to obtain opcode number from name
+
 void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func);
+void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func);
 
 
 // script utils

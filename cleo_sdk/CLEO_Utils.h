@@ -16,6 +16,7 @@
 #include "CPools.h" // from GTA Plugin SDK
 #include "shellapi.h" // game window minimize/maximize support
 #include <string>
+#include <vector>
 #include <wtypes.h>
 
 namespace CLEO
@@ -232,15 +233,45 @@ namespace CLEO
         BOOL needTerminator = false;
     };
 
-    static void MemPatchJump(size_t position, void* jumpTarget)
+    class MemPatch
+    {
+        void* address = nullptr;
+        std::vector<char> buffer;
+
+    public:
+        MemPatch()
+        {
+        }
+
+        MemPatch(void* src, size_t size) : address(src), buffer(size)
+        {
+            memcpy(buffer.data(), src, size);
+        }
+
+        void Apply()
+        {
+            if (!buffer.empty())
+            {
+                DWORD oldProtect;
+                VirtualProtect(address, buffer.size(), PAGE_EXECUTE_READWRITE, &oldProtect);
+                memcpy(buffer.data(), address, buffer.size());
+            }
+        }
+    };
+
+    static MemPatch MemPatchJump(size_t position, void* jumpTarget)
     {
         DWORD oldProtect;
         VirtualProtect((LPVOID)position, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
+
+        MemPatch original((void*)position, 5);
 
         *(BYTE*)position = 0xE9; // asm: jmp
         position += sizeof(BYTE);
 
         *(DWORD*)position = (DWORD)jumpTarget - position - 4;
+
+        return original;
     }
 
     static void* MemPatchCall(size_t position, void* newFunction)

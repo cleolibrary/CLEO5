@@ -80,6 +80,11 @@ public:
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
     }
 
+    ~FileSystemOperations()
+    {
+        CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
+    }
+
     //0A99=1,set_current_directory %1b:userdir/rootdir%
     static OpcodeResult __stdcall opcode_0A99(CRunningScript* thread)
     {

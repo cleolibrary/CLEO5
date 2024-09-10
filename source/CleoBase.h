@@ -47,6 +47,7 @@ namespace CLEO
         bool IsStarted() const { return m_bStarted; }
 
         void AddCallback(eCallbackId id, void* func);
+        void RemoveCallback(eCallbackId id, void* func);
         const std::set<void*>& GetCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id, DWORD arg);

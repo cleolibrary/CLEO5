@@ -188,6 +188,11 @@ namespace CLEO
         m_callbacks[id].insert(func);
     }
 
+    void CCleoInstance::RemoveCallback(eCallbackId id, void* func)
+    {
+        m_callbacks[id].erase(func);
+    }
+
     const std::set<void*>& CCleoInstance::GetCallbacks(eCallbackId id)
     {
         return m_callbacks[id];
@@ -214,6 +219,11 @@ namespace CLEO
     void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func)
     {
         GetInstance().AddCallback(id, func);
+    }
+
+    void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func)
+    {
+        GetInstance().RemoveCallback(id, func);
     }
 
     void __cdecl CCleoInstance::OnDrawingFinished()

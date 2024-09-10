@@ -23,6 +23,8 @@ public:
 	static const size_t MsgBigStyleCount = 7;
 	static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
 
+	MemPatch patchCTextGet;
+
     Text()
     {
         auto cleoVer = CLEO_GetVersion();
@@ -68,7 +70,15 @@ public:
 		CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
 		// install hooks
-		MemPatchJump(0x006A0050, &HOOK_CTextGet); // FUNC_CText__Get from CText.cpp
+		patchCTextGet = MemPatchJump(0x006A0050, &HOOK_CTextGet); // FUNC_CText__Get from CText.cpp
+	}
+
+	~Text()
+	{
+		CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
+		CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
+
+		patchCTextGet.Apply(); // undo hook
 	}
 
 	static void __stdcall OnGameBegin(DWORD saveSlot)

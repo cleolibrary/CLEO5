@@ -71,6 +71,11 @@ public:
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
     }
 
+    ~MemoryOperations()
+    {
+        CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
+    }
+
     static void __stdcall OnFinalizeScriptObjects()
     {
         TRACE("Cleaning up %d allocated memory blocks...", m_allocations.size());

@@ -72,6 +72,15 @@ public:
         CLEO_RegisterCallback(eCallbackId::MainWindowFocus, OnMainWindowFocus);
     }
 
+    ~Audio()
+    {
+        CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
+        CLEO_UnregisterCallback(eCallbackId::GameProcess, OnGameProcess);
+        CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
+        CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
+        CLEO_UnregisterCallback(eCallbackId::MainWindowFocus, OnMainWindowFocus);
+    }
+
     static void __stdcall OnGameBegin(DWORD saveSlot)
     {
         soundSystem.Init();
