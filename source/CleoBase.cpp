@@ -312,12 +312,12 @@ namespace CLEO
     }
 
     void CCleoInstance::StackPush(int val) {
-        GetInstance().CleoStack.push(val);
+        CleoStack.push(val);
     }
 
     int CCleoInstance::StackPop() {
-        int val = GetInstance().CleoStack.top();
-        GetInstance().CleoStack.pop();
+        int val = CleoStack.top();
+        CleoStack.pop();
         return val;
     }
 }
