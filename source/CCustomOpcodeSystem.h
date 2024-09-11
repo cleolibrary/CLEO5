@@ -39,7 +39,7 @@ namespace CLEO
         ~CCustomOpcodeSystem()
         {
             TRACE(""); // separator
-            TRACE("Custom Opcode System finalized");
+            TRACE("Custom Opcode System finalized:");
             TRACE(" Last opcode executed: %04X", lastOpcode);
             TRACE(" Previous opcode executed: %04X", prevOpcode);
         }
