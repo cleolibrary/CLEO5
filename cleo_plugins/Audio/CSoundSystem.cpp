@@ -46,6 +46,7 @@ namespace CLEO
 
     CSoundSystem::~CSoundSystem()
     {
+        TRACE(""); // seaprator
         TRACE("Finalizing SoundSystem...");
         Clear();
 
