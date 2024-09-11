@@ -93,7 +93,7 @@ void CPluginSystem::LoadPlugins()
 
 void CPluginSystem::UnloadPlugins()
 {
-    if (pluginsLoaded == false) return;
+    if (!pluginsLoaded) return;
 
     TRACE(""); // separator
     TRACE("Unloading CLEO plugins:");
