@@ -2,8 +2,8 @@
 #include "FileEnumerator.h"
 #include "CDebug.h"
 #include <windows.h>
-#include <algorithm>
 #include <list>
+#include <string>
 #include <CMenuSystem.h>
 
 
@@ -11,7 +11,15 @@ namespace CLEO
 {
     class CPluginSystem
     {
-        std::list<HMODULE> plugins;
+        struct PluginEntry
+        {
+            std::string name;
+            HMODULE handle = nullptr;
+
+            PluginEntry() = default;
+            PluginEntry(std::string name, HMODULE handle) : name(name), handle(handle) {}
+        };
+        std::list<PluginEntry> plugins;
         bool pluginsLoaded = false;
 
     public:
@@ -20,6 +28,7 @@ namespace CLEO
         ~CPluginSystem();
 
         void LoadPlugins();
+        void UnloadPlugins();
         size_t GetNumPlugins() const;
     };
 }

@@ -994,6 +994,7 @@ namespace CLEO
 
     void CScriptEngine::LoadCustomScripts()
     {
+        TRACE(""); // separator
         TRACE("Listing CLEO scripts:");
 
         std::set<std::string> found;

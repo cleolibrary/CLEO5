@@ -24,6 +24,7 @@ public:
 
     ~CDebug()
     {
+        CLEO::Trace(CLEO::eLogLevel::Default, ""); // separator
         CLEO::Trace(CLEO::eLogLevel::Default, "Log finished.");
     }
     

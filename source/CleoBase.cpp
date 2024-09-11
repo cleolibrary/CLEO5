@@ -155,6 +155,8 @@ namespace CLEO
         m_bStarted = false;
 
         ScriptEngine.GameEnd();
+
+        PluginSystem.UnloadPlugins();
     }
 
     void CCleoInstance::GameBegin()

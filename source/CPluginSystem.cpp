@@ -7,7 +7,7 @@ using namespace CLEO;
 
 CPluginSystem::~CPluginSystem()
 {
-    std::for_each(plugins.begin(), plugins.end(), FreeLibrary);
+    UnloadPlugins();
 }
 
 void CPluginSystem::LoadPlugins()
@@ -79,7 +79,7 @@ void CPluginSystem::LoadPlugins()
                 continue;
             }
 
-            plugins.push_back(hlib);
+            plugins.emplace_back(filename, hlib);
         }
         TRACE(""); // separator
     }
@@ -89,6 +89,23 @@ void CPluginSystem::LoadPlugins()
     }
 
     pluginsLoaded = true;
+}
+
+void CPluginSystem::UnloadPlugins()
+{
+    if (pluginsLoaded == false) return;
+
+    TRACE(""); // separator
+    TRACE("Unloading CLEO plugins:");
+    for (const auto& plugin : plugins)
+    {
+        TRACE(" - Unloading '%s' at 0x%08X", plugin.name.c_str(), plugin.handle);
+        FreeLibrary(plugin.handle);
+    }
+    TRACE("CLEO plugins unloaded");
+
+    plugins.clear();
+    pluginsLoaded = false;
 }
 
 size_t CPluginSystem::GetNumPlugins() const

@@ -38,8 +38,10 @@ namespace CLEO
         void Init();
         ~CCustomOpcodeSystem()
         {
-            TRACE("Last opcode executed: %04X", lastOpcode);
-            TRACE("Previous opcode executed: %04X", prevOpcode);
+            TRACE(""); // separator
+            TRACE("Custom Opcode System finalized");
+            TRACE(" Last opcode executed: %04X", lastOpcode);
+            TRACE(" Previous opcode executed: %04X", prevOpcode);
         }
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
