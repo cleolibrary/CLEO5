@@ -837,7 +837,7 @@ namespace CLEO
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
+		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, Filepath_Cleo.c_str()); // legacy: default search location is game\cleo directory
 		TRACE("[0A92] Starting new custom script %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), false, thread);
@@ -877,7 +877,7 @@ namespace CLEO
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
+		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, Filepath_Cleo.c_str()); // legacy: default search location is game\cleo directory
 		filename += ".cm"; // add custom mission extension
 		TRACE("[0A94] Starting new custom mission %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
@@ -1832,7 +1832,7 @@ extern "C"
 
 	CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char *script_name, int label)
 	{
-		auto filename = reinterpret_cast<CCustomScript*>(fromThread)->ResolvePath(script_name, DIR_CLEO); // legacy: default search location is game\cleo directory
+		auto filename = reinterpret_cast<CCustomScript*>(fromThread)->ResolvePath(script_name, Filepath_Cleo.c_str()); // legacy: default search location is game\cleo directory
 
 		if (label != 0) // create from label
 		{
