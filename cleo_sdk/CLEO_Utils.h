@@ -122,10 +122,10 @@ namespace CLEO
     // does file path points inside game directories? (game root or user files)
     static bool IsFilepathSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        auto IsSubpath = [](std::filesystem::path path, std::filesystem::path base) 
+        auto IsSubpath = [](std::filesystem::path path, std::filesystem::path base)
         {
-            auto relative = std::filesystem::relative(base, path);
-            return relative.empty() || relative.native()[0] != '.';
+            auto relative = std::filesystem::relative(path, base);
+            return !relative.empty() && *relative.begin() != "..";
         };
 
         auto fsPath = std::filesystem::path(path);
