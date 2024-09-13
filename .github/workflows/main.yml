@@ -165,3 +165,4 @@ jobs:
           tag: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           artifacts: "SA.CLEO_*.zip"
+          allowUpdates: true
