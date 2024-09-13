@@ -239,7 +239,7 @@ void CAudioStream::Set3dPosition(const CVector& pos)
     // not applicable for 2d audio
 }
 
-void CAudioStream::Set3dSize(float radius)
+void CAudioStream::Set3dSourceSize(float radius)
 {
     // not applicable for 2d audio
 }

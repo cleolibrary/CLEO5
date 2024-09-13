@@ -47,7 +47,7 @@ namespace CLEO
 
         // 3d
         virtual void Set3dPosition(const CVector& pos);
-        virtual void Set3dSize(float radius);
+        virtual void Set3dSourceSize(float radius);
         virtual void Link(CPlaceable* placable = nullptr);
 
         virtual void Process();

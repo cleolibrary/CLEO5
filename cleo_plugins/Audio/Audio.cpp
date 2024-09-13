@@ -386,7 +386,7 @@ public:
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto radius = OPCODE_READ_PARAM_FLOAT();
 
-        if (stream) stream->Set3dSize(radius);
+        if (stream) stream->Set3dSourceSize(radius);
 
         return OR_CONTINUE;
     }
