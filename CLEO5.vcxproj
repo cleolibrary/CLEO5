@@ -45,6 +45,7 @@
     <ClCompile Include="source\CGameMenu.cpp" />
     <ClCompile Include="source\CGameVersionManager.cpp" />
     <ClCompile Include="source\CleoBase.cpp" />
+    <ClCompile Include="source\CModLoaderSystem.cpp" />
     <ClCompile Include="source\CModuleSystem.cpp" />
     <ClCompile Include="source\CPluginSystem.cpp" />
     <ClCompile Include="source\crc32.cpp" />
@@ -87,6 +88,7 @@
     <ClInclude Include="source\CGameMenu.h" />
     <ClInclude Include="source\CGameVersionManager.h" />
     <ClInclude Include="source\CleoBase.h" />
+    <ClInclude Include="source\CModLoaderSystem.h" />
     <ClInclude Include="source\CModuleSystem.h" />
     <ClInclude Include="source\CPluginSystem.h" />
     <ClInclude Include="source\crc32.h" />

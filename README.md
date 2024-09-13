@@ -22,6 +22,7 @@ CLEO itself does not replace any game file, however the following files and fold
 - cleo\cleo_plugins\SA.Text.cleo (text processing plugin)
 - cleo\cleo_saves\ (CLEO save directory)
 - cleo\cleo_text\ (CLEO text directory)
+- modloader\.data\plugins\CLEO5_Provider.dll (CLEO5 ModLoader plugin)
 - cleo.asi (core library)
 - bass.dll (audio engine library)
 

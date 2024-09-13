@@ -22,12 +22,16 @@ namespace CLEO
         std::list<PluginEntry> plugins;
         bool pluginsLoaded = false;
 
+        // Mod Loader
+        bool mlPluginsLoaded = false;
+        size_t mlPluginCount = 0; // plugins loaded by ModLoader itself
+
     public:
         CPluginSystem() = default;
         CPluginSystem(const CPluginSystem&) = delete; // no copying
         ~CPluginSystem();
 
-        void LoadPlugins();
+        void LoadPlugins(bool modloader = false);
         void UnloadPlugins();
         size_t GetNumPlugins() const;
     };

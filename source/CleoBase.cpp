@@ -232,6 +232,10 @@ namespace CLEO
 
     void __cdecl CCleoInstance::OnDrawingFinished()
     {
+        // delayed so modloader.asi has chance to start
+        GetInstance().ModLoaderSystem.Init();
+        GetInstance().PluginSystem.LoadPlugins(true); // CLEO plugins from ModLoader
+
         GetInstance().CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
     }
 
@@ -248,6 +252,15 @@ namespace CLEO
         }
 
         auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
+
+        auto& modLoader = GetInstance().ModLoaderSystem;
+        if (modLoader.IsActive())
+        {
+            if (resolved.length() < (pathMaxLen - 1))
+                resolved.resize(pathMaxLen); // expand buffer to max allowed size
+
+            modLoader.ResolvePath(reinterpret_cast<CCustomScript*>(thread)->GetScriptFileFullPath().c_str(), resolved.data(), resolved.length() + 1); // including terminator character
+        }
 
         if (resolved.length() >= pathMaxLen)
             resolved.resize(pathMaxLen - 1); // and terminator character
@@ -286,28 +299,51 @@ namespace CLEO
             fsSearchPath = workDir / fsSearchPath;
         }
 
-        WIN32_FIND_DATA wfd = { 0 };
-        HANDLE hSearch = FindFirstFile(fsSearchPath.string().c_str(), &wfd);
-        if (hSearch == INVALID_HANDLE_VALUE)
-            return {}; // nothing found
-
         std::set<std::string> found;
-        do
+
+        auto& modLoader = GetInstance().ModLoaderSystem;
+        if (modLoader.IsActive())
         {
-            if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
-                continue; // skip directories
+            const char* scriptPath = nullptr;
 
-            if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-                continue; // skip files
+            std::string scriptFilePath;
+            if (thread != nullptr)
+            {
+                scriptFilePath = ((CCustomScript*)thread)->GetScriptFileFullPath();
+                scriptPath = scriptFilePath.c_str();
+            }
 
-            auto path = FS::path(wfd.cFileName);
-            if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
-                path = fsSearchPath.parent_path() / path;
+            auto list = modLoader.ListFiles(scriptPath, fsSearchPath.string().c_str(), listDirs, listFiles);
+            for  (DWORD i = 0; i < list.count; i++)
+            {
+                found.emplace(list.strings[i]);
+            }
+            modLoader.StringListFree(list);
+        }
+        else
+        {
+            WIN32_FIND_DATA wfd = { 0 };
+            HANDLE hSearch = FindFirstFile(fsSearchPath.string().c_str(), &wfd);
+            if (hSearch == INVALID_HANDLE_VALUE)
+                return {}; // nothing found
 
-            found.insert(path.string());
-        } while (FindNextFile(hSearch, &wfd));
+            do
+            {
+                if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
+                    continue; // skip directories
 
-        FindClose(hSearch);
+                if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+                    continue; // skip files
+
+                auto path = FS::path(wfd.cFileName);
+                if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
+                    path = fsSearchPath.parent_path() / path;
+
+                found.insert(path.string());
+            } while (FindNextFile(hSearch, &wfd));
+
+            FindClose(hSearch);
+        }
 
         return CreateStringList(found);
     }

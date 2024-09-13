@@ -837,7 +837,18 @@ namespace CLEO
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
+		std::string filename;
+		filename.reserve(MAX_PATH);
+		if (!FS::path(path).is_absolute())
+		{
+			filename = DIR_CLEO; // legacy: default search location is game\cleo directory
+			filename += '\\';
+		}
+		filename += path;
+
+		CLEO_ResolvePath(thread, filename.data(), filename.capacity());
+
+		TRACE(""); // separator
 		TRACE("[0A92] Starting new custom script %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), false, thread);
@@ -877,8 +888,19 @@ namespace CLEO
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
-		filename += ".cm"; // add custom mission extension
+		std::string filename;
+		filename.reserve(MAX_PATH);
+		if (!FS::path(path).is_absolute())
+		{
+			filename = DIR_CLEO; // legacy: default search location is game\cleo directory
+			filename += '\\';
+		}
+		filename += path;
+		filename += ".cm"; // custom mission filetype
+		
+		CLEO_ResolvePath(thread, filename.data(), filename.capacity());
+
+		TRACE(""); // separator
 		TRACE("[0A94] Starting new custom mission %s from thread named %s", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), true, thread);
@@ -1830,10 +1852,20 @@ extern "C"
 		return texture;
 	}
 
-	CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char *script_name, int label)
+	CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* script_name, int label)
 	{
-		auto filename = reinterpret_cast<CCustomScript*>(fromThread)->ResolvePath(script_name, DIR_CLEO); // legacy: default search location is game\cleo directory
+		std::string filename;
+		filename.reserve(MAX_PATH);
+		if (!FS::path(script_name).is_absolute())
+		{
+			filename = DIR_CLEO; // legacy: default search location is game\cleo directory
+			filename += '\\';
+		}
+		filename += script_name;
 
+		CLEO_ResolvePath(fromThread, filename.data(), filename.capacity());
+
+		TRACE(""); // separator
 		if (label != 0) // create from label
 		{
 			TRACE("Starting new custom script from thread named %s label %i", filename.c_str(), label);

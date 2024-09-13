@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="source\ModLoaderProvider.cpp" />
+    <ClCompile Include="source\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\ModLoaderProvider.h" />
+    <ClInclude Include="source\modloader\modloader.h">
+      <Filter>modloader</Filter>
+    </ClInclude>
+    <ClInclude Include="source\modloader\modloader.hpp">
+      <Filter>modloader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cleo_sdk\CLEO.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils.h" />
+    <ClInclude Include="..\cleo_sdk\CLEO_Utils.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="modloader">
+      <UniqueIdentifier>{e1cecf56-63d9-4199-abc0-3bc243c35ae5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cleo_sdk">
+      <UniqueIdentifier>{a91999b6-8f46-4d7d-bfde-64d0090de057}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+</Project>
