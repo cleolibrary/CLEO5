@@ -712,6 +712,7 @@ namespace CLEO
 
                     auto resolved = FS::weakly_canonical(fsPath).string();
 
+                    // ModLoader support: do not expand game dir relative paths
                     if (resolved.find(Filepath_Root) == 0)
                         return FS::relative(resolved, Filepath_Root).string();
                     else
