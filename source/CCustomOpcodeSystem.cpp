@@ -82,8 +82,6 @@ namespace CLEO
 	float(__cdecl * FindGroundZ)(float x, float y);
 	CMarker		* RadarBlips;
 
-	CHandling	* Handling;
-
 	CPlayerPed * (__cdecl * GetPlayerPed)(DWORD);
 
 	void(__cdecl * SpawnCar)(DWORD);
@@ -213,7 +211,6 @@ namespace CLEO
 
 		FindGroundZ = gvm.TranslateMemoryAddress(MA_FIND_GROUND_Z_FUNCTION);
 		GetPlayerPed = gvm.TranslateMemoryAddress(MA_GET_PLAYER_PED_FUNCTION);
-		Handling = gvm.TranslateMemoryAddress(MA_HANDLING);
 		SpawnCar = gvm.TranslateMemoryAddress(MA_SPAWN_CAR_FUNCTION);
 
 		// TODO: consider version-agnostic code
