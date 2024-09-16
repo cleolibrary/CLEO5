@@ -96,7 +96,6 @@ namespace CLEO
         MA_OBJECT_POOL,
         MA_FIND_GROUND_Z_FUNCTION,
         MA_RADAR_BLIPS,
-        MA_HANDLING,
         MA_GET_PLAYER_PED_FUNCTION,
         MA_SPAWN_CAR_FUNCTION,
 
