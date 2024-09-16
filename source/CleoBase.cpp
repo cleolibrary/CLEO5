@@ -251,7 +251,7 @@ namespace CLEO
             return; // invalid param
         }
 
-        auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
+        auto resolved = reinterpret_cast<CCustomScript*>(thread)->ExpandPath(inOutPath);
 
         auto& modLoader = GetInstance().ModLoaderSystem;
         if (modLoader.IsActive())

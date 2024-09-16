@@ -93,8 +93,8 @@ namespace CLEO
         const char* GetWorkDir() const;
         void SetWorkDir(const char* directory);
 
-        // create absolute file path
-        std::string ResolvePath(const char* path, const char* customWorkDir = nullptr) const;
+        // create absolute file path. Still should be resolved using CLEO_ResolvePath before use
+        std::string ExpandPath(const char* path, const char* customWorkDir = nullptr) const;
 
         // get short info text about script
         std::string GetInfoStr(bool currLineInfo = true) const;

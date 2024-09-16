@@ -669,7 +669,7 @@ namespace CLEO
         if(directory == nullptr || strlen(directory) == 0)
             return;  // Already done. Empty path is relative path starting at current work dir
 
-        auto resolved = ResolvePath(directory);
+        auto resolved = ExpandPath(directory);
 
         if (!bIsCustom)
             GetInstance().ScriptEngine.MainScriptCurWorkDir = resolved;
@@ -677,7 +677,7 @@ namespace CLEO
             workDir = resolved;
     }
 
-    std::string CCustomScript::ResolvePath(const char* path, const char* customWorkDir) const
+    std::string CCustomScript::ExpandPath(const char* path, const char* customWorkDir) const
     {
         if (path == nullptr)
         {
@@ -706,13 +706,10 @@ namespace CLEO
                 if(fsPath.is_relative())
                 {
                     if(customWorkDir != nullptr)
-                        fsPath = ResolvePath(customWorkDir) / fsPath;
+                        fsPath = ExpandPath(customWorkDir) / fsPath;
                     else
                     {
-                        if (Filepath_Root.compare(GetWorkDir()) != 0) // ModLoader support: do not expand game dir relative paths
-                        {
-                            fsPath = GetWorkDir() / fsPath;
-                        }
+                        fsPath = GetWorkDir() / fsPath;
                     }
                 }
 

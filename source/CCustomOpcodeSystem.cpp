@@ -837,15 +837,8 @@ namespace CLEO
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		std::string filename;
+		auto filename = ((CCustomScript*)thread)->ExpandPath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
 		filename.reserve(MAX_PATH);
-		if (!FS::path(path).is_absolute())
-		{
-			filename = DIR_CLEO; // legacy: default search location is game\cleo directory
-			filename += '\\';
-		}
-		filename += path;
-
 		CLEO_ResolvePath(thread, filename.data(), filename.capacity());
 
 		TRACE(""); // separator
@@ -888,16 +881,9 @@ namespace CLEO
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		std::string filename;
-		filename.reserve(MAX_PATH);
-		if (!FS::path(path).is_absolute())
-		{
-			filename = DIR_CLEO; // legacy: default search location is game\cleo directory
-			filename += '\\';
-		}
-		filename += path;
+		auto filename = ((CCustomScript*)thread)->ExpandPath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
 		filename += ".cm"; // custom mission filetype
-		
+		filename.reserve(MAX_PATH);
 		CLEO_ResolvePath(thread, filename.data(), filename.capacity());
 
 		TRACE(""); // separator
@@ -1012,7 +998,7 @@ namespace CLEO
 
 			// get module's file absolute path
 			auto modulePath = std::string(strModule);
-			modulePath = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(modulePath.c_str(), DIR_SCRIPT); // by default search relative to current script location
+			modulePath = reinterpret_cast<CCustomScript*>(thread)->ExpandPath(modulePath.c_str(), DIR_SCRIPT); // by default search relative to current script location
 
 			// get export reference
 			auto scriptRef = GetInstance().ModuleSystem.GetExport(modulePath, strExport);
@@ -1854,15 +1840,8 @@ extern "C"
 
 	CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* script_name, int label)
 	{
-		std::string filename;
+		auto filename = ((CCustomScript*)fromThread)->ExpandPath(script_name, DIR_CLEO); // legacy: default search location is game\cleo directory
 		filename.reserve(MAX_PATH);
-		if (!FS::path(script_name).is_absolute())
-		{
-			filename = DIR_CLEO; // legacy: default search location is game\cleo directory
-			filename += '\\';
-		}
-		filename += script_name;
-
 		CLEO_ResolvePath(fromThread, filename.data(), filename.capacity());
 
 		TRACE(""); // separator
