@@ -8,9 +8,6 @@ namespace CLEO
 {
     typedef OpcodeResult(__stdcall * CustomOpcodeHandler)(CRunningScript*);
 
-    extern void(__cdecl* ChangeToUserDir)();
-    extern void(__cdecl* ChangeToProgramDir)(const char*);
-
     class CCustomOpcodeSystem : public VInjectible
     {
     public:

@@ -79,9 +79,6 @@ namespace CLEO
 
 	void(__thiscall * ProcessScript)(CRunningScript*);
 
-	void(__cdecl * ChangeToUserDir)();
-	void(__cdecl * ChangeToProgramDir)(const char *);
-
 	float(__cdecl * FindGroundZ)(float x, float y);
 	CMarker		* RadarBlips;
 
@@ -214,8 +211,6 @@ namespace CLEO
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
 
-		ChangeToUserDir = gvm.TranslateMemoryAddress(MA_CHANGE_TO_USER_DIR_FUNCTION);
-		ChangeToProgramDir = gvm.TranslateMemoryAddress(MA_CHANGE_TO_PROGRAM_DIR_FUNCTION);
 		FindGroundZ = gvm.TranslateMemoryAddress(MA_FIND_GROUND_Z_FUNCTION);
 		GetPlayerPed = gvm.TranslateMemoryAddress(MA_GET_PLAYER_PED_FUNCTION);
 		Handling = gvm.TranslateMemoryAddress(MA_HANDLING);
