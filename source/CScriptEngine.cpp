@@ -708,15 +708,12 @@ namespace CLEO
                     if(customWorkDir != nullptr)
                         fsPath = ResolvePath(customWorkDir) / fsPath;
                     else
-                        fsPath = GetWorkDir() / fsPath;
-
-                    auto resolved = FS::weakly_canonical(fsPath).string();
-
-                    // ModLoader support: do not expand game dir relative paths
-                    if (resolved.find(Filepath_Root) == 0)
-                        return FS::relative(resolved, Filepath_Root).string();
-                    else
-                        return resolved;
+                    {
+                        if (Filepath_Root.compare(GetWorkDir()) != 0) // ModLoader support: do not expand game dir relative paths
+                        {
+                            fsPath = GetWorkDir() / fsPath;
+                        }
+                    }
                 }
 
                 return FS::weakly_canonical(fsPath).string();
