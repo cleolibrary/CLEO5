@@ -23,6 +23,7 @@ namespace CLEO
 	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
 
 
+	OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
 	OpcodeResult __stdcall opcode_0051(CRunningScript * thread); // GOSUB return
 	OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
 
@@ -232,6 +233,7 @@ namespace CLEO
 		TRACE(""); // separator
 		TRACE("Initializing CLEO core opcodes...");
 
+		CLEO_RegisterOpcode(0x004E, opcode_004E);
 		CLEO_RegisterOpcode(0x0051, opcode_0051);
 		CLEO_RegisterOpcode(0x0417, opcode_0417);
 		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
@@ -796,6 +798,12 @@ namespace CLEO
 	/************************************************************************/
 	/*						Opcode definitions								*/
 	/************************************************************************/
+
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_004E(CRunningScript* thread)
+	{
+		GetInstance().ScriptEngine.RemoveScript(thread);
+		return OR_INTERRUPT;
+	}
 
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript* thread) // GOSUB return
 	{
