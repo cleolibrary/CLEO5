@@ -6,6 +6,7 @@ namespace CLEO
 {
     CCleoInstance CleoInstance;
     CCleoInstance& GetInstance() { return CleoInstance; }
+    std::stack<int>         CleoStack;
 
     inline CCleoInstance::CCleoInstance()
     {
@@ -310,6 +311,16 @@ namespace CLEO
         FindClose(hSearch);
 
         return CreateStringList(found);
+    }
+
+    void CCleoInstance::StackPush(int val) {
+        CleoStack.push(val);
+    }
+
+    int CCleoInstance::StackPop() {
+        int val = CleoStack.top();
+        CleoStack.pop();
+        return val;
     }
 }
 
