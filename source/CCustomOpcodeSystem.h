@@ -44,6 +44,7 @@ namespace CLEO
 
         static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
 
+        static OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
         static OpcodeResult __stdcall opcode_0051(CRunningScript* thread); // GOSUB's return
         static OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
 

@@ -310,28 +310,6 @@ namespace CLEO
 
     CRunningScript **inactiveThreadQueue, **activeThreadQueue;
 
-
-    extern "C" void __stdcall opcode_004E(CCustomScript *pScript) // terminate_this_script
-    {
-        GetInstance().ScriptEngine.RemoveScript(pScript);
-    }
-
-    extern "C" void __declspec(naked) opcode_004E_hook(void)
-    {
-        __asm
-        {
-            push esi
-            call opcode_004E
-            pop edi
-            mov al, 1
-            pop esi
-            mov ecx, [esp + 0x14]
-            mov fs : 0, ecx
-            add esp, 32
-            ret 0x4
-        }
-    }
-
     void OnLoadScmData(void)
     {
         TRACE("Loading scripts save data...");
@@ -928,7 +906,6 @@ namespace CLEO
 
         inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
-        inj.InjectFunction(&opcode_004E_hook, gvm.TranslateMemoryAddress(MA_OPCODE_004E));
     }
 
     CScriptEngine::~CScriptEngine()
