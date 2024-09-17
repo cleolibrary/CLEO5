@@ -708,15 +708,20 @@ namespace CLEO
                 if(customWorkDir != nullptr)
                     fsPath = ResolvePath(customWorkDir) / fsPath;
                 else
-                     fsPath = GetWorkDir() / fsPath;
+                    fsPath = GetWorkDir() / fsPath;
             }
 
             auto result = fsPath.string();
             NormalizeFilepath(result, false);
 
-            // ModLoader support: do not expand game dir relative paths
-            if (_strnicmp(path, Filepath_Root.c_str(), Filepath_Root.length()) != 0)
-                return FS::relative(result, Filepath_Root).string();
+            // ModLoader support: keep game dir relative paths relative
+            if (result.length() > Filepath_Root.length() && // and separator
+                result[Filepath_Root.length()] == '\\' && // path separator after game path
+                StringStartsWith(GetWorkDir(), Filepath_Root, false) && // curent work dir is game root
+                StringStartsWith(result, Filepath_Root, false)) // resulting path is within game root
+            {
+                result.replace(0, Filepath_Root.length() + 1, ""); // remove game root path prefix
+            }
 
             return std::move(result);
         }

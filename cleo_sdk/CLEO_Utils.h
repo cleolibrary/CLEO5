@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <wtypes.h>
 
@@ -113,6 +114,23 @@ namespace CLEO
         return result;
     }
 
+    static bool StringStartsWith(const std::string_view str, const std::string_view prefix, bool caseSensitive = true)
+    {
+        if (str.length() < prefix.length())
+        {
+            return false;
+        }
+
+        if (caseSensitive)
+        {
+            return strncmp(str.data(), prefix.data(), prefix.length()) == 0;
+        }
+        else
+        {
+            return _strnicmp(str.data(), prefix.data(), prefix.length()) == 0;
+        }
+    }
+
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
     {
         std::string info(1024, '\0');
@@ -167,8 +185,8 @@ namespace CLEO
         }
 
         // check prefix
-        if (_strnicmp(path, Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path) - 1) != 0 && 
-            _strnicmp(path, Gta_User_Dir_Path, strlen(Gta_User_Dir_Path)) != 0)
+        if (!StringStartsWith(path, std::string_view(Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path) - 1), false) && // without ending separator
+            !StringStartsWith(path, Gta_User_Dir_Path, false))
         {
             return false;
         }
