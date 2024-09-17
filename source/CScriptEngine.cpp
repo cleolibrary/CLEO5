@@ -684,79 +684,62 @@ namespace CLEO
             return {};
         }
 
-        try
+        auto fsPath = FS::path(path);
+
+        // check for virtual path root
+        enum class VPref{ None, Game, User, Script, Cleo, Modules } virtualPrefix = VPref::None;
+        if(!fsPath.empty())
         {
-            auto fsPath = FS::path(path);
+            const auto root = fsPath.begin()->string(); // first path element
+            const auto r = root.c_str();
 
-            // check for virtual path root
-            enum class VPref{ None, Game, User, Script, Cleo, Modules } virtualPrefix = VPref::None;
-            auto root = fsPath.begin();
-            if(root != fsPath.end())
-            {
-                if(*root == DIR_GAME) virtualPrefix = VPref::Game;
-                else if (*root == DIR_USER) virtualPrefix = VPref::User;
-                else if (*root == DIR_SCRIPT) virtualPrefix = VPref::Script;
-                else if (*root == DIR_CLEO) virtualPrefix = VPref::Cleo;
-                else if (*root == DIR_MODULES) virtualPrefix = VPref::Modules;
-            }
-
-            // not virtual
-            if(virtualPrefix == VPref::None)
-            {
-                if(fsPath.is_relative())
-                {
-                    if(customWorkDir != nullptr)
-                        fsPath = ResolvePath(customWorkDir) / fsPath;
-                    else
-                        fsPath = GetWorkDir() / fsPath;
-
-                    auto resolved = FS::weakly_canonical(fsPath).string();
-
-                    // ModLoader support: do not expand game dir relative paths
-                    if (resolved.find(Filepath_Root) == 0)
-                        return FS::relative(resolved, Filepath_Root).string();
-                    else
-                        return resolved;
-                }
-
-                return FS::weakly_canonical(fsPath).string();
-            }
-
-            // expand virtual paths
-            FS::path resolved;
-
-            if (virtualPrefix == VPref::User) // user files location
-            {
-                resolved = GetUserDirectory();
-            }
-            else
-            if (virtualPrefix == VPref::Script) // this script's source file location
-            {
-                resolved = GetScriptFileDir();
-            }
-            else
-            {
-                // all remaing variants starts with game root
-                resolved = Filepath_Root;
-        
-                switch(virtualPrefix)
-                {
-                    case(VPref::Cleo): resolved /= "cleo"; break;
-                    case(VPref::Modules): resolved /= "cleo\\cleo_modules"; break;
-                }
-            }
-
-            // append all but virtual prefix from original path
-            for(auto it = ++fsPath.begin(); it != fsPath.end(); it++)
-                resolved /= *it;
-
-            return FS::weakly_canonical(resolved).string(); // collapse "..\" uses
+            if(_strcmpi(r, DIR_GAME) == 0) virtualPrefix = VPref::Game;
+            else if (_strcmpi(r, DIR_USER) == 0) virtualPrefix = VPref::User;
+            else if (_strcmpi(r, DIR_SCRIPT) == 0) virtualPrefix = VPref::Script;
+            else if (_strcmpi(r, DIR_CLEO) == 0) virtualPrefix = VPref::Cleo;
+            else if (_strcmpi(r, DIR_MODULES) == 0) virtualPrefix = VPref::Modules;
         }
-        catch (const std::exception& ex)
+
+        // not virtual
+        if(virtualPrefix == VPref::None)
         {
-            TRACE("Error while resolving path: %s", ex.what());
-            return {};
+            if(fsPath.is_relative())
+            {
+                if(customWorkDir != nullptr)
+                    fsPath = ResolvePath(customWorkDir) / fsPath;
+                else
+                     fsPath = GetWorkDir() / fsPath;
+            }
+
+            auto result = fsPath.string();
+            NormalizeFilepath(result, false);
+
+            // ModLoader support: do not expand game dir relative paths
+            if (_strnicmp(path, Filepath_Root.c_str(), Filepath_Root.length()) != 0)
+                return FS::relative(result, Filepath_Root).string();
+
+            return std::move(result);
         }
+
+        // expand virtual paths
+        FS::path resolved;
+        switch(virtualPrefix)
+        {
+            case VPref::User: resolved = Gta_User_Dir_Path; break;
+            case VPref::Script: resolved = GetScriptFileDir(); break;
+            case VPref::Game: resolved = Filepath_Root; break;
+            case VPref::Cleo: resolved = FS::path(Filepath_Root) / "cleo"; break;
+            case VPref::Modules: resolved = FS::path(Filepath_Root) / "cleo\\modules"; break;
+            default : resolved = "<error>"; break; // should never happen
+        }
+
+        // append all but virtual prefix from original path
+        for (auto it = ++fsPath.begin(); it != fsPath.end(); it++)
+            resolved /= *it;
+
+        auto result = resolved.string();
+        NormalizeFilepath(result, false);
+        return std::move(result);
     }
 
     std::string CCustomScript::GetInfoStr(bool currLineInfo) const

@@ -15,6 +15,7 @@
 #include "CLEO.h"
 #include "CPools.h" // from GTA Plugin SDK
 #include "shellapi.h" // game window minimize/maximize support
+#include <algorithm>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -76,8 +77,8 @@ namespace CLEO
     OPCODE_WRITE_PARAM_PTR(value) // memory address
     */
 
-    static const char* Gta_Root_Dir_Path = (char*)0x00B71AE0;
-    static const char* Gta_User_Dir_Path = (char*)0x00C92368;
+    static const char* Gta_Root_Dir_Path = (char*)0x00B71AE0; // contains trailing path separator!
+    static const char* Gta_User_Dir_Path = (char*)0x00C92368; // no trailing separator
 
     static bool IsLegacyScript(CLEO::CRunningScript* thread)
     {
@@ -119,27 +120,60 @@ namespace CLEO
         return std::move(info);
     }
 
-    // does file path points inside game directories? (game root or user files)
+    // Normalize filepath, collapse all parent directory references. Input should be absolute path without expandable %variables%
+    static void NormalizeFilepath(std::string& path, bool normalizeCase = true)
+    {
+        if (path.empty()) return;
+
+        std::replace(path.begin(), path.end(), '/', '\\');
+        if (normalizeCase) std::transform(path.begin(), path.end(), path.begin(), [](unsigned char c) { return tolower(c); }); // to lower case
+
+        // collapse references to parent directory
+        const auto ParentRef = "\\..\\";
+        const auto ParentRefLen = 4;
+
+        size_t refPos = path.find(ParentRef);
+        while (refPos != std::string::npos && refPos > 0)
+        {
+            size_t parentPos = path.rfind('\\', refPos - 1); // find start of parent name
+
+            if (parentPos == std::string::npos)
+                return; // parent must be root of the path then. We want to keep absolute path, let it be as is (even if "C:\..\" makes no sense)
+
+            path.replace(parentPos, (refPos - parentPos) + ParentRefLen - 1, ""); // remove parent and parent reference
+
+            refPos = path.find(ParentRef); // find next
+        }
+
+        while(path.back() == '\\') path.pop_back(); // remove trailing path separator(s)
+    }
+
+    // does normalized file path points inside game directories? (game root or user files)
     static bool IsFilepathSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        auto IsSubpath = [](std::filesystem::path path, std::filesystem::path base)
+        if (strchr(path, '%') != nullptr)
         {
-            auto relative = std::filesystem::relative(path, base);
-            return !relative.empty() && *relative.begin() != "..";
-        };
-
-        auto fsPath = std::filesystem::path(path);
-        if (!fsPath.is_absolute())
-        {
-            fsPath = CLEO_GetScriptWorkDir(thread) / fsPath;
+            return false; // do not allow paths containing expandable variables
         }
 
-        if (IsSubpath(fsPath, Gta_Root_Dir_Path) || IsSubpath(fsPath, Gta_User_Dir_Path))
+        std::string absolute;
+        if (!std::filesystem::path(path).is_absolute())
         {
-            return true;
+            absolute = CLEO_GetScriptWorkDir(thread);
+            absolute += '\\';
+            absolute += path;
+            NormalizeFilepath(absolute, false);
+            path = absolute.c_str();
         }
 
-        return false;
+        // check prefix
+        if (_strnicmp(path, Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path) - 1) != 0 && 
+            _strnicmp(path, Gta_User_Dir_Path, strlen(Gta_User_Dir_Path)) != 0)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     static bool IsObjectHandleValid(DWORD handle)
