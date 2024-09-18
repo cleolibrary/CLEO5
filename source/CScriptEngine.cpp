@@ -712,15 +712,12 @@ namespace CLEO
             }
 
             auto result = fsPath.string();
-            NormalizeFilepath(result, false);
+            FilepathNormalize(result, false);
 
             // ModLoader support: keep game dir relative paths relative
-            if (result.length() > Filepath_Game.length() && // and separator
-                result[Filepath_Game.length()] == '\\' && // path separator after game path
-                StringStartsWith(GetWorkDir(), Filepath_Game, false) && // curent work dir is game root
-                StringStartsWith(result, Filepath_Game, false)) // resulting path is within game root
+            if (StringStartsWith(GetWorkDir(), Filepath_Game, false))// curent work dir is game root
             {
-                result.replace(0, Filepath_Game.length() + 1, ""); // remove game root path prefix
+                FilepathRemoveParent(result, Filepath_Game); // remove game root path prefix
             }
 
             return std::move(result);
@@ -743,7 +740,7 @@ namespace CLEO
             resolved /= *it;
 
         auto result = resolved.string();
-        NormalizeFilepath(result, false);
+        FilepathNormalize(result, false);
         return std::move(result);
     }
 

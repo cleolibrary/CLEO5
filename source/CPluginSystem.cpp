@@ -71,12 +71,7 @@ void CPluginSystem::LoadPlugins()
             std::string filename = *it;
 
             // ModLoader support: keep game dir relative paths relative
-            if (filename.length() > Filepath_Game.length() && // and separator
-                filename[Filepath_Game.length()] == '\\' && // path separator after game path
-                StringStartsWith(filename, Filepath_Game, false)) // path is within game root
-            {
-                filename.replace(0, Filepath_Game.length() + 1, ""); // remove game root path prefix
-            }
+            FilepathRemoveParent(filename, Filepath_Game);
 
             TRACE(""); // separator
             TRACE("Loading plugin '%s'", filename.c_str());
