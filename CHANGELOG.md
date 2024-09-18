@@ -131,6 +131,8 @@
   - CLEO_ResolvePath
   - CLEO_ListDirectory
   - CLEO_ListDirectoryFree
+  - CLEO_GetGameDirectory
+  - CLEO_GetUserDirectory
   - CLEO_GetScriptByName
   - CLEO_GetScriptByFilename
   - CLEO_GetScriptDebugMode

@@ -311,5 +311,15 @@ namespace CLEO
 
         return CreateStringList(found);
     }
+
+    LPCSTR WINAPI CLEO_GetGameDirectory()
+    {
+        return Filepath_Game.c_str();
+    }
+
+    LPCSTR WINAPI CLEO_GetUserDirectory()
+    {
+        return Filepath_User.c_str();
+    }
 }
 

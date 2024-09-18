@@ -34,7 +34,40 @@
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
 
-inline const std::string Filepath_Cleo = CLEO::Filepath_Game + "\\cleo";
+static std::string GetGameDirectory() // already stored in Filepath_Game
+{
+    static const auto GTA_GetCWD = (char* (__cdecl*)(char*, int))0x00836E91; // SA 1.0 US ingame function
+
+    std::string path;
+
+    path.resize(MAX_PATH);
+    GTA_GetCWD(path.data(), path.size()); // assume work dir is game location when initialized
+    path.resize(strlen(path.data()));
+
+    CLEO::FilepathNormalize(path);
+
+    return std::move(path);
+}
+
+static std::string GetUserDirectory() // already stored in Filepath_User
+{
+    static const char* GTA_User_Dir_Path = (char*)0x00C92368; // SA 1.0 US
+    static const auto GTA_InitUserDirectories = (char* (__cdecl*)())0x00744FB0; // SA 1.0 US
+
+    if (strlen(GTA_User_Dir_Path) == 0)
+    {
+        GTA_InitUserDirectories();
+    }
+
+    std::string path = GTA_User_Dir_Path;
+    CLEO::FilepathNormalize(path);
+
+    return std::move(path);
+}
+
+inline const std::string Filepath_Game = GetGameDirectory();
+inline const std::string Filepath_User = GetUserDirectory();
+inline const std::string Filepath_Cleo = Filepath_Game + "\\cleo";
 inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
 inline const std::string Filepath_Log = Filepath_Cleo + "\\.cleo.log";
 

@@ -538,6 +538,8 @@ void WINAPI CLEO_StringListFree(StringList list); // releases resources used by 
 // Should be always used when working with files. Provides ModLoader compatibility
 void WINAPI CLEO_ResolvePath(CRunningScript* thread, char* inOutPath, DWORD pathMaxLen); // convert to absolute (file system) path
 StringList WINAPI CLEO_ListDirectory(CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles); // thread can be null, searchPath can contain wildcards. After use CLEO_StringListFree must be called on returned StringList to free its resources
+LPCSTR WINAPI CLEO_GetGameDirectory(); // absolute game directory filepath without trailling path separator
+LPCSTR WINAPI CLEO_GetUserDirectory(); // absolute game user files directory filepath without trailling path separator
 
 void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
 

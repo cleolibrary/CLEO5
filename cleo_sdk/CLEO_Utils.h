@@ -162,44 +162,14 @@ namespace CLEO
         path.replace(0, base.length() + 1, ""); // remove path separator too if present
     }
 
-    static std::string GetGameDirectory() // already stored in Filepath_Game
-    {
-        static const auto GTA_GetCWD = (char* (__cdecl*)(char*, int))0x00836E91; // SA 1.0 US ingame function
-
-        std::string path;
-        
-        path.resize(MAX_PATH);
-        GTA_GetCWD(path.data(), path.size()); // assume work dir is game location when initialized
-        path.resize(strlen(path.data()));
-        
-        FilepathNormalize(path);
-
-        return std::move(path);
-    }
-
-    static std::string GetUserDirectory() // already stored in Filepath_User
-    {
-        static const char* GTA_User_Dir_Path = (char*)0x00C92368; // SA 1.0 US
-        static const auto GTA_InitUserDirectories = (char*(__cdecl*)())0x00744FB0; // SA 1.0 US
-
-        if (strlen(GTA_User_Dir_Path) == 0)
-        {
-            GTA_InitUserDirectories();
-        }
-
-        std::string path = GTA_User_Dir_Path;
-        FilepathNormalize(path);
-
-        return std::move(path);
-    }
-
-    inline const std::string Filepath_Game = GetGameDirectory();
-    inline const std::string Filepath_User = GetUserDirectory();
-
     // this plugin's config file
     static std::string GetConfigFilename()
     {
-        return Filepath_Game + "\\cleo\\cleo_plugins\\" TARGET_NAME ".ini";
+        std::string path = CLEO_GetGameDirectory();
+        path += "\\cleo\\cleo_plugins\\";
+        path += TARGET_NAME;
+        path += ".ini";
+        return path;
     }
 
     // does normalized file path points inside game directories? (game root or user files)
@@ -220,8 +190,8 @@ namespace CLEO
             path = absolute.c_str();
         }
 
-        if (!StringStartsWith(path, Filepath_Game, false) &&
-            !StringStartsWith(path, Filepath_User, false))
+        if (!StringStartsWith(path, CLEO_GetGameDirectory(), false) &&
+            !StringStartsWith(path, CLEO_GetUserDirectory(), false))
         {
             return false;
         }
