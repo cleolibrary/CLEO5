@@ -1020,7 +1020,7 @@ namespace CLEO
 
         if (!cs || !cs->bOK)
         {
-            TRACE("Loading of custom script %s failed", szFilePath);
+            TRACE("Loading of custom script '%s' failed", szFilePath);
             if (cs) delete cs;
             return nullptr;
         }
@@ -1034,7 +1034,7 @@ namespace CLEO
             {
                 if (stopped_info[i] == cs->dwChecksum)
                 {
-                    TRACE("Custom script %s found in the stop-list", szFilePath);
+                    TRACE("Custom script '%s' found in the stop-list", szFilePath);
                     InactiveScriptHashes.insert(stopped_info[i]);
                     delete cs;
                     return nullptr;
@@ -1049,7 +1049,7 @@ namespace CLEO
             {
                 if (safe_info[i].hash == cs->dwChecksum)
                 {
-                    TRACE("Custom script %s found in the safe-list", szFilePath);
+                    TRACE("Custom script '%s' found in the safe-list", szFilePath);
                     safe_info[i].Apply(cs);
                     break;
                 }
@@ -1075,7 +1075,7 @@ namespace CLEO
         // load cleo saving file
         try
         {
-            TRACE("Loading cleo safe %s", saveFile.c_str());
+            TRACE("Loading cleo safe '%s'", saveFile.c_str());
             std::ifstream ss(saveFile.c_str(), std::ios::binary);
             if (ss.is_open())
             {
@@ -1102,7 +1102,7 @@ namespace CLEO
         }
         catch (std::exception& ex)
         {
-            TRACE("Loading of cleo safe %s failed: %s", saveFile.c_str(), ex.what());
+            TRACE("Loading of cleo safe '%s' failed: %s", saveFile.c_str(), ex.what());
             safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
             memset(CleoVariables, 0, sizeof(CleoVariables));
         }
@@ -1126,7 +1126,7 @@ namespace CLEO
 
             char safe_name[MAX_PATH];
             sprintf(safe_name, "./cleo/cleo_saves/cs%d.sav", nSlot);
-            TRACE("Saving script engine state to the file %s", safe_name);
+            TRACE("Saving script engine state to the file '%s'", safe_name);
 
             CreateDirectory("cleo", NULL);
             CreateDirectory("cleo/cleo_saves", NULL);
@@ -1306,12 +1306,12 @@ namespace CLEO
     {
         if (cs->IsMission())
         {
-            TRACE("Registering custom mission named %s", cs->GetName().c_str());
+            TRACE("Registering custom mission named '%s'", cs->GetName().c_str());
             CustomMission = cs;
         }
         else
         {
-            TRACE("Registering custom script named %s", cs->GetName().c_str());
+            TRACE("Registering custom script named '%s'", cs->GetName().c_str());
             CustomScripts.push_back(cs);
         }
         AddScriptToQueue(cs, activeThreadQueue);
@@ -1360,7 +1360,7 @@ namespace CLEO
 		}
         if (cs == CustomMission)
         {
-            TRACE("Unregistering custom mission named %s", cs->GetName().c_str());
+            TRACE("Unregistering custom mission named '%s'", cs->GetName().c_str());
             RemoveScriptFromQueue(CustomMission, activeThreadQueue);
             ScriptsWaitingForDelete.push_back(cs);
             CustomMission->SetActive(false);
@@ -1372,11 +1372,11 @@ namespace CLEO
             if (cs->bSaveEnabled)
             {
                 InactiveScriptHashes.insert(cs->dwChecksum);
-                TRACE("Stopping custom script named %s", cs->GetName().c_str());
+                TRACE("Stopping custom script named '%s'", cs->GetName().c_str());
             }
             else
             {
-                TRACE("Unregistering custom script named %s", cs->GetName().c_str());
+                TRACE("Unregistering custom script named '%s'", cs->GetName().c_str());
                 ScriptsWaitingForDelete.push_back(cs);
             }
 
@@ -1404,14 +1404,14 @@ namespace CLEO
 
         std::for_each(ScriptsWaitingForDelete.begin(), ScriptsWaitingForDelete.end(), [this](CCustomScript *cs) 
         {
-            TRACE("Deleting inactive script named %s", cs->GetName().c_str());
+            TRACE("Deleting inactive script named '%s'", cs->GetName().c_str());
             delete cs;
         });
         ScriptsWaitingForDelete.clear();
 
         if (CustomMission)
         {
-            TRACE("Unregistering custom mission named %s", CustomMission->GetName().c_str());
+            TRACE("Unregistering custom mission named '%s'", CustomMission->GetName().c_str());
             RemoveScriptFromQueue(CustomMission, activeThreadQueue);
             CustomMission->SetActive(false);
             delete CustomMission;
@@ -1605,7 +1605,7 @@ namespace CLEO
         }
         catch (...)
         {
-            LOG_WARNING(0, "Unknown error during loading of custom script %s occured.", szFileName);
+            LOG_WARNING(0, "Unknown error during loading of custom script '%s' occured.", szFileName);
         }
     }
 

@@ -836,7 +836,7 @@ namespace CLEO
 		OPCODE_READ_PARAM_STRING(path);
 
 		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
-		TRACE("[0A92] Starting new custom script %s from thread named %s", filename.c_str(), thread->GetName().c_str());
+		TRACE("[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), false, thread);
 		SetScriptCondResult(thread, cs && cs->IsOK());
@@ -862,7 +862,7 @@ namespace CLEO
 		CCustomScript *cs = reinterpret_cast<CCustomScript *>(thread);
 		if (thread->IsMission() || !cs->IsCustom())
 		{
-			LOG_WARNING(0, "Incorrect usage of opcode [0A93] in script %s. Use [004E] instead.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(0, "Incorrect usage of opcode [0A93] in script '%s'. Use [004E] instead.", ((CCustomScript*)thread)->GetInfoStr().c_str());
 			return OR_CONTINUE; // legacy behavior
 		}
 
@@ -877,7 +877,7 @@ namespace CLEO
 
 		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
 		filename += ".cm"; // add custom mission extension
-		TRACE("[0A94] Starting new custom mission %s from thread named %s", filename.c_str(), thread->GetName().c_str());
+		TRACE("[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), true, thread);
 		SetScriptCondResult(thread, cs && cs->IsOK());
@@ -1834,11 +1834,11 @@ extern "C"
 
 		if (label != 0) // create from label
 		{
-			TRACE("Starting new custom script from thread named %s label %i", filename.c_str(), label);
+			TRACE("Starting new custom script from thread named '%s' label %i", filename.c_str(), label);
 		}
 		else
 		{
-			TRACE("Starting new custom script %s", filename.c_str());
+			TRACE("Starting new custom script '%s'", filename.c_str());
 		}
 
 		// if "label == 0" then "script_name" need to be the file name
@@ -1857,7 +1857,7 @@ extern "C"
 		{
 			if (cs) delete cs;
 			if (fromThread) SkipUnusedVarArgs(fromThread);
-			LOG_WARNING(0, "Failed to load script '%s'.", filename.c_str());
+			LOG_WARNING(0, "Failed to load script '%s'", filename.c_str());
 			return nullptr;
 		}
 

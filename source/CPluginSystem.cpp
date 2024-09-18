@@ -50,7 +50,7 @@ void CPluginSystem::LoadPlugins()
             else
             {
                 skippedPaths.emplace(files.strings[i]);
-                LOG_WARNING(0, " - '%s' skipped, duplicate of `%s` plugin", files.strings[i], name.c_str());
+                LOG_WARNING(0, " - '%s' skipped, duplicate of '%s' plugin", files.strings[i], name.c_str());
             }
         }
 
