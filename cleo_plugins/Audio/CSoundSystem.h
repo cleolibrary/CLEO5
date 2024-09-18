@@ -1,5 +1,6 @@
 #pragma once
 #include "bass.h"
+#include "CVector.h"
 #include <set>
 
 namespace CLEO
@@ -27,10 +28,9 @@ namespace CLEO
         static bool useFloatAudio;
         static bool CSoundSystem::allowNetworkSources;
 
-        static BASS_3DVECTOR pos;
-        static BASS_3DVECTOR vel;
-        static BASS_3DVECTOR front;
-        static BASS_3DVECTOR top;
+        static CVector position;
+        static bool skipFrame; // do not apply changes during this frame
+        static float timeStep; // delta time for current frame
         static float masterSpeed; // game simulation speed
         static float masterVolumeSfx;
         static float masterVolumeMusic;
@@ -53,7 +53,11 @@ namespace CLEO
         void Pause();
         void Resume();
         void Process();
+
+        static float GetDistance(const CVector* position); // distance from coords to the camera
     };
 
+    // convert GTA to BASS coordinate system
+    static BASS_3DVECTOR toBass(const CVector* v) { return BASS_3DVECTOR(v->x, v->z, v->y); }
     bool isNetworkSource(const char* path);
 }

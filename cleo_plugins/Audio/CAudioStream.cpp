@@ -1,10 +1,16 @@
 #include "CAudioStream.h"
 #include "CSoundSystem.h"
 #include "CLEO_Utils.h"
+#include "CCamera.h"
 
 using namespace CLEO;
 
-CAudioStream::CAudioStream(const char* filepath)
+CAudioStream::CAudioStream()
+{
+    ResetParams();
+}
+
+CAudioStream::CAudioStream(const char* filepath) : CAudioStream()
 {
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
@@ -23,6 +29,7 @@ CAudioStream::CAudioStream(const char* filepath)
     }
 
     BASS_ChannelGetAttribute(streamInternal, BASS_ATTRIB_FREQ, &rate);
+    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, 0.0f); // muted until processed
     ok = true;
 }
 
@@ -51,9 +58,7 @@ void CAudioStream::Stop()
     BASS_ChannelPause(streamInternal);
     state = Stopped;
 
-    // cancel ongoing transitions
-    speed = speedTarget;
-    volume = volumeTarget;
+    ProcessTransitions(true); // finish all active transitions
 }
 
 void CAudioStream::Resume()
@@ -86,7 +91,7 @@ float CAudioStream::GetProgress() const
     return progress;
 }
 
-CAudioStream::eStreamState CAudioStream::GetState() const
+CAudioStream::StreamState CAudioStream::GetState() const
 {
     return (state == PlayingInactive) ? Playing : state;
 }
@@ -106,17 +111,12 @@ void CAudioStream::SetVolume(float value, float transitionTime)
     if (transitionTime > 0.0f) Resume();
 
     value = max(value, 0.0f);
-    volumeTarget = value;
-
-    if (transitionTime <= 0.0)
-        volume = value; // instant
-    else
-        volumeTransitionStep = (volumeTarget - volume) / (1000.0 * transitionTime);
+    SetParam(StreamParam::Volume, value, transitionTime);
 }
 
 float CAudioStream::GetVolume() const
 {
-    return (float)volume;
+    return paramCurrent[StreamParam::Volume];
 }
 
 void CAudioStream::SetSpeed(float value, float transitionTime)
@@ -124,17 +124,12 @@ void CAudioStream::SetSpeed(float value, float transitionTime)
     if (transitionTime > 0.0f) Resume();
 
     value = max(value, 0.0f);
-    speedTarget = value;
-
-    if (transitionTime <= 0.0)
-        speed = value; // instant
-    else
-        speedTransitionStep = (speedTarget - speed) / (1000.0 * transitionTime);
+    SetParam(StreamParam::Speed, value, transitionTime);
 }
 
 float CAudioStream::GetSpeed() const
 {
-    return (float)speed;
+    return paramCurrent[StreamParam::Speed];
 }
 
 void CLEO::CAudioStream::SetType(eStreamType value)
@@ -156,52 +151,82 @@ eStreamType CLEO::CAudioStream::GetType() const
     return type;
 }
 
-void CAudioStream::UpdateVolume()
+void CAudioStream::SetParam(StreamParam param, float value, float transitionTime)
 {
-    if (volume != volumeTarget)
-    {
-        auto timeDelta = CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped;
-        volume += volumeTransitionStep * (double)timeDelta; // animate the transition
+    value = max(value, 0.0f);
+    paramTarget[param] = value;
 
-        // check progress
-        auto remaining = volumeTarget - volume;
-        remaining *= (volumeTransitionStep > 0.0) ? 1.0 : -1.0;
-        if (remaining < 0.0) // overshoot
-        {
-            volume = volumeTarget;
-            if (volume <= 0.0f) Pause();
-        }
-    }
+    if (transitionTime > 0.0f)
+        paramTransitionStep[param] = (paramTarget[param] - paramCurrent[param]) / (1000.0f * transitionTime);
+    else
+        paramCurrent[param] = value; // instant
+}
 
-    float masterVolume = 1.0f;
+float CAudioStream::GetParam(StreamParam param)
+{
+    return paramCurrent[param];
+}
+
+void CAudioStream::ResetParams()
+{
+    // defaults
+    SetParam(StreamParam::Speed, 1.0f);
+    SetParam(StreamParam::Volume, 1.0f);
+}
+
+float CAudioStream::CalculateVolume()
+{
+    float masterVolume;
     switch(type)
     {
         case SoundEffect: masterVolume = CSoundSystem::masterVolumeSfx; break;
         case Music: masterVolume = CSoundSystem::masterVolumeMusic; break;
+        default: masterVolume = 1.0f; break;
     }
 
-    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, (float)volume * masterVolume);
+    float fadeVolume = 1.0f - TheCamera.m_fFadeAlpha / 255.0f; // TODO: handle TheCamera.m_bIgnoreFadingStuffForMusic if neccessary
+
+    return GetParam(Volume) * fadeVolume * masterVolume;
 }
 
-void CAudioStream::UpdateSpeed()
+void CAudioStream::ProcessTransitions(bool instant)
 {
-    if (speed != speedTarget)
-    {
-        auto timeDelta = CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped;
-        speed += speedTransitionStep * (double)timeDelta; // animate the transition
+    auto timeDelta = float(CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped);
 
-        // check progress
-        auto remaining = speedTarget - speed;
-        remaining *= (speedTransitionStep > 0.0) ? 1.0 : -1.0;
-        if (remaining < 0.0) // overshoot
+    for (size_t p = 0; p < StreamParam::StreamParamMax; p++)
+    {
+        if (paramCurrent[p] == paramTarget[p]) continue;
+
+        if (instant)
+            paramCurrent[p] = paramTarget[p];
+        else
         {
-            speed = speedTarget; // done
-            if (speed <= 0.0f) Pause();
+            paramCurrent[p] += paramTransitionStep[p] * timeDelta;
+
+            bool done = false;
+            if (paramTransitionStep[p] > 0.0f)
+            {
+                if (paramCurrent[p] >= paramTarget[p]) done = true;
+            }
+            else
+            {
+                if (paramCurrent[p] <= paramTarget[p]) done = true;
+            }
+
+            if (done) paramCurrent[p] = paramTarget[p]; // correct if overshoot
         }
     }
+}
 
-    float freq = rate * (float)speed * CSoundSystem::masterSpeed;
-    freq = max(freq, 0.000001f); // 0 results in original speed
+void CAudioStream::ApplyParams()
+{
+    // volume
+    float volume = CalculateVolume();
+    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, volume);
+
+    // speed
+    float freq = rate * GetParam(StreamParam::Speed) * CSoundSystem::masterSpeed;
+    freq = max(freq, 0.000001f); // 0.0 restores original
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_FREQ, freq);
 }
 
@@ -230,8 +255,11 @@ void CAudioStream::Process()
 
     if (state != Playing) return; // done
 
-    UpdateSpeed();
-    UpdateVolume();
+    ProcessTransitions();
+
+    if (GetParam(StreamParam::Volume) <= 0.0f) Pause();
+
+    ApplyParams();
 }
 
 void CAudioStream::Set3dPosition(const CVector& pos)
@@ -244,7 +272,7 @@ void CAudioStream::Set3dSourceSize(float radius)
     // not applicable for 2d audio
 }
 
-void CAudioStream::Link(CPlaceable* placable)
+void CAudioStream::Link(CEntity* entity)
 {
     // not applicable for 2d audio
 }

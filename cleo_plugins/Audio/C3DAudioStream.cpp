@@ -23,7 +23,7 @@ C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
     }
 
     BASS_ChannelGetAttribute(streamInternal, BASS_ATTRIB_FREQ, &rate);
-    BASS_ChannelSet3DAttributes(streamInternal, BASS_3DMODE_NORMAL, 3.0f, 1E+12f, -1, -1, -1.0f);
+    BASS_ChannelSet3DAttributes(streamInternal, BASS_3DMODE_NORMAL, -1.0f, -1.0f, -1, -1, -1.0f);
     ok = true;
 }
 
@@ -34,54 +34,82 @@ C3DAudioStream::~C3DAudioStream()
 
 void C3DAudioStream::Set3dPosition(const CVector& pos)
 {
-    link = nullptr;
-    position.x = pos.y;
-    position.y = pos.z;
-    position.z = pos.x;
-    BASS_3DVECTOR vel = { 0.0f, 0.0f, 0.0f };
-
-    BASS_ChannelSet3DPosition(streamInternal, &position, nullptr, &vel);
+    host = nullptr;
+    position = pos;
+    placed = false;
 }
 
 void C3DAudioStream::Set3dSourceSize(float radius)
 {
-    BASS_ChannelSet3DAttributes(streamInternal, BASS_3DMODE_NORMAL, radius, 1E+12f, -1, -1, -1.0f);
+    sourceRadius = radius;
 }
 
-void C3DAudioStream::Link(CPlaceable* placable)
+void C3DAudioStream::Link(CEntity* entity)
 {
-    link = placable;
+    host = entity;
+    placed = false;
 }
 
 void C3DAudioStream::Process()
 {
-    CAudioStream::Process();
-
-    if (state != Playing) return; // done
-
     UpdatePosition();
+    CAudioStream::Process();
+}
+
+float C3DAudioStream::CalculateVolume()
+{
+    if (!placed) return 0.0f; // muted until position calculated
+
+    // calculate distance based volume
+    float distance = CSoundSystem::GetDistance(&position);
+    distance = max(distance - sourceRadius, 0.0f);
+    distance /= max(GetParam(StreamParam::Volume), 0.0001f); // louder sounds reach further
+
+    // hand fitted to match game's decay curve
+    float decay = 1.0f / (1.0f + 0.32f * distance);
+    decay = max(decay - 0.03948f, 0.0f);
+
+    return CAudioStream::CalculateVolume() * Volume_3D_Adjust * decay;
 }
 
 void C3DAudioStream::UpdatePosition()
 {
-    if (link) // attached to entity
+    if (host == nullptr) 
     {
-        auto prevPos = position;
-        CVector* pVec = link->m_matrix ? &link->m_matrix->pos : &link->m_placement.m_vPosn;
-        position = BASS_3DVECTOR(pVec->y, pVec->z, pVec->x);
+        if (!placed && !CSoundSystem::skipFrame)
+        {
+            const auto direction = CVector(0.0f, 0.0f, 1.0f); // up TODO: allow to be set
+            const auto velocity = CVector(0.0f, 0.0f, 0.0f);
 
+            BASS_ChannelSet3DPosition(streamInternal, 
+                (BASS_3DVECTOR*)&position, 
+                (BASS_3DVECTOR*)&direction, 
+                (BASS_3DVECTOR*)&velocity);
+            placed = true;
+        }
+    }
+    else // attached to some entity
+    {
+        // TODO: relative offset, attaching to bones/car components
+        CVector velocity = position; // store previous
+        position = host->GetPosition(); // get new
 
-        // calculate velocity
-        BASS_3DVECTOR vel = position;
-        vel.x -= prevPos.x;
-        vel.y -= prevPos.y;
-        vel.z -= prevPos.z;
-        auto timeDelta = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped);
-        vel.x *= timeDelta;
-        vel.y *= timeDelta;
-        vel.z *= timeDelta;
+        if (!CSoundSystem::skipFrame)
+        {
+            velocity = position - velocity;
+            velocity /= CSoundSystem::timeStep; // meters peer second
 
-        BASS_ChannelSet3DPosition(streamInternal, &position, nullptr, &vel);
+            // for some reason required for BASS to produce correct results
+            velocity.x = sqrtf(abs(velocity.x)) * (velocity.x > 0.0f ? 1.0f : -1.0f);
+            velocity.y = sqrtf(abs(velocity.y)) * (velocity.y > 0.0f ? 1.0f : -1.0f);
+            velocity.z = sqrtf(abs(velocity.z)) * (velocity.z > 0.0f ? 1.0f : -1.0f);
+
+            BASS_ChannelSet3DPosition(streamInternal, 
+                (BASS_3DVECTOR*)&position, 
+                (BASS_3DVECTOR*)&host->GetForward(), 
+                (BASS_3DVECTOR*)&velocity);
+            placed = true;
+        }
     }
 }
 

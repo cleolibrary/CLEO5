@@ -4,19 +4,20 @@
 #include "CLEO_Utils.h"
 #include "CAEAudioHardware.h"
 #include "CCamera.h"
+#include "CPad.h"
+#include "CVector.h"
 
 namespace CLEO
 {
     bool CSoundSystem::useFloatAudio = false;
     bool CSoundSystem::allowNetworkSources = true;
-    BASS_3DVECTOR CSoundSystem::pos(0.0, 0.0, 0.0);
-    BASS_3DVECTOR CSoundSystem::vel(0.0, 0.0, 0.0);
-    BASS_3DVECTOR CSoundSystem::front(0.0, -1.0, 0.0);
-    BASS_3DVECTOR CSoundSystem::top(0.0, 0.0, 1.0);
-    eStreamType CSoundSystem::LegacyModeDefaultStreamType = eStreamType::None;
+    CVector CSoundSystem::position(0.0, 0.0, 0.0);
+    bool CSoundSystem::skipFrame = true;
+    float CSoundSystem::timeStep = 0.02f;
     float CSoundSystem::masterSpeed = 1.0f;
     float CSoundSystem::masterVolumeSfx = 1.0f;
     float CSoundSystem::masterVolumeMusic = 1.0f;
+    eStreamType CSoundSystem::LegacyModeDefaultStreamType = eStreamType::None;
 
     void EnumerateBassDevices(int& total, int& enabled, int& default_device)
     {
@@ -92,32 +93,32 @@ namespace CLEO
             TRACE("Selecting default audio device #%d: %s", deviceIndex, info.name);
         }
 
-        if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
-            BASS_Set3DFactors(1.0f, 3.0f, 80.0f) &&
-            BASS_Set3DPosition(&pos, &vel, &front, &top))
+        if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr))
         {
-            TRACE("SoundSystem initialized");
+            TRACE("BASS sound system initialized");
 
             // Can we use floating-point (HQ) audio streams?
             DWORD floatable = BASS_StreamCreate(44100, 1, BASS_SAMPLE_FLOAT, NULL, NULL); // floating-point channel support? 0 = no, else yes
             if (floatable)
             {
-                TRACE("Floating-point audio supported!");
+                TRACE("Floating-point audio supported");
                 useFloatAudio = true;
                 BASS_StreamFree(floatable);
             }
-            else TRACE("Floating-point audio not supported!");
+            else TRACE("Floating-point audio not supported");
 
             if (BASS_GetInfo(&SoundDevice))
             {
                 if (SoundDevice.flags & DSCAPS_EMULDRIVER)
                     TRACE("Audio drivers not installed - using DirectSound emulation");
+
                 if (!SoundDevice.eax)
                     TRACE("Audio hardware acceleration disabled (no EAX)");
             }
 
+            BASS_Set3DFactors(1.0f, 0.0f, 1.0f); // rollf emulated by us in 3D streams
+
             initialized = true;
-            BASS_Apply3D();
             return true;
         }
 
@@ -191,52 +192,52 @@ namespace CLEO
         }
         else // not in menu
         {
-            if (paused) Resume();
-
-            // get game globals
+            // update globals
+            skipFrame = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd; // avoid camera change/jump cut velocity glitches
+            timeStep = (float)(CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped) / 1000.0f; // time delta in seconds
             masterSpeed = CTimer::ms_fTimeScale;
             masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
             masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
 
-            // camera movements
-            CMatrixLink * pMatrix = nullptr;
-            CVector * pVec = nullptr;
-            if (TheCamera.m_matrix)
+            CVector velocity = position; // store previous
+            position = TheCamera.GetPosition(); // get new
+
+            if (!skipFrame)
             {
-                pMatrix = TheCamera.m_matrix;
-                pVec = &pMatrix->pos;
-            }
-            else pVec = &TheCamera.m_placement.m_vPosn;
+                if (paused) Resume();
 
-            BASS_3DVECTOR prevPos = pos;
-            pos = BASS_3DVECTOR(pVec->y, pVec->z, pVec->x);
+                // camera velocity
+                velocity -= position;
+                velocity /= timeStep; // meters peer second
 
-            // calculate velocity
-            vel = prevPos;
-            vel.x -= pos.x;
-            vel.y -= pos.y;
-            vel.z -= pos.z;
-            auto timeDelta = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped);
-            vel.x *= timeDelta;
-            vel.y *= timeDelta;
-            vel.z *= timeDelta;
+                // for some reason required for BASS to produce correct results
+                velocity.x = sqrtf(abs(velocity.x)) * (velocity.x > 0.0f ? 1.0f : -1.0f);
+                velocity.y = sqrtf(abs(velocity.y)) * (velocity.y > 0.0f ? 1.0f : -1.0f);
+                velocity.z = sqrtf(abs(velocity.z)) * (velocity.z > 0.0f ? 1.0f : -1.0f);
 
-            // setup the ears
-            if (!TheCamera.m_bJust_Switched && !TheCamera.m_bCameraJustRestored) // avoid camera change/jump cut velocity glitches
-            {
+                auto forward = TheCamera.GetForward();
+                auto top = TheCamera.GetUp() * -1.0f;
+
                 BASS_Set3DPosition(
-                    &pos,
-                    &vel,
-                    pMatrix ? &BASS_3DVECTOR(pMatrix->at.y, pMatrix->at.z, pMatrix->at.x) : nullptr,
-                    pMatrix ? &BASS_3DVECTOR(pMatrix->up.y, pMatrix->up.z, pMatrix->up.x) : nullptr
+                    (BASS_3DVECTOR*)&position,
+                    (BASS_3DVECTOR*)&velocity,
+                    (BASS_3DVECTOR*)&forward,
+                    (BASS_3DVECTOR*)&top
                 );
             }
 
             // process streams
-            for(auto stream : streams) stream->Process();
+            for (auto stream : streams) stream->Process();
 
-            // apply above changes
-            BASS_Apply3D();
+            // apply changes
+            if (!skipFrame) BASS_Apply3D();
         }
+    }
+
+    float CSoundSystem::GetDistance(const CVector* position)
+    {
+        auto v = CSoundSystem::position;
+        v -= *position;
+        return v.Magnitude();
     }
 }
