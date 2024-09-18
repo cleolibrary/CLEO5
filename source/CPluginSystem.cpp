@@ -68,14 +68,23 @@ void CPluginSystem::LoadPlugins()
     {
         for (auto it = paths.crbegin(); it != paths.crend(); it++)
         {
-            const auto filename = it->c_str();
-            TRACE(""); // separator
-            TRACE("Loading plugin '%s'", filename);
+            std::string filename = *it;
 
-            HMODULE hlib = LoadLibrary(filename);
+            // ModLoader support: keep game dir relative paths relative
+            if (filename.length() > Filepath_Game.length() && // and separator
+                filename[Filepath_Game.length()] == '\\' && // path separator after game path
+                StringStartsWith(filename, Filepath_Game, false)) // path is within game root
+            {
+                filename.replace(0, Filepath_Game.length() + 1, ""); // remove game root path prefix
+            }
+
+            TRACE(""); // separator
+            TRACE("Loading plugin '%s'", filename.c_str());
+
+            HMODULE hlib = LoadLibrary(filename.c_str());
             if (!hlib)
             {
-                LOG_WARNING(0, "Error loading plugin '%s'", filename);
+                LOG_WARNING(0, "Error loading plugin '%s'", filename.c_str());
                 continue;
             }
 
