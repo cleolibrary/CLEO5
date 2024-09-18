@@ -210,8 +210,7 @@ namespace CLEO
             path = absolute.c_str();
         }
 
-        // check prefix
-        if (!StringStartsWith(path, Filepath_Game, false) && // without ending separator
+        if (!StringStartsWith(path, Filepath_Game, false) &&
             !StringStartsWith(path, Filepath_User, false))
         {
             return false;
