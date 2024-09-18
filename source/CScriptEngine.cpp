@@ -961,7 +961,7 @@ namespace CLEO
         }
         else // mission pack
         {
-            MainScriptFileDir = FS::path(GetUserDirectory()).append(stringPrintf("MPACK\\MPACK%d", CGame::bMissionPackGame)).string();
+            MainScriptFileDir = Filepath_User + stringPrintf("\\MPACK\\MPACK%d", CGame::bMissionPackGame);
             MainScriptFileName = "scr.scm";
         }
 
