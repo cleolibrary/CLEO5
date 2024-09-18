@@ -78,25 +78,11 @@ namespace CLEO
     OPCODE_WRITE_PARAM_PTR(value) // memory address
     */
 
-    static const char* Gta_Root_Dir_Path = (char*)0x00B71AE0; // contains trailing path separator!
-    static const char* Gta_User_Dir_Path = (char*)0x00C92368; // no trailing separator
-
     static bool IsLegacyScript(CLEO::CRunningScript* thread)
     {
         return CLEO_GetScriptVersion(thread) < CLEO_VER_5;
     }
     
-    // this plugin's config file
-    static std::string GetConfigFilename()
-    {
-        std::string configFile = Gta_Root_Dir_Path;
-        if (!configFile.empty() && configFile.back() != '\\') configFile.push_back('\\');
-
-        configFile += "cleo\\cleo_plugins\\" TARGET_NAME ".ini";
-
-        return configFile;
-    }
-
     static std::string StringPrintf(const char* format, ...)
     {
         va_list args;
@@ -166,6 +152,46 @@ namespace CLEO
         while(path.back() == '\\') path.pop_back(); // remove trailing path separator(s)
     }
 
+    static std::string GetGameDirectory() // already stored in Filepath_Game
+    {
+        static const auto GTA_GetCWD = (char* (__cdecl*)(char*, int))0x00836E91; // SA 1.0 US ingame function
+
+        std::string path;
+        
+        path.resize(MAX_PATH);
+        GTA_GetCWD(path.data(), path.size()); // assume work dir is game location when initialized
+        path.resize(strlen(path.data()));
+        
+        NormalizeFilepath(path);
+
+        return std::move(path);
+    }
+
+    static std::string GetUserDirectory() // already stored in Filepath_User
+    {
+        static const char* GTA_User_Dir_Path = (char*)0x00C92368; // SA 1.0 US
+        static const auto GTA_InitUserDirectories = (char*(__cdecl*)())0x00744FB0; // SA 1.0 US
+
+        if (strlen(GTA_User_Dir_Path) == 0)
+        {
+            GTA_InitUserDirectories();
+        }
+
+        std::string path = GTA_User_Dir_Path;
+        NormalizeFilepath(path);
+
+        return std::move(path);
+    }
+
+    static const std::string Filepath_Game = GetGameDirectory();
+    static const std::string Filepath_User = GetUserDirectory();
+
+    // this plugin's config file
+    static std::string GetConfigFilename()
+    {
+        return Filepath_Game + "\\cleo\\cleo_plugins\\" TARGET_NAME ".ini";
+    }
+
     // does normalized file path points inside game directories? (game root or user files)
     static bool IsFilepathSafe(CLEO::CRunningScript* thread, const char* path)
     {
@@ -185,8 +211,8 @@ namespace CLEO
         }
 
         // check prefix
-        if (!StringStartsWith(path, std::string_view(Gta_Root_Dir_Path, strlen(Gta_Root_Dir_Path) - 1), false) && // without ending separator
-            !StringStartsWith(path, Gta_User_Dir_Path, false))
+        if (!StringStartsWith(path, Filepath_Game, false) && // without ending separator
+            !StringStartsWith(path, Filepath_User, false))
         {
             return false;
         }

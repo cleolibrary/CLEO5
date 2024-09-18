@@ -19,25 +19,6 @@
 #include <set>
 #include <cstdint>
 
-
-// global constant paths. Initialize before anything else
-namespace FS = std::filesystem;
-
-static std::string GetApplicationDirectory()
-{
-    char buffer[512];
-    GetModuleFileNameA(NULL, buffer, sizeof(buffer) - 1); // game exe absolute path
-    return FS::path(buffer).parent_path().string();
-}
-static const std::string Filepath_Root = GetApplicationDirectory();
-
-//static const std::string Filepath_Cleo = FS::path(Filepath_Root).append("cleo").string(); // absolute path
-static const std::string Filepath_Cleo = "cleo"; // relative path - allow mod loaders to affect it
-
-static const std::string Filepath_Config = FS::path(Filepath_Cleo).append(".cleo_config.ini").string();
-static const std::string Filepath_Log = FS::path(Filepath_Cleo).append(".cleo.log").string();
-
-
 #include <game_sa/CPools.h>
 #include <game_sa/CMenuManager.h>
 #include <game_sa/CText.h>
@@ -45,10 +26,17 @@ static const std::string Filepath_Log = FS::path(Filepath_Cleo).append(".cleo.lo
 #include <game_sa/cHandlingDataMgr.h>
 #include <game_sa/CPlayerPed.h>
 #include <game_sa/CRadar.h>
+#include <game_sa/CTheScripts.h>
 
 #include "..\cleo_sdk\CLEO.h"
 #include "..\cleo_sdk\CLEO_Utils.h"
-#include "CTheScripts.h"
+
+// global constant paths. Initialize before anything else
+namespace FS = std::filesystem;
+
+static const std::string Filepath_Cleo = CLEO::Filepath_Game + "\\cleo";
+static const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
+static const std::string Filepath_Log = Filepath_Cleo + "\\.cleo.log";
 
 #define NUM_SCAN_ENTITIES 16
 

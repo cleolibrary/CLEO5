@@ -715,12 +715,12 @@ namespace CLEO
             NormalizeFilepath(result, false);
 
             // ModLoader support: keep game dir relative paths relative
-            if (result.length() > Filepath_Root.length() && // and separator
-                result[Filepath_Root.length()] == '\\' && // path separator after game path
-                StringStartsWith(GetWorkDir(), Filepath_Root, false) && // curent work dir is game root
-                StringStartsWith(result, Filepath_Root, false)) // resulting path is within game root
+            if (result.length() > Filepath_Game.length() && // and separator
+                result[Filepath_Game.length()] == '\\' && // path separator after game path
+                StringStartsWith(GetWorkDir(), Filepath_Game, false) && // curent work dir is game root
+                StringStartsWith(result, Filepath_Game, false)) // resulting path is within game root
             {
-                result.replace(0, Filepath_Root.length() + 1, ""); // remove game root path prefix
+                result.replace(0, Filepath_Game.length() + 1, ""); // remove game root path prefix
             }
 
             return std::move(result);
@@ -730,11 +730,11 @@ namespace CLEO
         FS::path resolved;
         switch(virtualPrefix)
         {
-            case VPref::User: resolved = Gta_User_Dir_Path; break;
+            case VPref::User: resolved = Filepath_User; break;
             case VPref::Script: resolved = GetScriptFileDir(); break;
-            case VPref::Game: resolved = Filepath_Root; break;
-            case VPref::Cleo: resolved = FS::path(Filepath_Root) / "cleo"; break;
-            case VPref::Modules: resolved = FS::path(Filepath_Root) / "cleo\\modules"; break;
+            case VPref::Game: resolved = Filepath_Game; break;
+            case VPref::Cleo: resolved = Filepath_Cleo; break;
+            case VPref::Modules: resolved = Filepath_Cleo + "\\modules"; break;
             default : resolved = "<error>"; break; // should never happen
         }
 
@@ -956,7 +956,7 @@ namespace CLEO
 
         if (CGame::bMissionPackGame == 0) // regular main game
         {
-            MainScriptFileDir = FS::path(Filepath_Root).append("data\\script").string();
+            MainScriptFileDir = Filepath_Game + "\\data\\script";
             MainScriptFileName = "main.scm";
         }
         else // mission pack
@@ -966,7 +966,7 @@ namespace CLEO
         }
 
         NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, Filepath_Config.c_str()) != 0;
-        MainScriptCurWorkDir = Filepath_Root;
+        MainScriptCurWorkDir = Filepath_Game;
 
         GetInstance().ModuleSystem.LoadCleoModules();
         LoadState(GetInstance().saveSlot);
@@ -1584,7 +1584,7 @@ namespace CLEO
                 else
                 {
                     bDebugMode = GetInstance().ScriptEngine.NativeScriptsDebugMode; // global setting
-                    workDir = Filepath_Root; // game root
+                    workDir = Filepath_Game; // game root
                 }
 
                 using std::ios;

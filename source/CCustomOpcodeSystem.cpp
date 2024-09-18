@@ -79,7 +79,6 @@ namespace CLEO
 
 	void(__thiscall * ProcessScript)(CRunningScript*);
 
-	const char * (__cdecl * GetUserDirectory)();
 	void(__cdecl * ChangeToUserDir)();
 	void(__cdecl * ChangeToProgramDir)(const char *);
 
@@ -215,7 +214,6 @@ namespace CLEO
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
 
-		GetUserDirectory = gvm.TranslateMemoryAddress(MA_GET_USER_DIR_FUNCTION);
 		ChangeToUserDir = gvm.TranslateMemoryAddress(MA_CHANGE_TO_USER_DIR_FUNCTION);
 		ChangeToProgramDir = gvm.TranslateMemoryAddress(MA_CHANGE_TO_PROGRAM_DIR_FUNCTION);
 		FindGroundZ = gvm.TranslateMemoryAddress(MA_FIND_GROUND_Z_FUNCTION);

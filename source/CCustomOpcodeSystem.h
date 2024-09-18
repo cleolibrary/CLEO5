@@ -8,7 +8,6 @@ namespace CLEO
 {
     typedef OpcodeResult(__stdcall * CustomOpcodeHandler)(CRunningScript*);
 
-    extern const char* (__cdecl* GetUserDirectory)();
     extern void(__cdecl* ChangeToUserDir)();
     extern void(__cdecl* ChangeToProgramDir)(const char*);
 

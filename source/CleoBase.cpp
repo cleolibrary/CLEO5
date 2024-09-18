@@ -116,12 +116,12 @@ namespace CLEO
         if (m_bStarted) return; // already started
         m_bStarted = true;
 
-        FS::create_directory(FS::path(Filepath_Root).append("cleo"));
-        FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_modules"));
-        FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_plugins"));
-        FS::create_directory(FS::path(Filepath_Root).append("cleo\\cleo_saves"));
+        FS::create_directory(Filepath_Cleo);
+        FS::create_directory(Filepath_Cleo + "\\cleo_modules");
+        FS::create_directory(Filepath_Cleo + "\\cleo_plugins");
+        FS::create_directory(Filepath_Cleo + "\\cleo_saves");
 
-        OpcodeInfoDb.Load(FS::path(Filepath_Root).append("cleo\\.config\\sa.json").generic_string().c_str());
+        OpcodeInfoDb.Load((Filepath_Cleo + "\\.config\\sa.json").c_str());
 
         CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
         GameMenu.Inject(CodeInjector);
@@ -276,14 +276,14 @@ namespace CLEO
         if (!listDirs && !listFiles)
             return {}; // nothing to list, done
 
+        // make absolute
         auto fsSearchPath = FS::path(searchPath);
         if (!fsSearchPath.is_absolute())
         {
-            auto workDir = (thread != nullptr) ?
-                ((CCustomScript*)thread)->GetWorkDir() :
-                Filepath_Root.c_str();
-
-            fsSearchPath = workDir / fsSearchPath;
+            if (thread != nullptr)
+                fsSearchPath = ((CCustomScript*)thread)->GetWorkDir() / fsSearchPath;
+            else
+                fsSearchPath = Filepath_Game / fsSearchPath;
         }
 
         WIN32_FIND_DATA wfd = { 0 };
