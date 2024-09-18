@@ -714,11 +714,8 @@ namespace CLEO
             auto result = fsPath.string();
             FilepathNormalize(result, false);
 
-            // ModLoader support: keep game dir relative paths relative
-            if (StringStartsWith(GetWorkDir(), Filepath_Game, false))// curent work dir is game root
-            {
-                FilepathRemoveParent(result, Filepath_Game); // remove game root path prefix
-            }
+            // ModLoader support: make paths withing game directory relative to it
+            FilepathRemoveParent(result, Filepath_Game);
 
             return std::move(result);
         }
