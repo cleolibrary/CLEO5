@@ -183,8 +183,8 @@ namespace CLEO
         return std::move(path);
     }
 
-    static const std::string Filepath_Game = GetGameDirectory();
-    static const std::string Filepath_User = GetUserDirectory();
+    inline const std::string Filepath_Game = GetGameDirectory();
+    inline const std::string Filepath_User = GetUserDirectory();
 
     // this plugin's config file
     static std::string GetConfigFilename()

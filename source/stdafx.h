@@ -34,9 +34,9 @@
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
 
-static const std::string Filepath_Cleo = CLEO::Filepath_Game + "\\cleo";
-static const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
-static const std::string Filepath_Log = Filepath_Cleo + "\\.cleo.log";
+inline const std::string Filepath_Cleo = CLEO::Filepath_Game + "\\cleo";
+inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
+inline const std::string Filepath_Log = Filepath_Cleo + "\\.cleo.log";
 
 #define NUM_SCAN_ENTITIES 16
 

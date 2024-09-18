@@ -1,12 +1,14 @@
-#include "ScreenLog.h"
-#include "CLEO.h"
-#include "CLEO_Utils.h"
-#include "CTimer.h"
 #include <windows.h> // keyboard
 #include <deque>
 #include <map>
 #include <fstream>
 #include <sstream>
+
+#include "CTimer.h"
+
+#include "CLEO.h"
+#include "CLEO_Utils.h"
+#include "ScreenLog.h"
 
 using namespace CLEO;
 
