@@ -165,13 +165,22 @@ namespace CLEO
             m_bLateStarted = true;
 
             // install "drawing finished" hook
-            // this is empty function in original game, but some other mods have exactly same idea of hooking it
+            // this is an empty function in original game, but some other mods have exactly same idea of hooking it
             // wait for game started then install our hook
             BYTE* address = VersionManager.TranslateMemoryAddress(MA_FLUSH_OBRS_PRINTFS);
-            if (*address == OP_RET) // still original game code
-                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address);
-            else
-                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address, &FlushObrsPrintfs); // keep address of original hook
+            switch (*address)
+            {
+                case OP_JMP: // there is hook!
+                    CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address, &FlushObrsPrintfs); // keep address of original hook
+                    break;
+
+                default:
+                    LOG_WARNING(0, "Unknown 'drawing finished' hook detected! Overwriting..."); // warning and install our instead
+
+                case OP_RET: // still original code or some unknown hack
+                    CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address);
+                    break;
+            }
         }
     }
 
