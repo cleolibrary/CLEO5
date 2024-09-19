@@ -23,7 +23,7 @@ namespace CLEO
             None,
             Initial,
             FirstDraw,
-            Done
+            Done = FirstDraw
         };
 
         // order here defines init and deinit and order!
