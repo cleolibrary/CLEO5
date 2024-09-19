@@ -106,11 +106,11 @@ namespace CLEO
         _asm jmp oriFunc
     }
 
-    void __declspec(naked) CCleoInstance::OnFlushObrsPrintfs()
+    void __declspec(naked) CCleoInstance::OnDebugDisplayTextBuffer()
     {
         GetInstance().CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
         static DWORD oriFunc;
-        oriFunc = (DWORD)(GetInstance().FlushObrsPrintfs);
+        oriFunc = (DWORD)(GetInstance().DebugDisplayTextBuffer);
         if (oriFunc != (DWORD)nullptr)
             _asm jmp oriFunc
         else
@@ -162,18 +162,18 @@ namespace CLEO
             // install "drawing finished" hook
             // this is an empty function in original game, but some other mods have exactly same idea of hooking it
             // wait for game started then install our hook
-            BYTE* address = VersionManager.TranslateMemoryAddress(MA_FLUSH_OBRS_PRINTFS);
+            BYTE* address = VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER);
             switch (*address)
             {
             case OP_JMP: // there is hook!
-                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address, &FlushObrsPrintfs); // keep address of original hook
+                CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer, address, &DebugDisplayTextBuffer); // keep address of original hook
                 break;
 
             default:
                 LOG_WARNING(0, "Unknown 'drawing finished' hook detected! Overwriting..."); // warning and install our instead
 
             case OP_RET: // still original code or some unknown hack
-                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address);
+                CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer, address);
                 break;
             }
         }

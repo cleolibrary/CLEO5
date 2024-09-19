@@ -90,8 +90,8 @@ namespace CLEO
         static void __cdecl OnGameRestart3();
 
         // empty function called after everything else is drawn
-        void(__cdecl* FlushObrsPrintfs)() = nullptr;
-        static void __cdecl OnFlushObrsPrintfs();
+        void(__cdecl* DebugDisplayTextBuffer)() = nullptr;
+        static void __cdecl OnDebugDisplayTextBuffer();
 
     private:
         InitStage m_initStage = InitStage::None;
