@@ -7,11 +7,6 @@ namespace CLEO
     CCleoInstance CleoInstance;
     CCleoInstance& GetInstance() { return CleoInstance; }
 
-    inline CCleoInstance::CCleoInstance()
-    {
-        m_bStarted = false;
-    }
-
     inline CCleoInstance::~CCleoInstance()
     {
         Stop();
@@ -122,13 +117,15 @@ namespace CLEO
             _asm ret
     }
 
-    void CCleoInstance::Start(bool late)
+    void CCleoInstance::Start(InitStage stage)
     {
-        if (!late)
-        {
-            if (m_bStarted) return; // already started
-            m_bStarted = true;
+        if (stage > InitStage::Done) return; // invalid argument
 
+        auto nextStage = InitStage(m_initStage + 1);
+        if (stage != nextStage) return;
+
+        if (stage == InitStage::Initial)
+        {
             FS::create_directory(Filepath_Cleo);
             FS::create_directory(Filepath_Cleo + "\\cleo_modules");
             FS::create_directory(Filepath_Cleo + "\\cleo_plugins");
@@ -159,39 +156,40 @@ namespace CLEO
             OpcodeSystem.Init();
             PluginSystem.LoadPlugins();
         }
-        else // second phase of initialization
+        
+        if (stage == InitStage::FirstDraw)
         {
-            if (m_bLateStarted) return; // already started
-            m_bLateStarted = true;
-
             // install "drawing finished" hook
             // this is an empty function in original game, but some other mods have exactly same idea of hooking it
             // wait for game started then install our hook
             BYTE* address = VersionManager.TranslateMemoryAddress(MA_FLUSH_OBRS_PRINTFS);
             switch (*address)
             {
-                case OP_JMP: // there is hook!
-                    CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address, &FlushObrsPrintfs); // keep address of original hook
-                    break;
+            case OP_JMP: // there is hook!
+                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address, &FlushObrsPrintfs); // keep address of original hook
+                break;
 
-                default:
-                    LOG_WARNING(0, "Unknown 'drawing finished' hook detected! Overwriting..."); // warning and install our instead
+            default:
+                LOG_WARNING(0, "Unknown 'drawing finished' hook detected! Overwriting..."); // warning and install our instead
 
-                case OP_RET: // still original code or some unknown hack
-                    CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address);
-                    break;
+            case OP_RET: // still original code or some unknown hack
+                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address);
+                break;
             }
         }
+
+        m_initStage = stage;
     }
 
     void CCleoInstance::Stop()
     {
-        if (!m_bStarted) return;
-        m_bStarted = false;
+        if (m_initStage >= InitStage::Initial)
+        {
+            ScriptEngine.GameEnd();
+            PluginSystem.UnloadPlugins();
+        }
 
-        ScriptEngine.GameEnd();
-
-        PluginSystem.UnloadPlugins();
+        m_initStage = InitStage::None;
     }
 
     void CCleoInstance::GameBegin()

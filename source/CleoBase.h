@@ -17,12 +17,15 @@ namespace CLEO
 {
     class CCleoInstance
     {
-        bool m_bStarted;
-        bool m_bLateStarted; // second phase of initialization
-        bool m_bGameInProgress;
-        std::map<eCallbackId, std::set<void*>> m_callbacks;
-
     public:
+        enum InitStage : size_t
+        {
+            None,
+            Initial,
+            FirstDraw,
+            Done
+        };
+
         // order here defines init and deinit and order!
         CDmaFix					DmaFix;
         CGameMenu				GameMenu;
@@ -36,16 +39,16 @@ namespace CLEO
 
         int saveSlot = -1; // -1 if not loaded from save
 
-        CCleoInstance();
+        CCleoInstance() = default;
         virtual ~CCleoInstance();
 
-        void Start(bool late = false);
+        void Start(InitStage stage);
         void Stop();
 
         void GameBegin();
         void GameEnd();
 
-        bool IsStarted() const { return m_bStarted; }
+        bool IsStarted() const { return m_initStage != InitStage::None; };
 
         void AddCallback(eCallbackId id, void* func);
         void RemoveCallback(eCallbackId id, void* func);
@@ -89,6 +92,11 @@ namespace CLEO
         // empty function called after everything else is drawn
         void(__cdecl* FlushObrsPrintfs)() = nullptr;
         static void __cdecl OnFlushObrsPrintfs();
+
+    private:
+        InitStage m_initStage = InitStage::None;
+        bool m_bGameInProgress;
+        std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 
     CCleoInstance& GetInstance();

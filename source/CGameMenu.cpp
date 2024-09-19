@@ -24,7 +24,7 @@ namespace CLEO
 
     void __fastcall OnDrawMenuBackground(void *texture, int dummy, RwRect2D *rect, RwRGBA *color)
     {
-        GetInstance().Start(true); // late initialization
+        GetInstance().Start(CCleoInstance::InitStage::FirstDraw); // late initialization
 
         CTexture_DrawInRect(texture, rect, color); // call original
 

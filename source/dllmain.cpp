@@ -31,7 +31,7 @@ class Starter
                 " 10) gta_sa.exe, decrypted 3.0 steam executable, 5 697 536 bytes."
             );
 
-        CLEO::GetInstance().Start();
+        CLEO::GetInstance().Start(CLEO::CCleoInstance::InitStage::Initial);
     }
 
     ~Starter()
