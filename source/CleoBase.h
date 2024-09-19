@@ -18,6 +18,7 @@ namespace CLEO
     class CCleoInstance
     {
         bool m_bStarted;
+        bool m_bLateStarted; // second phase of initialization
         bool m_bGameInProgress;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
 
@@ -38,7 +39,7 @@ namespace CLEO
         CCleoInstance();
         virtual ~CCleoInstance();
 
-        void Start();
+        void Start(bool late = false);
         void Stop();
 
         void GameBegin();
@@ -84,6 +85,10 @@ namespace CLEO
         static void __cdecl OnGameRestart1();
         static void __cdecl OnGameRestart2();
         static void __cdecl OnGameRestart3();
+
+        // empty function called after everything else is drawn
+        void(__cdecl* FlushObrsPrintfs)() = nullptr;
+        static void __cdecl OnFlushObrsPrintfs();
     };
 
     CCleoInstance& GetInstance();

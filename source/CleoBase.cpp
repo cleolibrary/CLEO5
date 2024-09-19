@@ -111,42 +111,68 @@ namespace CLEO
         _asm jmp oriFunc
     }
 
-    void CCleoInstance::Start()
+    void __declspec(naked) CCleoInstance::OnFlushObrsPrintfs()
     {
-        if (m_bStarted) return; // already started
-        m_bStarted = true;
+        GetInstance().CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
+        static DWORD oriFunc;
+        oriFunc = (DWORD)(GetInstance().FlushObrsPrintfs);
+        if (oriFunc != (DWORD)nullptr)
+            _asm jmp oriFunc
+        else
+            _asm ret
+    }
 
-        FS::create_directory(Filepath_Cleo);
-        FS::create_directory(Filepath_Cleo + "\\cleo_modules");
-        FS::create_directory(Filepath_Cleo + "\\cleo_plugins");
-        FS::create_directory(Filepath_Cleo + "\\cleo_saves");
+    void CCleoInstance::Start(bool late)
+    {
+        if (!late)
+        {
+            if (m_bStarted) return; // already started
+            m_bStarted = true;
 
-        OpcodeInfoDb.Load((Filepath_Cleo + "\\.config\\sa.json").c_str());
+            FS::create_directory(Filepath_Cleo);
+            FS::create_directory(Filepath_Cleo + "\\cleo_modules");
+            FS::create_directory(Filepath_Cleo + "\\cleo_plugins");
+            FS::create_directory(Filepath_Cleo + "\\cleo_saves");
 
-        CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
-        GameMenu.Inject(CodeInjector);
-        DmaFix.Inject(CodeInjector);
-        OpcodeSystem.Inject(CodeInjector);
-        ScriptEngine.Inject(CodeInjector);
+            OpcodeInfoDb.Load((Filepath_Cleo + "\\.config\\sa.json").c_str());
 
-        CodeInjector.ReplaceFunction(OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig);
+            CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
+            GameMenu.Inject(CodeInjector);
+            DmaFix.Inject(CodeInjector);
+            OpcodeSystem.Inject(CodeInjector);
+            ScriptEngine.Inject(CodeInjector);
 
-        CodeInjector.ReplaceFunction(OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS), &UpdateGameLogics);
+            CodeInjector.ReplaceFunction(OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig);
 
-        CodeInjector.ReplaceFunction(OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig);
-        CodeInjector.ReplaceFunction(OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig);
-        CodeInjector.ReplaceFunction(OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig);
+            CodeInjector.ReplaceFunction(OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS), &UpdateGameLogics);
 
-        CodeInjector.ReplaceFunction(OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown);
+            CodeInjector.ReplaceFunction(OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig);
+            CodeInjector.ReplaceFunction(OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig);
+            CodeInjector.ReplaceFunction(OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig);
 
-        CodeInjector.ReplaceFunction(OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1);
-        CodeInjector.ReplaceFunction(OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2);
-        CodeInjector.ReplaceFunction(OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3);
+            CodeInjector.ReplaceFunction(OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown);
 
-        CodeInjector.ReplaceFunction(OnDrawingFinished, 0x00734640); // nullsub_63 - originally something like renderDebugStuff?
+            CodeInjector.ReplaceFunction(OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1);
+            CodeInjector.ReplaceFunction(OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2);
+            CodeInjector.ReplaceFunction(OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3);
 
-        OpcodeSystem.Init();
-        PluginSystem.LoadPlugins();
+            OpcodeSystem.Init();
+            PluginSystem.LoadPlugins();
+        }
+        else // second phase of initialization
+        {
+            if (m_bLateStarted) return; // already started
+            m_bLateStarted = true;
+
+            // install "drawing finished" hook
+            // this is empty function in original game, but some other mods have exactly same idea of hooking it
+            // wait for game started then install our hook
+            BYTE* address = VersionManager.TranslateMemoryAddress(MA_FLUSH_OBRS_PRINTFS);
+            if (*address == OP_RET) // still original game code
+                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address);
+            else
+                CodeInjector.ReplaceFunction(OnFlushObrsPrintfs, address, &FlushObrsPrintfs); // keep address of original hook
+        }
     }
 
     void CCleoInstance::Stop()
@@ -228,11 +254,6 @@ namespace CLEO
     void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func)
     {
         GetInstance().RemoveCallback(id, func);
-    }
-
-    void __cdecl CCleoInstance::OnDrawingFinished()
-    {
-        GetInstance().CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
     }
 
     DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* thread, DWORD stream) // arg CAudioStream *
