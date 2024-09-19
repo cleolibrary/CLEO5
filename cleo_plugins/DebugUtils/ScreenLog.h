@@ -1,5 +1,6 @@
 #pragma once
 #include "CLEO.h"
+#include "CFont.h"
 #include "CRGBA.h"
 #include <deque>
 #include <string>
@@ -22,11 +23,12 @@ private:
     eLogLevel level;
     size_t maxMessages;
     float fontSize;
+    eFontStyle fontStyle;
     DWORD timeFadeout; // miliseconds
 
-    const CRGBA fontColor[4] = { // colors for eLogLevel
+    CRGBA fontColor[4] = { // colors for eLogLevel
         CRGBA(0xDD, 0xDD, 0xDD, 0xFF), // None
-        CRGBA(0xFF, 0x30, 0x30, 0xFF), // Error
+        CRGBA(0xFF, 0x30, 0xFF, 0xFF), // Error
         CRGBA(0xFF, 0xEE, 0x30, 0xFF), // User
         CRGBA(0xDD, 0xDD, 0xDD, 0xFF), // Default
     };
@@ -106,7 +108,7 @@ private:
 
         void ResetTime()
         {
-            timeLeft = min(msg.length(), 200) * 0.06f; // 16 letters peer second reading speed
+            timeLeft = min(msg.length(), 200) * 0.055f; // 18 letters peer second reading speed
             timeLeft = max(timeLeft, 0.001f * ScreenLog::timeDisplay); // not shorter than defined in config
         }
 
