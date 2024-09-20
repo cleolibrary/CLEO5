@@ -48,7 +48,7 @@ namespace CLEO
         void GameBegin();
         void GameEnd();
 
-        bool IsStarted() const { return m_initStage != InitStage::None; };
+        bool IsStarted() const { return m_initStage != InitStage::None; }
 
         void AddCallback(eCallbackId id, void* func);
         void RemoveCallback(eCallbackId id, void* func);
