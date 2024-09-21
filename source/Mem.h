@@ -26,11 +26,11 @@ inline void MemJump(U p, const T v, T *r = nullptr)
         switch (MemRead<BYTE>(p))
         {
             case OP_JMP:
-                *r = (T)(MemRead<DWORD>(p + 1) + p + 5);
+                *r = (T)(DWORD(p) + 5 + MemRead<DWORD>(p + 1));
                 break;
 
             case OP_JMPSHORT:
-                *r = (T)(MemRead<BYTE>(p + 1) + p + 2);
+                *r = (T)(DWORD(p) + 2 + MemRead<signed char>(p + 1));
                 break;
 
             default:
@@ -50,7 +50,7 @@ inline void MemCall(U p, const T v, T *r = nullptr)
     if (r != nullptr)
     {
         if (MemRead<BYTE>(p) == OP_CALL)
-            *r = (T)(MemRead<DWORD>(p + 1) + p + 5);
+            *r = (T)(DWORD(p) + 5 + MemRead<DWORD>(p + 1));
         else
             *r = (T)nullptr;
     }
