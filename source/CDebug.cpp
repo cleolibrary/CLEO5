@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CDebug.h"
 #include "CleoBase.h"
+#include "CTimer.h"
 #include <shellapi.h>
 
 CDebug Debug;
@@ -21,6 +22,15 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
 
     sprintf(szBuf, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
     char* stampEnd = szBuf + strlen(szBuf);
+
+    // add separator line if frame rendered since last log entry
+    if (lastFrame != CTimer::m_FrameCounter)
+    {
+        if (m_hFile.good())
+            m_hFile << szBuf << std::endl;
+
+        lastFrame = CTimer::m_FrameCounter;
+    }
 
     strcpy(stampEnd, msg);
 

@@ -29,6 +29,7 @@ public:
     void Trace(CLEO::eLogLevel level, const char* msg);
     
 private:
+    unsigned int lastFrame = -1;
     std::mutex mutex;
     std::ofstream m_hFile;
  };
