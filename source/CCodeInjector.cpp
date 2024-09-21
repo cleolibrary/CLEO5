@@ -9,6 +9,9 @@ namespace CLEO
     {
         if (bAccessOpen) return;
 
+        TRACE(""); // separator
+        TRACE("Opening memory access...");
+
         auto dwLoadOffset = static_cast<memory_pointer>(GetModuleHandle(nullptr));
 
         // Unprotect image - make .text and .rdata section writeable
@@ -22,7 +25,7 @@ namespace CLEO
             if (!strcmp((char*)pSection->Name, ".text") || !strcmp((char*)pSection->Name, ".rdata"))
             {
                 DWORD dwPhysSize = (pSection->Misc.VirtualSize + 4095) & ~4095;
-                TRACE("Unprotecting memory region '%s': 0x%08X (size: 0x%08X)",
+                TRACE(" Unprotecting memory region '%s': 0x%08X (size: 0x%08X)",
                     pSection->Name,
                     (DWORD)pSection->VirtualAddress,
                     (DWORD)dwPhysSize
@@ -32,6 +35,7 @@ namespace CLEO
                     SHOW_ERROR("Virtual protect error");
             }
         }
+        TRACE(""); // separator
 
         bAccessOpen = true;
     }

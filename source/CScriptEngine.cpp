@@ -1404,14 +1404,14 @@ namespace CLEO
 
         std::for_each(ScriptsWaitingForDelete.begin(), ScriptsWaitingForDelete.end(), [this](CCustomScript *cs) 
         {
-            TRACE("Deleting inactive script named '%s'", cs->GetName().c_str());
+            TRACE(" Deleting inactive script named '%s'", cs->GetName().c_str());
             delete cs;
         });
         ScriptsWaitingForDelete.clear();
 
         if (CustomMission)
         {
-            TRACE("Unregistering custom mission named '%s'", CustomMission->GetName().c_str());
+            TRACE(" Unregistering custom mission named '%s'", CustomMission->GetName().c_str());
             RemoveScriptFromQueue(CustomMission, activeThreadQueue);
             CustomMission->SetActive(false);
             delete CustomMission;
