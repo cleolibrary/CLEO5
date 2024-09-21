@@ -20,7 +20,6 @@ namespace CLEO
 
     void EnumerateBassDevices(int& total, int& enabled, int& default_device)
     {
-        TRACE(""); // separator
         TRACE("Listing audio devices:");
 
         BASS_DEVICEINFO info;
@@ -62,6 +61,16 @@ namespace CLEO
     bool CSoundSystem::Init()
     {
         if (initialized) return true; // already done
+
+        TRACE(""); // separator
+        TRACE("Initializing SoundSystem...");
+
+        auto ver = HIWORD(BASS_GetVersion());
+        TRACE("BASS library version is %d (required %d or newer)", ver, BASSVERSION);
+        if (ver < BASSVERSION)
+        {
+            SHOW_ERROR("Invalid BASS library version! Expected at least %d, found %d.", BASSVERSION, ver);
+        }
 
         auto config = GetConfigFilename();
         LegacyModeDefaultStreamType = (eStreamType)GetPrivateProfileInt("General", "LegacyModeDefaultStreamType", 0, config.c_str());
