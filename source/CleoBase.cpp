@@ -5,7 +5,6 @@
 namespace CLEO
 {
     CCleoInstance CleoInstance;
-    CCleoInstance& GetInstance() { return CleoInstance; }
 
     inline CCleoInstance::~CCleoInstance()
     {
@@ -25,11 +24,10 @@ namespace CLEO
     {
         CleoSingletonCheck(); // check once for CLEO.asi duplicates
 
-        auto& base = GetInstance();
-        auto window = base.CreateMainWnd_Orig(hinst); // call original
+        auto window = CleoInstance.CreateMainWnd_Orig(hinst); // call original
 
         // redirect window handling procedure
-        *((size_t*)&base.MainWndProc_Orig) = GetWindowLongPtr(window, GWLP_WNDPROC); // store original address
+        *((size_t*)&CleoInstance.MainWndProc_Orig) = GetWindowLongPtr(window, GWLP_WNDPROC); // store original address
         SetWindowLongPtr(window, GWLP_WNDPROC, (LONG)OnMainWndProc);
 
         return window;
@@ -37,82 +35,76 @@ namespace CLEO
 
     LRESULT __stdcall CCleoInstance::OnMainWndProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
-        auto& base = GetInstance();
-
         switch (msg)
         {
             case WM_ACTIVATE:
-                base.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
+                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
                 break;
 
             case WM_KILLFOCUS:
-                base.CallCallbacks(eCallbackId::MainWindowFocus, false);
+                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
                 break;
         }
 
-        return base.MainWndProc_Orig(wnd, msg, wparam, lparam);
+        return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
     }
 
     void CCleoInstance::OnScmInit1()
     {
-        auto& base = GetInstance();
-        base.ScmInit1_Orig(); // call original
-        base.GameBegin();
+        CleoInstance.ScmInit1_Orig(); // call original
+        CleoInstance.GameBegin();
     }
 
     void CCleoInstance::OnScmInit2() // load save
     {
-        auto& base = GetInstance();
-        base.ScmInit2_Orig(); // call original
-        base.GameBegin();
+        CleoInstance.ScmInit2_Orig(); // call original
+        CleoInstance.GameBegin();
     }
 
     void CCleoInstance::OnScmInit3()
     {
-        auto& base = GetInstance();
-        base.ScmInit3_Orig(); // call original
-        base.GameBegin();
+        CleoInstance.ScmInit3_Orig(); // call original
+        CleoInstance.GameBegin();
     }
 
     void __declspec(naked) CCleoInstance::OnGameShutdown()
     {
-        GetInstance().GameEnd();
+        CleoInstance.GameEnd();
         static DWORD oriFunc;
-        oriFunc = (DWORD)(GetInstance().GameShutdown);
+        oriFunc = (DWORD)(CleoInstance.GameShutdown);
         _asm jmp oriFunc
     }
 
     void __declspec(naked) CCleoInstance::OnGameRestart1()
     {
-        GetInstance().GameEnd();
+        CleoInstance.GameEnd();
         static DWORD oriFunc;
-        oriFunc = (DWORD)(GetInstance().GameRestart1);
+        oriFunc = (DWORD)(CleoInstance.GameRestart1);
         _asm jmp oriFunc
     }
 
     void __declspec(naked) CCleoInstance::OnGameRestart2()
     {
-        GetInstance().GameEnd();
+        CleoInstance.GameEnd();
         static DWORD oriFunc;
-        oriFunc = (DWORD)(GetInstance().GameRestart2);
+        oriFunc = (DWORD)(CleoInstance.GameRestart2);
         _asm jmp oriFunc
     }
 
     void __declspec(naked) CCleoInstance::OnGameRestart3()
     {
-        GetInstance().GameEnd();
+        CleoInstance.GameEnd();
         static DWORD oriFunc;
-        oriFunc = (DWORD)(GetInstance().GameRestart3);
+        oriFunc = (DWORD)(CleoInstance.GameRestart3);
         _asm jmp oriFunc
     }
 
     void __declspec(naked) CCleoInstance::OnDebugDisplayTextBuffer()
     {
-        GetInstance().CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
-        static DWORD oriFunc;
-        oriFunc = (DWORD)(GetInstance().DebugDisplayTextBuffer);
-        if (oriFunc != (DWORD)nullptr)
-            _asm jmp oriFunc
+        CleoInstance.CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
+
+        if (CleoInstance.DebugDisplayTextBuffer_Orig != nullptr)
+            _asm jmp CleoInstance.DebugDisplayTextBuffer_Orig
         else
             _asm ret
     }
@@ -164,7 +156,7 @@ namespace CLEO
         {
             TRACE("CLEO initialization: Phase 2");
 
-            CodeInjector.ReplaceJump(OnDebugDisplayTextBuffer, VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER), &DebugDisplayTextBuffer);
+            CodeInjector.ReplaceJump(OnDebugDisplayTextBuffer, VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER), &DebugDisplayTextBuffer_Orig);
         }
 
         m_initStage = stage;
@@ -192,7 +184,7 @@ namespace CLEO
         TRACE("Starting new game, save slot: %d", saveSlot);
 
         // execute registered callbacks
-        GetInstance().CallCallbacks(eCallbackId::GameBegin, saveSlot);
+        CleoInstance.CallCallbacks(eCallbackId::GameBegin, saveSlot);
     }
 
     void CCleoInstance::GameEnd()
@@ -202,7 +194,7 @@ namespace CLEO
 
         TRACE(""); // separator
         TRACE("Ending current game");
-        GetInstance().CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
         ScriptEngine.GameEnd();
         OpcodeSystem.FinalizeScriptObjects();
 
@@ -226,7 +218,7 @@ namespace CLEO
 
     void CCleoInstance::CallCallbacks(eCallbackId id)
     {
-        for (void* func : GetInstance().GetCallbacks(id))
+        for (void* func : GetCallbacks(id))
         {
             typedef void WINAPI callback(void);
             ((callback*)func)();
@@ -235,7 +227,7 @@ namespace CLEO
 
     void CCleoInstance::CallCallbacks(eCallbackId id, DWORD arg)
     {
-        for (void* func : GetInstance().GetCallbacks(id))
+        for (void* func : GetCallbacks(id))
         {
             typedef void WINAPI callback(DWORD);
             ((callback*)func)(arg);
@@ -244,12 +236,12 @@ namespace CLEO
 
     void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func)
     {
-        GetInstance().AddCallback(id, func);
+        CleoInstance.AddCallback(id, func);
     }
 
     void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func)
     {
-        GetInstance().RemoveCallback(id, func);
+        CleoInstance.RemoveCallback(id, func);
     }
 
     DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* thread, DWORD stream) // arg CAudioStream *

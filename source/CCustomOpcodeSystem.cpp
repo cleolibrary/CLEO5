@@ -107,7 +107,7 @@ namespace CLEO
 
 		// execute registered callbacks
 		OpcodeResult result = OR_NONE;
-		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptOpcodeProcess))
+		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcess))
 		{
 			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
 			result = ((callback*)func)(thread, opcode);
@@ -135,7 +135,7 @@ namespace CLEO
 
 			if (opcode > LastOriginalOpcode)
 			{
-				auto extensionMsg = GetInstance().OpcodeInfoDb.GetExtensionMissingMessage(opcode);
+				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
 				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
 				SHOW_ERROR("Custom opcode [%04X] not registered!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
@@ -152,7 +152,7 @@ namespace CLEO
 
 			if(result == OR_ERROR)
 			{
-				auto extensionMsg = GetInstance().OpcodeInfoDb.GetExtensionMissingMessage(opcode);
+				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
 				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
 				SHOW_ERROR("Opcode [%04X] not found!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
@@ -167,7 +167,7 @@ namespace CLEO
 
 		// execute registered callbacks
 		OpcodeResult callbackResult = OR_NONE;
-		for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptOpcodeProcessFinished))
+		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessFinished))
 		{
 			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
 			auto res = ((callback*)func)(thread, opcode, result);
@@ -182,7 +182,7 @@ namespace CLEO
 	{
 		TRACE("Cleaning up script data...");
 
-		GetInstance().CallCallbacks(eCallbackId::ScriptsFinalize);
+		CleoInstance.CallCallbacks(eCallbackId::ScriptsFinalize);
 
 		// clean up after opcode_0AB1
 		ScmFunction::Clear();
@@ -191,7 +191,7 @@ namespace CLEO
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
 	{
 		TRACE("Injecting CustomOpcodeSystem...");
-		CGameVersionManager& gvm = GetInstance().VersionManager;
+		CGameVersionManager& gvm = CleoInstance.VersionManager;
 
 		// replace all handlers in original table
 		// store original opcode handlers for later use
@@ -801,7 +801,7 @@ namespace CLEO
 
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_004E(CRunningScript* thread)
 	{
-		GetInstance().ScriptEngine.RemoveScript(thread);
+		CleoInstance.ScriptEngine.RemoveScript(thread);
 		return OR_INTERRUPT;
 	}
 
@@ -810,7 +810,7 @@ namespace CLEO
 		if (thread->SP == 0 && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
 		{
 			SetScriptCondResult(thread, false);
-			return GetInstance().OpcodeSystem.CleoReturnGeneric(0x0051, thread, false); // try CLEO's function return
+			return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0051, thread, false); // try CLEO's function return
 		}
 
 		if (thread->SP == 0)
@@ -842,7 +842,7 @@ namespace CLEO
 		SetScriptCondResult(thread, cs && cs->IsOK());
 		if (cs && cs->IsOK())
 		{
-			GetInstance().ScriptEngine.AddCustomScript(cs);
+			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			TransmitScriptParams(thread, cs);
 			cs->SetDebugMode(reinterpret_cast<CCustomScript*>(thread)->GetDebugMode());
 		}
@@ -866,7 +866,7 @@ namespace CLEO
 			return OR_CONTINUE; // legacy behavior
 		}
 
-		GetInstance().ScriptEngine.RemoveScript(thread);
+		CleoInstance.ScriptEngine.RemoveScript(thread);
 		return OR_INTERRUPT;
 	}
 
@@ -886,7 +886,7 @@ namespace CLEO
 			auto csscript = reinterpret_cast<CCustomScript*>(thread);
 			if (csscript->IsCustom())
 				cs->SetCompatibility(csscript->GetCompatibility());
-			GetInstance().ScriptEngine.AddCustomScript(cs);
+			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			memset(missionLocals, 0, 1024 * sizeof(SCRIPT_VAR)); // same as CTheScripts::WipeLocalVariableMemoryForMissionScript
 			TransmitScriptParams(thread, (CRunningScript*)((BYTE*)missionLocals - 0x3C));
 			cs->SetDebugMode(reinterpret_cast<CCustomScript*>(thread)->GetDebugMode());
@@ -930,7 +930,7 @@ namespace CLEO
 	//0AA9=0,  is_game_version_original
 	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread)
 	{
-		auto gv = GetInstance().VersionManager.GetGameVersion();
+		auto gv = CleoInstance.VersionManager.GetGameVersion();
 		auto cs = (CCustomScript*)thread;
 		SetScriptCondResult(thread, gv == GV_US10 || (cs->IsCustom() && cs->GetCompatibility() <= CLEO_VER_4_MIN && gv == GV_EU10));
 		return OR_CONTINUE;
@@ -991,7 +991,7 @@ namespace CLEO
 			modulePath = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(modulePath.c_str(), DIR_SCRIPT); // by default search relative to current script location
 
 			// get export reference
-			auto scriptRef = GetInstance().ModuleSystem.GetExport(modulePath, strExport);
+			auto scriptRef = CleoInstance.ModuleSystem.GetExport(modulePath, strExport);
 			if (!scriptRef.Valid())
 			{
 				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), moduleTxt.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
@@ -1120,7 +1120,7 @@ namespace CLEO
 			returnParamCount = declaredParamCount;
 		}
 
-		return GetInstance().OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, !IsLegacyScript(thread), returnParamCount);
+		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, !IsLegacyScript(thread), returnParamCount);
 	}
 
 	//0AB3=2,set_cleo_shared_var %1d% = %2d%
@@ -1145,7 +1145,7 @@ namespace CLEO
 		}
 
 		GetScriptParams(thread, 1);
-		GetInstance().ScriptEngine.CleoVariables[varIdx].dwParam = opcodeParams[0].dwParam;
+		CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam = opcodeParams[0].dwParam;
 		return OR_CONTINUE;
 	}
 
@@ -1168,7 +1168,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		opcodeParams[0].dwParam = GetInstance().ScriptEngine.CleoVariables[varIdx].dwParam;
+		opcodeParams[0].dwParam = CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam;
 		CLEO_RecordOpcodeParams(thread, 1);
 		return OR_CONTINUE;
 	}
@@ -1211,7 +1211,7 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB6(CRunningScript *thread)
 	{
 		// steam offset is different, so get it manually for now
-		CGameVersionManager& gvm = GetInstance().VersionManager;
+		CGameVersionManager& gvm = CleoInstance.VersionManager;
 		DWORD hMarker = gvm.GetGameVersion() !=  GV_STEAM ? MenuManager->m_nTargetBlipIndex : *((DWORD*)0xC3312C);
 		CMarker *pMarker;
 		if (hMarker && (pMarker = &RadarBlips[LOWORD(hMarker)]) && /*pMarker->m_nPoolIndex == HIWORD(hMarker) && */pMarker->m_nBlipDisplay)
@@ -1524,7 +1524,7 @@ namespace CLEO
 		argCount--;
 		SetScriptCondResult(thread, result != 0);
 
-		return GetInstance().OpcodeSystem.CleoReturnGeneric(0x2002, thread, true, argCount);
+		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2002, thread, true, argCount);
 	}
 
 	//2003=-1, cleo_return_fail
@@ -1538,7 +1538,7 @@ namespace CLEO
 		}
 
 		SetScriptCondResult(thread, false);
-		return GetInstance().OpcodeSystem.CleoReturnGeneric(0x2003, thread);
+		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2003, thread);
 	}
 }
 
@@ -1562,7 +1562,7 @@ extern "C"
 
 	BOOL WINAPI CLEO_RegisterCommand(const char* commandName, CustomOpcodeHandler callback)
 	{
-		WORD opcode = GetInstance().OpcodeInfoDb.GetOpcode(commandName);
+		WORD opcode = CleoInstance.OpcodeInfoDb.GetOpcode(commandName);
 		if (opcode == 0xFFFF)
 		{
 			LOG_WARNING(0, "Failed to register opcode [%s]! Command name not found in the database.", commandName);
@@ -1648,14 +1648,14 @@ extern "C"
 		// store state
 		auto param = opcodeParams[0];
 		auto ip = thread->CurrentIP;
-		auto count = GetInstance().OpcodeSystem.handledParamCount;
+		auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
 		GetScriptParams(thread, 1);
 		DWORD result = opcodeParams[0].dwParam;
 
 		// restore state
 		thread->CurrentIP = ip;
-		GetInstance().OpcodeSystem.handledParamCount = count;
+		CleoInstance.OpcodeSystem.handledParamCount = count;
 		opcodeParams[0] = param;
 
 		return result;
@@ -1666,14 +1666,14 @@ extern "C"
 		// store state
 		auto param = opcodeParams[0];
 		auto ip = thread->CurrentIP;
-		auto count = GetInstance().OpcodeSystem.handledParamCount;
+		auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
 		GetScriptParams(thread, 1);
 		float result = opcodeParams[0].fParam;
 
 		// restore state
 		thread->CurrentIP = ip;
-		GetInstance().OpcodeSystem.handledParamCount = count;
+		CleoInstance.OpcodeSystem.handledParamCount = count;
 		opcodeParams[0] = param;
 
 		return result;
@@ -1683,13 +1683,13 @@ extern "C"
 	{
 		// store state
 		auto ip = thread->CurrentIP;
-		auto count = GetInstance().OpcodeSystem.handledParamCount;
+		auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
 		auto result = GetScriptParamPointer(thread);
 
 		// restore state
 		thread->CurrentIP = ip;
-		GetInstance().OpcodeSystem.handledParamCount = count;
+		CleoInstance.OpcodeSystem.handledParamCount = count;
 
 		return result;
 	}
@@ -1701,7 +1701,7 @@ extern "C"
 
 	DWORD WINAPI CLEO_GetParamsHandledCount()
 	{
-		return GetInstance().OpcodeSystem.handledParamCount;
+		return CleoInstance.OpcodeSystem.handledParamCount;
 	}
 
 	void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
@@ -1780,7 +1780,7 @@ extern "C"
 			}
 		}
 
-		GetInstance().OpcodeSystem.handledParamCount += count;
+		CleoInstance.OpcodeSystem.handledParamCount += count;
 	}
 
 	void WINAPI CLEO_SkipUnusedVarArgs(CLEO::CRunningScript* thread)
@@ -1795,7 +1795,7 @@ extern "C"
 
 	void WINAPI CLEO_TerminateScript(CLEO::CRunningScript* thread)
 	{
-		GetInstance().ScriptEngine.RemoveScript(thread);
+		CleoInstance.ScriptEngine.RemoveScript(thread);
 	}
 
 	int WINAPI CLEO_GetOperandType(const CLEO::CRunningScript* thread)
@@ -1846,12 +1846,12 @@ extern "C"
 		if (fromThread) SetScriptCondResult(fromThread, cs && cs->IsOK());
 		if (cs && cs->IsOK())
 		{
-			GetInstance().ScriptEngine.AddCustomScript(cs);
+			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			if (fromThread) TransmitScriptParams(fromThread, cs);
 
 			cs->SetDebugMode(fromThread ? 
 				reinterpret_cast<CCustomScript*>(fromThread)->GetDebugMode() : // from parent
-				GetInstance().ScriptEngine.NativeScriptsDebugMode); // global
+				CleoInstance.ScriptEngine.NativeScriptsDebugMode); // global
 		}
 		else
 		{
@@ -1866,17 +1866,17 @@ extern "C"
 
 	CLEO::CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript()
 	{
-		return GetInstance().ScriptEngine.LastScriptCreated;
+		return CleoInstance.ScriptEngine.LastScriptCreated;
 	}
 
 	CLEO::CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
 	{
-		return GetInstance().ScriptEngine.FindScriptNamed(threadName, standardScripts, customScripts, resultIndex);
+		return CleoInstance.ScriptEngine.FindScriptNamed(threadName, standardScripts, customScripts, resultIndex);
 	}
 
 	CLEO::CRunningScript* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex)
 	{
-		return GetInstance().ScriptEngine.FindScriptByFilename(path, resultIndex);
+		return CleoInstance.ScriptEngine.FindScriptByFilename(path, resultIndex);
 	}
 
 	void WINAPI CLEO_AddScriptDeleteDelegate(FuncScriptDeleteDelegateT func)
@@ -1901,7 +1901,7 @@ extern "C"
 
 	BOOL WINAPI CLEO_IsScriptRunning(const CLEO::CRunningScript* thread)
 	{
-		return GetInstance().ScriptEngine.IsActiveScriptPtr(thread);
+		return CleoInstance.ScriptEngine.IsActiveScriptPtr(thread);
 	}
 
 	void WINAPI CLEO_GetScriptInfoStr(CLEO::CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize)
@@ -1921,8 +1921,8 @@ extern "C"
 
 	void WINAPI CLEO_GetScriptParamInfoStr(int idexOffset, char* buf, DWORD bufSize)
 	{
-		auto curr = idexOffset - 1 + GetInstance().OpcodeSystem.handledParamCount;
-		auto name = GetInstance().OpcodeInfoDb.GetArgumentName(GetInstance().OpcodeSystem.lastOpcode, curr);
+		auto curr = idexOffset - 1 + CleoInstance.OpcodeSystem.handledParamCount;
+		auto name = CleoInstance.OpcodeInfoDb.GetArgumentName(CleoInstance.OpcodeSystem.lastOpcode, curr);
 
 		curr++; // 1-based argument index display
 

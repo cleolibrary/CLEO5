@@ -52,10 +52,9 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
 #endif
 
     // output to callbacks
-    auto& cleo = GetInstance();
-    if (cleo.IsStarted())
+    if (CleoInstance.IsStarted())
     {
-        for (void* func : cleo.GetCallbacks(eCallbackId::Log))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::Log))
         {
             typedef void WINAPI callback(eLogLevel, const char*);
             ((callback*)func)(level, stampEnd);

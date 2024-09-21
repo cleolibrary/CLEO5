@@ -35,17 +35,13 @@ namespace CLEO
         bool bAccessOpen;
 
     public:
-        CCodeInjector() {
-            bAccessOpen = false;
-
-            // moved here so that access is open for plugins
-            OpenReadWriteAccess();			// we might as well leave it open, too
-                                            //GetInstance().Start();
-        }
-        ~CCodeInjector()
+        CCodeInjector() 
         {
-            //GetInstance().Stop();
-        };
+            bAccessOpen = false;
+            OpenReadWriteAccess(); // moved here so that access is open for plugins
+        }
+
+        ~CCodeInjector() = default;
 
         void OpenReadWriteAccess();
         void CloseReadWriteAccess();
@@ -59,12 +55,12 @@ namespace CLEO
             else { TRACE("Replaced call at: 0x%08X, original function was: 0x%08X", (DWORD)position, (DWORD)*origFuncPtr); }
         }
 
-        void ReplaceJump(memory_pointer newJumpDst, memory_pointer position, memory_pointer* origJumpDest = nullptr)
+        void ReplaceJump(memory_pointer newJumpDst, memory_pointer position, void** origJumpDest = nullptr)
         {
             MemJump((size_t)position, (size_t)newJumpDst, (size_t*)origJumpDest);
 
             if (origJumpDest == nullptr) { TRACE("Replaced jump at: 0x%08X", (DWORD)position); }
-            else { TRACE("Replaced jump at: 0x%08X, original destination was: 0x%08X", (DWORD)position, (DWORD)origJumpDest->address); }
+            else { TRACE("Replaced jump at: 0x%08X, original destination was: 0x%08X", (DWORD)position, (DWORD)*origJumpDest); }
         }
 
         template<typename T>
