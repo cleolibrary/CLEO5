@@ -160,7 +160,7 @@ namespace CLEO
         }
         
         // delayed until menu background drawing
-        if (stage == InitStage::FirstDraw)
+        if (stage == InitStage::OnDraw)
         {
             TRACE("CLEO initialization: Phase 2");
 

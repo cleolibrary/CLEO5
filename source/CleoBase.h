@@ -22,11 +22,11 @@ namespace CLEO
         {
             None,
             Initial,
-            FirstDraw,
-            Done = FirstDraw
+            OnDraw,
+            Done = OnDraw
         };
 
-        // order here defines init and deinit and order!
+        // order here defines init and deinit order!
         CDmaFix					DmaFix;
         CGameMenu				GameMenu;
         CCodeInjector			CodeInjector;
