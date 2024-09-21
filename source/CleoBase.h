@@ -90,7 +90,7 @@ namespace CLEO
         static void __cdecl OnGameRestart3();
 
         // empty function called after everything else is drawn
-        void(__cdecl* DebugDisplayTextBuffer)() = nullptr;
+        memory_pointer DebugDisplayTextBuffer = nullptr;
         static void __cdecl OnDebugDisplayTextBuffer();
 
     private:

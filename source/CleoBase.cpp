@@ -126,6 +126,8 @@ namespace CLEO
 
         if (stage == InitStage::Initial)
         {
+            TRACE("CLEO initialization: Phase 1");
+
             FS::create_directory(Filepath_Cleo);
             FS::create_directory(Filepath_Cleo + "\\cleo_modules");
             FS::create_directory(Filepath_Cleo + "\\cleo_plugins");
@@ -157,25 +159,12 @@ namespace CLEO
             PluginSystem.LoadPlugins();
         }
         
+        // delayed until menu background drawing
         if (stage == InitStage::FirstDraw)
         {
-            // install "drawing finished" hook
-            // this is an empty function in original game, but some other mods have exactly same idea of hooking it
-            // wait for game started then install our hook
-            BYTE* address = VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER);
-            switch (*address)
-            {
-            case OP_JMP: // there is hook!
-                CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer, address, &DebugDisplayTextBuffer); // keep address of original hook
-                break;
+            TRACE("CLEO initialization: Phase 2");
 
-            default:
-                LOG_WARNING(0, "Unknown 'drawing finished' hook detected! Overwriting..."); // warning and install our instead
-
-            case OP_RET: // still original code or some unknown hack
-                CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer, address);
-                break;
-            }
+            CodeInjector.ReplaceJump(OnDebugDisplayTextBuffer, VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER), &DebugDisplayTextBuffer);
         }
 
         m_initStage = stage;

@@ -51,17 +51,28 @@ namespace CLEO
         void CloseReadWriteAccess();
 
         template<typename T>
-        void ReplaceFunction(T *funcPtr, memory_pointer Position, T** origFuncPtr = nullptr)
+        void ReplaceFunction(T *funcPtr, memory_pointer position, T** origFuncPtr = nullptr)
         {
-            TRACE("Replacing call: 0x%08X", (DWORD)Position);
-            MemCall((size_t)Position, (size_t)funcPtr, (size_t*)origFuncPtr); // *whistle*
+            MemCall((size_t)position, (size_t)funcPtr, (size_t*)origFuncPtr);
+
+            if (origFuncPtr == nullptr) { TRACE("Replaced call at: 0x%08X", (DWORD)position); }
+            else { TRACE("Replaced call at: 0x%08X, original function was: 0x%08X", (DWORD)position, (DWORD)*origFuncPtr); }
         }
 
         template<typename T>
-        void InjectFunction(T *funcPtr, memory_pointer Position)
+        void ReplaceJump(T* funcPtr, memory_pointer position, memory_pointer* origJumpDest = nullptr)
         {
-            TRACE("Injecting function at: 0x%08X", (DWORD)Position);
-            MemJump((size_t)Position, (size_t)funcPtr);
+            MemJump((size_t)position, (size_t)funcPtr, (size_t*)origJumpDest);
+
+            if (origJumpDest == nullptr) { TRACE("Replaced jump at: 0x%08X", (DWORD)position); }
+            else { TRACE("Replaced jump at: 0x%08X, original destination was: 0x%08X", (DWORD)position, (DWORD)origJumpDest->address); }
+        }
+
+        template<typename T>
+        void InjectFunction(T *funcPtr, memory_pointer position)
+        {
+            TRACE("Injecting function at: 0x%08X", (DWORD)position);
+            MemJump((size_t)position, (size_t)funcPtr);
         }
 
         void Nop(memory_pointer addr, size_t size)

@@ -21,8 +21,23 @@ inline void MemCopy(U p, const T* v, int n) { memcpy((void*)p, v, n); }
 template<typename T, typename U>
 inline void MemJump(U p, const T v, T *r = nullptr)
 {
+    if (r != nullptr)
+    {
+        switch (MemRead<BYTE>(p))
+        {
+            case OP_JMP:
+                *r = (T)(MemRead<DWORD>(p + 1) + p + 5);
+                break;
+
+                //case OP_JMPSHORT: // TODO
+
+            default:
+                *r = (T)nullptr;
+                break;
+        }
+    }
+
     MemWrite<BYTE>(p++, OP_JMP);
-    if (r) *r = (T)(MemRead<DWORD>(p) + p + 4);
     MemWrite<DWORD>(p, ((DWORD)v - (DWORD)p) - 4);
 }
 
@@ -30,8 +45,15 @@ inline void MemJump(U p, const T v, T *r = nullptr)
 template<typename T, typename U>
 inline void MemCall(U p, const T v, T *r = nullptr)
 {
+    if (r != nullptr)
+    {
+        if (MemRead<BYTE>(p) == OP_CALL)
+            *r = (T)(MemRead<DWORD>(p + 1) + p + 5);
+        else
+            *r = (T)nullptr;
+    }
+
     MemWrite<BYTE>(p++, OP_CALL);
-    if (r) *r = (T)(MemRead<DWORD>(p) + p + 4);
     MemWrite<DWORD>(p, (DWORD)v - (DWORD)p - 4);
 }
 
