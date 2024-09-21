@@ -59,10 +59,9 @@ namespace CLEO
             else { TRACE("Replaced call at: 0x%08X, original function was: 0x%08X", (DWORD)position, (DWORD)*origFuncPtr); }
         }
 
-        template<typename T>
-        void ReplaceJump(T* funcPtr, memory_pointer position, memory_pointer* origJumpDest = nullptr)
+        void ReplaceJump(memory_pointer newJumpDst, memory_pointer position, memory_pointer* origJumpDest = nullptr)
         {
-            MemJump((size_t)position, (size_t)funcPtr, (size_t*)origJumpDest);
+            MemJump((size_t)position, (size_t)newJumpDst, (size_t*)origJumpDest);
 
             if (origJumpDest == nullptr) { TRACE("Replaced jump at: 0x%08X", (DWORD)position); }
             else { TRACE("Replaced jump at: 0x%08X, original destination was: 0x%08X", (DWORD)position, (DWORD)origJumpDest->address); }
