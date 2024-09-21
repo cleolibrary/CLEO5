@@ -7,7 +7,6 @@ namespace CLEO
     {
     public:
         C3DAudioStream(const char* filepath);
-        virtual ~C3DAudioStream();
 
         // overloaded actions
         virtual void Set3dPosition(const CVector& pos);

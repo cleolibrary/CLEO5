@@ -27,11 +27,6 @@ C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
     ok = true;
 }
 
-C3DAudioStream::~C3DAudioStream()
-{
-    if (streamInternal) BASS_StreamFree(streamInternal);
-}
-
 void C3DAudioStream::Set3dPosition(const CVector& pos)
 {
     link = nullptr;
