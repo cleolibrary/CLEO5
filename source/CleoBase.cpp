@@ -108,7 +108,7 @@ namespace CLEO
 
     void __declspec(naked) CCleoInstance::OnDebugDisplayTextBuffer()
     {
-        GetInstance().CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
         static DWORD oriFunc;
         oriFunc = (DWORD)(GetInstance().DebugDisplayTextBuffer);
         if (oriFunc != (DWORD)nullptr)
