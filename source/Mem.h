@@ -17,7 +17,7 @@ inline void MemCopy(U p, const T* v) { memcpy((void*)p, v, sizeof(T)); }
 template<typename T, typename U>
 inline void MemCopy(U p, const T* v, int n) { memcpy((void*)p, v, n); }
 
-// Write a jump to v to the address at p and copy the replaced call address to r
+// Write a jump to v to the address at p and copy the replaced jump address to r
 template<typename T, typename U>
 inline void MemJump(U p, const T v, T *r = nullptr)
 {
@@ -29,7 +29,9 @@ inline void MemJump(U p, const T v, T *r = nullptr)
                 *r = (T)(MemRead<DWORD>(p + 1) + p + 5);
                 break;
 
-                //case OP_JMPSHORT: // TODO
+            case OP_JMPSHORT:
+                *r = (T)(MemRead<BYTE>(p + 1) + p + 2);
+                break;
 
             default:
                 *r = (T)nullptr;
