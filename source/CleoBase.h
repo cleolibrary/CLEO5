@@ -79,19 +79,19 @@ namespace CLEO
 
         // call for Game::Shutdown
         void(__cdecl* GameShutdown)() = nullptr;
-        static void __cdecl OnGameShutdown();
+        static void OnGameShutdown();
 
         // calls for Game::ShutDownForRestart
         void(__cdecl* GameRestart1)() = nullptr;
         void(__cdecl* GameRestart2)() = nullptr;
         void(__cdecl* GameRestart3)() = nullptr;
-        static void __cdecl OnGameRestart1();
-        static void __cdecl OnGameRestart2();
-        static void __cdecl OnGameRestart3();
+        static void OnGameRestart1();
+        static void OnGameRestart2();
+        static void OnGameRestart3();
 
         // empty function called after everything else is drawn
         memory_pointer DebugDisplayTextBuffer = nullptr;
-        static void __cdecl OnDebugDisplayTextBuffer();
+        static void OnDebugDisplayTextBuffer();
 
     private:
         InitStage m_initStage = InitStage::None;
