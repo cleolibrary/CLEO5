@@ -1,8 +1,6 @@
 #pragma once
 #include <mutex>
 
-std::string stringPrintf(const char* format, ...);
-
 namespace CLEO
 {
     class CRunningScript;

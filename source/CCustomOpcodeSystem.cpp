@@ -387,13 +387,13 @@ namespace CLEO
 
 		if (str != nullptr && (size_t)str <= CCustomOpcodeSystem::MinValidAddress)
 		{
-			CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string from invalid '0x%X' pointer", target.data);
+			CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string from invalid '0x%X' pointer", target.data);
 			return false;
 		}
 
 		if ((size_t)target.data <= CCustomOpcodeSystem::MinValidAddress)
 		{
-			CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
+			CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
 			return false;
 		}
 
@@ -428,7 +428,7 @@ namespace CLEO
 
 			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 			{
-				CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
+				CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
 				return result; // error
 			}
 
@@ -465,7 +465,7 @@ namespace CLEO
 			}
 		}
 
-		CCustomOpcodeSystem::lastErrorMsg = stringPrintf("Writing string, got argument %s", ToKindStr(paramType));
+		CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string, got argument %s", ToKindStr(paramType));
 		CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
 		return result; // error
 	}

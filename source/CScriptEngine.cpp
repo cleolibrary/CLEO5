@@ -932,7 +932,7 @@ namespace CLEO
         }
         else // mission pack
         {
-            MainScriptFileDir = Filepath_User + stringPrintf("\\MPACK\\MPACK%d", CGame::bMissionPackGame);
+            MainScriptFileDir = Filepath_User + StringPrintf("\\MPACK\\MPACK%d", CGame::bMissionPackGame);
             MainScriptFileName = "scr.scm";
         }
 
@@ -1066,7 +1066,7 @@ namespace CLEO
 
         if(saveSlot == -1) return;
 
-        auto saveFile = FS::path(Filepath_Cleo).append(stringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
+        auto saveFile = FS::path(Filepath_Cleo).append(StringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
 
         safe_info = nullptr;
         stopped_info = nullptr;
