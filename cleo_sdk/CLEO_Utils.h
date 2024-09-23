@@ -162,6 +162,19 @@ namespace CLEO
         path.replace(0, base.length() + 1, ""); // remove path separator too if present
     }
 
+    // get path without last file/directory element
+    static const std::string_view FilepathGetParent(const std::string_view str)
+    {
+        auto separatorPos = str.find_last_of('\\');
+
+        if (separatorPos == std::string::npos)
+        {
+            return {};
+        }
+
+        return std::string_view(str.data(), separatorPos);
+    }
+
     // this plugin's config file
     static std::string GetConfigFilename()
     {

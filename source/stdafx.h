@@ -36,16 +36,11 @@ namespace FS = std::filesystem;
 
 static std::string GetGameDirectory() // already stored in Filepath_Game
 {
-    static const auto GTA_GetCWD = (char* (__cdecl*)(char*, int))0x00836E91; // SA 1.0 US ingame function
-
     std::string path;
-
     path.resize(MAX_PATH);
-    GTA_GetCWD(path.data(), path.size()); // assume work dir is game location when initialized
-    path.resize(strlen(path.data()));
-
+    GetModuleFileNameA(NULL, path.data(), path.size()); // game exe absolute path
+    path.resize(CLEO::FilepathGetParent(path).length());
     CLEO::FilepathNormalize(path);
-
     return std::move(path);
 }
 
