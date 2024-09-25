@@ -80,6 +80,7 @@ namespace CLEO
 
     CTextManager::~CTextManager()
     {
+        TRACE(""); // separator
         TRACE("Deleting FXTs...");
         size_t count = 0;
         for (auto it = fxts.begin(); it != fxts.end();)
