@@ -1075,6 +1075,7 @@ namespace CLEO
         // load cleo saving file
         try
         {
+            TRACE(""); // separator
             TRACE("Loading cleo safe '%s'", saveFile.c_str());
             std::ifstream ss(saveFile.c_str(), std::ios::binary);
             if (ss.is_open())
