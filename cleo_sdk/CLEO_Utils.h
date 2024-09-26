@@ -124,7 +124,7 @@ namespace CLEO
         return std::move(info);
     }
 
-    // Normalize filepath, collapse all parent directory references. Input should be absolute path without expandable %variables%
+    // Normalize filepath, collapse all parent directory references, trim path separators at front and back. Input should be path without expandable %variables%
     static void FilepathNormalize(std::string& path, bool normalizeCase = true)
     {
         if (path.empty()) return;
@@ -139,17 +139,27 @@ namespace CLEO
         size_t refPos = path.find(ParentRef);
         while (refPos != std::string::npos && refPos > 0)
         {
-            size_t parentPos = path.rfind('\\', refPos - 1); // find start of parent name
+            size_t parentPos = path.rfind('\\', refPos - 1); // find start of parent dir name
 
-            if (parentPos == std::string::npos)
-                return; // parent must be root of the path then. We want to keep absolute path, let it be as is (even if "C:\..\" makes no sense)
+            if (parentPos == std::string::npos) // no more separators, so parent has to be root dir
+            {
+                parentPos = 0;
+                refPos += 1; // remove following separator too
+            }
 
-            path.replace(parentPos, (refPos - parentPos) + ParentRefLen - 1, ""); // remove parent and parent reference
+            if (_strnicmp(path.c_str() + parentPos, "..\\", 3) == 0)
+            {
+                break; // parent directory is reference to parent directory too
+            }
+
+            path.replace(parentPos, (refPos - parentPos) + ParentRefLen - 1, ""); // remove parent dir along with following \\..
 
             refPos = path.find(ParentRef); // find next
         }
 
-        while(path.back() == '\\') path.pop_back(); // remove trailing path separator(s)
+        // trim separators
+        while (path.front() == '\\') path.erase(0, 1);
+        while (path.back() == '\\') path.pop_back();
     }
 
     // strip parent prefix from filepath if present
@@ -197,16 +207,20 @@ namespace CLEO
         if (!std::filesystem::path(path).is_absolute())
         {
             absolute = CLEO_GetScriptWorkDir(thread);
-            absolute += '\\';
-            absolute += path;
-            FilepathNormalize(absolute, false);
-            path = absolute.c_str();
+            if (!absolute.empty())
+            {
+                absolute += '\\';
+                absolute += path;
+                FilepathNormalize(absolute, false);
+                path = absolute.c_str();
+            }
         }
 
         if (!StringStartsWith(path, CLEO_GetGameDirectory(), false) &&
             !StringStartsWith(path, CLEO_GetUserDirectory(), false))
         {
-            return false;
+            if (StringStartsWith(path, "..")) // relative path trying to escape game's directory
+                return false;
         }
 
         return true;
