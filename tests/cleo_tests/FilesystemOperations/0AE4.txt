@@ -8,8 +8,8 @@ terminate_this_custom_script
 
 function tests
 
-    it("should fail on a non-existing file", test1)
-    it("should success on existing file", test2)
+    it("should fail on a non-existing directory", test1)
+    it("should success on existing directory", test2)
     return
     
     function test1
