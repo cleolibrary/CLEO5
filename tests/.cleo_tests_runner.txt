@@ -1,96 +1,90 @@
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+
 {$CLEO .cs}
-{$USE debug}
-{$USE memory}
-{$USE file}
 
 script_name 'CleoTest'
 debug_on
 
-print_big_formatted "CLEO TESTING" {time} 5000 {style} TextStyle.MiddleSmaller
+print_big_string {text} "CLEO TESTING" {time} 4000 {style} TextStyle.MiddleSmaller
 
-wait 5000 // wait for game to fade in
+wait 4000 // wait for game to fade in
 clear_prints
 
-cleo_call @RUN_TESTS_DIR {argCount} 2 {args} "cleo:" "cleo_tests"
+RUN_TESTS_DIR("cleo:", "cleo_tests")
 
-print_big_formatted "DONE" {time} 5000 {style} TextStyle.MiddleSmaller
+print_big_string {text} "DONE" {time} 5000 {style} TextStyle.MiddleSmaller
 
 terminate_this_custom_script
 
 
-
-// arg 0 - base directory path
-// arg 1 - directory name
-:RUN_TESTS_DIR
-    trace "~w~Testing module '%s'" 1@
+function RUN_TESTS_DIR(basePath :string, directory :string)
+    trace "~w~Testing module '%s'" directory
 
     // process all test files
-    5@ = allocate_memory 260
-    string_format {buffer} 5@ {format} "%s\\%s\\*.s" 0@ 1@
+    int str = allocate_memory 260
+    string_format str = "%s\\%s\\*.s" basePath directory
     
-    6@ = 0 // search handle
-    7@ = allocate_memory 64
+    int searchHandle = 0
+    int found = allocate_memory 64
 
     if
-        find_first_file 5@ {handle} 6@ {fileName} 7@
+        find_first_file str {handle} searchHandle {fileName} found
     then
         while true
-            string_format {buffer} 5@ {format} "%s\\%s\\%s" 0@ 1@ 7@
+            string_format str = "%s\\%s\\%s" basePath directory found
             if
-                does_file_exist 5@ // files only
+                does_file_exist str // files only
             then
-                stream_custom_script 5@
-                get_script_struct_just_created 11@
+                stream_custom_script str
+                int script = get_script_struct_just_created
 
-                while is_script_running 11@
+                while is_script_running script
                     wait 0
                 end
             end
 
-            write_memory 7@ {size} 4 {value} 0 {vp} false
             if
-                not find_next_file 6@ {fileName} 7@
+                not find_next_file searchHandle {fileName} found
             then
                 break
             end
         end
 
-        find_close 6@
+        find_close searchHandle
     else
         trace "~r~No tests found!"
     end
     
     // process all sub directories
-    string_format {buffer} 5@ {format} "%s\\%s\\*" 0@ 1@
+    string_format str = "%s\\%s\\*" basePath directory
 
-    6@ = 0 // search handle
-    write_memory 7@ {size} 4 {value} 0 {vp} false
+    searchHandle = -1
+    string_format found = ""
     if
-        find_first_file 5@ {handle} 6@ {fileName} 7@
+        find_first_file str {handle} searchHandle {fileName} found
     then
         while true
-            string_format {buffer} 5@ {format} "%s\\%s\\%s" 0@ 1@ 7@
-            8@ = read_memory 7@ {size} 4 {vp} false
+            string_format str = "%s\\%s\\%s" basePath directory found
             if and
-                8@ <> 0x2E // "."
-                8@ <> 0x2E2E // ".."
-                does_directory_exist 5@ // directories only
+                not is_text_prefix {text} found {prefix} "." {ignoreCase} true
+                not is_text_prefix {text} found {prefix} ".." {ignoreCase} true
+                does_directory_exist str // directories only
             then
-                string_format {buffer} 5@ {format} "%s\\%s" 0@ 1@
-                cleo_call @RUN_TESTS_DIR {argCount} 2 {args} 5@ 7@
+                string_format str =  "%s\\%s" basePath directory
+                RUN_TESTS_DIR(str, found)
             end
 
-            write_memory 7@ {size} 4 {value} 0 {vp} false
             if
-                not find_next_file 6@ {fileName} 7@
+                not find_next_file searchHandle {fileName} found
             then
                 break
             end
         end
 
-        find_close 6@
+        find_close searchHandle
     end
     
-    free_memory 5@
-    free_memory 7@
-cleo_return
+    free_memory str
+    free_memory found
+end
