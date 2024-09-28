@@ -1,0 +1,57 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0B01"
+test("0B01 (delete_directory)", tests)
+terminate_this_custom_script
+
+
+const Test_Path = "cleo\\cleo_test_directory"
+
+function tests
+
+    it("should fail on a non-existing directory", test1)
+    it("should delete empty directory", test2)
+    it("should delete directory with contents", test3)
+    return
+    
+    function test1
+        delete_directory {dirPath} Test_Path {recursive} false // tested opcode
+        assert_result_false()
+    end
+    
+    function test2
+        create_directory {path} Test_Path
+        assert_result_true()
+        does_directory_exist {dirPath} Test_Path
+        assert_result_true()
+
+        delete_directory {dirPath} Test_Path {recursive} false // tested opcode
+        assert_result_true()
+        does_directory_exist {dirPath} Test_Path
+        assert_result_false()
+    end
+    
+    function test3
+        create_directory {path} Test_Path
+        assert_result_true()
+        does_directory_exist {dirPath} Test_Path
+        assert_result_true()
+        
+        set_current_directory {path} Test_Path
+        create_directory {path} "Test_Sub_Dir"
+        write_int_to_ini_file {value} 42 {path} "Test_File.ini" {section} "test" {key} "test"
+        set_current_directory {path} 0
+
+        delete_directory {dirPath} Test_Path {recursive} false // tested opcode
+        assert_result_false()
+        does_directory_exist {dirPath} Test_Path
+        assert_result_true()
+
+        delete_directory {dirPath} Test_Path {recursive} true // tested opcode
+        assert_result_true()
+        does_directory_exist {dirPath} Test_Path
+        assert_result_false()
+    end
+
+end

@@ -1,0 +1,59 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0B03"
+test("0B03 (move_directory)", tests)
+terminate_this_custom_script
+
+
+const Test_Path_Src = "cleo\\cleo_test_dir"
+const Test_Path_Dst = "test_directory"
+
+function tests
+
+    it("should fail on a non-existing directory", test1)
+    it("should move directory", test2)
+    return
+    
+    function test1
+        does_directory_exist {dirPath} Test_Path_Src
+        assert_result_false()
+        
+        move_directory {path} Test_Path_Src {newPath} Test_Path_Dst // tested opcode
+        assert_result_false()
+    end
+    
+    function test2        
+        // setup
+        create_directory {path} Test_Path_Src
+        set_current_directory {path} Test_Path_Src
+        create_directory {path} "Test_Sub_Dir"
+        write_int_to_ini_file {value} 42 {path} "Test_File.ini" {section} "test" {key} "test"
+        set_current_directory {path} 0
+        assert_result_true()
+        does_directory_exist {dirPath} Test_Path_Src
+        assert_result_true()
+        does_directory_exist {dirPath} Test_Path_Dst
+        assert_result_false()
+    
+        // act
+        move_directory {path} Test_Path_Src {newPath} Test_Path_Dst // tested opcode
+        assert_result_true()
+        does_directory_exist {dirPath} Test_Path_Src
+        assert_result_false()
+        does_directory_exist {dirPath} Test_Path_Dst
+        assert_result_true()
+        
+        // check contents
+        set_current_directory {path} Test_Path_Dst
+        does_directory_exist {path} "Test_Sub_Dir"
+        assert_result_true()
+        int value = read_int_from_ini_file {path} "Test_File.ini" {section} "test" {key} "test"
+        assert_eq(value, 42)
+        set_current_directory {path} 0
+        
+        // cleanup
+        delete_directory {dirPath} Test_Path_Dst {recursive} true
+    end
+
+end

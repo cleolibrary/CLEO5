@@ -19,7 +19,7 @@ function tests
     
      function test2
         if
-            0@ = open_file "cleo\\.cleo.log" {mode} "r" // tested opcode
+            0@ = open_file "cleo\\.cleo_config.ini" {mode} "r" // tested opcode
         then
             assert(true)
             close_file 0@

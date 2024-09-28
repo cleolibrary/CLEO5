@@ -1,0 +1,34 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0B00"
+test("0B00 (delete_file)", tests)
+terminate_this_custom_script
+
+
+const Test_Path = "cleo\\cleo_test_file.ini"
+
+function tests
+
+    it("should fail on a non-existing file", test1)
+    it("should delete existing file", test2)
+    return
+    
+    function test1
+        delete_file {path} "cleo\\not_a_file.ini" // tested opcode
+        assert_result_false()
+    end
+    
+    function test2
+        write_int_to_ini_file {value} 42 {path} Test_Path {section} "test" {key} "test"
+        assert_result_true()
+        does_file_exist {dirPath} Test_Path
+        assert_result_true()
+
+        delete_file {path} Test_Path // tested opcode
+        assert_result_true()
+        does_file_exist {dirPath} Test_Path
+        assert_result_false()
+    end
+
+end

@@ -1,0 +1,25 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AAB"
+test("0AAB (does_file_exist)", tests)
+terminate_this_custom_script
+
+
+function tests
+
+    it("should fail on a non-existing file", test1)
+    it("should success on existing file", test2)
+    return
+    
+    function test1
+        does_file_exist {path} "cleo\\not_a_file.txt" // tested opcode
+        assert_result_false()
+    end
+    
+     function test2
+        does_file_exist {path} "cleo\\.cleo_config.ini" // tested opcode
+        assert_result_true()
+    end
+
+end

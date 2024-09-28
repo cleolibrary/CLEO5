@@ -1,0 +1,30 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AE5"
+test("0AE5 (create_directory)", tests)
+terminate_this_custom_script
+
+
+const Test_Path = "cleo\\cleo_test_directory"
+
+function tests
+
+    it("should create directory", test1)
+    return
+    
+    function test1
+        does_directory_exist {path} Test_Path
+        assert_result_false()
+    
+        create_directory {path} Test_Path // tested opcode
+        assert_result_true()
+        
+        does_directory_exist {path} Test_Path
+        assert_result_true()
+        
+        // cleanup
+        delete_directory {path} Test_Path {recursive} false
+    end
+    
+end
