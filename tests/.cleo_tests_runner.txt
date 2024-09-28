@@ -31,7 +31,7 @@ function RUN_TESTS_DIR(basePath :string, directory :string)
     if
         find_first_file str {handle} searchHandle {fileName} found
     then
-        while true
+        repeat
             string_format str = "%s\\%s\\%s" basePath directory found
             if
                 does_file_exist str // files only
@@ -43,13 +43,7 @@ function RUN_TESTS_DIR(basePath :string, directory :string)
                     wait 0
                 end
             end
-
-            if
-                not find_next_file searchHandle {fileName} found
-            then
-                break
-            end
-        end
+        until not find_next_file searchHandle {fileName} found
 
         find_close searchHandle
     else
@@ -58,13 +52,10 @@ function RUN_TESTS_DIR(basePath :string, directory :string)
     
     // process all sub directories
     string_format str = "%s\\%s\\*" basePath directory
-
-    searchHandle = -1
-    string_format found = ""
     if
         find_first_file str {handle} searchHandle {fileName} found
     then
-        while true
+        repeat
             string_format str = "%s\\%s\\%s" basePath directory found
             if and
                 not is_text_prefix {text} found {prefix} "." {ignoreCase} true
@@ -74,13 +65,7 @@ function RUN_TESTS_DIR(basePath :string, directory :string)
                 string_format str =  "%s\\%s" basePath directory
                 RUN_TESTS_DIR(str, found)
             end
-
-            if
-                not find_next_file searchHandle {fileName} found
-            then
-                break
-            end
-        end
+        until not find_next_file searchHandle {fileName} found
 
         find_close searchHandle
     end
