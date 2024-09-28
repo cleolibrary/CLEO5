@@ -22,12 +22,12 @@ function tests
     function test2
         write_int_to_ini_file {value} 42 {path} Test_Path {section} "test" {key} "test"
         assert_result_true()
-        does_file_exist {dirPath} Test_Path
+        does_file_exist {path} Test_Path
         assert_result_true()
 
         delete_file {path} Test_Path // tested opcode
         assert_result_true()
-        does_file_exist {dirPath} Test_Path
+        does_file_exist {path} Test_Path
         assert_result_false()
     end
 
