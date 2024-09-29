@@ -19,7 +19,8 @@ terminate_this_custom_script
 
 
 function RUN_TESTS_DIR(basePath :string, directory :string)
-    trace "~w~Testing module '%s'" directory
+    trace "" // separator
+    trace "~y~~h~--------  Testing module '~s~~h~%s~y~~h~'  --------" directory
 
     // process all test files
     int str = allocate_memory 260
@@ -47,7 +48,7 @@ function RUN_TESTS_DIR(basePath :string, directory :string)
 
         find_close searchHandle
     else
-        trace "~r~No tests found!"
+        trace "~r~~h~~h~No tests found!"
     end
     
     // process all sub directories

@@ -27,7 +27,8 @@ function test(suite_name: string, callback: int)
     
     int suite_name_buf = get_label_pointer @_cleo_tester_test_name
     copy_memory {src} suite_name {dest} suite_name_buf {size} 255 // used in an it trace
-    trace "~w~Testing %s" suite_name
+    trace "" // separator
+    trace "Testing %s" suite_name
     
     _cleo_tester_write_var(VAR_BEFORE_EACH, @_cleo_tester_stub)
     _cleo_tester_write_var(VAR_AFTER_EACH, @_cleo_tester_stub)
@@ -43,7 +44,7 @@ function it(spec_name: string, callback: int)
     int spec_name_buf = get_label_pointer @_cleo_tester_spec_name
     copy_memory {src} spec_name {dest} spec_name_buf {size} 255 // used in a failed assert
     int test_name = get_label_pointer @_cleo_tester_test_name
-    trace "Test #%d %s" index spec_name
+    trace "~s~Test #%d %s" index spec_name
 
     wait 0
     _cleo_tester_write_var(VAR_SPEC, callback)
@@ -110,7 +111,7 @@ function _cleo_tester_fail
     int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
     int test_name = get_label_pointer @_cleo_tester_spec_name
     int assert_index = _cleo_tester_read_var(VAR_ASSERT_INDEX)
-    trace "~r~~h~~h~~h~Test #%d Assert #%d FAILED!" test_index assert_index
+    trace "~r~~h~~h~Test #%d ~p~~h~Assert #%d~r~~h~~h~ FAILED!" test_index assert_index
 end
 
 function _cleo_tester_increment_assert
@@ -126,7 +127,7 @@ function assert_true(flag: int)
 		flag == false
 	then
         _cleo_tester_fail()
-        trace "TRUE expected~n~%d occured" flag
+        trace "~g~~h~~h~TRUE~s~ expected~n~~r~~h~~h~%d~s~ occured" flag
         breakpoint
         terminate_this_custom_script
 	end
@@ -139,7 +140,7 @@ function assert_false(flag: int)
 		flag <> false
 	then
         _cleo_tester_fail()
-        trace "FALSE expected~n~%d occured" flag
+        trace "~g~~h~~h~FALSE~s~ expected~n~~r~~h~~h~%d~s~ occured" flag
         breakpoint
         terminate_this_custom_script
 	end
@@ -154,7 +155,7 @@ end
     :_assert_result_true
     _cleo_tester_increment_assert()
     _cleo_tester_fail()
-    trace "Condition result is FALSE, expected TRUE"
+    trace "~s~Condition result is ~r~~h~~h~FALSE~s~, expected ~g~~h~~h~TRUE~s~"
     breakpoint
     terminate_this_custom_script
 return
@@ -165,7 +166,7 @@ return
 
     _cleo_tester_increment_assert()
     _cleo_tester_fail()
-    trace "Condition result is TRUE, expected FALSE"
+    trace "~s~Condition result is ~r~~h~~h~TRUE~s~, expected ~g~~h~~h~FALSE~s~"
     breakpoint
     terminate_this_custom_script
     
@@ -180,7 +181,7 @@ function assert_eq(actual: int, expected: int)
 		actual <> expected
 	then
         _cleo_tester_fail()
-        trace "%08X expected~n~%08X occured" expected actual
+        trace "~g~~h~~h~%08X~s~ expected~n~~r~~h~~h~%08X~s~ occured" expected actual
         breakpoint
         terminate_this_custom_script
 	end
@@ -192,7 +193,7 @@ function assert_neq(actual: int, expected: int)
 		actual == expected
 	then
         _cleo_tester_fail()
-        trace "Expected value different than %08X" actual
+        trace "~s~Expected value different than ~r~~h~~h~%08X~s~" actual
         breakpoint
         terminate_this_custom_script
 	end
@@ -205,7 +206,7 @@ function assert_range(actual: int, expectedMin: int, expectedMax: int)
 		actual < expectedMin
 	then
         _cleo_tester_fail()
-        trace "%08X to %08X expected~n~%08X occured" expectedMin expectedMax actual
+        trace "~g~~h~~h~%08X to %08X~s~ expected~n~~r~~h~~h~%08X~s~ occured" expectedMin expectedMax actual
         breakpoint
         terminate_this_custom_script
 	end
@@ -218,7 +219,7 @@ function assert_eqf(actual: float, expected: float)
 		actual <> expected
 	then
         _cleo_tester_fail()
-        trace "%f expected~n~%f occured" expected actual
+        trace "~g~~h~~h~%f~s~ expected~n~~r~~h~~h~%f~s~ occured" expected actual
         breakpoint
         terminate_this_custom_script
 	end
@@ -231,7 +232,7 @@ function assert_neqf(actual: float, expected: float)
 		actual == expected
 	then
         _cleo_tester_fail()
-        trace "Expected value different than %f" actual
+        trace "~s~Expected value different than ~r~~h~~h~%f~s~" actual
         breakpoint
         terminate_this_custom_script
 	end
@@ -269,7 +270,7 @@ function assert_eqs(actual: string, expected: string)
 		not is_text_equal {text} actual {another} expected {ignoreCase} false
 	then
         _cleo_tester_fail()
-        trace "`%s` expected~n~`%s` occured" expected actual
+        trace "`~g~~h~~h~%s~s~` expected~n~`~r~~h~~h~%s~s~` occured" expected actual
         breakpoint
         terminate_this_custom_script
 	end
@@ -282,7 +283,7 @@ function assert_neqs(actual: string, expected: string)
 		is_text_equal {text} actual {another} expected {ignoreCase} false
 	then
         _cleo_tester_fail()
-        trace "Expected value different than `%s`" actual
+        trace "~s~Expected value different than `~r~~h~~h~%s~s~`" actual
         breakpoint
         terminate_this_custom_script
 	end
