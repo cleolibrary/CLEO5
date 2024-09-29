@@ -610,66 +610,23 @@ public:
         return OR_CONTINUE;
     }
 
-    static BOOL CopyDir(const char *path, const char *newPath)
-    {
-        char mask[MAX_PATH];
-        HANDLE hSearch = NULL;
-        WIN32_FIND_DATA wfd;
-        char subPath[MAX_PATH], newSubPath[MAX_PATH];
-        DWORD fattr;
-
-        //create parent directory
-        if (!CreateDirectory(newPath, NULL))
-            return FALSE;
-
-        memset(&wfd, 0, sizeof(wfd));
-        //search mask
-        sprintf(mask, "%s\\*", path);
-
-        //copy all files and folders into new directory
-        if ((hSearch = FindFirstFile(mask, &wfd)) != INVALID_HANDLE_VALUE)
-        {
-            do
-            {
-                sprintf(subPath, "%s\\%s", path, wfd.cFileName);
-                sprintf(newSubPath, "%s\\%s", newPath, wfd.cFileName);
-                //copy subdirectories
-                if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                {
-                    if ((strcmp(wfd.cFileName, "..") != 0) && (strcmp(wfd.cFileName, ".") != 0))
-                    {
-                        if (!CopyDir(subPath, newSubPath))
-                            return FALSE;
-                    }
-                }
-                else
-                {
-                    //copy file into new directory
-                    if (CopyFile(subPath, newSubPath, FALSE))
-                    {
-                        fattr = GetFileAttributes(subPath);
-                        SetFileAttributes(newSubPath, fattr);
-                    }
-                    else	return FALSE;
-                }
-
-
-            } while (FindNextFile(hSearch, &wfd));
-            FindClose(hSearch);
-        }
-
-        return TRUE;
-    }
-
     // 0B05=2,  copy_directory %1d% to %2d% //IF and SET
     static OpcodeResult WINAPI Script_FS_CopyDir(CScriptThread* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
 
-        BOOL result = CopyDir(filepath, newFilepath);
+        auto path = FS::path(filepath);
+        if (!FS::is_directory(path))
+        {
+            OPCODE_CONDITION_RESULT(false);
+            return OR_CONTINUE;
+        }
 
-        OPCODE_CONDITION_RESULT(result);
+        std::error_code err;
+        FS::copy(filepath, newFilepath, FS::copy_options::update_existing | FS::copy_options::recursive, err);
+
+        OPCODE_CONDITION_RESULT(!err);
         return OR_CONTINUE;
     }
 
