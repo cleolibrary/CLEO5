@@ -35,6 +35,13 @@ function tests
         assert_result_true()
         does_directory_exist {dirPath} Test_Path_Dst
         assert_result_false()
+        
+        // check if file was actually created in desired location
+        int str = allocate_memory {size} 260
+        string_format str = "%s\\Test_File.ini" Test_Path_Src
+        int value = read_int_from_ini_file {path} str {section} "test" {key} "test"
+        assert_eq(value, 42)
+        free_memory str
     
         // act
         copy_directory {path} Test_Path_Src {newPath} Test_Path_Dst // tested opcode
@@ -48,7 +55,7 @@ function tests
         set_current_directory {path} Test_Path_Src
         does_directory_exist {path} "Test_Sub_Dir"
         assert_result_true()
-        int value = read_int_from_ini_file {path} "Test_File.ini" {section} "test" {key} "test"
+        value = read_int_from_ini_file {path} "Test_File.ini" {section} "test" {key} "test"
         assert_eq(value, 42)
         set_current_directory {path} 0
         

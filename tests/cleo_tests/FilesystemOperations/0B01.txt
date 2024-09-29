@@ -42,6 +42,13 @@ function tests
         create_directory {path} "Test_Sub_Dir"
         write_int_to_ini_file {value} 42 {path} "Test_File.ini" {section} "test" {key} "test"
         set_current_directory {path} 0
+        
+        // check if file was actually created in desired location
+        int str = allocate_memory {size} 260
+        string_format str = "%s\\Test_File.ini" Test_Path
+        int value = read_int_from_ini_file {path} str {section} "test" {key} "test"
+        assert_eq(value, 42)
+        free_memory str
 
         delete_directory {dirPath} Test_Path {recursive} false // tested opcode
         assert_result_false()
