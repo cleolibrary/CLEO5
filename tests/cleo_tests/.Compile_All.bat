@@ -18,9 +18,9 @@ for /f "delims=" %%i in ('dir /b /s *.txt') do (
         set p=%%i 
         echo Compiling !p:%__CD__%=!
         %SANNY% --compile "%%i" "%%~dpni.s" --no-splash --mode sa_sbl    
-		if not exist "%%~dpni.s" (
-			echo ERROR: Failed to build !p:%__CD__%=!
-		)		
+        if not exist "%%~dpni.s" (
+            echo ERROR: Failed to build !p:%__CD__%=!
+        )        
     )
 )
 echo.
