@@ -97,7 +97,8 @@ public:
         screenLog.Draw();
 
         // draw active breakpoints list
-        if(!pausedScripts.empty())
+        if (!pausedScripts.empty() &&
+            (CTimer::m_FrameCounter & 0xE) != 0) // flashing
         {
             for (size_t i = 0; i < pausedScripts.size(); i++)
             {
