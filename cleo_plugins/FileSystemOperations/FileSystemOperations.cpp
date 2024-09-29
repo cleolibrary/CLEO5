@@ -3,10 +3,12 @@
 #include "CLEO_Utils.h"
 #include "FileUtils.h"
 
+#include <filesystem>
 #include <set>
 
 using namespace CLEO;
 using namespace plugin;
+namespace FS = std::filesystem;
 
 #define OPCODE_READ_PARAM_FILE_HANDLE(handle) auto handle = (DWORD)OPCODE_READ_PARAM_PTR(); \
     if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); }
@@ -556,9 +558,15 @@ public:
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
 
-        BOOL result = GetFileAttributes(filepath) & FILE_ATTRIBUTE_DIRECTORY;
-        if (!result)
-            result = MoveFile(filepath, newFilepath);
+        bool result = false;
+
+        auto fsPath = FS::path(filepath);
+        if (FS::is_regular_file(fsPath))
+        {
+            std::error_code err;
+            FS::rename(fsPath, newFilepath, err);
+            result = !err;
+        }
 
         OPCODE_CONDITION_RESULT(result);
         return OR_CONTINUE;
@@ -570,9 +578,15 @@ public:
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
 
-        BOOL result = GetFileAttributes(filepath) & FILE_ATTRIBUTE_DIRECTORY;
-        if (result)
-            result = MoveFile(filepath, newFilepath);
+        bool result = false;
+
+        auto fsPath = FS::path(filepath);
+        if (FS::is_directory(fsPath))
+        {
+            std::error_code err;
+            FS::rename(fsPath, newFilepath, err);
+            result = !err;
+        }
 
         OPCODE_CONDITION_RESULT(result);
         return OR_CONTINUE;
