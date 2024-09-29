@@ -10,9 +10,16 @@ const Test_Path_Src = "cleo\\cleo_test_file.ini"
 const Test_Path_Dst = "_test_file_B.ini"
 
 function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
 
     it("should fail on a non-existing file", test1)
     it("should move file", test2)
+    return
+    
+    :cleanup
+        delete_file {path} Test_Path_Src
+        delete_file {path} Test_Path_Dst
     return
     
     function test1
@@ -42,9 +49,6 @@ function tests
         
         int value = read_int_from_ini_file {path} Test_Path_Dst {section} "test" {key} "test"
         assert_eq(value, 42)
-        
-        // cleanup
-        delete_file {fileName} Test_Path_Dst
     end
 
 end

@@ -10,13 +10,20 @@ const Test_Path_Src = "cleo\\cleo_test_file.ini"
 const Test_Path_Dst = "_test_file_B.ini"
 
 function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
 
     it("should fail on a non-existing file", test1)
     it("should copy file", test2)
     return
     
+    :cleanup
+        delete_file {path} Test_Path_Src
+        delete_file {path} Test_Path_Dst
+    return
+    
     function test1
-        does_file_exist {dirPath} Test_Path_Src
+        does_file_exist {path} Test_Path_Src
         assert_result_false()
         
         copy_file {path} Test_Path_Src {newPath} Test_Path_Dst // tested opcode
@@ -27,9 +34,9 @@ function tests
         // setup
         write_int_to_ini_file {value} 42 {path} Test_Path_Src {section} "test" {key} "test"
         assert_result_true()
-        does_file_exist {dirPath} Test_Path_Src
+        does_file_exist {path} Test_Path_Src
         assert_result_true()
-        does_file_exist {dirPath} Test_Path_Dst
+        does_file_exist {path} Test_Path_Dst
         assert_result_false()
     
         // act
@@ -41,10 +48,6 @@ function tests
         
         value = read_int_from_ini_file {path} Test_Path_Dst {section} "test" {key} "test"
         assert_eq(value, 42)
-        
-        // cleanup
-        delete_file {fileName} Test_Path_Src
-        delete_file {fileName} Test_Path_Dst
     end
 
 end

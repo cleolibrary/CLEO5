@@ -9,8 +9,14 @@ terminate_this_custom_script
 const Test_Path = "cleo\\cleo_test_directory"
 
 function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
 
     it("should create directory", test1)
+    return
+    
+    :cleanup
+        delete_directory {path} Test_Path {recursive} true
     return
     
     function test1
@@ -22,9 +28,6 @@ function tests
         
         does_directory_exist {path} Test_Path
         assert_result_true()
-        
-        // cleanup
-        delete_directory {path} Test_Path {recursive} false
     end
     
 end
