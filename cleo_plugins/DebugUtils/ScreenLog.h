@@ -16,6 +16,7 @@ public:
 
     void Init();
     void Add(eLogLevel level, const char* msg);
+    void Clear();
     void Draw();
     void DrawLine(const char* msg, size_t row = 0);
 

@@ -73,6 +73,11 @@ void ScreenLog::Add(eLogLevel level, const char* msg)
     }
 }
 
+void ScreenLog::Clear()
+{
+    entries.clear();
+}
+
 void ScreenLog::Draw()
 {
     // scroll animation

@@ -60,6 +60,7 @@ public:
         }
 
         // register event callbacks
+        CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
         CLEO_RegisterCallback(eCallbackId::Log, OnLog);
         CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_RegisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
@@ -68,6 +69,7 @@ public:
 
     ~DebugUtils()
     {
+        CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
         CLEO_UnregisterCallback(eCallbackId::Log, OnLog);
         CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_UnregisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
@@ -75,6 +77,11 @@ public:
     }
 
     // ---------------------------------------------- event callbacks -------------------------------------------------
+
+    static void WINAPI OnGameBegin(DWORD saveSlot)
+    {
+        screenLog.Clear();
+    }
 
     static void WINAPI OnScriptsFinalize()
     {
