@@ -59,7 +59,7 @@ public:
 
 		char strValue[32];
 		_itoa(value, strValue, 10);
-		auto result = WritePrivateProfileString(section, key, strValue, path);
+		auto result = WritePrivateProfileString(section, key, strValue, path) != 0;
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
@@ -104,7 +104,7 @@ public:
 
 		char strValue[32];
 		sprintf(strValue, "%g", value);
-		auto result = WritePrivateProfileString(section, key, strValue, path);
+		auto result = WritePrivateProfileString(section, key, strValue, path) != 0;
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
@@ -145,7 +145,7 @@ public:
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
-		auto result = WritePrivateProfileString(section, key, strValue, path);
+		auto result = WritePrivateProfileString(section, key, strValue, path) != 0;
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
