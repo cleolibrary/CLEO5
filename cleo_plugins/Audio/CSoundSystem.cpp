@@ -4,6 +4,7 @@
 #include "CLEO_Utils.h"
 #include "CAEAudioHardware.h"
 #include "CCamera.h"
+#include <thread>
 
 namespace CLEO
 {
@@ -52,7 +53,7 @@ namespace CLEO
         if (initialized)
         {
             TRACE("Freeing BASS library");
-            BASS_Free();
+            std::thread(BASS_Free);
             initialized = false;
         }
         TRACE("SoundSystem finalized");
