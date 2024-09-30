@@ -1,0 +1,59 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AF2"
+test("0AF2 (read_float_from_ini_file)", tests)
+terminate_this_custom_script
+
+
+const Test_Path = "cleo\\cleo_test_file.ini"
+
+function tests
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should fail on not-existing file", test1)
+    it("should fail on invalid file", test2)
+    it("should fail on not existing value", test3)
+    it("should fail on invalid type", test4)
+    it("should read value", test5)
+
+    return
+    
+    :setup
+        delete_file {path} Test_Path
+        write_int_to_ini_file {value} 42 {path} Test_Path {section} "test" {key} "test_int"
+        write_float_to_ini_file {value} 50.0 {path} Test_Path {section} "test" {key} "test_float"
+        write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "test_string"
+    return
+    
+    :cleanup
+        delete_file {path} Test_Path
+    return
+    
+    function test1
+        float value = read_float_from_ini_file {path} "not_a_file.ini" {section} "test" {key} "test_float"
+        assert_result_false()
+    end
+    
+    function test2
+        float value = read_float_from_ini_file {path} "cleo.asi" {section} "test" {key} "test_float"
+        assert_result_false()
+    end
+    
+    function test3
+        float value = read_float_from_ini_file {path} Test_Path {section} "test" {key} "invalid_key"
+        assert_result_false()
+    end
+    
+    function test4
+        float value = read_float_from_ini_file {path} Test_Path {section} "test" {key} "test_string"
+        assert_result_false()
+    end
+    
+    function test5
+        float value = read_float_from_ini_file {path} Test_Path {section} "test" {key} "test_float"
+        assert_result_true()
+        assert_eqf(value, 50.0)
+    end
+end
