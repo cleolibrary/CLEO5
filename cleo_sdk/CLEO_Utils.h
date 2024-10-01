@@ -130,6 +130,14 @@ namespace CLEO
         if (path.empty()) return;
 
         std::replace(path.begin(), path.end(), '/', '\\');
+
+        // remove doubled separators
+        size_t pos;
+        while ((pos = path.find("\\\\")) != std::string::npos)
+        {
+            path.erase(pos, 1);
+        }
+
         if (normalizeCase) std::transform(path.begin(), path.end(), path.begin(), [](unsigned char c) { return tolower(c); }); // to lower case
 
         // collapse references to parent directory
