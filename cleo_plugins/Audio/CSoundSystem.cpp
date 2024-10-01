@@ -4,19 +4,23 @@
 #include "CLEO_Utils.h"
 #include "CAEAudioHardware.h"
 #include "CCamera.h"
+#include "CPad.h"
+#include "CVector.h"
 
 namespace CLEO
 {
     bool CSoundSystem::useFloatAudio = false;
     bool CSoundSystem::allowNetworkSources = true;
-    BASS_3DVECTOR CSoundSystem::pos(0.0, 0.0, 0.0);
-    BASS_3DVECTOR CSoundSystem::vel(0.0, 0.0, 0.0);
-    BASS_3DVECTOR CSoundSystem::front(0.0, -1.0, 0.0);
-    BASS_3DVECTOR CSoundSystem::top(0.0, 0.0, 1.0);
-    eStreamType CSoundSystem::LegacyModeDefaultStreamType = eStreamType::None;
+
+    CVector CSoundSystem::position(0.0, 0.0, 0.0);
+    CVector CSoundSystem::forward(0.0, 1.0, 0.0);
+    CVector CSoundSystem::up(0.0, 0.0, 1.0);
+    CVector CSoundSystem::velocity(0.0, 0.0, 0.0);
+    bool CSoundSystem::skipFrame = true;
+    float CSoundSystem::timeStep = 0.02f;
     float CSoundSystem::masterSpeed = 1.0f;
-    float CSoundSystem::masterVolumeSfx = 1.0f;
-    float CSoundSystem::masterVolumeMusic = 1.0f;
+
+    eStreamType CSoundSystem::LegacyModeDefaultStreamType = eStreamType::None;
 
     void EnumerateBassDevices(int& total, int& enabled, int& default_device)
     {
@@ -101,32 +105,32 @@ namespace CLEO
             TRACE("Selecting default audio device #%d: %s", deviceIndex, info.name);
         }
 
-        if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
-            BASS_Set3DFactors(1.0f, 3.0f, 80.0f) &&
-            BASS_Set3DPosition(&pos, &vel, &front, &top))
+        if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr))
         {
-            TRACE("SoundSystem initialized");
+            TRACE("BASS sound system initialized");
 
             // Can we use floating-point (HQ) audio streams?
             DWORD floatable = BASS_StreamCreate(44100, 1, BASS_SAMPLE_FLOAT, NULL, NULL); // floating-point channel support? 0 = no, else yes
             if (floatable)
             {
-                TRACE("Floating-point audio supported!");
+                TRACE("Floating-point audio supported");
                 useFloatAudio = true;
                 BASS_StreamFree(floatable);
             }
-            else TRACE("Floating-point audio not supported!");
+            else TRACE("Floating-point audio not supported");
 
             if (BASS_GetInfo(&SoundDevice))
             {
                 if (SoundDevice.flags & DSCAPS_EMULDRIVER)
                     TRACE("Audio drivers not installed - using DirectSound emulation");
+
                 if (!SoundDevice.eax)
                     TRACE("Audio hardware acceleration disabled (no EAX)");
             }
 
+            BASS_Set3DFactors(1.0f, 0.0f, 1.0f); // rollf emulated by us in 3D streams
+
             initialized = true;
-            BASS_Apply3D();
             return true;
         }
 
@@ -200,52 +204,88 @@ namespace CLEO
         }
         else // not in menu
         {
-            if (paused) Resume();
-
-            // get game globals
+            // update globals
+            skipFrame = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd; // avoid camera change/jump cut velocity glitches
+            timeStep = CTimer::ms_fTimeStep * 0.02f; // time delta in seconds
             masterSpeed = CTimer::ms_fTimeScale;
-            masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
-            masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
 
-            // camera movements
-            CMatrixLink * pMatrix = nullptr;
-            CVector * pVec = nullptr;
-            if (TheCamera.m_matrix)
+            CVector prevPos = position;
+            position = TheCamera.GetPosition(); // get new
+
+            // new camera velocity
+            if (!skipFrame)
             {
-                pMatrix = TheCamera.m_matrix;
-                pVec = &pMatrix->pos;
+                CVector vel = position - prevPos;
+                vel /= timeStep; // meters peer second
+
+                // averaging to smooth artifact caused by GTA's janky mouse camera control
+                velocity += velocity + vel;
+                velocity /= 3;
             }
-            else pVec = &TheCamera.m_placement.m_vPosn;
+            else
+                velocity = {};
 
-            BASS_3DVECTOR prevPos = pos;
-            pos = BASS_3DVECTOR(pVec->y, pVec->z, pVec->x);
-
-            // calculate velocity
-            vel = prevPos;
-            vel.x -= pos.x;
-            vel.y -= pos.y;
-            vel.z -= pos.z;
-            auto timeDelta = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped);
-            vel.x *= timeDelta;
-            vel.y *= timeDelta;
-            vel.z *= timeDelta;
-
-            // setup the ears
-            if (!TheCamera.m_bJust_Switched && !TheCamera.m_bCameraJustRestored) // avoid camera change/jump cut velocity glitches
+            if (!skipFrame)
             {
+                if (paused) Resume();
+
+                forward = TheCamera.GetForward();
+                up = TheCamera.GetUp();
+
                 BASS_Set3DPosition(
-                    &pos,
-                    &vel,
-                    pMatrix ? &BASS_3DVECTOR(pMatrix->at.y, pMatrix->at.z, pMatrix->at.x) : nullptr,
-                    pMatrix ? &BASS_3DVECTOR(pMatrix->up.y, pMatrix->up.z, pMatrix->up.x) : nullptr
+                    &toBass(position),
+                    &toBass(velocity),
+                    &toBass(forward),
+                    &toBass(up)
                 );
             }
 
             // process streams
-            for(auto stream : streams) stream->Process();
+            for (auto stream : streams) stream->Process();
 
-            // apply above changes
-            BASS_Apply3D();
+            // apply changes
+            if (!skipFrame) BASS_Apply3D();
         }
+    }
+
+    float CSoundSystem::GetDistance(const CVector* position)
+    {
+        auto v = CSoundSystem::position;
+        v -= *position;
+        return v.Magnitude();
+    }
+
+    float CSoundSystem::GetMasterVolume(eStreamType type)
+    {
+        // global volume settings
+        float volume;
+        switch (type)
+        {
+            case SoundEffect:
+                volume = AEAudioHardware.m_fEffectMasterScalingFactor* AEAudioHardware.m_fEffectsFaderScalingFactor * 0.5f; // fitted to game's sfx volume
+                break;
+
+            case Music:
+                volume = AEAudioHardware.m_fMusicMasterScalingFactor * AEAudioHardware.m_fMusicFaderScalingFactor * 0.5f;
+                break;
+
+            default:
+                volume = 1.0f;
+                break;
+        }
+
+        // screen fading
+        if (!TheCamera.m_bIgnoreFadingStuffForMusic) // it actually applies to all sounds
+        {
+            volume *= 1.0f - TheCamera.m_fFadeAlpha / 255.0f;
+        }
+
+        // music volume lowering in cutscenes, when characters talk, mission sounds are played etc.
+        if (type == Music)
+        {
+            if (TheCamera.m_bWideScreenOn) volume /= 3.0f;
+        }
+
+        return volume;
     }
 }

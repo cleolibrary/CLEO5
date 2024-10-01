@@ -8,12 +8,19 @@ namespace CLEO
     class CAudioStream
     {
     public:
-        enum eStreamState
+        enum StreamState
         {
             Stopped = -1,
             PlayingInactive, // internal: playing, but not processed yet or the sound system is silenced right now
             Playing,
             Paused,
+        };
+
+        enum StreamParam : size_t
+        {
+            Speed,
+            Volume,
+            StreamParamMax
         };
 
         CAudioStream(const char* filepath); // filesystem or URL
@@ -22,7 +29,7 @@ namespace CLEO
         bool IsOk() const;
         HSTREAM GetInternal(); // get BASS stream
 
-        eStreamState GetState() const;
+        StreamState GetState() const;
         void Play();
         void Pause(bool changeState = true);
         void Stop();
@@ -48,29 +55,31 @@ namespace CLEO
         // 3d
         virtual void Set3dPosition(const CVector& pos);
         virtual void Set3dSourceSize(float radius);
-        virtual void Link(CPlaceable* placable = nullptr);
+        virtual void Link(CEntity* entity = nullptr);
 
         virtual void Process();
 
     protected:
         HSTREAM streamInternal = 0;
-        eStreamState state = Paused;
+        StreamState state = Paused;
         eStreamType type = eStreamType::SoundEffect;
         bool ok = false;
         float rate = 44100.0f; // file's sampling rate
-        double speed = 1.0f;
-        double volume = 1.0f;
 
-        // transitions
-        double volumeTarget = 1.0f;
-        double volumeTransitionStep = 1.0f;
-        double speedTarget = 1.0f;
-        double speedTransitionStep = 1.0f;
+        float paramCurrent[StreamParam::StreamParamMax];
+        float paramTarget[StreamParam::StreamParamMax];
+        float paramTransitionStep[StreamParam::StreamParamMax];
 
-        CAudioStream() = default;
+        CAudioStream();
         CAudioStream(const CAudioStream&) = delete; // no copying!
 
-        void UpdateVolume();
-        void UpdateSpeed();
+        void SetParam(StreamParam param, float value, float transitionTime = 0.0);
+        float GetParam(StreamParam param);
+        void ResetParams(); // set defaults
+
+        // processing
+        virtual float CalculateVolume();
+        void ProcessTransitions(bool instant = false); // process param transitions
+        void ApplyParams(); // send params to BASS
     };
 }

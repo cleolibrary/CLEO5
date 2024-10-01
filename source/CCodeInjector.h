@@ -3,30 +3,6 @@
 
 namespace CLEO
 {
-    // a pointer automatically convertible to integral types
-    union memory_pointer
-    {
-        size_t address;
-        void *pointer;
-
-        inline memory_pointer(void *p) : pointer(p) { }
-        inline memory_pointer(size_t a) : address(a) { }
-        inline operator void *() { return pointer; }
-        inline operator size_t() { return address; }
-        inline memory_pointer& operator=(void *p) { return *this = p; }
-        inline memory_pointer& operator=(size_t p) { return *this = p; }
-
-        // conversion to/from any-type pointer
-        template<typename T>
-        inline memory_pointer(T *p) : pointer(reinterpret_cast<void *>(p)) {}
-        template<typename T>
-        inline operator T *() { return reinterpret_cast<T *>(pointer); }
-        template<typename T>
-        inline memory_pointer& operator=(T *p) { return *this = reinterpret_cast<void *>(p); }
-    };
-
-    VALIDATE_SIZE(memory_pointer, 4);
-
     const memory_pointer memory_und = nullptr;
 
     // Implements dirty tricks for low-level memory managemant
