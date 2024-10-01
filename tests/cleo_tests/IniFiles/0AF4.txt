@@ -6,7 +6,7 @@ test("0AF4 (read_string_from_ini_file)", tests)
 terminate_this_custom_script
 
 
-const Test_Path = "cleo\\cleo_test_file.ini"
+const Test_Path = "cleo\cleo_test_file.ini"
 
 function tests
     before_each(@setup)

@@ -6,7 +6,7 @@ test("0AE5 (create_directory)", tests)
 terminate_this_custom_script
 
 
-const Test_Path = "cleo\\cleo_test_directory"
+const Test_Path = "cleo\cleo_test_directory"
 
 function tests
     before_each(@cleanup)

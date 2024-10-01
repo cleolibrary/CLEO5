@@ -6,7 +6,7 @@ test("0B02 (move_file)", tests)
 terminate_this_custom_script
 
 
-const Test_Path_Src = "cleo\\cleo_test_file.ini"
+const Test_Path_Src = "cleo\cleo_test_file.ini"
 const Test_Path_Dst = "_test_file_B.ini"
 
 function tests

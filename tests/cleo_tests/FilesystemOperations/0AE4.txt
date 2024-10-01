@@ -13,12 +13,12 @@ function tests
     return
     
     function test1
-        does_directory_exist {path} "cleo\\not_a_directory" // tested opcode
+        does_directory_exist {path} "cleo\not_a_directory" // tested opcode
         assert_result_false()
     end
     
      function test2
-        does_directory_exist {path} "cleo\\cleo_tests" // tested opcode
+        does_directory_exist {path} "cleo\cleo_tests" // tested opcode
         assert_result_true()
     end
 

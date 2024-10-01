@@ -6,7 +6,7 @@ test("0B03 (move_directory)", tests)
 terminate_this_custom_script
 
 
-const Test_Path_Src = "cleo\\cleo_test_dir"
+const Test_Path_Src = "cleo\cleo_test_dir"
 const Test_Path_Dst = "test_directory"
 
 function tests
