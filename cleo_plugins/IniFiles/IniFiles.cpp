@@ -39,10 +39,44 @@ public:
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
-		auto result = GetPrivateProfileInt(section, key, 0x80000000, path);
+		char buff[32];
+		if (GetPrivateProfileString(section, key, NULL, buff, sizeof(buff), path))
+		{
+			char* str;
+			int base;
+			if (StringStartsWith(buff, "0x", false)) // hex int
+			{
+				str = buff + 2;
+				base = 16;
+			}
+			else // decimal int
+			{
+				str = buff;
+				base = 10;
+			}
 
-		OPCODE_WRITE_PARAM_INT(result);
-		OPCODE_CONDITION_RESULT(result != 0x80000000);
+			// parse
+			char* end;
+			int value = strtol(str, &end, base);
+			if (end != str) // at least one number character consumed
+			{
+				OPCODE_WRITE_PARAM_INT(value);
+				OPCODE_CONDITION_RESULT(true);
+				return OR_CONTINUE;
+			}
+		}
+
+		// failed
+		if (IsLegacyScript(thread))
+		{
+			OPCODE_WRITE_PARAM_INT(0x80000000); // CLEO4 behavior
+		}
+		else
+		{
+			OPCODE_SKIP_PARAMS(1);
+		}
+
+		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 
@@ -60,6 +94,11 @@ public:
 		char strValue[32];
 		_itoa(value, strValue, 10);
 		auto result = WritePrivateProfileString(section, key, strValue, path);
+		
+		if (GetLastError() == ERROR_FILE_NOT_FOUND) // path points directory
+		{
+			result = false;
+		}
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
@@ -75,19 +114,33 @@ public:
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
-		auto value = 0.0f;
-		char strValue[32];
-		auto result = GetPrivateProfileString(section, key, NULL, strValue, sizeof(strValue), path);
-		if (result)
+		char buff[32];
+		if (GetPrivateProfileString(section, key, NULL, buff, sizeof(buff), path))
 		{
-			value = (float)atof(strValue);
-			OPCODE_WRITE_PARAM_FLOAT(value);
+			char *str, *end;
+			float value;
+			if (StringStartsWith(buff, "0x", false)) // hex int
+			{
+				str = buff + 2;
+				value = (float)strtol(str, &end, 16);
+			}
+			else // float
+			{
+				str = buff;
+				value = strtof(str, &end);
+			}
+
+			if (end != str) // at least one number character consumed
+			{
+				OPCODE_WRITE_PARAM_FLOAT(value);
+				OPCODE_CONDITION_RESULT(true);
+				return OR_CONTINUE;
+			}
 		}
-		else
-		{
-			OPCODE_SKIP_PARAMS(1);
-		}
-		OPCODE_CONDITION_RESULT(result);
+
+		// failed
+		OPCODE_SKIP_PARAMS(1);
+		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 
@@ -105,6 +158,11 @@ public:
 		char strValue[32];
 		sprintf(strValue, "%g", value);
 		auto result = WritePrivateProfileString(section, key, strValue, path);
+		
+		if (GetLastError() == ERROR_FILE_NOT_FOUND) // path points directory
+		{
+			result = false;
+		}
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
@@ -146,6 +204,11 @@ public:
 		OPCODE_READ_PARAM_STRING(key);
 
 		auto result = WritePrivateProfileString(section, key, strValue, path);
+
+		if (GetLastError() == ERROR_FILE_NOT_FOUND) // path points directory
+		{
+			result = false;
+		}
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;

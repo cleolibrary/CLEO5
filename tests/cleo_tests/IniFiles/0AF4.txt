@@ -15,15 +15,20 @@ function tests
     it("should fail on not-existing file", test1)
     it("should fail on invalid file", test2)
     it("should fail on not existing value", test3)
-    it("should read value", test4)
+    it("should read string value", test4)
+    it("should trim whitespaces", test5)
 
     return
     
     :setup
         delete_file {path} Test_Path
-        write_int_to_ini_file {value} 42 {path} Test_Path {section} "test" {key} "test_int"
-        write_float_to_ini_file {value} 50.0 {path} Test_Path {section} "test" {key} "test_float"
-        write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "test_string"
+        write_int_to_ini_file       {value} 42 {path} Test_Path {section} "test" {key} "test_int"
+        write_int_to_ini_file       {value} -42 {path} Test_Path {section} "test" {key} "test_int_neg"
+        write_string_to_ini_file    {value} "0x42" {path} Test_Path {section} "test" {key} "test_int_hex"
+        write_float_to_ini_file     {value} 50.0 {path} Test_Path {section} "test" {key} "test_float"
+        write_float_to_ini_file     {value} -50.0 {path} Test_Path {section} "test" {key} "test_float_neg"
+        write_string_to_ini_file    {value} "value_one" {path} Test_Path {section} "test" {key} "test_string"
+        write_string_to_ini_file    {value} "  12.3four " {path} Test_Path {section} "test" {key} "test_mixed"
     return
     
     :cleanup
@@ -31,23 +36,37 @@ function tests
     return
     
     function test1
-        longstring value = read_string_from_ini_file {path} "not_a_file.ini" {section} "test" {key} "test_string"
+        longstring value = "initial"
+        value = read_string_from_ini_file {path} "not_a_file.ini" {section} "test" {key} "test_string"
         assert_result_false()
+        assert_eqs(value, "initial")
     end
     
     function test2
-        longstring value = read_string_from_ini_file {path} "cleo.asi" {section} "test" {key} "test_string"
+        longstring value = "initial"
+        value = read_string_from_ini_file {path} "cleo.asi" {section} "test" {key} "test_string"
         assert_result_false()
+        assert_eqs(value, "initial")
     end
     
     function test3
-        longstring value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "invalid_key"
+        longstring value = "initial"
+        value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "invalid_key"
         assert_result_false()
+        assert_eqs(value, "initial")
     end
     
     function test4
-        longstring value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test_string"
+        longstring value = "initial"
+        value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test_string"
         assert_result_true()
         assert_eqs(value, "value_one")
-    end    
+    end
+    
+    function test5
+        longstring value = "initial"
+        value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test_mixed"
+        assert_result_true()
+        assert_eqs(value, "12.3four")
+    end  
 end
