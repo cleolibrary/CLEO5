@@ -15,16 +15,25 @@ function tests
     it("should fail on not-existing file", test1)
     it("should fail on invalid file", test2)
     it("should fail on not existing value", test3)
-    it("should fail on invalid type", test4)
-    it("should read value", test5)
+    it("should fail on invalid data", test4)
+    it("should read int from int data", test5)
+    it("should read int from negative int data", test6)
+    it("should read int from hex int data", test7)
+    it("should read int from float data", test8)
+    it("should read int from negative float data", test9)
+    it("should read int from mixed data", test10)
 
     return
     
     :setup
         delete_file {path} Test_Path
-        write_int_to_ini_file {value} 42 {path} Test_Path {section} "test" {key} "test_int"
-        write_float_to_ini_file {value} 50.0 {path} Test_Path {section} "test" {key} "test_float"
-        write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "test_string"
+        write_int_to_ini_file       {value} 42 {path} Test_Path {section} "test" {key} "test_int"
+        write_int_to_ini_file       {value} -42 {path} Test_Path {section} "test" {key} "test_int_neg"
+        write_string_to_ini_file    {value} "0x42" {path} Test_Path {section} "test" {key} "test_int_hex"
+        write_float_to_ini_file     {value} 50.0 {path} Test_Path {section} "test" {key} "test_float"
+        write_float_to_ini_file     {value} -50.0 {path} Test_Path {section} "test" {key} "test_float_neg"
+        write_string_to_ini_file    {value} "value_one" {path} Test_Path {section} "test" {key} "test_string"
+        write_string_to_ini_file    {value} "  12.3four " {path} Test_Path {section} "test" {key} "test_mixed"
     return
     
     :cleanup
@@ -32,28 +41,72 @@ function tests
     return
     
     function test1
-        int value = read_int_from_ini_file {path} "not_a_file.ini" {section} "test" {key} "test_int"
+        int value = 555
+        value = read_int_from_ini_file {path} "not_a_file.ini" {section} "test" {key} "test_float"
         assert_result_false()
+        assert_eq(value, 555)
     end
     
     function test2
-        int value = read_int_from_ini_file {path} "cleo.asi" {section} "test" {key} "test_int"
+        int value = 555
+        value = read_int_from_ini_file {path} "cleo.asi" {section} "test" {key} "test_int"
         assert_result_false()
+        assert_eq(value, 555)
     end
     
     function test3
-        int value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "invalid_key"
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "invalid_key"
         assert_result_false()
+        assert_eq(value, 555)
     end
     
     function test4
-        int value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_string"
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_string"
         assert_result_false()
+        assert_eq(value, 555)
     end
     
     function test5
-        int value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_int"
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_int"
         assert_result_true()
         assert_eq(value, 42)
+    end
+    
+    function test6
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_int_neg"
+        assert_result_true()
+        assert_eq(value, -42)
+    end
+    
+    function test7
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_int_hex"
+        assert_result_true()
+        assert_eq(value, 0x42)
+    end
+    
+    function test8
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_float"
+        assert_result_true()
+        assert_eq(value, 50)
+    end
+    
+    function test9
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_float_neg"
+        assert_result_true()
+        assert_eq(value, -50)
+    end
+    
+    function test10
+        int value = 555
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_mixed"
+        assert_result_true()
+        assert_eq(value, 12)
     end
 end

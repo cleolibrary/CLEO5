@@ -15,7 +15,7 @@ function tests
     it("should fail to overwrite file", test1)
     it("should fail to overwrite directory", test2)
     it("should create new file", test3)
-    it("should append to existing file", test4)
+    it("should add to existing file", test4)
     it("should overwrite value", test5)
     return
     
