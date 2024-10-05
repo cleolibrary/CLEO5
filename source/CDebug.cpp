@@ -44,7 +44,7 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
         // add separator line if frame rendered since last log entry
         if (lastFrame != CTimer::m_FrameCounter)
         {
-            m_hFile << timestampStr << std::endl;
+            m_hFile << std::endl << timestampStr;
             lastFrame = CTimer::m_FrameCounter;
         }
 
