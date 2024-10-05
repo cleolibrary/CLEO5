@@ -117,6 +117,39 @@ namespace CLEO
         }
     }
 
+    // erase GTA's text formatting sequences like ~r~
+    static void StringRemoveFormatting(std::string& str)
+    {
+        size_t pos = 0;
+        while (true)
+        {
+            pos = str.find('~', pos);
+            if (pos == std::string::npos || 
+                (pos + 2) >= str.length()) // not enought characters left for formatting sequence
+            {
+                break;
+            }
+
+            if (str[pos + 2] != '~')
+            {
+                pos++;
+                continue;
+            }
+
+            switch (str[pos + 1])
+            {
+                case 'n':
+                case 'N':
+                    str.replace(pos, 3, "\n");
+                    break;
+                
+                default:
+                    str.erase(pos, 3);
+                    break;
+            }
+        }
+    }
+
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
     {
         std::string info(1024, '\0');

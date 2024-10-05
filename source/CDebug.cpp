@@ -11,36 +11,9 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
 {
     std::lock_guard<std::mutex> guard(mutex);
 
-    static char szBuf[1024];
-
-    // time stamp
-    SYSTEMTIME t;
-
-    //GetLocalTime(&t);
-    void (__stdcall * GTA_GetLocalTime)(LPSYSTEMTIME lpSystemTime) = memory_pointer(0x0081E514); // use ingame function instead as GetLocalTime seems to be considered suspicious by some AV software
-    GTA_GetLocalTime(&t);
-
-    sprintf(szBuf, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
-    char* stampEnd = szBuf + strlen(szBuf);
-
-    // add separator line if frame rendered since last log entry
-    if (lastFrame != CTimer::m_FrameCounter)
-    {
-        if (m_hFile.good())
-            m_hFile << szBuf << std::endl;
-
-        lastFrame = CTimer::m_FrameCounter;
-    }
-
-    strcpy(stampEnd, msg);
-
-    // output to file
-    if(m_hFile.good())
-        m_hFile << szBuf << std::endl;
-
     // output to console
 #ifdef _DEBUG
-    OutputDebugString(szBuf);
+    OutputDebugString(msg);
     OutputDebugString("\n");
 #endif
 
@@ -51,8 +24,36 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
         for (void* func : cleo.GetCallbacks(eCallbackId::Log))
         {
             typedef void WINAPI callback(eLogLevel, const char*);
-            ((callback*)func)(level, stampEnd);
+            ((callback*)func)(level, msg);
         }
+    }
+
+    // output to log file
+    if (m_hFile.good())
+    {
+        // time stamp
+        SYSTEMTIME t;
+        //GetLocalTime(&t);
+        void(__stdcall * GTA_GetLocalTime)(LPSYSTEMTIME lpSystemTime) = memory_pointer(0x0081E514); // use ingame function instead as GetLocalTime seems to be considered suspicious by some AV software
+        GTA_GetLocalTime(&t);
+
+        char timestampStr[32];
+        sprintf(timestampStr, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
+        m_hFile << timestampStr;
+
+        // add separator line if frame rendered since last log entry
+        if (lastFrame != CTimer::m_FrameCounter)
+        {
+            m_hFile << timestampStr << std::endl;
+            lastFrame = CTimer::m_FrameCounter;
+        }
+
+        // message
+        auto message = std::string(msg);
+        StringRemoveFormatting(message);
+        m_hFile << message.c_str();
+
+        m_hFile << std::endl;
     }
 }
 
