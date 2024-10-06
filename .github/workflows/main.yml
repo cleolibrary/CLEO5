@@ -69,6 +69,28 @@ jobs:
           vt_api_key: ${{ secrets.VT_KEY }}
           files: './cleo_plugins/.output/*.cleo'
 
+      - name: ModLoader plugin - Build
+        shell: cmd
+        run: |
+          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
+          msbuild -m modloader_plugin/CLEO_ModLoader_Plugin.sln /property:Configuration=Release /property:Platform=x86
+
+#      - name: ModLoader plugin - Sign
+#        uses: x87/code-sign-action@develop
+#        with:
+#          certificate: '${{ secrets.DIG_KEY_CERT }}'
+#          password: '${{ secrets.DIG_KEY_PWD }}'
+#          certificatename: 'Seemann'
+#          description: 'CLEO 5 ModLoader plugin'
+#          timestampUrl: 'http://timestamp.digicert.com'
+#          filename: './modloader_plugin/.output/Release/CLEO5_Provider.dll'
+
+      - name: ModLoader plugin - VirusTotal Scan
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ secrets.VT_KEY }}
+          files: './modloader_plugin/.output/Release/CLEO5_Provider.dll'
+
       - name: Gather Output Files
         id: prepare_archive
         shell: cmd
@@ -82,12 +104,16 @@ jobs:
           mkdir .output\Release\cleo\cleo_text
           mkdir .output\Release\cleo_readme
           mkdir .output\Release\cleo_readme\examples
+          mkdir .output\Release\modloader
+          mkdir .output\Release\modloader\.data
+          mkdir .output\Release\modloader\.data\plugins
 
           @REM copy files
           copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
+          copy modloader_plugin\.output\Release\*.dll .output\Release\modloader\.data\plugins
           xcopy /E /I tests .output\Release\cleo
           xcopy /E /I examples .output\Release\cleo_readme\examples
 

@@ -692,9 +692,6 @@ namespace CLEO
             auto result = fsPath.string();
             FilepathNormalize(result, false);
 
-            // ModLoader support: make paths withing game directory relative to it
-            FilepathRemoveParent(result, Filepath_Game);
-
             return std::move(result);
         }
 
@@ -974,20 +971,20 @@ namespace CLEO
             }
         };
 
-        auto searchPattern = Filepath_Cleo + "\\*" + cs_ext;
+        // scan main cleo directory
+        auto searchPattern = Filepath_Cleo + "\\*.*";
         auto list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
         processFileList(list);
         CLEO_StringListFree(list);
 
-        searchPattern = Filepath_Cleo + "\\*" + cs3_ext;
-        list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
-        processFileList(list);
-        CLEO_StringListFree(list);
-
-        searchPattern = Filepath_Cleo + "\\*" + cs4_ext;
-        list = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
-        processFileList(list);
-        CLEO_StringListFree(list);
+        // scripts from ModLoader
+        auto& modLoader = GetInstance().ModLoader;
+        if (modLoader.IsActive())
+        {
+            list = modLoader.ListCleoStartupScripts();
+            processFileList(list);
+            modLoader.StringListFree(list);
+        }
 
         if (!found.empty())
         {
