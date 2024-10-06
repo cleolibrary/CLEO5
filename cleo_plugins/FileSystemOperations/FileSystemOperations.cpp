@@ -106,6 +106,12 @@ public:
                     LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(thread).c_str());
                     return OR_CONTINUE;
             }
+
+            // Hack: restore global workDir if script used some hacky way to set it instead of 0A99 (SkinSelector)
+            if (idx == 0)
+            {
+                FS::current_path(CLEO_GetGameDirectory());
+            }
         }
         else
         {
