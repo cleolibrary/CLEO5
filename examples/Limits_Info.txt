@@ -1,0 +1,160 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+{$CLEO .cs}
+
+script_name {name} "lim_info"
+
+int active = false
+
+while true
+    if
+        test_cheat "limits"
+    then
+        active = true - active // toggle
+    end
+
+    if
+        active == false
+    then
+        wait 500
+        continue
+    end
+    
+    use_text_commands {state} true
+    
+    float pos = 120.0
+    pos = DRAW_MISSION_CLEANUP_LIST_INFO(pos)
+    //pos = DRAW_POOL_INFO(0x00965560, "Collisions %d/%d", pos) // CColStore::ms_pColPool
+    //pos = DRAW_POOL_INFO(0x0096A7D8, "EntryExit %d/%d", pos) // CEntryExitManager::mp_poolEntryExits
+    //pos = DRAW_POOL_INFO(0x008E3FB0, IPLs %d/%d", pos) // CIplStore::ms_pPool
+    pos = DRAW_POOL_INFO(0x00B74490, "Peds %d/%d", pos) // CPools::ms_pPedPool
+    //pos = DRAW_POOL_INFO(0x00B744A8, "Ped tasks %d/%d", pos) // CPools::ms_pTaskPool
+    //pos = DRAW_POOL_INFO(0x00B744C0, "Ped brains %d/%d", pos) // CPools::ms_pPedIntelligencePool
+    pos = DRAW_POOL_INFO(0x00B7449C, "Objects %d/%d", pos) // CPools::ms_pObjectPool
+    pos = DRAW_POOL_INFO(0x00B74494, "Vehicles %d/%d", pos) // CPools::ms_pVehiclePool
+            
+    wait 0
+end
+
+terminate_this_script
+
+
+function DRAW_COUNT_LINE(vPos :float, txt :string, count :int, total :int) : float    
+    set_text_right_justify {state} true
+    set_text_scale {widthScale} 0.25 {heightScale} 1.0
+    set_text_edge {size} 1 {red} 0 {green} 0 {blue} 0 {alpha} 240
+    SET_TEXT_COLOR(count, total)
+    display_text_formatted {offsetLeft} 635.0 {offsetTop} vPos {format} txt {args} count total
+    
+    vPos += 10.0
+    return vPos
+end
+
+
+function DRAW_MISSION_CLEANUP_LIST_INFO(vPos :float) : float
+    int count = read_memory_with_offset {address} 0x00A90850 {offset} 0x258 {size} 1 // CTheScripts::MissionCleanUp.m_Count
+    int size = 75 // CMissionCleanup max size
+    
+    vPos = DRAW_COUNT_LINE(vPos, "Mission Cleanup %d/%d", count, size)
+    return vPos
+end
+
+
+function DRAW_POOL_INFO(poolAddres :int, txt :string, vPos :float) : float
+    int count, size
+    count, size = GET_POOL_INFO(poolAddres)
+    
+    set_text_right_justify {state} true
+    set_text_scale {widthScale} 0.25 {heightScale} 1.0
+    set_text_edge {size} 1 {red} 0 {green} 0 {blue} 0 {alpha} 240
+    SET_TEXT_COLOR(count, size)    
+    display_text_formatted {offsetLeft} 635.0 {offsetTop} vPos {format} txt {args} count size
+    
+    vPos += 10.0
+    return vPos
+end
+
+
+// blend color from green to red
+function SET_TEXT_COLOR(count :int, size :int)
+    //float countF, sizeF
+    float countF =# count
+    float sizeF =# size
+    
+    float val = countF
+    val /= sizeF
+    
+    // clamp
+    if
+        val < 0.0
+    then
+        val = 0.0
+    end
+    if
+        val > 1.0
+    then
+        val = 1.0
+    end
+    
+    int r, g
+    if
+        val < 0.5   
+    then
+        // green to orange
+        val *= 2.0 // 0.0 to 0.5 -> 0.0 to 1.0
+        
+        val *= 255.0
+        r =# val // to int
+        
+        g = 255 
+    else
+        // orange to red
+        r = 255
+        
+        // 0.5 to 1.0 -> 1.0 to 0.0
+        val *= -2.0
+        val += 2.0 
+        
+        val *= 255.0
+        g =# val // to int
+    end
+    
+    // brightness
+    r /= 2
+    g /= 2
+    r += 127
+    g += 127
+    
+    set_text_colour {red} r {green} g {blue} 128 {alpha} 255
+end
+
+
+function GET_POOL_INFO(address :int) : int, int
+    int pool = read_memory address {size} 4 {vp} false // dereference pointer
+    if
+        pool == 0
+    then
+        return 0 0
+    end
+    
+    int size = read_memory_with_offset {address} pool {offset} 0x8 {size} 4 // CPool::m_nSize
+
+    // count empty slots
+    int byteMap = read_memory_with_offset {address} pool {offset} 0x4 {size} 4 // CPool::m_byteMap
+    
+    int count = 0
+    int i = 0
+    while i < size
+        int flags = read_memory_with_offset {address} byteMap {offset} i {size} 1 // tPoolObjectFlags
+        if
+            not is_local_var_bit_set_const {number} flags {n} 7 // tPoolObjectFlags::bEmpty
+        then
+            count += 1
+        end
+        
+        i += 1
+    end
+    
+    return count size
+end

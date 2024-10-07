@@ -1,0 +1,46 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+{$CLEO .cs}
+
+wait 3000 // give game time to start
+
+while true
+    wait {time} 250
+    
+    if
+        not is_player_control_on $player1
+    then
+        continue // wait for player playing
+    end
+
+    if
+        not is_char_sitting_in_any_car $scplayer
+    then
+        continue // wait for player in car
+    end
+    
+    int car_handle = store_car_char_is_in_no_save $scplayer
+    
+    int pointer = get_vehicle_pointer car_handle
+    
+    pointer = read_memory_with_offset {address} pointer {offset} 0x384 {size} 4 // CVehicle::m_pHandlingData
+    if
+        pointer == 0 // nullptr
+    then
+        continue // error: no handling data
+    end
+    
+    int flags = read_memory_with_offset {address} pointer {offset} 0xCC {size} 4 // tHandlingData::m_nModelFlags
+    
+    // https://github.com/DK22Pac/plugin-sdk/blob/master/plugin_sa/game_sa/tHandlingData.h#L66
+    if
+        is_bit_set {number} flags {bitIndex} 13 // m_bDoubleExhaust
+    then
+        print_formatted_now "~g~~h~Double exhaust" {time} 250
+    else
+        print_formatted_now "~r~~h~Single exhaust" {time} 250
+    end
+end
+
+terminate_this_script

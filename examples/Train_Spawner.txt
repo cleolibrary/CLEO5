@@ -1,0 +1,102 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+{$CLEO .cs}
+
+script_name {name} "train_sp"
+
+int trainType = -1
+
+while true
+    wait 333
+    
+    int area = get_area_visible
+    
+    if and
+        test_cheat "train"
+        is_player_control_on $player1
+        area == 0 // overworld
+    then
+        float pos[3]
+        pos[0], pos[1], pos[2] = get_char_coordinates $scplayer
+        
+        warp_char_from_car_to_coord $scplayer {pos} pos[0] pos[1] pos[2] // remove player from car if in any
+        delete_mission_trains
+        
+        // get next train type
+        trainType += 1
+        if
+            trainType > 15
+        then
+            trainType = 0
+        end
+    
+        int trainHandle = TRAIN_CREATE(trainType, pos[0], pos[1], pos[2], false)
+        
+        // set colors to the engine and all carriages
+        int color1 = generate_random_int_in_range {min} 0 {max} 8
+        int color2 = generate_random_int_in_range {min} 0 {max} 8
+        TRAIN_PAINT(trainHandle, color1, color2)
+        
+        warp_char_into_car $scplayer {vehicle} trainHandle
+        set_train_speed trainHandle {speed} 5.0
+        
+        point_camera_at_car {vehicle} trainHandle {mode} CameraMode.CamOnAString {switchStyle} SwitchType.JumpCut
+        restore_camera
+        
+        print_help_formatted {text} "Train type: %d~n~Colors: %d, %d" {args} trainType color1 color2
+    end
+end
+
+terminate_this_script
+
+
+function TRAIN_CREATE(type :int, posX :int, posY :int, posZ :int, direction :int) : int
+    request_model #TRAM
+    request_model #FREIGHT // freight train locomotive
+    request_model #STREAK // passenger train locomotive
+    request_model #FREIFLAT // freight flat railroad car
+    request_model #FREIBOX // freight box railroad car
+    request_model #STREAKC // passenger railroad car
+    load_all_models_now // force load now
+        
+    int handle = create_mission_train {type} type {pos} posX posY posZ {direction} direction
+                    
+    mark_model_as_no_longer_needed #TRAM
+    mark_model_as_no_longer_needed #FREIGHT
+    mark_model_as_no_longer_needed #STREAK
+    mark_model_as_no_longer_needed #FREIFLAT
+    mark_model_as_no_longer_needed #FREIBOX
+    mark_model_as_no_longer_needed #STREAKC
+    
+    // some trains spawns with driver. Remove him
+    int driverHandle = get_driver_of_car handle
+    if
+        driverHandle <> -1
+    then
+        remove_char_from_car_maintain_position driverHandle {vehicle} handle
+        delete_char driverHandle
+    end
+    
+    return handle
+end
+
+
+function TRAIN_PAINT(handle :int, color1 :int, color2 :int)
+    change_car_colour handle {color1} color1 {color2} color2
+
+    int idx = 1
+    while true
+        int carriage = get_train_carriage handle {number} idx
+        if
+            carriage == -1
+        then
+            break
+        end
+        
+        change_car_colour carriage {color1} color1 {color2} color2
+
+        idx += 1
+    end
+end
+

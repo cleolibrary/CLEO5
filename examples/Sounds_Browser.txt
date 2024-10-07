@@ -1,0 +1,96 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+{$CLEO .cs}
+
+script_name {name} "sound_br"
+
+int soundId = 1000
+int keyWasDown = false
+while true
+    wait 0
+    
+    print_formatted_now "Sound id: %d~n~Press ~y~<~s~ and ~y~>~s~ to browse,~n~hold ~y~SHIFT~s~ to browse faster.~n~Press ~y~?~s~ to play again." {time} 1 {args} soundId
+    
+    // handle browse keys
+    if or
+        is_key_pressed {keyCode} KeyCode.OemComma // <
+        is_key_pressed {keyCode} KeyCode.OemPeriod // >
+    then
+        keyWasDown = true
+        
+        int step
+        if
+            is_key_pressed {keyCode} KeyCode.OemPeriod
+        then
+            step = 1
+        else
+            step = -1
+        end
+        if
+            is_key_pressed {keyCode} KeyCode.Shift
+        then
+            step *= 10
+        end
+        soundId += step
+        
+        // warp around if out of bounds
+        if
+            soundId < 1000
+        then
+            soundId = 1190
+        end
+        if
+            soundId > 1190
+        then
+            soundId = 1000
+        end
+        
+        // wait for key release or timeout
+        while true
+            if and
+                not is_key_pressed {keyCode} KeyCode.OemComma // <
+                not is_key_pressed {keyCode} KeyCode.OemPeriod // >
+            then
+                break // keys released
+            end
+            
+            if
+                TimerA > 30 // auto repeat time in miliseconds
+            then
+                TimerA = 0
+                break
+            end
+            
+            wait 0
+        end
+        
+        continue
+    end
+    
+    // handle play key
+    if 
+        is_key_pressed {keyCode} KeyCode.Oem2 // ? key
+    then
+        keyWasDown = true
+        
+        wait 50
+        continue
+    end
+    
+    if
+        keyWasDown == true
+    then
+        float x, y, z
+        x, y, z = get_char_coordinates $scplayer
+        
+        add_one_off_sound {pos} x y z {soundId} soundId
+        
+        keyWasDown = false
+    end
+    
+    // keys are up
+    TimerA = -200 // extra delay before auto repeat activates
+end
+
+terminate_this_script
