@@ -65,13 +65,8 @@ function DRAW_POOL_INFO(poolAddres :int, txt :string, vPos :float) : float
     int count, size
     count, size = GET_POOL_INFO(poolAddres)
     
-    set_text_right_justify {state} true
-    set_text_scale {widthScale} 0.25 {heightScale} 1.0
-    set_text_edge {size} 1 {red} 0 {green} 0 {blue} 0 {alpha} 240
-    SET_TEXT_COLOR(count, size)    
-    display_text_formatted {offsetLeft} 635.0 {offsetTop} vPos {format} txt {args} count size
+    vPos = DRAW_COUNT_LINE(vPos, txt, count, size)
     
-    vPos += 10.0
     return vPos
 end
 
