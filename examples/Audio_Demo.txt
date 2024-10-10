@@ -1,6 +1,6 @@
 // CLEO5 example script
 // Sanny Builder 4
-// mode: GTA SA(v1.0 - SBL)
+// mode: GTA SA (v1.0 - SBL)
 {$CLEO .cs}
 
 const Model_Speaker = 2229
@@ -8,7 +8,7 @@ const Audio_Path = ".\cleo_tests\Audio\Ding.mp3" // this script's file relative 
 
 wait 1000
 
-int sound_stream, speaker_object
+int soundStream, speakerObject
 float value, valueCurr
 
 
@@ -23,17 +23,17 @@ while true
         START_TEST()
 
         if
-            not load_3d_audio_stream Audio_Path {store_to} sound_stream
+            not load_3d_audio_stream Audio_Path {store_to} soundStream
         then
             print_formatted_now "~r~Failed to load audio file!" {time} 10000
             END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object sound_stream {object} speaker_object
-        set_audio_stream_state sound_stream AudioStreamAction.Play
+        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+        set_audio_stream_state soundStream AudioStreamAction.Play
 
-        while is_audio_stream_playing sound_stream
-            valueCurr = get_audio_stream_progress sound_stream
+        while is_audio_stream_playing soundStream
+            valueCurr = get_audio_stream_progress soundStream
             print_formatted_now "DEMO 1: Get progress: %.2f" {time} 0 {args} valueCurr
             wait 0
         end
@@ -48,15 +48,15 @@ while true
         START_TEST()
 
         if
-            not load_3d_audio_stream Audio_Path {store_to} sound_stream
+            not load_3d_audio_stream Audio_Path {store_to} soundStream
         then
             print_formatted_now "~r~Failed to load audio file!" {time} 10000
             END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object sound_stream {object} speaker_object
-        set_audio_stream_looped sound_stream true
-        set_audio_stream_state sound_stream AudioStreamAction.Play
+        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+        set_audio_stream_looped soundStream true
+        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 1000
         repeat
@@ -64,7 +64,7 @@ while true
                 TIMERA >= 1000
             then
                 value = generate_random_float_in_range 0.0 2.0
-                set_audio_stream_volume sound_stream value
+                set_audio_stream_volume soundStream value
                 TIMERA = 0
             end
 
@@ -82,15 +82,15 @@ while true
         START_TEST()
 
         if
-            not load_3d_audio_stream Audio_Path {store_to} sound_stream
+            not load_3d_audio_stream Audio_Path {store_to} soundStream
         then
             print_formatted_now "~r~Failed to load audio file!" {time} 10000
             END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object sound_stream {object} speaker_object
-        set_audio_stream_looped sound_stream true
-        set_audio_stream_state sound_stream AudioStreamAction.Play
+        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+        set_audio_stream_looped soundStream true
+        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 2000
         repeat
@@ -98,11 +98,11 @@ while true
                 TIMERA >= 2000
             then
                 value = generate_random_float_in_range 0.0 2.0
-                set_audio_stream_volume_with_transition sound_stream {volume} value {timeMs} 1000
+                set_audio_stream_volume_with_transition soundStream {volume} value {timeMs} 1000
                 TIMERA = 0
             end
 
-            valueCurr = get_audio_stream_volume sound_stream
+            valueCurr = get_audio_stream_volume soundStream
             print_formatted_now "DEMO 3: Set volume: %.2f, Transition: 1.0s~n~Current volume: %.2f~n~Press 3 to stop" {time} 0 {args} value valueCurr
             wait 0
         until test_cheat "3"
@@ -117,15 +117,15 @@ while true
         START_TEST()
 
         if
-            not load_3d_audio_stream Audio_Path {store_to} sound_stream
+            not load_3d_audio_stream Audio_Path {store_to} soundStream
         then
             print_formatted_now "~r~Failed to load audio file!" {time} 10000
             END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object sound_stream {object} speaker_object
-        set_audio_stream_looped sound_stream true
-        set_audio_stream_state sound_stream AudioStreamAction.Play
+        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+        set_audio_stream_looped soundStream true
+        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 1000
         repeat
@@ -133,7 +133,7 @@ while true
                 TIMERA >= 1000
             then
                 value = generate_random_float_in_range 0.0 2.0
-                set_audio_stream_speed sound_stream value
+                set_audio_stream_speed soundStream value
                 TIMERA = 0
             end
 
@@ -151,15 +151,15 @@ while true
         START_TEST()
 
         if
-            not load_3d_audio_stream Audio_Path {store_to} sound_stream
+            not load_3d_audio_stream Audio_Path {store_to} soundStream
         then
             print_formatted_now "~r~Failed to load audio file!" {time} 10000
             END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object sound_stream {object} speaker_object
-        set_audio_stream_looped sound_stream true
-        set_audio_stream_state sound_stream AudioStreamAction.Play
+        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+        set_audio_stream_looped soundStream true
+        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 2000
         repeat
@@ -167,11 +167,11 @@ while true
                 TIMERA >= 2000
             then
                 value = generate_random_float_in_range 0.0 2.0
-                set_audio_stream_speed_with_transition sound_stream {volume} value {timeMs} 1000
+                set_audio_stream_speed_with_transition soundStream {volume} value {timeMs} 1000
                 TIMERA = 0
             end
 
-            valueCurr = get_audio_stream_speed sound_stream
+            valueCurr = get_audio_stream_speed soundStream
             print_formatted_now "DEMO 5: Set speed: %.2f, Transition: 1.0s~n~Current speed: %.2f~n~Press 5 to stop" {time} 0 {args} value valueCurr
             wait 0
         until test_cheat "5"
@@ -186,16 +186,16 @@ while true
         START_TEST()
 
         if
-            not load_3d_audio_stream Audio_Path {store_to} sound_stream
+            not load_3d_audio_stream Audio_Path {store_to} soundStream
         then
             print_formatted_now "~r~Failed to load audio file!" {time} 10000
             END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object sound_stream {object} speaker_object
-        set_audio_stream_looped sound_stream true
-        set_audio_stream_volume sound_stream {volume} 4.0
-        set_audio_stream_state sound_stream AudioStreamAction.Play
+        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+        set_audio_stream_looped soundStream true
+        set_audio_stream_volume soundStream {volume} 4.0
+        set_audio_stream_state soundStream AudioStreamAction.Play
         wait 1000
 
         int direction = 0
@@ -229,15 +229,15 @@ while true
         START_TEST()
 
         if
-            not load_3d_audio_stream Audio_Path {store_to} sound_stream
+            not load_3d_audio_stream Audio_Path {store_to} soundStream
         then
             print_formatted_now "~r~Failed to load audio file!" {time} 10000
             END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object sound_stream {object} speaker_object
-        set_audio_stream_looped sound_stream true
-        set_audio_stream_state sound_stream AudioStreamAction.Play
+        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+        set_audio_stream_looped soundStream true
+        set_audio_stream_state soundStream AudioStreamAction.Play
 
         // walk
         set_player_control 0 {control} false
@@ -247,7 +247,7 @@ while true
         extend_route {xyz} 231.0 2525.0 15.5
         extend_route {xyz} 230.0 2526.0 15.5
         task_follow_point_route $scplayer {walk_speed} 6 {flag} 3
-        task_look_at_object $scplayer {object} speaker_object {time} -1
+        task_look_at_object $scplayer {object} speakerObject {time} -1
 
         TIMERA = 2000
         repeat
@@ -270,7 +270,7 @@ while true
     end
 end
 
-terminate_this_custom_script
+terminate_this_script
 
 
 :START_TEST
@@ -293,16 +293,16 @@ terminate_this_custom_script
     // create speaker object (visual only)
     request_model {modelId} Model_Speaker
     load_all_models_now
-    speaker_object = create_object {modelId} Model_Speaker {xyz} 230.25 2525.0 16.0
+    speakerObject = create_object {modelId} Model_Speaker {xyz} 230.25 2525.0 16.0
     mark_model_as_no_longer_needed {modelId} Model_Speaker
-    set_object_collision speaker_object {state} false
+    set_object_collision speakerObject {state} false
     point_camera_at_point {xyz} 230.0 2525.0 16.5 {switchStyle} SwitchType.Interpolation
 return
 
 
 :END_TEST
-    remove_audio_stream sound_stream
-    delete_object speaker_object
+    remove_audio_stream soundStream
+    delete_object speakerObject
     camera_reset_new_scriptables
     restore_camera
     display_hud true
