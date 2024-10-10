@@ -252,9 +252,9 @@ namespace CLEO
         GetInstance().RemoveCallback(id, func);
     }
 
-    DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* thread, DWORD stream) // arg CAudioStream *
+    DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
     {
-        return stream; // CAudioStream::streamInternal offset is 0
+        return audioStreamPtr + 0x8; // offsetof(CAudioStream, streamInternal)
     }
 
     void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)

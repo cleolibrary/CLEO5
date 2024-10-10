@@ -5,7 +5,14 @@
 
 namespace CLEO
 {
-    class CAudioStream
+    // in CLEO4 CAudioStream was extending VInjectible
+    // this dummy parent keeps offset of CAudioStream::streamInternal unchanged
+    class Dummy
+    {
+        virtual void dummy() {};
+    };
+
+    class CAudioStream : Dummy
     {
     public:
         enum eStreamState
