@@ -6,6 +6,9 @@ using namespace CLEO;
 
 CAudioStream::CAudioStream(const char* filepath)
 {
+    // see https://github.com/cleolibrary/CLEO5/pull/230
+    static_assert(offsetof(CAudioStream, streamInternal) == 4 && alignof(CAudioStream) == 4, "CAudioStream compatibility with CLEO4 broken!");
+
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
         TRACE("Loading of audiostream '%s' failed. Support of network sources was disabled in SA.Audio.ini", filepath);
@@ -111,7 +114,7 @@ void CAudioStream::SetVolume(float value, float transitionTime)
     if (transitionTime <= 0.0)
         volume = value; // instant
     else
-        volumeTransitionStep = (volumeTarget - volume) / (1000.0 * transitionTime);
+        volumeTransitionStep = (volumeTarget - volume) / (1000.0f * transitionTime);
 }
 
 float CAudioStream::GetVolume() const
@@ -129,7 +132,7 @@ void CAudioStream::SetSpeed(float value, float transitionTime)
     if (transitionTime <= 0.0)
         speed = value; // instant
     else
-        speedTransitionStep = (speedTarget - speed) / (1000.0 * transitionTime);
+        speedTransitionStep = (speedTarget - speed) / (1000.0f * transitionTime);
 }
 
 float CAudioStream::GetSpeed() const
@@ -161,11 +164,11 @@ void CAudioStream::UpdateVolume()
     if (volume != volumeTarget)
     {
         auto timeDelta = CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped;
-        volume += volumeTransitionStep * (double)timeDelta; // animate the transition
+        volume += volumeTransitionStep * (float)timeDelta; // animate the transition
 
         // check progress
         auto remaining = volumeTarget - volume;
-        remaining *= (volumeTransitionStep > 0.0) ? 1.0 : -1.0;
+        remaining *= (volumeTransitionStep > 0.0f) ? 1.0f : -1.0f;
         if (remaining < 0.0) // overshoot
         {
             volume = volumeTarget;
@@ -188,11 +191,11 @@ void CAudioStream::UpdateSpeed()
     if (speed != speedTarget)
     {
         auto timeDelta = CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped;
-        speed += speedTransitionStep * (double)timeDelta; // animate the transition
+        speed += speedTransitionStep * (float)timeDelta; // animate the transition
 
         // check progress
         auto remaining = speedTarget - speed;
-        remaining *= (speedTransitionStep > 0.0) ? 1.0 : -1.0;
+        remaining *= (speedTransitionStep > 0.0f) ? 1.0f : -1.0f;
         if (remaining < 0.0) // overshoot
         {
             speed = speedTarget; // done

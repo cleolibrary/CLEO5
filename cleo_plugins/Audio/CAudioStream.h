@@ -58,14 +58,14 @@ namespace CLEO
         eStreamType type = eStreamType::SoundEffect;
         bool ok = false;
         float rate = 44100.0f; // file's sampling rate
-        double speed = 1.0f;
-        double volume = 1.0f;
+        float speed = 1.0f;
+        float volume = 1.0f;
 
         // transitions
-        double volumeTarget = 1.0f;
-        double volumeTransitionStep = 1.0f;
-        double speedTarget = 1.0f;
-        double speedTransitionStep = 1.0f;
+        float volumeTarget = 1.0f;
+        float volumeTransitionStep = 1.0f;
+        float speedTarget = 1.0f;
+        float speedTransitionStep = 1.0f;
 
         CAudioStream() = default;
         CAudioStream(const CAudioStream&) = delete; // no copying!

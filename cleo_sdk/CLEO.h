@@ -530,7 +530,7 @@ void WINAPI CLEO_RemoveScriptDeleteDelegate(FuncScriptDeleteDelegateT func);
 
 DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // ret RwTexture *
 
-DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* thread, DWORD stream); // arg CAudioStream *
+DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* unused, DWORD audioStreamPtr); // CAudioStream*
 
 struct StringList { DWORD count; char** strings; };
 void WINAPI CLEO_StringListFree(StringList list); // releases resources used by StringList container
