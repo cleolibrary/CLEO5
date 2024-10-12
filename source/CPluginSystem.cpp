@@ -95,6 +95,29 @@ void CPluginSystem::LoadPlugins()
     pluginsLoaded = true;
 }
 
+void CPluginSystem::LoadPluginsModLoader()
+{
+    if (mlPluginsLoaded) return; // already done
+    mlPluginsLoaded = true;
+
+    TRACE(""); // separator
+    TRACE("Listing CLEO plugins from ModLoader:");
+
+    // currently ModLoader loads *.cleo files itself, so just query the count
+    auto files = GetInstance().ModLoader.ListCleoFiles("*.cleo");
+    mlPluginCount = files.count;
+    GetInstance().ModLoader.StringListFree(files);
+
+    if (mlPluginCount > 0)
+    {
+        TRACE(" - %d CLEO plugin%s already loaded by ModLoader", mlPluginCount, (mlPluginCount == 1) ? "" : "s");
+    }
+    else
+    {
+        TRACE(" - nothing found");
+    }
+}
+
 void CPluginSystem::UnloadPlugins()
 {
     if (!pluginsLoaded) return;
@@ -114,6 +137,6 @@ void CPluginSystem::UnloadPlugins()
 
 size_t CPluginSystem::GetNumPlugins() const
 {
-    return plugins.size();
+    return plugins.size() + mlPluginCount;
 }
 

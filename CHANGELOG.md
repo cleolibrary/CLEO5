@@ -1,6 +1,7 @@
 ## 5.0.0
 
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264
+- improved ModLoader support with CLEO plugin
 - new [Audio](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Audio) plugin
   - audio related opcodes moved from CLEO core into separated plugin
   - CLEO's audio now obey game's volume settings

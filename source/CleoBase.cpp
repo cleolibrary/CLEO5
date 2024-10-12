@@ -165,6 +165,10 @@ namespace CLEO
             TRACE("CLEO initialization: Phase 2");
 
             CodeInjector.ReplaceJump(OnDebugDisplayTextBuffer, VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER), &DebugDisplayTextBuffer);
+
+            // delayed so modloader.asi has chance to start
+            GetInstance().ModLoader.Init();
+            GetInstance().PluginSystem.LoadPluginsModLoader();
         }
 
         m_initStage = stage;
@@ -265,6 +269,12 @@ namespace CLEO
         }
 
         auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
+        if (CleoInstance.ModLoader.IsActive())
+        {
+            resolved.resize(pathMaxLen);
+            CleoInstance.ModLoader.ResolvePath(reinterpret_cast<CCustomScript*>(thread)->GetScriptFileFullPath().c_str(), resolved.data(), resolved.size());
+            resolved.resize(strlen(resolved.c_str()));
+        }
 
         if (resolved.length() >= pathMaxLen)
             resolved.resize(pathMaxLen - 1); // and terminator character
@@ -303,28 +313,44 @@ namespace CLEO
                 fsSearchPath = Filepath_Game / fsSearchPath;
         }
 
-        WIN32_FIND_DATA wfd = { 0 };
-        HANDLE hSearch = FindFirstFile(fsSearchPath.string().c_str(), &wfd);
-        if (hSearch == INVALID_HANDLE_VALUE)
-            return {}; // nothing found
-
         std::set<std::string> found;
-        do
+
+        if (CleoInstance.ModLoader.IsActive())
         {
-            if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
-                continue; // skip directories
+            std::string scriptFile;
+            if (thread != nullptr) scriptFile = ((CCustomScript*)thread)->GetScriptFileFullPath();
 
-            if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-                continue; // skip files
+            auto list = CleoInstance.ModLoader.ListFiles(scriptFile.c_str(), fsSearchPath.string().c_str(), listDirs, listFiles);
+            for  (DWORD i = 0; i < list.count; i++)
+            {
+                found.emplace(list.strings[i]);
+            }
+            CleoInstance.ModLoader.StringListFree(list);
+        }
+        else
+        {
+            WIN32_FIND_DATA wfd = { 0 };
+            HANDLE hSearch = FindFirstFile(fsSearchPath.string().c_str(), &wfd);
+            if (hSearch == INVALID_HANDLE_VALUE)
+                return {}; // nothing found
 
-            auto path = FS::path(wfd.cFileName);
-            if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
-                path = fsSearchPath.parent_path() / path;
+            do
+            {
+                if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
+                    continue; // skip directories
 
-            found.insert(path.string());
-        } while (FindNextFile(hSearch, &wfd));
+                if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+                    continue; // skip files
 
-        FindClose(hSearch);
+                auto path = FS::path(wfd.cFileName);
+                if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
+                    path = fsSearchPath.parent_path() / path;
+
+                found.insert(path.string());
+            } while (FindNextFile(hSearch, &wfd));
+
+            FindClose(hSearch);
+        }
 
         return CreateStringList(found);
     }
