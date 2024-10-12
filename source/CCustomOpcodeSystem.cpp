@@ -88,11 +88,11 @@ namespace CLEO
 	void(__cdecl * SpawnCar)(DWORD);
 
 	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
-	WORD CCustomOpcodeSystem::lastOpcode = 0;
+	WORD CCustomOpcodeSystem::lastOpcode = 0xFFFF;
 	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
 	WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
 	std::string CCustomOpcodeSystem::lastErrorMsg = {};
-	WORD CCustomOpcodeSystem::prevOpcode = 0;
+	WORD CCustomOpcodeSystem::prevOpcode = 0xFFFF;
 	BYTE CCustomOpcodeSystem::handledParamCount = 0;
 
 	// opcode handler for custom opcodes
