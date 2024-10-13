@@ -15,10 +15,17 @@
 
 namespace CLEO
 {
+    enum class GameSessionState : size_t
+    {
+        None,
+        Initial,
+        InProgress
+    };
+
     class CCleoInstance
     {
     public:
-        enum InitStage : size_t
+        enum class InitStage : size_t
         {
             None,
             Initial,
@@ -47,6 +54,7 @@ namespace CLEO
 
         void GameBegin();
         void GameEnd();
+        GameSessionState GameState() const { return m_gameState; }
 
         bool IsStarted() const { return m_initStage != InitStage::None; }
 
@@ -95,7 +103,7 @@ namespace CLEO
 
     private:
         InitStage m_initStage = InitStage::None;
-        bool m_bGameInProgress;
+        GameSessionState m_gameState = GameSessionState::None;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 

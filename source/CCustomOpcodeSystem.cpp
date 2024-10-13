@@ -25,6 +25,7 @@ namespace CLEO
 
 	OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
 	OpcodeResult __stdcall opcode_0051(CRunningScript * thread); // GOSUB return
+	OpcodeResult __stdcall opcode_03D9(CRunningScript* thread); // has_save_game_finished
 	OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
 
 	OpcodeResult __stdcall opcode_0A92(CRunningScript* thread); // stream_custom_script
@@ -235,6 +236,7 @@ namespace CLEO
 
 		CLEO_RegisterOpcode(0x004E, opcode_004E);
 		CLEO_RegisterOpcode(0x0051, opcode_0051);
+		CLEO_RegisterOpcode(0x03D9, opcode_03D9);
 		CLEO_RegisterOpcode(0x0417, opcode_0417);
 		CLEO_RegisterOpcode(0x0A92, opcode_0A92);
 		CLEO_RegisterOpcode(0x0A93, opcode_0A93);
@@ -821,6 +823,20 @@ namespace CLEO
 
 		size_t tableIdx = 0x0051 / 100; // 100 opcodes peer handler table
 		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
+	}
+
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_03D9(CRunningScript* thread) // has_save_game_finished
+	{
+		if (thread->IsCustom())
+		{
+			bool saveProcessing = (GetInstance().GameState() == GameSessionState::Initial) && (GetInstance().saveSlot) != -1;
+
+			OPCODE_CONDITION_RESULT(!saveProcessing);
+			return OR_CONTINUE;
+		}
+
+		size_t tableIdx = 0x03D9 / 100; // 100 opcodes peer handler table
+		return originalOpcodeHandlers[tableIdx](thread, 0x03D9); // call game's original
 	}
 
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread) // load_and_launch_mission_internal
