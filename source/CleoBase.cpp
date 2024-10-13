@@ -12,13 +12,13 @@ namespace CLEO
         Stop();
     }
 
-    void __declspec(naked) CCleoInstance::OnUpdateGameLogics()
+    void __cdecl CCleoInstance::OnUpdateGameLogics()
     {
         CleoInstance.CallCallbacks(eCallbackId::GameProcess); // execute registered callbacks
 
-        static DWORD dwFunc;
-        dwFunc = (DWORD)(CleoInstance.UpdateGameLogics);
-        _asm jmp dwFunc
+        CleoInstance.UpdateGameLogics(); // call original function
+
+        CleoInstance.m_gameState = GameSessionState::InProgress;
     }
 
     HWND CCleoInstance::OnCreateMainWnd(HINSTANCE hinst)
@@ -121,7 +121,7 @@ namespace CLEO
     {
         if (stage > InitStage::Done) return; // invalid argument
 
-        auto nextStage = InitStage(m_initStage + 1);
+        auto nextStage = InitStage((size_t)m_initStage + 1);
         if (stage != nextStage) return;
 
         if (stage == InitStage::Initial)
@@ -183,8 +183,8 @@ namespace CLEO
 
     void CCleoInstance::GameBegin()
     {
-        if (m_bGameInProgress) return;
-        m_bGameInProgress = true;
+        if (m_gameState != GameSessionState::None) return;
+        m_gameState = GameSessionState::Initial;
 
         saveSlot = MenuManager->m_bWantToLoad ? MenuManager->m_nSelectedSaveGame : -1;
 
@@ -197,8 +197,8 @@ namespace CLEO
 
     void CCleoInstance::GameEnd()
     {
-        if (!m_bGameInProgress) return;
-        m_bGameInProgress = false;
+        if (m_gameState == GameSessionState::None) return;
+        m_gameState = GameSessionState::None;
 
         TRACE(""); // separator
         TRACE("Ending current game");
