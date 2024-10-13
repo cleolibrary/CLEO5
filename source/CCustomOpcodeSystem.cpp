@@ -829,9 +829,9 @@ namespace CLEO
 	{
 		if (thread->IsCustom())
 		{
-			bool saveProcessing = (GetInstance().GameState() == GameSessionState::Initial) && (GetInstance().saveSlot != -1);
+			bool justLoaded = (GetInstance().GameState() == GameSessionState::Initial) && (GetInstance().saveSlot != -1);
 
-			OPCODE_CONDITION_RESULT(!saveProcessing);
+			OPCODE_CONDITION_RESULT(!justLoaded);
 			return OR_CONTINUE;
 		}
 
