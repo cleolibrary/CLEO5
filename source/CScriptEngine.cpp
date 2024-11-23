@@ -941,7 +941,13 @@ namespace CLEO
 
         GetInstance().ModuleSystem.LoadCleoModules();
         LoadState(GetInstance().saveSlot);
+
+        // keep main script as first to be exected
+        CRunningScript* main = *activeThreadQueue;
+        RemoveScriptFromQueue(main, activeThreadQueue);
+
         LoadCustomScripts();
+        AddScriptToQueue(main, activeThreadQueue);
     }
 
     void CScriptEngine::GameEnd()
