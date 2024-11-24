@@ -279,8 +279,8 @@ public:
         auto size = OPCODE_READ_PARAM_INT();
         auto virtualProtect = OPCODE_READ_PARAM_BOOL();
 
-        // validate params
-        if (size < 0 || size > sizeof(SCRIPT_VAR))
+        // allowed sizes: 0, 1, 2, 3, 4 and multiplies of 4 until 256
+        if (size < 0 || size > (64 * 4) || (size > 4 && (size % 4 != 0)))
         {
             SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
             return thread->Suspend();
