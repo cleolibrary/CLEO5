@@ -161,8 +161,11 @@ public:
         SCRIPT_VAR* arguments_end = arguments + numArg;
         numPop *= 4; // bytes peer argument
         DWORD result;
+        int oriSp, postSp; // stack validation
         _asm
         {
+            mov oriSp, esp
+
             // transfer args to stack
             lea ecx, arguments
             call_func_loop :
@@ -179,6 +182,21 @@ public:
                 call func
                 mov result, eax // get result
                 add esp, numPop // cleanup stack
+
+            mov postSp, esp
+        }
+
+        // validate stack pointer
+        if (postSp != oriSp)
+        {
+            _asm
+            {
+                mov esp, oriSp // fix stack pointer
+            }
+
+            int diff = oriSp - postSp;
+            SHOW_ERROR("Function call left stack position changed (%s%d) in script %s \nScript suspended.", diff > 0 ? "+" : "", diff, CLEO::ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
         }
 
         if (returnArg)
