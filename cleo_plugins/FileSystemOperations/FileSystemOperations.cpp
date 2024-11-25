@@ -355,8 +355,7 @@ public:
     static OpcodeResult WINAPI opcode_0AD9(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
-        OPCODE_READ_PARAM_STRING(format);
-        static char text[4 * MAX_STR_LEN]; CLEO_ReadParamsFormatted(thread, format, text, MAX_STR_LEN);
+        OPCODE_READ_PARAM_STRING_FORMATTED(text);
         
         auto ok = File::writeString(handle, text);
         if (!ok)
