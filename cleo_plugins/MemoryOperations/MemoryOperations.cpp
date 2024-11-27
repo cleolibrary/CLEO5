@@ -195,7 +195,8 @@ public:
             }
 
             int diff = oriSp - postSp;
-            SHOW_ERROR("Function call left stack position changed (%s%d) in script %s \nScript suspended.", diff > 0 ? "+" : "", diff, CLEO::ScriptInfoStr(thread).c_str());
+            int requiredPop = (numPop + diff) / 4;
+            SHOW_ERROR("Function call left stack position changed (%s%d). This usually happens when incorrect calling convention is used. \nArgument 'pop' value should have been %d in script %s \nScript suspended.", diff > 0 ? "+" : "", diff, requiredPop, CLEO::ScriptInfoStr(thread).c_str());
             return thread->Suspend();
         }
 
