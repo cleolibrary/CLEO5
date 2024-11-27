@@ -14,6 +14,9 @@ function tests
     it("should read 3 bytes", test4)
     it("should read 4 bytes", test5)
     it("should read float", test6)
+    it("should read 8 bytes", test7)
+    it("should read 12 bytes", test8)
+    it("should read 16 bytes", test9)
     
     return
     
@@ -22,6 +25,9 @@ function tests
         1@ = 0xcccccccc
         2@ = 0xdddddddd
         3@ = 0xeeeeeeee
+        4@ = 0xffffffff
+        5@ = 0xaaaaaaaa
+        6@ = 0xbbbbbbbb
     return
 
     function test1
@@ -30,6 +36,9 @@ function tests
         assert_eq(1@, 0xcccccccc)
         assert_eq(2@, 0x00000000)
         assert_eq(3@, 0xeeeeeeee)
+        assert_eq(4@, 0xffffffff)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
     end
 
     function test2
@@ -38,6 +47,9 @@ function tests
         assert_eq(1@, 0xcccccccc)
         assert_eq(2@, 0x00000044)
         assert_eq(3@, 0xeeeeeeee)
+        assert_eq(4@, 0xffffffff)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
     end
 
     function test3
@@ -46,6 +58,9 @@ function tests
         assert_eq(1@, 0xcccccccc)
         assert_eq(2@, 0x00003344)
         assert_eq(3@, 0xeeeeeeee)
+        assert_eq(4@, 0xffffffff)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
     end
 
     function test4
@@ -54,6 +69,9 @@ function tests
         assert_eq(1@, 0xcccccccc)
         assert_eq(2@, 0x00223344)
         assert_eq(3@, 0xeeeeeeee)
+        assert_eq(4@, 0xffffffff)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
     end
 
     function test5
@@ -62,6 +80,9 @@ function tests
         assert_eq(1@, 0xcccccccc)
         assert_eq(2@, 0x11223344)
         assert_eq(3@, 0xeeeeeeee)
+        assert_eq(4@, 0xffffffff)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
     end
 
     function test6
@@ -70,12 +91,52 @@ function tests
         get_var_pointer 0@ {store_to} 1@
         2@ = read_memory {address} 1@ {size} 4 {vp} false
 
-        assert_eq(2@, 125.0)
+        assert_eqf(2@, 125.0)
+        assert_eq(3@, 0xeeeeeeee)
+        assert_eq(4@, 0xffffffff)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
+    end
+    
+    function test7
+        2@ = read_memory {address} 0@ {size} 8 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x11223344)
+        assert_eq(3@, 0x55667788)
+        assert_eq(4@, 0xffffffff)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
+    end
+    
+    function test8
+        2@ = read_memory {address} 0@ {size} 12 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x11223344)
+        assert_eq(3@, 0x55667788)
+        assert_eq(4@, 0x99AABBCC)
+        assert_eq(5@, 0xaaaaaaaa)
+        assert_eq(6@, 0xbbbbbbbb)
+    end
+    
+    function test9
+        2@ = read_memory {address} 0@ {size} 16 {vp} false
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x11223344)
+        assert_eq(3@, 0x55667788)
+        assert_eq(4@, 0x99AABBCC)
+        assert_eq(5@, 0xDDEEFF00)
+        assert_eq(6@, 0xbbbbbbbb)
     end
 
     :DATA
     hex
         44 33 22 11
+        88 77 66 55
+        CC BB AA 99
+        00 FF EE DD
         "some longer testing text" 00
     end
 end

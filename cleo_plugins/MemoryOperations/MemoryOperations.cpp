@@ -286,8 +286,15 @@ public:
             return thread->Suspend();
         }
 
+        auto output = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
+
+        // clear unaffected bytes
+        if (size < 4)
+        {
+            output->dwParam = 0;
+        }
+
         // perform
-        DWORD value = 0;
         if (size > 0)
         {
             if (virtualProtect)
@@ -296,10 +303,9 @@ public:
                 VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
             }
 
-            memcpy(&value, address, size);
+            memcpy(output, address, size);
         }
 
-        OPCODE_WRITE_PARAM_ANY32(value);
         return OR_CONTINUE;
     }
 
