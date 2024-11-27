@@ -18,6 +18,8 @@ public:
 #else
         CLEO::Trace(CLEO::eLogLevel::Default, "CLEO v%s", CLEO_VERSION_STR);
 #endif
+
+        std::remove("cleo.log"); // delete CLEO 4 log file if present
     }
 
     ~CDebug()
