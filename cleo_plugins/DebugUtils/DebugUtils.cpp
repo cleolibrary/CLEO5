@@ -232,8 +232,8 @@ public:
         }
         else // breakpoint formatted name string
         {
-            auto format = CLEO_ReadStringOpcodeParam(thread);
-            name = CLEO_ReadParamsFormatted(thread, format);
+            OPCODE_READ_PARAM_STRING_FORMATTED(nameStr);
+            name = nameStr;
         }
 
         pausedScripts.emplace_back(thread, name.c_str());
@@ -262,8 +262,7 @@ public:
             return OR_CONTINUE;
         }
 
-        auto format = CLEO_ReadStringOpcodeParam(thread);
-        auto message = CLEO_ReadParamsFormatted(thread, format);
+        OPCODE_READ_PARAM_STRING_FORMATTED(message);
 
         CLEO_Log(eLogLevel::Debug, message);
         return OR_CONTINUE;

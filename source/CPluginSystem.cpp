@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CPluginSystem.h"
 #include "CleoBase.h"
+#include <psapi.h>
 
 
 using namespace CLEO;
@@ -115,5 +116,46 @@ void CPluginSystem::UnloadPlugins()
 size_t CPluginSystem::GetNumPlugins() const
 {
     return plugins.size();
+}
+
+void CLEO::CPluginSystem::LogLoadedPlugins() const
+{
+    auto process = GetCurrentProcess();
+
+    DWORD buffSize = 0;
+    if (!EnumProcessModules(process, nullptr, 0, &buffSize) || buffSize < sizeof(HMODULE))
+    {
+        return;
+    }
+
+    std::vector<HMODULE> modules(buffSize / sizeof(HMODULE));
+    if (!EnumProcessModules(process, modules.data(), buffSize, &buffSize))
+    {
+        return;
+    }
+
+    TRACE(""); // separator
+    TRACE("Loaded plugins summary:");
+
+    for (const auto& m : modules)
+    {
+        std::string filename(512, '\0');
+        if (GetModuleFileName(m, filename.data(), filename.size()))
+        {
+            filename.resize(strlen(filename.data()));
+
+            if (StringEndsWith(filename, ".asi", false) || StringEndsWith(filename, ".cleo", false))
+            {
+                std::error_code err;
+                auto fileSize = (size_t)FS::file_size(filename, err);
+
+                FilepathRemoveParent(filename, Filepath_Game);
+
+                TRACE(" %s (%zu bytes)", filename.c_str(), fileSize);
+            }
+        }
+    }
+
+    TRACE(""); // separator
 }
 

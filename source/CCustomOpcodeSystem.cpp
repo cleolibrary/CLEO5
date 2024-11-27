@@ -481,7 +481,7 @@ namespace CLEO
 		// invalid input arguments
 		if(outputStr == nullptr || len == 0)
 		{
-			LOG_WARNING(thread, "ReadFormattedString invalid input arg(s)");
+			LOG_WARNING(thread, "ReadFormattedString invalid input arg(s) in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
 			SkipUnusedVarArgs(thread);
 			return -1; // error
 		}
@@ -498,10 +498,19 @@ namespace CLEO
 
 				if (*iter == '%')
 				{
+					// end of format string
+					if (iter[1] == '\0')
+					{
+						LOG_WARNING(thread, "ReadFormattedString encountered incomplete format specifier in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+						SkipUnusedVarArgs(thread);
+						return -1; // error
+					}
+
+					// escaped % character
 					if (iter[1] == '%')
 					{
 						if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
-						*outIter++ = '%'; /* "%%"->'%' */
+						*outIter++ = '%';
 						iter += 2;
 						continue;
 					}
