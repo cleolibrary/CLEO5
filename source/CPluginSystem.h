@@ -30,5 +30,7 @@ namespace CLEO
         void LoadPlugins();
         void UnloadPlugins();
         size_t GetNumPlugins() const;
+
+        void LogLoadedPlugins() const;
     };
 }

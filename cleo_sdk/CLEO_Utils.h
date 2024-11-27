@@ -117,6 +117,23 @@ namespace CLEO
         }
     }
 
+    static bool StringEndsWith(const std::string_view str, const std::string_view suffix, bool caseSensitive = true)
+    {
+        if (str.length() < suffix.length())
+        {
+            return false;
+        }
+
+        if (caseSensitive)
+        {
+            return strncmp(&str.back() + 1 - suffix.length(), suffix.data(), suffix.length()) == 0;
+        }
+        else
+        {
+            return _strnicmp(&str.back() + 1 - suffix.length(), suffix.data(), suffix.length()) == 0;
+        }
+    }
+
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
     {
         std::string info(1024, '\0');

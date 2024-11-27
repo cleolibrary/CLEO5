@@ -165,6 +165,8 @@ namespace CLEO
             TRACE("CLEO initialization: Phase 2");
 
             CodeInjector.ReplaceJump(OnDebugDisplayTextBuffer, VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER), &DebugDisplayTextBuffer);
+
+            PluginSystem.LogLoadedPlugins();
         }
 
         m_initStage = stage;
