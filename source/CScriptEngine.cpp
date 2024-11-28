@@ -942,12 +942,21 @@ namespace CLEO
         GetInstance().ModuleSystem.LoadCleoModules();
         LoadState(GetInstance().saveSlot);
 
-        // keep main script as first to be exected
-        CRunningScript* main = *activeThreadQueue;
-        RemoveScriptFromQueue(main, activeThreadQueue);
+        // keep already loaded scripts at front of processing queue
+        auto head = *activeThreadQueue;
 
+        auto tail = head;
+        while (tail->Next) tail = tail->Next;
+
+        // load custom scripts as new list
+        *activeThreadQueue = nullptr;
         LoadCustomScripts();
-        AddScriptToQueue(main, activeThreadQueue);
+
+        // append custom scripts list to the back
+        tail->Next = *activeThreadQueue;
+        (*activeThreadQueue)->Previous = tail;
+
+        *activeThreadQueue = head; // restore original
     }
 
     void CScriptEngine::GameEnd()
