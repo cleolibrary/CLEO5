@@ -1,0 +1,41 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0208'
+test("0208 (generate_random_float_in_range)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should generate random floats in range", test1)
+    return
+    
+    function test1
+        float min = 999.0
+        float max = -999.0
+        float avg = 0.0
+                
+        int i
+        for i = 1 to 2000
+            float value = generate_random_float_in_range {min} -10.0 {max} 40.0
+            
+            if
+                value < min
+            then
+                min = value
+            end
+            
+            if
+                value > max
+            then
+                max = value
+            end 
+            
+            avg += value
+        end
+        avg /= 2000.0
+        
+        assert_rangef(min, -10.0, -9.0)
+        assert_rangef(max, 39.0, 40.0)
+        assert_rangef(avg, 14.0, 16.0) // expected value of uniform distribution
+    end
+end

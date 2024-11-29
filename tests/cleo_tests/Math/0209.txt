@@ -1,0 +1,41 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0209'
+test("0209 (generate_random_int_in_range)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should generate random ints in range", test1)
+    return
+    
+    function test1
+        int min = 999
+        int max = -999
+        int avg = 0
+                
+        int i
+        for i = 1 to 2000
+            int value = generate_random_int_in_range {min} -10 {max} 40
+            
+            if
+                value < min
+            then
+                min = value
+            end
+            
+            if
+                value > max
+            then
+                max = value
+            end 
+            
+            avg += value
+        end
+        avg /= 2000
+        
+        assert_eq(min, -10)
+        assert_eq(max, 40)
+        assert_range(avg, 14, 16) // expected value of uniform distribution
+    end
+end

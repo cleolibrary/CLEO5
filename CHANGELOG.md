@@ -39,6 +39,8 @@
   - new opcode **2304 ([get_script_filename](https://library.sannybuilder.com/#/sa/file/2304))**
 - new [Math](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Math) plugin
   - math related opcodes moved from CLEO core into separated plugin
+  - fixed poor randomization of **0208 ([generate_random_float_in_range](https://library.sannybuilder.com/#/sa/default/0208))** and **0209 ([generate_random_int_in_range](https://library.sannybuilder.com/#/sa/default/0209))**
+  - fixed invalid result range of **0098 ([generate_random_float](https://library.sannybuilder.com/#/sa/default/0098))**
   - new opcode **2700 ([is_bit_set](https://library.sannybuilder.com/#/sa/math/2700))**
   - new opcode **2701 ([set_bit](https://library.sannybuilder.com/#/sa/math/2701))**
   - new opcode **2702 ([clear_bit](https://library.sannybuilder.com/#/sa/math/2702))**

@@ -19,6 +19,12 @@ public:
         }
 
         // register opcodes
+
+        // reimplemented original (bugged) game's random opcodes
+        CLEO_RegisterOpcode(0x0098, opcode_0098); // generate_random_float
+        CLEO_RegisterOpcode(0x0208, opcode_0208); // generate_random_float_in_range
+        CLEO_RegisterOpcode(0x0209, opcode_0209); // generate_random_int_in_range
+
         CLEO_RegisterOpcode(0x0A8E, opcode_0A8E); // x = a + b (int)
         CLEO_RegisterOpcode(0x0A8F, opcode_0A8F); // x = a - b (int)
         CLEO_RegisterOpcode(0x0A90, opcode_0A90); // x = a * b (int)
@@ -48,6 +54,54 @@ public:
         CLEO_RegisterOpcode(0x2702, opcode_2702); // clear_bit
         CLEO_RegisterOpcode(0x2703, opcode_2703); // toggle_bit
         CLEO_RegisterOpcode(0x2704, opcode_2704); // is_truthy
+    }
+
+    //0098=1,generate_random_float
+    static OpcodeResult WINAPI opcode_0098(CRunningScript* thread)
+    {
+        uniform_real_distribution<float> dist(0.0f, std::nextafterf(1.0f, FLT_MAX)); // includes max value
+        auto value = dist(Instance.randomGenerator);
+
+        OPCODE_WRITE_PARAM_FLOAT(value);
+        return OR_CONTINUE;
+    }
+
+    //0208=3,generate_random_float_in_range min %1d% max %2d% store_to %3d%
+    static OpcodeResult WINAPI opcode_0208(CRunningScript* thread)
+    {
+        auto valMin = OPCODE_READ_PARAM_FLOAT();
+        auto valMax = OPCODE_READ_PARAM_FLOAT();
+
+        if (valMax < valMin)
+        {
+            SHOW_ERROR("Argument 'min' (%f) greater than 'max' (%f) in script %s\nScript suspended.", valMin, valMax, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        uniform_real_distribution<float> dist(valMin, std::nextafterf(valMax, FLT_MAX)); // includes max value
+        auto value = dist(Instance.randomGenerator);
+
+        OPCODE_WRITE_PARAM_FLOAT(value);
+        return OR_CONTINUE;
+    }
+
+    //0209=3,generate_random_int_in_range min %1d% max %2d% store_to %3d%
+    static OpcodeResult WINAPI opcode_0209(CRunningScript* thread)
+    {
+        auto valMin = OPCODE_READ_PARAM_INT();
+        auto valMax = OPCODE_READ_PARAM_INT();
+
+        // may happen when user thinks about input params as unsigned hex
+        if (valMax < valMin)
+        {
+            swap(valMin, valMax);
+        }
+
+        uniform_int_distribution<int> dist(valMin, valMax);
+        auto value = dist(Instance.randomGenerator);
+
+        OPCODE_WRITE_PARAM_INT(value);
+        return OR_CONTINUE;
     }
 
     //0A8E=3,%3d% = %1d% + %2d% ; int
