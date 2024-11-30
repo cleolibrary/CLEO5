@@ -202,8 +202,9 @@ end
 /// checks if int value is within specified range, otherwise stops the test execution
 function assert_range(actual: int, expectedMin: int, expectedMax: int)
     _cleo_tester_increment_assert()
-	if
+	if or
 		actual < expectedMin
+		actual > expectedMax
 	then
         _cleo_tester_fail()
         trace "~g~~h~~h~%08X to %08X~s~ expected~n~~r~~h~~h~%08X~s~ occured" expectedMin expectedMax actual
@@ -233,6 +234,20 @@ function assert_neqf(actual: float, expected: float)
 	then
         _cleo_tester_fail()
         trace "~s~Expected value different than ~r~~h~~h~%f~s~" actual
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
+/// checks if float value is within specified range, otherwise stops the test execution
+function assert_rangef(actual: float, expectedMin: float, expectedMax: float)
+    _cleo_tester_increment_assert()
+	if or
+		actual < expectedMin
+		actual > expectedMax
+	then
+        _cleo_tester_fail()
+        trace "~g~~h~~h~%f to %f~s~ expected~n~~r~~h~~h~%f~s~ occured" expectedMin expectedMax actual
         breakpoint
         terminate_this_custom_script
 	end

@@ -1745,6 +1745,8 @@ extern "C"
 
 	void WINAPI CLEO_SkipOpcodeParams(CLEO::CRunningScript* thread, int count)
 	{
+		if (count < 1) return;
+
 		for (int i = 0; i < count; i++)
 		{
 			switch (thread->ReadDataType())

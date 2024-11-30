@@ -1,0 +1,49 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2706'
+test("2706 (pick_random_float)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should pick single random int", test1)
+    it("should pick random ints", test2)
+    return
+    
+    function test1
+        int value = pick_random_float {values} 42.0
+        assert_eq(value, 42.0)
+    end
+    
+    function test2
+        int aCount = 0
+        int bCount = 0
+        int cCount = 0
+        int dCount = 0
+                
+        int i
+        for i = 1 to 300
+            float value = pick_random_float {values} -50.0 100.0 150.0
+            
+            switch value
+                case -50.0
+                    aCount += 1
+                    
+                case 100.0
+                    bCount += 1
+                    
+                case 150.0
+                    cCount += 1
+                    
+                default
+                    dCount += 1
+            end
+        end
+        
+        assert_range(aCount, 80, 120)
+        assert_range(bCount, 80, 120)
+        assert_range(cCount, 80, 120)
+        assert_eq(dCount, 0)
+    end
+end

@@ -1,0 +1,271 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+//
+// Creates "homiehelp" cheat code spawning car with gang members helping the player
+
+{$CLEO .cs}
+
+script_name {name} "homiehlp"
+
+wait 2000 // give game time to start
+
+while true
+    wait {time} 250
+    
+    if
+        not is_player_control_on $player1
+    then
+        continue // wait for player playing
+    end
+
+    if
+        test_cheat {input} "homiehelp"
+    then
+        // cheat contains H letter, used do make group hold position
+        PLAYER_GROUP_MOBILIZE()
+        
+        CHEAT_SPAWN_HELP()
+    end
+end
+
+terminate_this_script
+
+
+function CHEAT_SPAWN_HELP()
+    int iTmp
+
+    // check if outside
+    iTmp = get_char_area_visible $scplayer
+    if
+        iTmp <> 0 // player is inside some interior
+    then
+        print_help_string {text} "You need to be outside to call homies"
+        add_one_off_sound {xyz} 0.0 0.0 0.0 {soundId} ScriptSound.SoundRouletteNoCash // error sound
+        return 
+    end
+    
+    // get random point at 75.0 meters circle around the player
+    float dir = generate_random_float_in_range {min} -180.0 {max} 180.0
+    
+    float pos[3]
+    
+    // x offset
+    pos[0] = sin dir
+    pos[0] *= 75.0
+    
+    // y offset
+    pos[1] = cos dir
+    pos[1] *= 75.0
+    
+    // z offset
+    pos[2] = 0.0
+    
+    pos[0], pos[1], pos[2] = get_offset_from_char_in_world_coords $scplayer {offset} pos[0] pos[1] pos[2]
+    
+    // try find some road there
+    pos[0], pos[1], pos[2] = get_closest_car_node {pos} pos[0] pos[1] pos[2]
+    pos[2] += 1.5 // helps on slopes
+    
+    if
+        not locate_char_any_means_3d $scplayer {pos} pos[0] pos[1] pos[2] {radius} 150.0 150.0 150.0 {drawSphere} false // is found point in player's proximity?
+    then
+        print_help_string {text} "Too far to call homies"
+        add_one_off_sound {xyz} 0.0 0.0 0.0 {soundId} ScriptSound.SoundRouletteNoCash // error sound
+        return 
+    end
+    
+    // spawn gang car or bike
+    int modelIdx = pick_random_int {values} #BF400 #PCJ600 #BUCCANEE #GLENDALE #GREENWOO #MAJESTIC #TAHOMA #VOODOO
+    request_model {modelId} modelIdx
+    load_all_models_now
+    custom_plate_for_next_car {modelId} modelIdx {text} "_GSF_92_"
+    int carHandle = create_car {modelId} modelIdx {pos} pos[0] pos[1] pos[2]
+    mark_model_as_no_longer_needed {modelId} modelIdx
+    
+    pos[0], pos[1], pos[2] = get_char_coordinates $scplayer
+    turn_car_to_face_coord carHandle {pos} pos[0] pos[1]
+    
+    iTmp = pick_random_int {values} 16 37 44 51 114 // green car colors
+    change_car_colour carHandle {color1} iTmp {color2} 68
+    
+    set_load_collision_for_car_flag carHandle {state} true // make sure can drive offscreen
+    set_car_traction carHandle {traction} 1.5
+    improve_car_by_cheating carHandle {state} true
+    set_car_heavy carHandle {state} true
+    set_car_can_be_visibly_damaged carHandle {state} false
+
+    // map blip
+    int carBlip = add_blip_for_car {char} carHandle
+    set_blip_as_friendly carBlip {state} true // described as friendly on map legend
+    change_blip_colour carBlip {color} BlipColor.Green
+    change_blip_scale carBlip {size} 3 // small
+    
+    // driver
+    modelIdx = pick_random_int {values} #FAM1 #FAM2 #FAM3
+    int homie = SPAWN_GROVE_MEMBER(modelIdx)
+    warp_char_into_car homie {vehicle} carHandle
+        
+    // passengers
+    int seatCount = get_maximum_number_of_passengers carHandle
+    seatCount -= 1 // last seat index
+    int i
+    for i = 0 to seatCount
+        if or
+            i == 0 // first passenger is always present
+            random_chance {percent} 75.0 // any other has 3/4 chance
+        then
+            // make sure to use different model than previous
+            repeat
+                iTmp = pick_random_int {values} #FAM1 #FAM2 #FAM3
+            until iTmp <> modelIdx
+            modelIdx = iTmp
+            
+            homie = SPAWN_GROVE_MEMBER(modelIdx)
+            warp_char_into_car_as_passenger homie {handle} carHandle {seat} i
+            
+            iTmp = i & 1 // is right hand side seat?
+            task_drive_by {handle} -1 {targetChar} -1 {targetVehicle} -1 {pos} 0.0 0.0 0.0 {radius} 100.0 {type} DriveByType.Ai {rightHandCarSeat} iTmp {fireRate} 100
+        end
+    end
+    
+    print_help_string {text} "~g~Homies~s~ are on their way"
+    
+    TimerA = 0 // general timer
+    TimerB = 8000 // target position update timer
+    while true
+        wait {time} 50
+        
+        if
+            not does_vehicle_exist {handle} carHandle
+        then
+            :_CAR_FAILED
+            remove_blip carBlip
+            print_help_string {text} "Homies didn't make it..."
+            break
+        end
+        
+        if
+            is_car_dead {handle} carHandle
+        then
+            mark_car_as_no_longer_needed carHandle
+            goto @_CAR_FAILED
+        end
+        
+        if
+            TimerA > 30000 // timeout
+        then
+            delete_car carHandle
+            goto @_CAR_FAILED
+            break
+        end
+        
+        iTmp = get_driver_of_car carHandle
+        if
+            iTmp >= 0
+        then
+            pos[0], pos[1], pos[2] = get_char_coordinates $scplayer
+            
+            // arrived?
+            if
+                locate_car_3d carHandle {pos} pos[0] pos[1] pos[2] {radius} 20.0 20.0 20.0 {drawSphere} false
+            then
+                if
+                    random_chance {percent} 50.0
+                then
+                    set_car_temp_action carHandle {actionId} TempAction.HandbrakeTurnLeft {time} 5000
+                else
+                    set_car_temp_action carHandle {actionId} TempAction.HandbrakeTurnRight {time} 5000
+                end
+                                
+                SETUP_FOLLOWER(iTmp) // driver
+                goto @_CAR_DRIVER_LEFT // make passengers leave too
+            else
+                if
+                    TimerB > 8000 // limit refresh rate, as driving task has some iternal timers too, like stuck timer
+                then
+                    task_car_drive_to_coord {driver} iTmp {vehicle} carHandle {pos} pos[0] pos[1] pos[2] {speed} 50.0 {driveStyle} DriveMode.Racing {modelId} modelIdx {drivingStyle} DrivingMode.AvoidCars
+                    set_car_straight_line_distance carHandle {distance} 70
+                    set_car_can_go_against_traffic carHandle {state} true
+                    TimerB = 0
+                end
+            end
+            
+            continue
+        else
+            // driver no longer in the car
+            :_CAR_DRIVER_LEFT
+            
+            // make all passengers leave and go to the player
+            for i = 0 to seatCount
+                iTmp = get_char_in_car_passenger_seat carHandle {seat} i
+                if
+                    iTmp >= 0
+                then
+                    SETUP_FOLLOWER(iTmp)
+                end
+            end
+            
+            set_car_heavy carHandle {state} false
+            set_car_can_be_visibly_damaged carHandle {state} true
+            mark_car_as_no_longer_needed carHandle // despawn when away
+            remove_blip carBlip
+            break
+        end
+    end
+end
+
+
+function SPAWN_GROVE_MEMBER(modelIdx :int) : int
+    request_model {modelId} modelIdx
+    load_all_models_now
+    int charHandle = create_char {pedType} PedType.Gang2 {modelId} modelIdx {pos} 0.0 0.0 0.0
+    mark_model_as_no_longer_needed {modelId} modelIdx
+    
+    // weapon
+    int weaponIdx = pick_random_int {values} 28 28 28 28 32 32 32 32 30 30 5 25
+    modelIdx = get_weapontype_model {weaponType} weaponIdx
+    request_model {modelId} modelIdx
+    load_all_models_now
+    give_weapon_to_char charHandle {weaponType} weaponIdx {ammo} 120
+    mark_model_as_no_longer_needed {modelId} modelIdx
+    
+    int iTmp = generate_random_int_in_range {min} 60 {max} 100
+    set_char_accuracy charHandle {accuracy} iTmp
+    
+    set_char_stay_in_car_when_jacked charHandle {state} true
+    set_char_get_out_upside_down_car charHandle {state} false
+    set_char_can_be_knocked_off_bike charHandle {stayOnBike} true
+    set_char_force_die_in_car charHandle {state} true
+    
+    set_char_decision_maker charHandle {handleOrTemplate} DecisionMakerCharTemplate.Empty // stay in buring car
+    set_char_keep_task charHandle {state} true
+
+    return charHandle
+end
+
+
+function SETUP_FOLLOWER(handle: int)
+    mark_char_as_no_longer_needed handle // despawn when away
+    set_char_decision_maker handle {handleOrTemplate} DecisionMakerCharTemplate.Gang
+
+    int playerGroup = get_player_group $player1
+    int leaders, members
+    leaders, members = get_group_size playerGroup
+    members += leaders
+    if
+        members < 8 // group not full yet
+    then
+        set_group_member playerGroup {handle} handle
+    else
+        task_follow_footsteps {handle} handle {target} $scplayer
+    end
+    
+    listen_to_player_group_commands handle {state} true
+end
+
+
+function PLAYER_GROUP_MOBILIZE()
+    int ptr = get_ped_pointer {char} $scplayer
+    call_method {address} 0x0060A1D0 {struct} ptr {numParams} 3 {pop} 0 {funcParams} true false true // CPlayerPed.TellGroupToStartFollowingPlayer(bool, bool, bool)
+end

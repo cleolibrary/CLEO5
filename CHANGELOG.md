@@ -44,6 +44,10 @@
   - new opcode **2702 ([clear_bit](https://library.sannybuilder.com/#/sa/math/2702))**
   - new opcode **2703 ([toggle_bit](https://library.sannybuilder.com/#/sa/math/2703))**
   - new opcode **2704 ([is_truthy](https://library.sannybuilder.com/#/sa/math/2704))**
+  - new opcode **2705 ([pick_random_int](https://library.sannybuilder.com/#/sa/math/2705))**
+  - new opcode **2706 ([pick_random_float](https://library.sannybuilder.com/#/sa/math/2706))**
+  - new opcode **2707 ([pick_random_text](https://library.sannybuilder.com/#/sa/math/2707))**
+  - new opcode **2708 ([random_chance](https://library.sannybuilder.com/#/sa/math/2708))**
 - new [MemoryOperations](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/MemoryOperations) plugin
   - memory related opcodes moved from CLEO core into separated plugin
   - validation of input and output parameters for all opcodes

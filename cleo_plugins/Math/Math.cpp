@@ -2,13 +2,21 @@
 #include "CLEO.h"
 #include "CLEO_Utils.h"
 
+#include <random>
+
 using namespace CLEO;
 using namespace plugin;
+using namespace std;
 
 class Math
 {
 public:
-    Math()
+    random_device randomDevice;
+    mt19937 randomGenerator;
+
+    Math() :
+        randomDevice(),
+        randomGenerator(randomDevice())
     {
         auto cleoVer = CLEO_GetVersion();
         if (cleoVer < CLEO_VERSION)
@@ -48,6 +56,10 @@ public:
         CLEO_RegisterOpcode(0x2702, opcode_2702); // clear_bit
         CLEO_RegisterOpcode(0x2703, opcode_2703); // toggle_bit
         CLEO_RegisterOpcode(0x2704, opcode_2704); // is_truthy
+        CLEO_RegisterOpcode(0x2705, opcode_2705); // pick_random_int
+        CLEO_RegisterOpcode(0x2706, opcode_2706); // pick_random_float
+        CLEO_RegisterOpcode(0x2707, opcode_2707); // pick_random_text
+        CLEO_RegisterOpcode(0x2708, opcode_2708); // random_chance
     }
 
     //0A8E=3,%3d% = %1d% + %2d% ; int
@@ -434,4 +446,96 @@ public:
         OPCODE_CONDITION_RESULT(value != 0);
         return OR_CONTINUE;
     }
-} Math;
+
+    //2705=-1,pick_random_int values %d% store_to %d%
+    static OpcodeResult WINAPI opcode_2705(CScriptThread* thread)
+    {
+        auto valueCount = CLEO_GetVarArgCount(thread);
+
+        if (valueCount < 2) // value + result
+        {
+            SHOW_ERROR("Insufficient number of arguments in script %s\nScript suspended.", CLEO::ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+        valueCount -= 1; // output param
+
+        uniform_int_distribution<size_t> dist(0, valueCount - 1); // 0 to last index
+        auto idx = dist(Instance.randomGenerator);
+
+        // read n-th param
+        OPCODE_SKIP_PARAMS(idx);
+        auto value = OPCODE_READ_PARAM_INT();
+
+        OPCODE_SKIP_PARAMS(valueCount - (idx + 1)); // seek to output param
+        OPCODE_WRITE_PARAM_INT(value);
+
+        CLEO_SkipUnusedVarArgs(thread);
+        return OR_CONTINUE;
+    }
+
+    //2706=-1,pick_random_float values %d% store_to %d%
+    static OpcodeResult WINAPI opcode_2706(CScriptThread* thread)
+    {
+        auto valueCount = CLEO_GetVarArgCount(thread);
+
+        if (valueCount < 2) // value + result
+        {
+            SHOW_ERROR("Insufficient number of arguments in script %s\nScript suspended.", CLEO::ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+        valueCount -= 1; // output param
+
+        uniform_int_distribution<size_t> dist(0, valueCount - 1); // 0 to last index
+        auto idx = dist(Instance.randomGenerator);
+
+        // read n-th param
+        OPCODE_SKIP_PARAMS(idx);
+        auto value = OPCODE_READ_PARAM_FLOAT();
+
+        OPCODE_SKIP_PARAMS(valueCount - (idx + 1)); // seek to output param
+        OPCODE_WRITE_PARAM_FLOAT(value);
+
+        CLEO_SkipUnusedVarArgs(thread);
+        return OR_CONTINUE;
+    }
+
+    //2707=-1,pick_random_text values %d% store_to %d%
+    static OpcodeResult WINAPI opcode_2707(CScriptThread* thread)
+    {
+        auto valueCount = CLEO_GetVarArgCount(thread);
+
+        if (valueCount < 2) // value + result
+        {
+            SHOW_ERROR("Insufficient number of arguments in script %s\nScript suspended.", CLEO::ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+        valueCount -= 1; // output param
+
+        uniform_int_distribution<size_t> dist(0, valueCount - 1); // 0 to last index
+        auto idx = dist(Instance.randomGenerator);
+
+        // read n-th param
+        OPCODE_SKIP_PARAMS(idx);
+        OPCODE_READ_PARAM_STRING(value);
+
+        OPCODE_SKIP_PARAMS(valueCount - (idx + 1)); // seek to output param
+        OPCODE_WRITE_PARAM_STRING(value);
+
+        CLEO_SkipUnusedVarArgs(thread);
+        return OR_CONTINUE;
+    }
+
+    //2708=1,random_chance %1d%
+    static OpcodeResult WINAPI opcode_2708(CRunningScript* thread)
+    {
+        auto chance = OPCODE_READ_PARAM_FLOAT();
+
+        uniform_real_distribution<float> dist(0.0f, 100.0f); // 0.0 to 99.99(9)
+        auto random = dist(Instance.randomGenerator);
+
+        auto result = random < chance;
+
+        OPCODE_CONDITION_RESULT(result);
+        return OR_CONTINUE;
+    }
+} Instance;

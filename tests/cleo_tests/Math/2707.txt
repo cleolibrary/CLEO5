@@ -1,0 +1,51 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2707'
+test("2707 (pick_random_text)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should pick single random text", test1)
+    it("should pick random texts", test2)
+    return
+    
+    function test1
+        string value = pick_random_text {values} "Test"
+        assert_eqs(value, "Test")
+    end
+    
+    function test2
+        int aCount = 0
+        int bCount = 0
+        int cCount = 0
+                
+        int i
+        for i = 1 to 300
+            string value = pick_random_text {values} "A" "Bb" "Cccc"
+            
+            if
+               is_text_equal {text} value {another} "A" {ignoreCase} false
+            then
+                aCount += 1
+            end
+            
+            if
+               is_text_equal {text} value {another} "Bb" {ignoreCase} false
+            then
+                bCount += 1
+            end
+            
+            if
+               is_text_equal {text} value {another} "Cccc" {ignoreCase} false
+            then
+                cCount += 1
+            end
+        end
+        
+        assert_range(aCount, 80, 120)
+        assert_range(bCount, 80, 120)
+        assert_range(cCount, 80, 120)
+    end
+end
