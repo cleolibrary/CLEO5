@@ -1,109 +1,83 @@
 {$CLEO .s}
-{$USE debug}
-{$USE file}
-{$USE bitwise}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name "0A99" // set_current_directory
-debug_on
-
-trace "0A99 (set_current_directory)"
-
-
-wait 0
-// set current script location as work dir
-0A99: set_current_directory ".\\" // tested opcode
-
-0@ = allocate_memory 260
-string_format 0@ {format} ""
-resolve_filepath 0@ {store_to} 0@
-
-cleo_call @TEXT_LENGTH {args} 1 0@ {result} 1@
-if
-    cleo_call @TEXT_ENDS_WITH {args} 2 0@ "\cleo\cleo_tests\FilesystemOperations"
-then
-    trace "~g~~h~~h~0A99 (set_current_directory), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A99 (set_current_directory), #0 FAILED! Current script dir: %s" 0@
-end
-free_memory 0@
-
-
-wait 0
-// set virtual absolute path
-0A99: set_current_directory "cleo:" // tested opcode
-
-0@ = allocate_memory 260
-string_format 0@ {format} ""
-resolve_filepath 0@ {store_to} 0@
-
-cleo_call @TEXT_LENGTH {args} 1 0@ {result} 1@
-if
-    cleo_call @TEXT_ENDS_WITH {args} 2 0@ "\cleo"
-then
-    trace "~g~~h~~h~0A99 (set_current_directory), #1 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A99 (set_current_directory), #1 FAILED! Current script dir: %s" 0@
-end
-free_memory 0@
-
-
-wait 0
-// predefined number
-0A99: set_current_directory 1 // tested opcode
-
-0@ = allocate_memory 260
-string_format 0@ {format} ""
-resolve_filepath 0@ {store_to} 0@
-
-cleo_call @TEXT_LENGTH {args} 1 0@ {result} 1@
-if
-    cleo_call @TEXT_ENDS_WITH {args} 2 0@ "\GTA San Andreas User Files"
-then
-    trace "~g~~h~~h~0A99 (set_current_directory), #2 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A99 (set_current_directory), #2 FAILED! Current script dir: %s" 0@
-end
-free_memory 0@
-
-
+script_name "0A99"
+test("0A99 (set_current_directory)", tests)
 terminate_this_custom_script
 
 
-:TEXT_LENGTH
-    call_function_return 0x00826330 args 1 pop 1 0@ result 5@
-cleo_return_with true 5@
-
-
-:TEXT_ENDS_WITH
-    cleo_call @TEXT_LENGTH {args} 1 0@ {result} 5@
-    cleo_call @TEXT_LENGTH {args} 1 1@ {result} 6@
-    if
-        5@ < 6@
-    then
-        cleo_return_with false
+function tests
+    before_each(@setup)
+    after_each(@cleanup)
+    
+    it("should set param 0", test1)
+    it("should set param 1", test2)
+    it("should set virtual paths", test3)
+    it("should set script path", test4)
+    it("should enter relative sub-path", test5)
+    return
+    
+    
+    :setup
+        0@ = allocate_memory {size} 512
+        set_current_directory {path} 0 // game root
+    return
+    
+    
+    :cleanup
+        free_memory {address} 0@
+    return
+    
+    
+    function test1
+        set_current_directory {path} 0 // game root
+        0@ = resolve_filepath ""
+        assert_eqs(0@, "") // relative to root, so empty
     end
     
-    5@ -= 6@
-    0@ += 5@
     
-    call_function_return 0x0081E568 num_params 2 pop 0 0@ 1@ result 5@ // int lstrcmpiA(char* str, char* str)
-    if
-        5@ == 0
-    then
-        5@ = true
-    else
-        5@ = false
+    function test2
+        set_current_directory {path} 1 // user files
+        0@ = resolve_filepath ""
+        assert_suffix(0@, "\GTA San Andreas User Files", true)
     end
-cleo_return_with 5@
     
+    
+    function test3
+        set_current_directory {path} "root:" // game root
+        0@ = resolve_filepath ""
+        assert_eqs(0@, "") // relative to root, so empty
+        
+        set_current_directory {path} "user:" // user files
+        0@ = resolve_filepath ""
+        assert_suffix(0@, "\GTA San Andreas User Files", true)
+        
+        set_current_directory {path} "cleo:" // cleo directory
+        0@ = resolve_filepath ""
+        assert_eqs(0@, "cleo") // relative to root
+        
+        set_current_directory {path} "cleo:\cleo_plugins" // cleo sub-directory
+        0@ = resolve_filepath ""
+        assert_eqs(0@, "cleo\cleo_plugins") // relative to root
+    end
+    
+    
+    function test4
+        set_current_directory {path} ".\\" // this script's location
+        0@ = resolve_filepath ""
+        assert_eqs(0@, "cleo\cleo_tests\FilesystemOperations") // relative to root
+    end
+    
+        
+    function test5
+        set_current_directory {path} "root:"
+        set_current_directory {path} "data"
+        set_current_directory {path} "script"
+        
+        0@ = resolve_filepath ""
+        assert_eqs(0@, "data\script") // relative to root
+        
+        does_file_exist {path} "main.scm"
+        assert_result_true()
+    end
+end

@@ -289,6 +289,32 @@ function assert_neqs(actual: string, expected: string)
 	end
 end
 
+/// checks if string starts with prefix, otherwise stops the test execution
+function assert_prefix(actual: string, expectedPrefix: string, ignoreCase: int)
+    _cleo_tester_increment_assert()
+	if
+	   not is_text_prefix {text} actual {prefix} expectedPrefix {ignoreCase} ignoreCase
+	then
+        _cleo_tester_fail()
+        trace "`~g~~h~~h~%s~s~` prefix expected~n~`~r~~h~~h~%s~s~` text occured" expectedPrefix actual
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
+/// checks if string ends with suffix, otherwise stops the test execution
+function assert_suffix(actual: string, expectedSuffix: string, ignoreCase: int)
+    _cleo_tester_increment_assert()
+	if
+	   not is_text_suffix {text} actual {prefix} expectedSuffix {ignoreCase} ignoreCase
+	then
+        _cleo_tester_fail()
+        trace "`~g~~h~~h~%s~s~` suffix expected~n~`~r~~h~~h~%s~s~` text occured" expectedSuffix actual
+        breakpoint
+        terminate_this_custom_script
+	end
+end
+
 /// registers a callback that runs before each unit test (test setup)
 function before_each(callback: int)
     _cleo_tester_write_var(VAR_BEFORE_EACH, callback)
