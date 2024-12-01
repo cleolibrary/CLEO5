@@ -46,12 +46,12 @@ void CPluginSystem::LoadPlugins()
             {
                 names.insert(name);
                 paths.emplace_back(files.strings[i]);
-                TRACE(" - '%s'", files.strings[i]);
+                TRACE(" %s", files.strings[i]);
             }
             else
             {
                 skippedPaths.emplace(files.strings[i]);
-                LOG_WARNING(0, " - '%s' skipped, duplicate of '%s' plugin", files.strings[i], name.c_str());
+                LOG_WARNING(0, " %s - skipped, duplicate of '%s' plugin", files.strings[i], name.c_str());
             }
         }
 
@@ -90,7 +90,7 @@ void CPluginSystem::LoadPlugins()
     }
     else
     {
-        TRACE(" - nothing found");
+        TRACE(" nothing found");
     }
 
     pluginsLoaded = true;

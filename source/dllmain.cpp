@@ -7,7 +7,7 @@ class Starter
     static Starter dummy;
     Starter()
     {
-        auto gv = CLEO::GetInstance().VersionManager.GetGameVersion();
+        auto gv = CLEO::CleoInstance.VersionManager.GetGameVersion();
         TRACE("Started on game of version: %s",
             (gv == CLEO::GV_US10) ? "SA 1.0 us" :
             (gv == CLEO::GV_EU11) ? "SA 1.01 eu" :
@@ -31,12 +31,12 @@ class Starter
                 " 10) gta_sa.exe, decrypted 3.0 steam executable, 5 697 536 bytes."
             );
 
-        CLEO::GetInstance().Start(CLEO::CCleoInstance::InitStage::Initial);
+        CLEO::CleoInstance.Start(CLEO::CCleoInstance::InitStage::Initial);
     }
 
     ~Starter()
     {
-        CLEO::GetInstance().Stop();
+        CLEO::CleoInstance.Stop();
     }
 };
 

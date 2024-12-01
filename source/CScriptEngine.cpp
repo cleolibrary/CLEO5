@@ -83,7 +83,7 @@ namespace CLEO
             call FUNC_GetScriptParams
         }
 
-        GetInstance().OpcodeSystem.handledParamCount += count;
+        CleoInstance.OpcodeSystem.handledParamCount += count;
     }
 
     void __fastcall _TransmitScriptParams(CRunningScript *pScript, int dummy, CRunningScript *pScriptB)
@@ -105,7 +105,7 @@ namespace CLEO
             call FUNC_SetScriptParams
         }
 
-        GetInstance().OpcodeSystem.handledParamCount += count;
+        CleoInstance.OpcodeSystem.handledParamCount += count;
     }
 
     void __fastcall _SetScriptCondResult(CRunningScript *pScript, int dummy, int val)
@@ -161,7 +161,7 @@ namespace CLEO
         }
         else if (paramType == DT_VARLEN_STRING)
         {
-            GetInstance().OpcodeSystem.handledParamCount++;
+            CleoInstance.OpcodeSystem.handledParamCount++;
             thread->IncPtr(1); // already processed paramType
 
             DWORD length = *thread->GetBytePointer(); // as unsigned byte!
@@ -183,7 +183,7 @@ namespace CLEO
             {
                 case DT_TEXTLABEL:
                 {
-                    GetInstance().OpcodeSystem.handledParamCount++;
+                    CleoInstance.OpcodeSystem.handledParamCount++;
                     memcpy(buff, str, min(buffLen, 8));
                     thread->IncPtr(8); // text data
                     return buff;
@@ -191,7 +191,7 @@ namespace CLEO
 
                 case DT_STRING:
                 {
-                    GetInstance().OpcodeSystem.handledParamCount++;
+                    CleoInstance.OpcodeSystem.handledParamCount++;
                     memcpy(buff, str, min(buffLen, 16));
                     thread->IncPtr(16); // ext data
                     return buff;
@@ -237,7 +237,7 @@ namespace CLEO
     SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread)
     {
         SCRIPT_VAR* ptr = GetScriptParamPointer2(thread, 0);
-        GetInstance().OpcodeSystem.handledParamCount++; // TODO: hook game's GetScriptParamPointer1 and GetScriptParamPointer2 procedures so this is always incremented
+        CleoInstance.OpcodeSystem.handledParamCount++; // TODO: hook game's GetScriptParamPointer1 and GetScriptParamPointer2 procedures so this is always incremented
         return ptr;
     }
 
@@ -270,7 +270,7 @@ namespace CLEO
 
         LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread)
         {
-            if (!GetInstance().ScriptEngine.IsValidScriptPtr(thread))
+            if (!CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
             {
                 return nullptr;
             }
@@ -319,10 +319,10 @@ namespace CLEO
     void OnSaveScmData(void)
     {
         TRACE("Saving scripts save data...");
-        GetInstance().ScriptEngine.SaveState();
-        GetInstance().ScriptEngine.UnregisterAllScripts();
+        CleoInstance.ScriptEngine.SaveState();
+        CleoInstance.ScriptEngine.UnregisterAllScripts();
         SaveScmData();
-        GetInstance().ScriptEngine.ReregisterAllScripts();
+        CleoInstance.ScriptEngine.ReregisterAllScripts();
     }
 
     struct CleoSafeHeader
@@ -402,11 +402,11 @@ namespace CLEO
 
     void __fastcall HOOK_ProcessScript(CCustomScript * pScript, int)
     {
-        GetInstance().ScriptEngine.GameBegin(); // all initialized and ready to process scripts
+        CleoInstance.ScriptEngine.GameBegin(); // all initialized and ready to process scripts
 
         // run registered callbacks
         bool process = true;
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptProcess))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcess))
         {
             typedef bool WINAPI callback(CRunningScript*);
             process = process && ((callback*)func)(pScript);
@@ -422,7 +422,7 @@ namespace CLEO
 
     void HOOK_DrawScriptStuff(char bBeforeFade)
     {
-        GetInstance().ScriptEngine.DrawScriptStuff(bBeforeFade);
+        CleoInstance.ScriptEngine.DrawScriptStuff(bBeforeFade);
 
         if(bBeforeFade)
             DrawScriptStuff_H(bBeforeFade);
@@ -430,7 +430,7 @@ namespace CLEO
             DrawScriptStuff(bBeforeFade);
 
         // run registered callbacks
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptDraw))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
         {
             typedef void WINAPI callback(bool);
             ((callback*)func)(bBeforeFade != 0);
@@ -581,7 +581,7 @@ namespace CLEO
     bool CCustomScript::GetDebugMode() const
     {
         if (!bIsCustom)
-            return GetInstance().ScriptEngine.NativeScriptsDebugMode;
+            return CleoInstance.ScriptEngine.NativeScriptsDebugMode;
 
         return bDebugMode;
     }
@@ -589,7 +589,7 @@ namespace CLEO
     void CCustomScript::SetDebugMode(bool enabled)
     {
         if (!bIsCustom)
-            GetInstance().ScriptEngine.NativeScriptsDebugMode = enabled;
+            CleoInstance.ScriptEngine.NativeScriptsDebugMode = enabled;
         else
             bDebugMode = enabled;
     }
@@ -597,7 +597,7 @@ namespace CLEO
     const char* CCustomScript::GetScriptFileDir() const
     {
         if(!bIsCustom)
-            return GetInstance().ScriptEngine.MainScriptFileDir.c_str();
+            return CleoInstance.ScriptEngine.MainScriptFileDir.c_str();
 
         return scriptFileDir.c_str();
     }
@@ -605,7 +605,7 @@ namespace CLEO
     void CCustomScript::SetScriptFileDir(const char* directory)
     {
         if (!bIsCustom)
-            GetInstance().ScriptEngine.MainScriptFileDir = directory;
+            CleoInstance.ScriptEngine.MainScriptFileDir = directory;
         else
             scriptFileDir = directory;
     }
@@ -613,7 +613,7 @@ namespace CLEO
     const char* CCustomScript::GetScriptFileName() const 
     {
         if (!bIsCustom)
-            return GetInstance().ScriptEngine.MainScriptFileName.c_str();
+            return CleoInstance.ScriptEngine.MainScriptFileName.c_str();
 
         return scriptFileName.c_str();
     }
@@ -621,7 +621,7 @@ namespace CLEO
     void CCustomScript::SetScriptFileName(const char* filename) 
     {
         if (!bIsCustom)
-            GetInstance().ScriptEngine.MainScriptFileName = filename;
+            CleoInstance.ScriptEngine.MainScriptFileName = filename;
         else
             scriptFileName = filename;
     }
@@ -637,7 +637,7 @@ namespace CLEO
     const char* CCustomScript::GetWorkDir() const
     {
         if (!bIsCustom)
-            return GetInstance().ScriptEngine.MainScriptCurWorkDir.c_str();
+            return CleoInstance.ScriptEngine.MainScriptCurWorkDir.c_str();
 
         return workDir.c_str(); 
     }
@@ -650,7 +650,7 @@ namespace CLEO
         auto resolved = ResolvePath(directory);
 
         if (!bIsCustom)
-            GetInstance().ScriptEngine.MainScriptCurWorkDir = resolved;
+            CleoInstance.ScriptEngine.MainScriptCurWorkDir = resolved;
         else
             workDir = resolved;
     }
@@ -770,7 +770,7 @@ namespace CLEO
                 ss << " - ";
                 ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
 
-                auto commandName = GetInstance().OpcodeInfoDb.GetCommandName(CCustomOpcodeSystem::lastOpcode);
+                auto commandName = CleoInstance.OpcodeInfoDb.GetCommandName(CCustomOpcodeSystem::lastOpcode);
                 if (commandName != nullptr)
                 {
                     ss << ": " << commandName;
@@ -836,7 +836,7 @@ namespace CLEO
     void CScriptEngine::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting ScriptEngine...");
-        CGameVersionManager& gvm = GetInstance().VersionManager;
+        CGameVersionManager& gvm = CleoInstance.VersionManager;
 
         // Global Events crashfix
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
@@ -939,8 +939,8 @@ namespace CLEO
         NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, Filepath_Config.c_str()) != 0;
         MainScriptCurWorkDir = Filepath_Game;
 
-        GetInstance().ModuleSystem.LoadCleoModules();
-        LoadState(GetInstance().saveSlot);
+        CleoInstance.ModuleSystem.LoadCleoModules();
+        LoadState(CleoInstance.saveSlot);
 
         // keep already loaded scripts at front of processing queue
         auto head = *activeThreadQueue;
@@ -965,7 +965,7 @@ namespace CLEO
         gameInProgress = false;
 
         RemoveAllCustomScripts();
-        GetInstance().ModuleSystem.Clear();
+        CleoInstance.ModuleSystem.Clear();
         memset(CleoVariables, 0, sizeof(CleoVariables));
     }
 
@@ -1137,7 +1137,7 @@ namespace CLEO
             CleoSafeHeader header = { CleoSafeHeader::sign, savedThreads.size(), InactiveScriptHashes.size() };
 
             // steam offset is different, so get it manually for now
-            CGameVersionManager& gvm = GetInstance().VersionManager;
+            CGameVersionManager& gvm = CleoInstance.VersionManager;
             int nSlot = gvm.GetGameVersion() != GV_STEAM ? *(BYTE*)&MenuManager->m_nSelectedSaveGame : *((BYTE*)MenuManager + 0x15B);
 
             char safe_name[MAX_PATH];
@@ -1334,7 +1334,7 @@ namespace CLEO
         cs->SetActive(true);
 
         // run registered callbacks
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptRegister))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptRegister))
         {
             typedef void WINAPI callback(CCustomScript*);
             ((callback*)func)(cs);
@@ -1360,7 +1360,7 @@ namespace CLEO
     void CScriptEngine::RemoveCustomScript(CCustomScript *cs)
     {
         // run registered callbacks
-        for (void* func : GetInstance().GetCallbacks(eCallbackId::ScriptUnregister))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptUnregister))
         {
             typedef void WINAPI callback(CCustomScript*);
             ((callback*)func)(cs);
@@ -1570,7 +1570,7 @@ namespace CLEO
                 }
                 else
                 {
-                    bDebugMode = GetInstance().ScriptEngine.NativeScriptsDebugMode; // global setting
+                    bDebugMode = CleoInstance.ScriptEngine.NativeScriptsDebugMode; // global setting
                     workDir = Filepath_Game; // game root
                 }
 
@@ -1612,7 +1612,7 @@ namespace CLEO
                     memcpy(Name, fName.c_str(), len);
                 }
             }
-            GetInstance().ScriptEngine.LastScriptCreated = this;
+            CleoInstance.ScriptEngine.LastScriptCreated = this;
             bOK = true;
         }
         catch (std::exception& e)
@@ -1630,7 +1630,7 @@ namespace CLEO
         if (BaseIP && !bIsMission) delete[] BaseIP;
         RunScriptDeleteDelegate(reinterpret_cast<CRunningScript*>(this));
 
-        if (GetInstance().ScriptEngine.LastScriptCreated == this) GetInstance().ScriptEngine.LastScriptCreated = nullptr;
+        if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
     }
 
     float VectorSqrMagnitude(CVector vector) { return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z; }

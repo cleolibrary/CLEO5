@@ -35,17 +35,13 @@ namespace CLEO
         bool bAccessOpen;
 
     public:
-        CCodeInjector() {
-            bAccessOpen = false;
-
-            // moved here so that access is open for plugins
-            OpenReadWriteAccess();			// we might as well leave it open, too
-                                            //GetInstance().Start();
-        }
-        ~CCodeInjector()
+        CCodeInjector() 
         {
-            //GetInstance().Stop();
-        };
+            bAccessOpen = false;
+            OpenReadWriteAccess(); // moved here so that access is open for plugins
+        }
+
+        ~CCodeInjector() = default;
 
         void OpenReadWriteAccess();
         void CloseReadWriteAccess();

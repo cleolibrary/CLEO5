@@ -24,7 +24,7 @@ namespace CLEO
 
     void __fastcall OnDrawMenuBackground(void *texture, int dummy, RwRect2D *rect, RwRGBA *color)
     {
-        GetInstance().Start(CCleoInstance::InitStage::OnDraw); // late initialization
+        CleoInstance.Start(CCleoInstance::InitStage::OnDraw); // late initialization
 
         CTexture_DrawInRect(texture, rect, color); // call original
 
@@ -47,8 +47,8 @@ namespace CLEO
         float posX = 25.0f * sizeX; // left margin
         float posY = RsGlobal.maximumHeight - 15.0f * sizeY; // bottom margin
 
-        auto cs_count = GetInstance().ScriptEngine.WorkingScriptsCount();
-        auto plugin_count = GetInstance().PluginSystem.GetNumPlugins();
+        auto cs_count = CleoInstance.ScriptEngine.WorkingScriptsCount();
+        auto plugin_count = CleoInstance.PluginSystem.GetNumPlugins();
         if (cs_count || plugin_count)
         {
             posY -= 15.0f * sizeY; // add space for bottom text
@@ -82,7 +82,7 @@ namespace CLEO
     void CGameMenu::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting MenuStatusNotifier...");
-        CGameVersionManager& gvm = GetInstance().VersionManager;
+        CGameVersionManager& gvm = CleoInstance.VersionManager;
         MenuManager = gvm.TranslateMemoryAddress(MA_MENU_MANAGER);
 
         inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT).address + 1, CTexture__DrawInRect, true);

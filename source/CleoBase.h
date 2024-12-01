@@ -56,9 +56,7 @@ namespace CLEO
         void CallCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id, DWORD arg);
 
-        static void __cdecl OnDrawingFinished();
-
-        void(__cdecl * UpdateGameLogics)() = nullptr;
+        void(__cdecl* UpdateGameLogics_Orig)() = nullptr;
         static void __cdecl OnUpdateGameLogics();
 
         // call for InitInstance
@@ -78,19 +76,19 @@ namespace CLEO
         static void OnScmInit3();
 
         // call for Game::Shutdown
-        void(__cdecl* GameShutdown)() = nullptr;
+        void(__cdecl* GameShutdown_Orig)() = nullptr;
         static void OnGameShutdown();
 
         // calls for Game::ShutDownForRestart
-        void(__cdecl* GameRestart1)() = nullptr;
-        void(__cdecl* GameRestart2)() = nullptr;
-        void(__cdecl* GameRestart3)() = nullptr;
+        void(__cdecl* GameRestart1_Orig)() = nullptr;
+        void(__cdecl* GameRestart2_Orig)() = nullptr;
+        void(__cdecl* GameRestart3_Orig)() = nullptr;
         static void OnGameRestart1();
         static void OnGameRestart2();
         static void OnGameRestart3();
 
         // empty function called after everything else is drawn
-        memory_pointer DebugDisplayTextBuffer = nullptr;
+        memory_pointer DebugDisplayTextBuffer_Orig = nullptr;
         static void OnDebugDisplayTextBuffer();
 
     private:
@@ -99,6 +97,6 @@ namespace CLEO
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 
-    CCleoInstance& GetInstance();
+    extern CCleoInstance CleoInstance;
 }
 
