@@ -1,0 +1,88 @@
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+
+// Script creates pickup in front of CJ's garage in San Fierro.
+// Gives player blue shirt when collected.
+
+{$CLEO .cs}
+
+script_name {name} "pckp_cl"
+
+// spawned pickups are saved in savegame file
+// make sure our CLEO script, and especially the pickupHandle variable is saved and restored too
+// otherwise the pickup will still exist and we will no longer have handle to control it
+save_this_custom_script 
+
+const
+    Pickup_Pos_X = -2026.7
+    Pickup_Pos_Y = 160.3
+    Pickup_Pos_Z = 28.5
+end
+
+// wait for game to start
+wait 0
+wait 0
+
+int pickupHandle = -1 // start with invalid handle value
+
+while true
+    wait {time} 250 // no need for executing this script's logic more than 4 times peer second (once every 0.25 second)
+    
+    // pickups pool in game is limited in size and crowded already. Show our pickup only if player is near
+    if
+        locate_char_on_foot_3d $scplayer {pos} Pickup_Pos_X Pickup_Pos_Y Pickup_Pos_Z {radius} 20.0 20.0 20.0 {drawSphere} false
+    then
+        // create pickup if neccessary
+        if
+            pickupHandle == -1
+        then
+            pickupHandle = create_pickup {modelId} #CLOTHESP {pickupType} PickupType.Once {pos} Pickup_Pos_X Pickup_Pos_Y Pickup_Pos_Z
+        end
+        
+        // just picked up?
+        if
+            has_pickup_been_collected pickupHandle
+        then
+            // collected pickup still exists
+            remove_pickup pickupHandle
+            pickupHandle = -1
+            
+            // fade screen to black
+            set_player_control $player1 {state} false
+            do_fade {time} 500 {direction} Fade.Out
+            wait {time} 500
+            wait {time} 0 // wait one more frame for good measure
+            
+            // player got wasted or busted while we were waiting for fade?
+            if
+                not is_player_playing $player1 
+            then
+                continue // go to loop start
+            end
+            
+            // dress up
+            give_player_clothes_outside_shop $player1 {textureName} "sixtyniners" {modelName} "tshirt" {bodyPart} BodyPart.Torso
+            build_player_model $player1
+            
+            // fade from black
+            set_player_control $player1 {state} true
+            do_fade {time} 500 {direction} Fade.In
+            print_help_string {text} "Clean clothes!"
+            
+            // wait for player to leave pickup location before respawning it
+            repeat
+                wait {time} 250
+            until not locate_char_on_foot_3d $scplayer {pos} Pickup_Pos_X Pickup_Pos_Y Pickup_Pos_Z {radius} 5.0 5.0 5.0 {drawSphere} false
+        end
+    else
+        // remove pickup if exists
+        if
+            pickupHandle <> -1
+        then
+            remove_pickup pickupHandle
+            pickupHandle = -1
+        end
+    end
+end
+
+terminate_this_script // script never reaches this command, but this is good practice to always add it at the end
