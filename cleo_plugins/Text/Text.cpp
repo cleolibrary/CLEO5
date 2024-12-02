@@ -448,6 +448,12 @@ public:
 		auto posY = OPCODE_READ_PARAM_FLOAT();
 		OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
+		if (CTheScripts::NumberOfIntroTextLinesThisFrame >= 0x60) // GTA SA CTheScripts::IntroTextLines capacity
+		{
+			LOG_WARNING(thread, "Display text limit (%d) exceeded in script %s", 0x60, ScriptInfoStr(thread).c_str());
+			return OR_CONTINUE;
+		}
+
 		// new generic GXT label
 		// includes unprintable character, to ensure there will be no collision with user GXT labels
 		char gxt[9] = { 0x01, 'C', 'L', 'E', 0x00, 0x00, 0x00, 0x00, 0x00 }; // enough space for even worst case scenario
