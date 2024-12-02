@@ -23,6 +23,8 @@ public:
 	static const size_t MsgBigStyleCount = 7;
 	static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
 
+	static WORD genericLabelCounter;
+
 	MemPatch patchCTextGet;
 
     Text()
@@ -67,6 +69,7 @@ public:
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
+		CLEO_RegisterCallback(eCallbackId::GameProcess, OnGameProcess);
 		CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
 		// install hooks
@@ -76,6 +79,7 @@ public:
 	~Text()
 	{
 		CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
+		CLEO_UnregisterCallback(eCallbackId::GameProcess, OnGameProcess);
 		CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
 		patchCTextGet.Apply(); // undo hook
@@ -84,6 +88,11 @@ public:
 	static void __stdcall OnGameBegin(DWORD saveSlot)
 	{
 		textManager.LoadFxts();
+	}
+
+	static void __stdcall OnGameProcess()
+	{
+		genericLabelCounter = 0;
 	}
 
 	static void __stdcall OnGameEnd()
@@ -439,10 +448,11 @@ public:
 		auto posY = OPCODE_READ_PARAM_FLOAT();
 		OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
-		// new GXT label
+		// new generic GXT label
 		// includes unprintable character, to ensure there will be no collision with user GXT labels
-		char gxt[8] = { 0x01, 'C', 'L', 'E', 'O', '_', 0x01, 0x00 };
-		gxt[6] += CTheScripts::NumberOfIntroTextLinesThisFrame; // unique label for each possible entry
+		char gxt[9] = { 0x01, 'C', 'L', 'E', 0x00, 0x00, 0x00, 0x00, 0x00 }; // enough space for even worst case scenario
+		_itoa(genericLabelCounter, gxt + 4, 36); // 0xFFFF -> "1ekf"
+		genericLabelCounter++;
 
 		textManager.AddFxt(gxt, text);
 
@@ -512,3 +522,4 @@ CTextManager Text::textManager;
 char Text::msgBuffLow[MAX_STR_LEN + 1];
 char Text::msgBuffHigh[MAX_STR_LEN + 1];
 char Text::msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
+WORD Text::genericLabelCounter;

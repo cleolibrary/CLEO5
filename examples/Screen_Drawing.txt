@@ -1,0 +1,97 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+{$CLEO .cs}
+
+script_name {name} 'scrdraw'
+
+float screenPos[2]
+screenPos[0] = 320.0 // screen width is 640.0
+screenPos[1] = 224.0 // screen height is 448.0
+
+while true
+    wait {time} 0
+    
+    int state
+    float stickPos
+    
+    // horizontal movement
+    state = get_pad_state {pad} PadId.Pad1 {buttonId} Button.LeftStickX
+    if
+        state <> 0
+    then
+        stickPos =# state
+        stickPos /= 128.0 // convert to -1.0 +1.0 range
+        
+        stickPos *= 14.0 // movement speed
+        screenPos[0] +=@ stickPos // FPS consistent
+        
+        if
+            screenPos[0] < 10.0
+        then
+            screenPos[0] = 10.0
+            TimerA = 0
+        end
+        
+        if
+            screenPos[0] > 630.0
+        then
+            screenPos[0] = 630.0
+            TimerA = 0
+        end
+    end
+    
+    // vertical movement
+    state = get_pad_state {pad} PadId.Pad1 {buttonId} Button.LeftStickY
+    if
+        state <> 0
+    then
+        stickPos =# state
+        stickPos /= 128.0 // convert to -1.0 +1.0 range
+        
+        stickPos *= 10.0 // movement speed
+        screenPos[1] +=@ stickPos // FPS consistent
+        
+        if
+            screenPos[1] < 10.0
+        then
+            screenPos[1] = 10.0
+            TimerA = 0
+        end
+        
+        if
+            screenPos[1] > 438.0 // 448 is bottom screen pos
+        then
+            screenPos[1] = 438.0
+            TimerA = 0
+        end
+    end
+    
+    int score = TimerA / 300
+    
+    // draw on screen
+    use_text_commands {state} true
+    
+    // rectangle background
+    draw_rect {pos} screenPos[0] screenPos[1] {size} 20.0 20.0 {rgb} 0x00 0x00 0x00 {alpha} 200
+    
+    // rectangle center
+    if
+        score > 0
+    then
+        draw_rect {pos} screenPos[0] screenPos[1] {size} 16.0 16.0 {rgb} 0xFF 0xFF 0x00 {alpha} 255 // yellow
+    else
+        draw_rect {pos} screenPos[0] screenPos[1] {size} 16.0 16.0 {rgb} 0xFF 0x00 0x00 {alpha} 255 // red
+    end
+    
+    // points
+    set_text_font {font} Font.Menu
+    set_text_scale {width} 0.6 {height} 2.4
+    set_text_colour {rgb} 0xFF 0xFF 0x00 {alpha} 255
+    set_text_edge {size} 2 {rgb} 0 0 0 {alpha} 200
+    set_text_centre {state} true
+    set_text_centre_size {width} 640.0
+    display_text_formatted {pos} 320.0 20.0 {format} "Points: %d" {args} score    
+end
+
+terminate_this_custom_script
