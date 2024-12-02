@@ -81,6 +81,7 @@ public:
         CLEO_UnregisterCallback(eCallbackId::Log, OnLog);
         CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_UnregisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
+        CLEO_UnregisterCallback(eCallbackId::ScriptOpcodeProcess, OnScriptOpcodeProcess);
         CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
     }
 
