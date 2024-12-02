@@ -5,6 +5,12 @@
 
 script_name {name} "lim_info"
 
+// In case the limits adjuster is used, pools can have really big sizes.
+// Iterating through all elements can really create a performance hit.
+// The proper solution would be to draw stats on every frame from stats saved in variables,
+// and update these stats by processing pools only once every few seconds.
+const Pool_Size_Cap = 1111 // walk around, just do not parse all contents of bigger pools
+
 int active = false
 
 while true
@@ -135,12 +141,22 @@ function GET_POOL_INFO(address :int) : int, int
     
     int size = read_memory_with_offset {address} pool {offset} 0x8 {size} 4 // CPool::m_nSize
 
+    // for performance reasons do not iterate through all elements of realy big pools
+    int processSize
+    if
+        size < Pool_Size_Cap
+    then
+        processSize = size
+    else
+        processSize = Pool_Size_Cap
+    end
+
     // count empty slots
     int byteMap = read_memory_with_offset {address} pool {offset} 0x4 {size} 4 // CPool::m_byteMap
     
     int count = 0
     int i = 0
-    while i < size
+    while i < processSize
         int flags = read_memory_with_offset {address} byteMap {offset} i {size} 1 // tPoolObjectFlags
         if
             not is_local_var_bit_set_const {number} flags {n} 7 // tPoolObjectFlags::bEmpty

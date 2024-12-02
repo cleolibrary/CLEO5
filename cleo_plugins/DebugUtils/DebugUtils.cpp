@@ -9,6 +9,7 @@
 #include "CLEO.h"
 #include "CLEO_Utils.h"
 #include "ScreenLog.h"
+#include "ScriptLog.h"
 
 using namespace CLEO;
 
@@ -24,6 +25,11 @@ public:
         PausedScriptInfo(CScriptThread* ptr, const char* msg) : ptr(ptr), msg(msg) {}
     };
     static std::deque<PausedScriptInfo> pausedScripts;
+
+    static ScriptLog currScript;
+
+    // limits for processing after which script is considered hanging
+    static size_t configLimitCommand;
 
     // breakpoint continue keys
     static const int KeyFirst = VK_F5;
@@ -43,6 +49,7 @@ public:
         }
 
         auto config = GetConfigFilename();
+        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 100000, config.c_str());
 
         // register opcodes
         CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
@@ -64,6 +71,7 @@ public:
         CLEO_RegisterCallback(eCallbackId::Log, OnLog);
         CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_RegisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
+        CLEO_RegisterCallback(eCallbackId::ScriptOpcodeProcess, OnScriptOpcodeProcess);
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
     }
 
@@ -172,6 +180,8 @@ public:
 
     static bool WINAPI OnScriptProcess(CScriptThread* thread)
     {
+        currScript.Reset();
+
         for (size_t i = 0; i < pausedScripts.size(); i++)
         {
             if (pausedScripts[i].ptr == thread)
@@ -181,6 +191,18 @@ public:
         }
 
         return true;
+    }
+
+    static OpcodeResult WINAPI OnScriptOpcodeProcess(CRunningScript* thread, DWORD opcode)
+    {
+        currScript.commandCounter++;
+        if (currScript.commandCounter > configLimitCommand && !IsLegacyScript(thread))
+        {
+            SHOW_ERROR("Over %d,%03d commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo ignore this error, increase 'command' property in %s.ini file and restart the game.", configLimitCommand / 1000, configLimitCommand % 1000, ScriptInfoStr(thread).c_str(), TARGET_NAME);
+            return thread->Suspend();
+        }
+
+        return OR_NONE;
     }
 
     static void WINAPI OnLog(eLogLevel level, const char* msg)
@@ -378,6 +400,8 @@ public:
 
 ScreenLog DebugUtils::screenLog = {};
 std::deque<DebugUtils::PausedScriptInfo> DebugUtils::pausedScripts;
+ScriptLog DebugUtils::currScript = {};
+size_t DebugUtils::configLimitCommand;
 bool DebugUtils::keysReleased = true;
 std::map<std::string, std::ofstream> DebugUtils::logFiles;
 

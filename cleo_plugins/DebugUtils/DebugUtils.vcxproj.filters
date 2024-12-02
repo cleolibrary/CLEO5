@@ -24,6 +24,7 @@
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
       <Filter>sdk</Filter>
     </ClInclude>
+    <ClInclude Include="ScriptLog.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="sdk">
