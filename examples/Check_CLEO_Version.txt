@@ -1,0 +1,39 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+{$CLEO .cs}
+
+script_name {name} 'mymod'
+
+// wait for game to fade in from black screen
+wait {time} 4000
+
+CHECK_CLEO_VERSION()
+
+// your script code here
+debug_on
+trace "~g~~h~~h~My Mod is working fine!" // CLEO5 opcode, would crash older versions
+
+terminate_this_custom_script
+
+
+function CHECK_CLEO_VERSION()
+    int lib, proc, ver
+    if
+        lib = load_dynamic_library "CLEO.asi"
+    then
+        if 
+            proc = get_dynamic_library_procedure "_CLEO_GetVersion@0" {library} lib
+        then
+            ver = call_function_return proc {params} 0 {pop} 0
+        end
+        free_dynamic_library lib
+    end
+    
+    if
+        ver < 0x05000000 // 5.0.0
+    then
+        print_help_string {text} "My Mod requires CLEO 5.0.0 or newer to work!"
+        terminate_this_custom_script
+    end
+end
