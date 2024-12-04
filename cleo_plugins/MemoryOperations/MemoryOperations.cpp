@@ -1,5 +1,6 @@
 #include "CLEO.h"
 #include "CLEO_Utils.h"
+#include "AntiHacks.h"
 #include "plugin.h"
 #include "CTheScripts.h"
 #include <filesystem>
@@ -160,30 +161,33 @@ public:
 
         SCRIPT_VAR* arguments_end = arguments + numArg;
         numPop *= 4; // bytes peer argument
-        DWORD result;
-        int oriSp, postSp; // stack validation
-        _asm
+        DWORD result = 0;
+        int oriSp = 0, postSp = 0; // stack validation
+        if (AntiHacks::CheckCall(thread, func, obj, scriptParams, numArg, result))
         {
-            mov oriSp, esp
+            _asm
+            {
+                mov oriSp, esp
 
-            // transfer args to stack
-            lea ecx, arguments
-            call_func_loop :
-            cmp ecx, arguments_end
-                jae call_func_loop_end
-                push[ecx]
-                add ecx, 0x4
-                jmp call_func_loop
-                call_func_loop_end :
+                // transfer args to stack
+                lea ecx, arguments
+                call_func_loop :
+                cmp ecx, arguments_end
+                    jae call_func_loop_end
+                    push[ecx]
+                    add ecx, 0x4
+                    jmp call_func_loop
+                    call_func_loop_end :
 
-            // call function
-            mov ecx, obj
-                xor eax, eax
-                call func
-                mov result, eax // get result
-                add esp, numPop // cleanup stack
-
-            mov postSp, esp
+                // call function
+                mov ecx, obj
+                    xor eax, eax
+                    call func
+                    mov result, eax // get result
+                    add esp, numPop // cleanup stack
+                
+                mov postSp, esp
+            }
         }
 
         // validate stack pointer
