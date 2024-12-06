@@ -146,18 +146,18 @@ namespace CLEO
         // integer address to text buffer
         if (IsImmInteger(paramType) || isVariableInt)
         {
-            GetScriptParams(thread, 1);
+            auto param = GetScriptParamPointer(thread);
 
-            if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
+            if (param->dwParam <= CCustomOpcodeSystem::MinValidAddress)
             {
-                LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument %s in script %s", opcodeParams[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
+                LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument %s in script %s", param->dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
                 return nullptr; // error
             }
 
-            auto len = min((int)strlen(opcodeParams[0].pcParam), buffLen);
-            memcpy(buff, opcodeParams[0].pcParam, len);
+            auto len = min((int)strlen(param->pcParam), buffLen);
+            memcpy(buff, param->pcParam, len);
             if (len < buffLen) buff[len] = '\0'; // add terminator if possible
-            return opcodeParams[0].pcParam; // pointer to original data
+            return param->pcParam; // pointer to original data
         }
         else if (paramType == DT_VARLEN_STRING)
         {
