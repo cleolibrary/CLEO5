@@ -1078,14 +1078,13 @@ namespace CLEO
     void CScriptEngine::LoadState(int saveSlot)
     {
         memset(CleoVariables, 0, sizeof(CleoVariables));
-
-        if(saveSlot == -1) return;
-
-        auto saveFile = FS::path(Filepath_Cleo).append(StringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
-
         safe_info = nullptr;
         stopped_info = nullptr;
         safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
+
+        if(saveSlot == -1) return; // new game started
+
+        auto saveFile = FS::path(Filepath_Cleo).append(StringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
 
         // load cleo saving file
         try
