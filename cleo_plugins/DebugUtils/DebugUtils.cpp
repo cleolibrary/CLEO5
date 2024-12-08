@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "CMessages.h"
 #include "CTimer.h"
 
 #include "CLEO.h"
@@ -12,6 +13,7 @@
 #include "ScriptLog.h"
 
 using namespace CLEO;
+using namespace plugin;
 
 class DebugUtils
 {
@@ -256,6 +258,7 @@ public:
         else // breakpoint formatted name string
         {
             OPCODE_READ_PARAM_STRING_FORMATTED(nameStr);
+            CMessages::InsertPlayerControlKeysInString(nameStr);
             name = nameStr;
         }
 
@@ -286,6 +289,7 @@ public:
         }
 
         OPCODE_READ_PARAM_STRING_FORMATTED(message);
+        CMessages::InsertPlayerControlKeysInString(message);
 
         CLEO_Log(eLogLevel::Debug, message);
         return OR_CONTINUE;
@@ -336,8 +340,8 @@ public:
             file << szBuf;
         }
 
-        auto format = CLEO_ReadStringOpcodeParam(thread);
-        auto message = CLEO_ReadParamsFormatted(thread, format);
+        OPCODE_READ_PARAM_STRING_FORMATTED(message);
+        CMessages::InsertPlayerControlKeysInString(message);
 
         file << message << std::endl;
 

@@ -129,6 +129,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\game\CRGBA.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTimer.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CMessages.cpp" />
     <ClCompile Include="DebugUtils.cpp" />
     <ClCompile Include="ScreenLog.cpp" />
   </ItemGroup>
