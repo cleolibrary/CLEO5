@@ -953,8 +953,11 @@ namespace CLEO
         LoadCustomScripts();
 
         // append custom scripts list to the back
-        tail->Next = *activeThreadQueue;
-        (*activeThreadQueue)->Previous = tail;
+        if (*activeThreadQueue != nullptr)
+        {
+            tail->Next = *activeThreadQueue;
+            (*activeThreadQueue)->Previous = tail;
+        }
 
         *activeThreadQueue = head; // restore original
     }

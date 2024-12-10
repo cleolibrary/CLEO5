@@ -151,6 +151,7 @@
 #### Special Thanks
 
 - **123nir** for the alpha-testing, troubleshooting and valuable bug reports
+- **Hamal** for the beta-testing, troubleshooting and valuable bug reports
 
 ## Older
 
