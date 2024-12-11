@@ -1,0 +1,70 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+
+{$CLEO .cs}
+{$USE CLEO+}
+
+const
+    Mission_Icon = 34 // RadarSprite.Ryder - https://library.sannybuilder.com/#/sa/script/enums/RadarSprite
+    Mission_Pos_X = 2468.5
+    Mission_Pos_Y = -1688.0
+    Mission_Pos_Z = 13.5
+    Mission_File = "my_ryder_mission" // my_ryder_mission.cm
+end
+
+script_name 'mis_trg'
+
+CleoBlip blipHandle = -1
+int markerActive = false
+while true
+    wait 0
+    
+    if or
+        is_on_mission // any mission is in progress
+        not is_player_playing $player1 // wasted or busted
+    then
+        if
+            blipHandle <> -1
+        then
+            remove_cleo_blip blipHandle
+            blipHandle = -1
+        end
+        
+        markerActive = true // in case any mission ends in this mission trigger
+        wait {time} 1000 // on mission
+        continue
+    else
+        if 
+            blipHandle == -1
+        then
+            blipHandle = add_cleo_blip {RadarSprite} Mission_Icon {pos} Mission_Pos_X Mission_Pos_Y {short} true {rgba} 255 255 255 255
+        end
+        
+        if
+            locate_char_any_means_3d $scplayer {pos} Mission_Pos_X Mission_Pos_Y Mission_Pos_Z {radius} 50.0 50.0 50.0 {drawSphere} false // in proximity?
+        then
+            if
+                //locate_stopped_char_any_means_3d $scplayer {pos} Mission_Pos_X Mission_Pos_Y Mission_Pos_Z {radius} 2.0 2.0 2.0 {drawSphere} true
+                locate_stopped_char_on_foot_3d $scplayer {pos} Mission_Pos_X Mission_Pos_Y Mission_Pos_Z {radius} 2.0 2.0 2.0 {drawSphere} true
+                //locate_stopped_char_in_car_3d $scplayer {pos} Mission_Pos_X Mission_Pos_Y Mission_Pos_Z {radius} 2.0 2.0 2.0 {drawSphere} true
+            then
+                if and
+                    markerActive == false
+                    can_player_start_mission $player1
+                then
+                    markerActive = true
+                    load_and_launch_custom_mission Mission_File
+                    continue
+                end
+            else
+                markerActive = false
+            end
+        else
+            wait {time} 1000 // away from trigger
+            continue
+        end
+    end
+end
+
+terminate_this_custom_script // not needed, but good to have

@@ -1,19 +1,25 @@
 // CLEO5 example script
 // Sanny Builder 4
 // mode: GTA SA (v1.0 - SBL)
+//
+// Type "train" cheat to spawn train
+
 {$CLEO .cs}
 
 script_name {name} "train_sp"
 
-int trainType = -1
+// patch CVehicle.CanBeDriven() function to allow player entering trains placed on any track
+write_memory {address} 0x006D5410 {size} 1 {value} 0xFF {vp} false
 
+int trainType = -1
 while true
-    wait 333
+    wait 250
     
     int area = get_area_visible
     
     if and
         test_cheat "train"
+        is_player_playing $player1 // not wasted or busted
         is_player_control_on $player1
         area == 0 // overworld
     then

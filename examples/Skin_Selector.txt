@@ -1,0 +1,589 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+//
+// Script for applying custom models for player character.
+// Put compiled script into ModLoader\Skin Selector\cleo directory.
+// Copy model .dff and .txd files into ModLoader\Skin Selector\skin.img directory.
+// Type "skinselect" cheat or use key combination Tab+Q+E to display models menu.
+
+{$CLEO .cs}
+
+script_name {name} "skin_sel"
+int initialized = false
+longString currModelName = ""
+
+while true
+    // model selected but not set? Happens after game is loaded from save
+    if and
+        not is_text_empty {string} currModelName
+        not is_char_model $scplayer {modelId} #SPECIAL10
+    then
+        initialized = false
+    end
+
+    if
+        initialized == false
+    then
+        if
+            not INITIALIZE()
+        then
+            terminate_this_script // some critical error occured
+        end
+        
+        if
+            not PLAYER_MODEL_SET(currModelName)
+        then
+            currModelName = ""
+        end
+        initialized = true
+    end
+    
+    wait {time} 100
+    
+    // Rayosuke's Skin Loader key combination (Tab+Q+E)
+    if and
+        is_button_pressed {pad} PadId.Pad1 {buttonId} Button.LeftShoulder1 // Tab
+        is_button_pressed {pad} PadId.Pad1 {buttonId} Button.LeftShoulder2  // Q
+        is_button_pressed {pad} PadId.Pad1 {buttonId} Button.RightShoulder2 // E
+    then
+        repeat
+            wait {time} 0
+        until not is_button_pressed {pad} PadId.Pad1 {buttonId} Button.LeftShoulder1 // Tab
+        
+        goto @_TRIGGER_MENU
+    end
+        
+    if
+        test_cheat {input} "skinselect"
+    then
+        :_TRIGGER_MENU
+        if or
+            not can_player_start_mission $player1 // wasted, not on ground etc.
+            is_char_in_any_car $scplayer
+            is_char_getting_in_to_a_car $scplayer
+        then
+            add_one_off_sound {xyz} 0.0 0.0 0.0 {soundId} ScriptSound.SoundRouletteNoCash // error sound
+            continue
+        end
+
+        currModelName = MENU_SKIN(currModelName)
+        PLAYER_MODEL_SET(currModelName)
+    end
+end
+
+
+function INITIALIZE() : logical
+    // undo any hacks in case previous game session was interrupted (like alt+tab then starting new game)
+    SCREEN_OFFSET_SET(0.0, 0.0)
+    PLAYER_MODEL_REBUILD_ENABLE(true)
+
+    // check if installed inside ModLoader
+    int scriptPath = allocate_memory {size} 260
+    scriptPath = get_script_filename {address} -1 {fullPath} true
+    if
+        not is_text_in_text {text} scriptPath {subText} "modloader" {ignoreCase} true
+    then
+        debug_on
+        trace "Skin Selector: ~r~~h~Error!~s~ This mod must be placed inside ModLoader directory."
+        free_memory {address} scriptPath
+        return false
+    end
+    free_memory {address} scriptPath
+
+    // activate saving of this script's state whenever player saves the game
+    save_this_custom_script 
+    
+    // create skin files directory
+    if
+        not does_directory_exist {path} ".\..\skin.img"
+    then
+        if
+            not create_directory {path} ".\..\skin.img"
+        then
+            debug_on
+            trace "Skin Selector: ~r~~h~Error!~s~ Failed to create 'skin.img' directory."
+        end
+    end
+    
+    // patch game code to allow model names with up to 15 characters (originally 7)
+    write_memory {address} 0x0047EDB9 {size} 1 {value} 15 {vp} false
+    write_memory {address} 0x0047EDD2 {size} 4 {value} 15 {vp} false
+    
+    return true
+end
+
+
+function MENU_SKIN(modelNamePtr :int) : string
+    int iTmp, iTmp2, iTmp3
+    int str = allocate_memory {size} 260
+    
+    int result = false
+    longString selectedModel
+    string_format selectedModel = "%s" modelNamePtr
+    int modelUpdated = true // force update at start
+
+    clear_char_tasks_immediately $scplayer
+    
+    // store current player pos
+    float oriPos[3]
+    oriPos[0], oriPos[1], oriPos[2] = get_char_coordinates $scplayer
+    float oriDir = get_char_heading $scplayer
+    int oriInterior = get_char_area_visible $scplayer
+        
+    // hide surroundings
+    freeze_char_position $scplayer {state} true
+    set_char_collision $scplayer {state} false
+    set_char_coordinates_dont_warp_gang_no_offset $scplayer {pos} oriPos[0] oriPos[1] 2000.0
+    set_char_area_visible $scplayer {areaId} 30
+    set_area_visible {areaId} 30
+    set_extra_colours {color} 84 {fade} false // sky and lighting
+    
+    set_player_fire_button {playerId} $player1 {state} false
+    set_player_jump_button {playerId} $player1 {state} false
+    
+    set_time_scale {scale} 0.5
+    
+    display_hud {state} false
+    display_radar {state} false
+    display_zone_names {state} false
+    restore_camera_jumpcut
+    set_camera_in_front_of_player
+    set_camera_zoom {zoom} 1 // medium distance
+    SCREEN_OFFSET_SET(0.35, 0.25) // offset camera target as half of the screen is occupied by menu
+        
+    // current selection
+    int currPage = 0
+    int currRow = 0
+        
+    // count available skin models
+    iTmp = allocate_memory {size} 32
+    string_format iTmp = "%s.dff" modelNamePtr // full filename of current model
+    
+    int skinCount = 1 // Default is always present
+    int fileSearch
+    if
+        fileSearch, str = find_first_file {searchMask} ".\..\skin.img\*.dff"
+    then
+        repeat
+            if
+                is_text_equal {text} str {another} iTmp {ignoreCase} true // current selection found
+            then
+                currPage = skinCount / 10
+                currRow = skinCount % 10
+            end
+                
+            skinCount += 1
+        until not str = find_next_file fileSearch
+    end
+    free_memory iTmp
+    
+    if
+        skinCount <= 1
+    then
+        // show no files error message
+        add_one_off_sound {xyz} 0.0 0.0 0.0 {soundId} ScriptSound.SoundRouletteNoCash // error sound
+        
+        str = resolve_filepath {path} ".\..\script.img"
+        while true
+            wait 0
+            
+            use_text_commands {state} true
+            set_text_scale {width} 0.45 {height} 1.8
+            set_text_colour {rgb} 255 255 255 {alpha} 255
+            set_text_edge {size} 1 {rgb} 0 0 0 {alpha} 230
+            set_text_centre {state} true
+            set_text_centre_size {width} 640.0
+            display_text_formatted {pos} 320.0 383.0 {format} "No DFF files found in directory~n~%s" {args} str
+
+            if or
+                is_button_pressed {pad} PadId.Pad1 {buttonId} Button.Triangle // cancel
+                is_key_pressed {keyCode} KeyCode.Escape // exiting to main menu
+                not has_save_game_finished // save menu was requested
+                has_game_just_returned_from_frontend // main menu was displayed
+                is_button_pressed {pad} PadId.Pad1 {buttonId} Button.Cross // accept
+            then
+                break
+            end
+        end
+    else
+        add_one_off_sound {xyz} 0.0 0.0 0.0 {soundId} ScriptSound.SoundRouletteAddCash // accept sound
+        
+        // help box
+        if
+            skinCount > 10
+        then
+            add_text_label {dynamicKey} 'SKS_HLP' {text} "Use ~UP~~DOWN~ to browse~n~~<~~>~Change page~n~~h~~k~~PED_SPRINT~~s~ Select~n~~h~~k~~VEHICLE_ENTER_EXIT~~s~ Quit"
+        else
+            add_text_label {dynamicKey} 'SKS_HLP' {text} "Use ~UP~~DOWN~ to browse~n~~h~~k~~PED_SPRINT~~s~ Select~n~~h~~k~~VEHICLE_ENTER_EXIT~~s~ Quit"
+        end
+        print_help_forever {key} 'SKS_HLP'
+        
+        // show the menu
+        add_text_label {dynamicKey} 'SKS_CAP' {text} "Skin Selector"
+        add_text_label {dynamicKey} 'SKS_NUL' {text} "_" // empty
+        int menuHandle = -1
+        while true
+            :_MENU_SKIN_MENU_BEGIN
+            if
+                menuHandle <> -1
+            then
+                delete_menu menuHandle
+            end
+            menuHandle = create_menu {header} 'SKS_CAP' {pos} 32.0 150.0 {width} 180.0 {numColumns} 1 {interactive} true {background} true {alignment} Align.Center
+            
+            // there was some other menu already present?
+            if
+                menuHandle > 0 // handle is actually index
+            then
+                goto @_MENU_SKIN_CLOSE // error, other (game's or mod) menu already displayed
+            end
+            
+            if
+                skinCount <= 10 // single page
+            then
+                set_menu_column menuHandle {column} 0 {title} 'DUMMY' {rows} 'SKS_NUL' 'SKS_00' 'SKS_01' 'SKS_02' 'SKS_03' 'SKS_04' 'SKS_05' 'SKS_06' 'SKS_07' 'SKS_08' 'SKS_09' 'SKS_NUL'
+                activate_menu_item menuHandle {row} 0 {state} false // disable prev page slot
+                activate_menu_item menuHandle {row} 11 {state} false // disable next page slot
+            else
+                // page text
+                iTmp = currPage + 1 // 1-based display
+                
+                iTmp2 = skinCount
+                iTmp2 /= 10
+                iTmp2 += 1 // 1-based display
+                
+                string_format str = "Page %d / %d" {args} iTmp iTmp2
+                add_text_label {dynamicKey} 'SKS_PG' {text} str
+                
+                set_menu_column menuHandle {column} 0 {title} 'SKS_PG' {rows} 'SKS_NUL' 'SKS_00' 'SKS_01' 'SKS_02' 'SKS_03' 'SKS_04' 'SKS_05' 'SKS_06' 'SKS_07' 'SKS_08' 'SKS_09' 'SKS_NUL'
+            end
+            
+            // generate row texts
+            if
+                not fileSearch, str = find_first_file {searchMask} ".\..\skin.img\*.dff"
+            then
+                goto @_MENU_SKIN_CLOSE // error, no files
+            end
+            
+            iTmp = 0 // index
+            iTmp2 = 0 // page
+            while true
+                switch iTmp
+                    case 0
+                        string_format str = "Default"
+                    
+                    case 1
+                        fileSearch, str = find_first_file {searchMask} ".\..\skin.img\*.dff"
+                        
+                    default
+                        if
+                            not str = find_next_file fileSearch
+                        then
+                            string_format str = "_" // empty row
+                        end
+                end
+                                
+                if
+                    iTmp2 == currPage
+                then
+                    // cut of file type extension
+                    if
+                        is_text_suffix {text} str {suffix} ".dff" {ignoreCase} true
+                    then
+                        iTmp3 = str
+                        while true
+                            if
+                                is_text_equal {text} iTmp3 {another} ".dff" {ignoreCase} true
+                            then
+                                write_memory {address} iTmp3 {size} 1 {value} 0x00 {vp} false // text terminator
+                                break
+                            end
+                            
+                            iTmp3 += 1 // go to next character
+                        end
+                    end
+                
+                    iTmp3 = iTmp % 10
+                    shortString labelName
+                    string_format labelName = "SKS_%02d" iTmp3
+                    add_text_label {dynamicKey} labelName {text} str
+                                        
+                    // empty row
+                    if
+                        is_text_equal {text} str {another} "_" {ignoreCase} true
+                    then
+                        // empty row is selected? Update currRow and recreate menu
+                        if
+                            currRow >= iTmp3
+                        then
+                            currRow = iTmp3 - 1
+                            goto @_MENU_SKIN_MENU_BEGIN
+                        end
+                        
+                        // disable that menu option
+                        iTmp3 += 1 // first row is used for page navigation
+                        activate_menu_item menuHandle {row} iTmp3 {state} false
+                    else
+                        if and
+                            modelUpdated == true
+                            iTmp3 == currRow
+                        then
+                            if
+                                is_text_equal {text} str {another} "default" {ignoreCase} true
+                            then
+                                string_format selectedModel = ""
+                            else
+                                string_format selectedModel = "%s" str
+                            end
+                            
+                            PLAYER_MODEL_SET(str)
+                            task_go_straight_to_coord {handle} $scplayer {pos} 0.0 10000.0 0.0 {speed} MoveState.Walk {time} -1
+                            modelUpdated = false
+                        end
+                    end
+                end
+                
+                iTmp += 1
+                
+                iTmp3 = iTmp % 10
+                if
+                    iTmp3 == 0
+                then
+                    iTmp2 += 1 // next page
+                    
+                    if
+                        iTmp2 > currPage
+                    then
+                        break // all labels done
+                    end
+                end
+            end
+            
+            // set selected row
+            iTmp = currRow + 1
+            set_active_menu_item menuHandle {row} iTmp
+            
+            // handle user input
+            while modelUpdated == false
+                wait {time} 0
+                
+                iTmp = currRow
+                
+                currRow = get_menu_item_selected menuHandle
+                currRow -= 1 // first row is used for page navigation
+                
+                // row selection changed
+                if
+                    currRow <> iTmp
+                then
+                    modelUpdated = true
+                end
+                
+                if or
+                    is_button_pressed {pad} PadId.Pad1 {buttonId} Button.Triangle // cancel
+                    is_key_pressed {keyCode} KeyCode.Escape // exiting to main menu
+                    not has_save_game_finished // save menu was requested
+                    has_game_just_returned_from_frontend // main menu was displayed
+                then
+                    goto @_MENU_SKIN_CLOSE
+                end
+                
+                if
+                    is_button_pressed {pad} PadId.Pad1 {buttonId} Button.Cross // accept
+                then
+                    result = true
+                    goto @_MENU_SKIN_CLOSE
+                end
+                
+                // handle page switching
+                if
+                    skinCount > 10
+                then
+                    iTmp = get_pad_state {pad} PadId.Pad1 {buttonId} Button.LeftStickX
+                    
+                    // next page
+                    if or
+                        currRow > 9
+                        iTmp > 64 // analog stick right
+                    then
+                        if
+                            currRow > 9
+                        then
+                            currRow = 0 // warp around
+                        end
+                        
+                        currPage += 1
+                        
+                        iTmp = skinCount / 10 // total page count
+                        if
+                            currPage > iTmp
+                        then
+                            currPage = 0
+                        end
+                        
+                        add_one_off_sound {xyz} 0.0 0.0 0.0 {soundId} ScriptSound.SoundPickupStandard
+                        
+                        // wait for button release
+                        repeat
+                            wait {time} 0
+                            iTmp = get_pad_state {pad} PadId.Pad1 {buttonId} Button.LeftStickX
+                            abs_lvar_int iTmp
+                        until iTmp < 64
+                        
+                        modelUpdated = true
+                        break
+                    end
+                    
+                    // prev page
+                    if or
+                        currRow < 0
+                        iTmp < -64 // analog stick left
+                    then
+                        if
+                            currRow < 0
+                        then
+                            currRow = 9 // warp around
+                        end
+                        
+                        currPage -= 1
+                        
+                        if
+                            currPage < 0
+                        then
+                            currPage = skinCount / 10 // warp around
+                        end
+                        
+                        add_one_off_sound {xyz} 0.0 0.0 0.0 {soundId} ScriptSound.SoundPickupStandard
+                        
+                        // wait for button release
+                        repeat
+                            wait {time} 0
+                            iTmp = get_pad_state {pad} PadId.Pad1 {buttonId} Button.LeftStickX
+                            abs_lvar_int iTmp
+                        until iTmp < 64
+                        
+                        modelUpdated = true
+                        break
+                    end
+                end
+            end
+        end
+        :_MENU_SKIN_CLOSE
+    end
+    
+    // cleanup
+    free_memory {address} str
+
+    freeze_char_position $scplayer {state} false
+    set_char_collision $scplayer {state} true
+    set_char_coordinates_dont_warp_gang_no_offset $scplayer {pos} oriPos[0] oriPos[1] oriPos[2]
+    set_char_heading $scplayer {heading} oriDir
+    set_char_area_visible $scplayer {areaId} oriInterior
+    set_area_visible {areaId} oriInterior
+    if
+        oriInterior == 0
+    then
+        clear_extra_colours {withFade} false
+    end
+    
+    set_player_fire_button {playerId} $player1 {state} true
+    set_player_jump_button {playerId} $player1 {state} true
+    
+    delete_menu menuHandle
+    
+    clear_help
+    
+    set_time_scale {scale} 1.0
+    
+    display_hud {state} true
+    display_radar {state} true
+    display_zone_names {state} true
+    restore_camera_jumpcut
+    SCREEN_OFFSET_SET(0.0, 0.0)
+    
+    if
+        result == false
+    then
+        string_format selectedModel = "%s" modelNamePtr
+    end
+    
+    return selectedModel
+end
+
+
+function PLAYER_MODEL_SET(modelName :string) : logical
+    int result = true
+
+    int len = get_text_length {text} modelName
+    if
+        len > 15
+    then
+        debug_on
+		trace "Skin Selector: ~r~~h~Error!~s~ Invalid '%s' skin. Model filename must have up to 15 characters." modelName
+		string_format modelName = "default" // fallback
+		result = false
+    end
+
+	// check if file present before trying to load
+	if and
+		not is_text_empty {string} modelName
+		not is_text_equal {text} modelName {another} "default" {ignoreCase} true
+	then
+		int filePath = allocate_memory {size} 260
+		string_format filePath = ".\..\skin.img\%s.dff" modelName
+		if
+			not does_file_exist {path} filePath
+		then
+			debug_on
+			trace "Skin Selector: ~r~~h~Error!~s~ File '%s' not found." modelName
+			string_format modelName = "default" // fallback
+			result = false
+		end
+		free_memory {address} filePath
+	end
+	
+    if or
+        is_text_empty {string} modelName
+        is_text_equal {text} modelName {another} "default" {ignoreCase} true
+    then
+		PLAYER_MODEL_REBUILD_ENABLE(true)
+		build_player_model $player1
+		set_player_model $player1 {modelId} 0
+    else
+        load_special_character {slotId} 10 {modelName} modelName
+        load_all_models_now
+
+        PLAYER_MODEL_REBUILD_ENABLE(false)
+        set_player_model $player1 {modelId} #SPECIAL10
+        unload_special_character {slotId} 10
+    end
+    
+    return result
+end
+
+
+// enable/disable function for rebuilding player's model
+// called to update model after fat or muscles stat was changed
+// messes up bones structure in case if player uses models other than CJ
+function PLAYER_MODEL_REBUILD_ENABLE(enable :int)
+    if
+        enable == true
+    then
+        write_memory 0x005A81E0 {size} 1 {value} 0x56 {vp} 1 // restore CClothes::ConstructPedModel()
+    else
+        write_memory 0x005A81E0 {size} 1 {value} 0xC3 {vp} 1 // disable CClothes::ConstructPedModel()
+    end
+end
+
+
+// set xy offset of screen position (GTA SA 1.0)
+function SCREEN_OFFSET_SET(x :float, y: float)
+	int ptr = read_memory_with_offset {address} 0x00B6F028 {offset} 0x954 {size} 4 // TheCamera.rwCamera
+    if
+        ptr <> 0
+    then
+        write_memory_with_offset {address} ptr {offset} 0x78 {size} 4 {value} x
+        write_memory_with_offset {address} ptr {offset} 0x7C {size} 4 {value} y
+    end
+end
