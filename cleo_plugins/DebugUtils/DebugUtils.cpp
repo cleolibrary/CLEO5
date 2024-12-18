@@ -75,6 +75,7 @@ public:
         CLEO_RegisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
         CLEO_RegisterCallback(eCallbackId::ScriptOpcodeProcess, OnScriptOpcodeProcess);
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
+        CLEO_RegisterCallback(eCallbackId::GameProcess, OnGameProcess);
     }
 
     ~DebugUtils()
@@ -88,6 +89,11 @@ public:
     }
 
     // ---------------------------------------------- event callbacks -------------------------------------------------
+
+    static void WINAPI OnGameProcess()
+    {
+        currScript.Reset();
+    }
 
     static void WINAPI OnGameBegin(DWORD saveSlot)
     {
