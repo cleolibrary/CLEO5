@@ -51,7 +51,7 @@ public:
         }
 
         auto config = GetConfigFilename();
-        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 100000, config.c_str());
+        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 200000, config.c_str());
 
         // register opcodes
         CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
@@ -183,7 +183,7 @@ public:
 
     static bool WINAPI OnScriptProcess(CScriptThread* thread)
     {
-        currScript.Reset();
+        currScript.Begin(thread);
 
         for (size_t i = 0; i < pausedScripts.size(); i++)
         {
@@ -198,8 +198,9 @@ public:
 
     static OpcodeResult WINAPI OnScriptOpcodeProcess(CRunningScript* thread, DWORD opcode)
     {
-        currScript.commandCounter++;
-        if (currScript.commandCounter > configLimitCommand && !IsLegacyScript(thread))
+        currScript.ProcessCommand(thread);
+
+        if (configLimitCommand > 0 && currScript.commandCounter > configLimitCommand && !IsLegacyScript(thread))
         {
             SHOW_ERROR("Over %d,%03d commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo ignore this error, increase 'command' property in %s.ini file and restart the game.", configLimitCommand / 1000, configLimitCommand % 1000, ScriptInfoStr(thread).c_str(), TARGET_NAME);
             return thread->Suspend();
