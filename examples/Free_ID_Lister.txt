@@ -1,0 +1,182 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+//
+// Type "freeidlist" cheat to generate file with unused model IDs
+
+{$CLEO .cs}
+
+script_name {name} 'id_list'
+
+const Scan_Id_Begin = 0
+const Scan_Id_End = 19999
+const Output_Filename = "./Free_ID_List.txt"
+
+while true
+    wait {time} 250
+    
+    if
+        test_cheat {input} "freeidlist"
+    then
+        LIST_FREE_IDS()
+    end
+end
+
+
+function LIST_FREE_IDS() : logical
+    // clear old output file
+    if
+        does_file_exist {path} Output_Filename
+    then
+        if
+            not delete_file {path} Output_Filename
+        then
+            print_help_string {text} "~r~~h~Error!~s~ Failed to erase output file"
+            return false // error
+        end
+    end
+
+    // open output file
+    int fileHandle
+    if
+        not fileHandle = open_file {filePathName} Output_Filename {mode} 'wt'
+    then
+        print_help_string {text} "~r~~h~Error!~s~ Failed to open output file"
+        return false // error
+    end
+    
+    write_formatted_string_to_file fileHandle {format} "CLEO5 Free ID Lister%cFree model IDs:" {args} 0x0A
+    
+    int id = Scan_Id_Begin    
+    int rangeStart = -1
+    int rangeEnd = -1
+    while id <= Scan_Id_End
+        // give game time to breath and report the progress
+        int step = id % 1000 // once every 1000 ids
+        if
+            step == 0
+        then
+            DRAW_PROGRESS("Free IDs listing", Scan_Id_Begin, id, Scan_Id_End)
+        end
+        
+        int ptr = -1
+        if and
+            id >= #SPECIAL01
+            id <= #SPECIAL10
+        then
+            // special character model slots
+            // mark as occupied, even if currently there is no special character loaded 
+            ptr = 1
+        else
+            ptr = CModelInfo__GetModelInfo(id)
+        end
+        
+        if
+            ptr == 0 // free ID
+        then
+            if 
+                rangeStart == -1
+            then
+                rangeStart = id
+                write_formatted_string_to_file fileHandle {format} "%c%d" {args} 0x0A rangeStart
+            end
+            
+            rangeEnd = id
+        else
+            // close existing range
+            if and
+                rangeStart <> -1
+                rangeStart <> rangeEnd
+            then
+                int rangeSize = rangeEnd - rangeStart
+                rangeSize += 1
+                write_formatted_string_to_file fileHandle {format} " - %d (%d)" {args} rangeEnd rangeSize
+            end
+            
+            rangeStart = -1
+            rangeEnd = -1
+        end
+
+        id += 1
+    end
+    
+    // close ending range
+    if and
+        rangeStart <> -1
+        rangeStart <> rangeEnd
+    then
+        rangeSize = rangeEnd - rangeStart
+        rangeSize += 1
+        write_formatted_string_to_file fileHandle {format} " - %d (%d)" {args} rangeEnd rangeSize
+    end
+    
+    write_formatted_string_to_file fileHandle {format} "%cDone" {args} 0x0A
+    close_file fileHandle
+    
+    // print result filename
+    int filePath = allocate_memory {size} 512
+    filePath = resolve_filepath {path} Output_Filename
+    print_formatted_now {format} "~g~~h~~h~List saved to file:~n~%s" {time} 5000 {args} filePath
+    free_memory {address} filePath
+    
+    // keep progress dialog visible
+    TimerA = 0
+    while TimerA < 5000 // 5 seconds
+        DRAW_PROGRESS("Free IDs listing", Scan_Id_Begin, Scan_Id_End, Scan_Id_End)
+    end
+    
+    return true // success
+end
+
+
+function CModelInfo__GetModelInfo<cdecl, 0x00403DA0>(modelIdx :int) : int
+
+
+function DRAW_PROGRESS(title :string, startValue :int, currValue :int, endValue :int)
+    int iTmp = currValue - startValue
+    float progress =# iTmp
+    
+    iTmp = endValue - startValue
+    float total =# iTmp
+    
+    // to percent
+    progress /= total
+    progress *= 100.0
+    
+    use_text_commands {state} true
+    
+    // draw background
+    draw_rect {pos} 320.0 224.0 {size} 600.0 90.0 {rgb} 0x00 0x00 0x00 {alpha} 180 // background
+    
+    // title
+    set_text_font {font} Font.Subtitles
+    set_text_scale {width} 0.5 {height} 1.8
+    set_text_colour {rgb} 128 255 128 {alpha} 255
+    set_text_edge {size} 1 {rgb} 0 0 0 {alpha} 200
+    set_text_centre {state} true
+    set_text_centre_size {width} 640.0
+    display_text_formatted {pos} 320.0 190.0 {format} title
+    
+    // progress bar
+    draw_rect {pos} 320.0 224.0 {size} 560.0 10.0 {rgb} 0 0 0 {alpha} 255 // background border
+    draw_rect {pos} 320.0 224.0 {size} 558.0 8.0 {rgb} 128 255 128 {alpha} 32 // background
+    
+    float width = progress
+    width /= 100.0 // percent to 0.0-1.0 range
+    width *= 558.0
+    float x = width
+    x *= 0.5
+    x += 41.0 // start pos
+    draw_rect {pos} x 224.0 {size} width 8.0 {rgb} 128 255 128 {alpha} 220
+    
+    // progress text
+    set_text_font {font} Font.Subtitles
+    set_text_scale {width} 0.5 {height} 1.8
+    set_text_colour {rgb} 128 255 128 {alpha} 255
+    set_text_edge {size} 1 {rgb} 0 0 0 {alpha} 200
+    set_text_centre {state} true
+    set_text_centre_size {width} 640.0
+    display_text_formatted {pos} 320.0 240.0 {format} "%0.1f%%" {args} progress
+    
+    wait {time} 0 // render single frame
+end

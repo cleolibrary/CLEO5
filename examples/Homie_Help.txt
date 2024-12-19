@@ -125,7 +125,7 @@ function CHEAT_SPAWN_HELP()
             warp_char_into_car_as_passenger homie {handle} carHandle {seat} i
             
             iTmp = i & 1 // is right hand side seat?
-            task_drive_by {handle} -1 {targetChar} -1 {targetVehicle} -1 {pos} 0.0 0.0 0.0 {radius} 100.0 {type} DriveByType.Ai {rightHandCarSeat} iTmp {fireRate} 100
+            task_drive_by {handle} homie {targetChar} -1 {targetVehicle} -1 {pos} 0.0 0.0 0.0 {radius} 100.0 {type} DriveByType.Ai {rightHandCarSeat} iTmp {fireRate} 100
         end
     end
     
