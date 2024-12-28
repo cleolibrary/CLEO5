@@ -115,6 +115,8 @@ namespace CLEO
             }
         }
         CLEO::CLEO_StringListFree(list);
+
+        TRACE(""); // separator
     }
 
     void CTextManager::Clear()

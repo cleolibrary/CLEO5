@@ -938,14 +938,18 @@ namespace CLEO
 
         NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, Filepath_Config.c_str()) != 0;
 
+        // global native scripts legacy mode
         int ver = GetPrivateProfileInt("General", "MainScmLegacyMode", 0, Filepath_Config.c_str());
         switch(ver)
         {
             case 3: NativeScriptsVersion = eCLEO_Version::CLEO_VER_3; break;
             case 4: NativeScriptsVersion = eCLEO_Version::CLEO_VER_4; break;
-            case 5: NativeScriptsVersion = eCLEO_Version::CLEO_VER_5; break;
-            default: NativeScriptsVersion = eCLEO_Version::CLEO_VER_CUR; break;
+            default: 
+                NativeScriptsVersion = eCLEO_Version::CLEO_VER_CUR;
+                ver = 0;
+            break;
         }
+        if (ver != 0) TRACE("Legacy mode for native scripts active: CLEO%d", ver);
 
         MainScriptCurWorkDir = Filepath_Game;
 
