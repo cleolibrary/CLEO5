@@ -660,7 +660,7 @@ namespace CLEO
 
         if (buffLen > length) addTerminator = true; // there is space left for terminator
 
-        length = std::min(length, buffLen);
+        length = std::min<size_t>(length, buffLen);
         if (length > 0) std::memcpy(target.data, str, length);
         if (addTerminator) target.data[length] = '\0';
 
