@@ -1,0 +1,23 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2609'
+test("2609 (add_text_label_formatted)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should add dynamic GXT", test1)
+    return
+    
+    function test1
+        // gxt entry not present yet
+        0@v = get_text_label_string {key} 'CLE2609'
+        assert_eqs(0@v, "")
+        
+        add_text_label_formatted {dynamicKey} 'CLE2609' {format} "cleo %s %d" {args} "test" 42
+        0@v = get_text_label_string {key} 'CLE2609'
+        assert_eqs(0@v, "cleo test 42")
+        
+        remove_text_label {key} 'CLE2609' // cleanup
+    end
+end

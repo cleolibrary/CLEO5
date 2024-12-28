@@ -66,6 +66,7 @@ public:
 		CLEO_RegisterOpcode(0x2606, opcode_2606); // load_fxt
 		CLEO_RegisterOpcode(0x2607, opcode_2607); // unload_fxt
 		CLEO_RegisterOpcode(0x2608, opcode_2608); // get_text_length
+		CLEO_RegisterOpcode(0x2609, opcode_2609); // add_text_label_formatted
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
@@ -520,6 +521,17 @@ public:
 		auto result = strlen(str);
 
 		OPCODE_WRITE_PARAM_INT(result);
+		return OR_CONTINUE;
+	}
+
+	//2609=-1,add_text_label_formatted %1d% args %2d% 
+	static OpcodeResult __stdcall opcode_2609(CLEO::CRunningScript* thread)
+	{
+		OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
+		OPCODE_READ_PARAM_STRING_FORMATTED(str);
+
+		textManager.AddFxt(gxt, str);
+
 		return OR_CONTINUE;
 	}
 } textInstance;
