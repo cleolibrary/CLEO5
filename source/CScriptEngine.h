@@ -115,6 +115,7 @@ namespace CLEO
         CCustomScript *LoadScript(const char *szFilePath);
 
         bool NativeScriptsDebugMode; // debug mode enabled?
+        CLEO::eCLEO_Version NativeScriptsVersion; // allows using legacy modes
         std::string MainScriptFileDir;
         std::string MainScriptFileName;
         std::string MainScriptCurWorkDir;

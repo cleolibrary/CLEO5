@@ -892,9 +892,6 @@ namespace CLEO
 		SetScriptCondResult(thread, cs && cs->IsOK());
 		if (cs && cs->IsOK())
 		{
-			auto csscript = reinterpret_cast<CCustomScript*>(thread);
-			if (csscript->IsCustom())
-				cs->SetCompatibility(csscript->GetCompatibility());
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			memset(missionLocals, 0, 1024 * sizeof(SCRIPT_VAR)); // same as CTheScripts::WipeLocalVariableMemoryForMissionScript
 			TransmitScriptParams(thread, (CRunningScript*)((BYTE*)missionLocals - 0x3C));
@@ -939,9 +936,13 @@ namespace CLEO
 	//0AA9=0,  is_game_version_original
 	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread)
 	{
-		auto gv = CleoInstance.VersionManager.GetGameVersion();
-		auto cs = (CCustomScript*)thread;
-		SetScriptCondResult(thread, gv == GV_US10 || (cs->IsCustom() && cs->GetCompatibility() <= CLEO_VER_4_MIN && gv == GV_EU10));
+		auto gameVer = CleoInstance.VersionManager.GetGameVersion();
+		auto scriptVer = CLEO_GetScriptVersion(thread);
+
+		bool result = (gameVer == GV_US10) ||
+			(scriptVer <= CLEO_VER_4_MIN && gameVer == GV_EU10);
+
+		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
 
@@ -1088,12 +1089,12 @@ namespace CLEO
 		memcpy(locals, arguments, nParams * sizeof(SCRIPT_VAR));
 
 		// initialize rest of new scope local variables
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
-		if (cs->IsCustom() && cs->GetCompatibility() >= CLEO_VER_4_MIN) // CLEO 3 did not initialised local variables
+		auto scriptVer = CLEO_GetScriptVersion(thread);
+		if (scriptVer >= CLEO_VER_4_MIN) // CLEO 3 did not initialised local variables
 		{
 			for (DWORD i = nParams; i < 32; i++)
 			{
-				cs->SetIntVar(i, 0); // fill with zeros
+				thread->SetIntVar(i, 0); // fill with zeros
 			}
 		}
 
@@ -1859,10 +1860,6 @@ extern "C"
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			if (fromThread) TransmitScriptParams(fromThread, cs);
-
-			cs->SetDebugMode(fromThread ? 
-				reinterpret_cast<CCustomScript*>(fromThread)->GetDebugMode() : // from parent
-				CleoInstance.ScriptEngine.NativeScriptsDebugMode); // global
 		}
 		else
 		{
