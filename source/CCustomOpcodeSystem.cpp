@@ -1088,9 +1088,8 @@ namespace CLEO
 		// pass arguments as new scope local variables
 		memcpy(locals, arguments, nParams * sizeof(SCRIPT_VAR));
 
-		// initialize rest of new scope local variables
-		auto scriptVer = CLEO_GetScriptVersion(thread);
-		if (scriptVer >= CLEO_VER_4_MIN) // CLEO 3 did not initialised local variables
+		// initialize (clear) rest of new scope local variables
+		if (CLEO_GetScriptVersion(thread) >= CLEO_VER_4_MIN) // CLEO 3 did not cleared local variables
 		{
 			for (DWORD i = nParams; i < 32; i++)
 			{
