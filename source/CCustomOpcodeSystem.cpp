@@ -109,7 +109,6 @@ namespace CLEO
 		if (thread->IsCustom() && !IsLegacyScript(thread))
 		{
 			auto cs = (CCustomScript*)thread;
-			auto end = (cs->GetBasePointer() + cs->GetCodeSize());
 			if ((BYTE*)lastOpcodePtr == (cs->GetBasePointer() + cs->GetCodeSize()))
 			{
 				SHOW_ERROR("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.\n\nTo ignore this error, change the file extension from .cs to .cs4 and restart the game.", ((CCustomScript*)thread)->GetInfoStr().c_str());
