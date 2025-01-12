@@ -73,7 +73,7 @@ while true
 end
 
 
-function INITIALIZE() : logical
+function INITIALIZE(): logical
     // undo any hacks in case previous game session was interrupted (like alt+tab then starting new game)
     SCREEN_OFFSET_SET(0.0, 0.0)
     PLAYER_MODEL_REBUILD_ENABLE(true)
@@ -114,7 +114,7 @@ function INITIALIZE() : logical
 end
 
 
-function MENU_SKIN(modelNamePtr :int) : string
+function MENU_SKIN(modelNamePtr: int): string
     int iTmp, iTmp2, iTmp3
     int str = allocate_memory {size} 260
     
@@ -512,7 +512,7 @@ function MENU_SKIN(modelNamePtr :int) : string
 end
 
 
-function PLAYER_MODEL_SET(modelName :string) : logical
+function PLAYER_MODEL_SET(modelName: string): logical
     int result = true
 
     int len = get_text_length {text} modelName
@@ -566,7 +566,7 @@ end
 // enable/disable function for rebuilding player's model
 // called to update model after fat or muscles stat was changed
 // messes up bones structure in case if player uses models other than CJ
-function PLAYER_MODEL_REBUILD_ENABLE(enable :int)
+function PLAYER_MODEL_REBUILD_ENABLE(enable: int)
     if
         enable == true
     then
@@ -578,7 +578,7 @@ end
 
 
 // set xy offset of screen position (GTA SA 1.0)
-function SCREEN_OFFSET_SET(x :float, y: float)
+function SCREEN_OFFSET_SET(x: float, y: float)
 	int ptr = read_memory_with_offset {address} 0x00B6F028 {offset} 0x954 {size} 4 // TheCamera.rwCamera
     if
         ptr <> 0

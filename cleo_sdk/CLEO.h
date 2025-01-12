@@ -1,6 +1,6 @@
 /*
 	CLEO 5 header file
-	Copyright (c) 2023 Alien, Deji, Junior_Djjr, Miran, Seemann
+	Copyright (c) 2025 Alien, Deji, Junior_Djjr, Miran, Seemann
 */
 #pragma once
 
@@ -58,13 +58,13 @@ enum eDataType : BYTE
 	DT_FLOAT, // literal float 32
 	DT_VAR_ARRAY, // globalArr $(,)
 	DT_LVAR_ARRAY, // localArr @(,)
-	DT_TEXTLABEL, // literal string up to 7 chars
+	DT_TEXTLABEL, // literal string up to 8 chars
 	DT_VAR_TEXTLABEL, // globalVarSString s$
 	DT_LVAR_TEXTLABEL, // localVarSString @s
 	DT_VAR_TEXTLABEL_ARRAY, // globalVarSStringArr s$(,)
 	DT_LVAR_TEXTLABEL_ARRAY, // localVarSStringArr @s(,)
 	DT_VARLEN_STRING, // literal vstring ""
-	DT_STRING, // literal string up to 15 chars
+	DT_STRING, // literal string up to 16 chars
 	DT_VAR_STRING, // globalVarVString v$
 	DT_LVAR_STRING, // localVarVString @v
 	DT_VAR_STRING_ARRAY, // globalVarStringArr v$(,)

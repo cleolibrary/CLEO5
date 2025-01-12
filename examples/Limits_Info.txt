@@ -46,7 +46,7 @@ end
 terminate_this_script
 
 
-function DRAW_COUNT_LINE(vPos :float, txt :string, count :int, total :int) : float    
+function DRAW_COUNT_LINE(vPos: float, txt: string, count: int, total: int): float    
     set_text_right_justify {state} true
     set_text_scale {widthScale} 0.25 {heightScale} 1.0
     set_text_edge {size} 1 {red} 0 {green} 0 {blue} 0 {alpha} 240
@@ -58,7 +58,7 @@ function DRAW_COUNT_LINE(vPos :float, txt :string, count :int, total :int) : flo
 end
 
 
-function DRAW_MISSION_CLEANUP_LIST_INFO(vPos :float) : float
+function DRAW_MISSION_CLEANUP_LIST_INFO(vPos: float): float
     int count = read_memory_with_offset {address} 0x00A90850 {offset} 0x258 {size} 1 // CTheScripts::MissionCleanUp.m_Count
     int size = 75 // CMissionCleanup max size
     
@@ -67,7 +67,7 @@ function DRAW_MISSION_CLEANUP_LIST_INFO(vPos :float) : float
 end
 
 
-function DRAW_POOL_INFO(poolAddres :int, txt :string, vPos :float) : float
+function DRAW_POOL_INFO(poolAddres: int, txt: string, vPos: float): float
     int count, size
     count, size = GET_POOL_INFO(poolAddres)
     
@@ -78,7 +78,7 @@ end
 
 
 // blend color from green to red
-function SET_TEXT_COLOR(count :int, size :int)
+function SET_TEXT_COLOR(count: int, size: int)
     //float countF, sizeF
     float countF =# count
     float sizeF =# size
@@ -131,7 +131,7 @@ function SET_TEXT_COLOR(count :int, size :int)
 end
 
 
-function GET_POOL_INFO(address :int) : int, int
+function GET_POOL_INFO(address: int): int, int
     int pool = read_memory address {size} 4 {vp} false // dereference pointer
     if
         pool == 0

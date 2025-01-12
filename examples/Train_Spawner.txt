@@ -57,7 +57,7 @@ end
 terminate_this_script
 
 
-function TRAIN_CREATE(type :int, posX :int, posY :int, posZ :int, direction :int) : int
+function TRAIN_CREATE(type: int, posX: int, posY: int, posZ: int, direction: int): int
     request_model #TRAM
     request_model #FREIGHT // freight train locomotive
     request_model #STREAK // passenger train locomotive
@@ -88,7 +88,7 @@ function TRAIN_CREATE(type :int, posX :int, posY :int, posZ :int, direction :int
 end
 
 
-function TRAIN_PAINT(handle :int, color1 :int, color2 :int)
+function TRAIN_PAINT(handle: int, color1: int, color2: int)
     change_car_colour handle {color1} color1 {color2} color2
 
     int idx = 1

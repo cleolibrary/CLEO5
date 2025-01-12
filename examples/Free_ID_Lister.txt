@@ -23,7 +23,7 @@ while true
 end
 
 
-function LIST_FREE_IDS() : logical
+function LIST_FREE_IDS(): logical
     // clear old output file
     if
         does_file_exist {path} Output_Filename
@@ -129,10 +129,10 @@ function LIST_FREE_IDS() : logical
 end
 
 
-function CModelInfo__GetModelInfo<cdecl, 0x00403DA0>(modelIdx :int) : int
+function CModelInfo__GetModelInfo<cdecl, 0x00403DA0>(modelIdx: int): int
 
 
-function DRAW_PROGRESS(title :string, startValue :int, currValue :int, endValue :int)
+function DRAW_PROGRESS(title: string, startValue: int, currValue: int, endValue: int)
     int iTmp = currValue - startValue
     float progress =# iTmp
     

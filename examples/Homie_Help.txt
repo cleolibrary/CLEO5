@@ -216,7 +216,7 @@ function CHEAT_SPAWN_HELP()
 end
 
 
-function SPAWN_GROVE_MEMBER(modelIdx :int) : int
+function SPAWN_GROVE_MEMBER(modelIdx: int): int
     request_model {modelId} modelIdx
     load_all_models_now
     int charHandle = create_char {pedType} PedType.Gang2 {modelId} modelIdx {pos} 0.0 0.0 0.0
