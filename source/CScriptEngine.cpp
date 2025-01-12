@@ -348,7 +348,7 @@ namespace CLEO
         char threadName[8];
 
         ThreadSavingInfo(CCustomScript *cs) :
-            hash(cs->dwChecksum), condResult(cs->bCondResult),
+            hash(cs->codeChecksum), condResult(cs->bCondResult),
             logicalOp(cs->LogicalOp), notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
         {
             sleepTime = cs->WakeTime >= *GameTimer ? 0 : cs->WakeTime - *GameTimer;
@@ -359,7 +359,7 @@ namespace CLEO
 
         void Apply(CCustomScript *cs)
         {
-            cs->dwChecksum = hash;
+            cs->codeChecksum = hash;
             std::copy(tls, tls + 32, cs->LocalVar);
             std::copy(timers, timers + 2, cs->Timers);
             cs->bCondResult = condResult;
@@ -1064,7 +1064,7 @@ namespace CLEO
         {
             for (size_t i = 0; i < safe_header.n_stopped_threads; ++i)
             {
-                if (stopped_info[i] == cs->dwChecksum)
+                if (stopped_info[i] == cs->codeChecksum)
                 {
                     TRACE("Custom script '%s' found in the stop-list", szFilePath);
                     InactiveScriptHashes.insert(stopped_info[i]);
@@ -1079,7 +1079,7 @@ namespace CLEO
         {
             for (size_t i = 0; i < safe_header.n_saved_threads; ++i)
             {
-                if (safe_info[i].hash == cs->dwChecksum)
+                if (safe_info[i].hash == cs->codeChecksum)
                 {
                     TRACE("Custom script '%s' found in the safe-list", szFilePath);
                     safe_info[i].Apply(cs);
@@ -1403,7 +1403,7 @@ namespace CLEO
         {
             if (cs->bSaveEnabled)
             {
-                InactiveScriptHashes.insert(cs->dwChecksum);
+                InactiveScriptHashes.insert(cs->codeChecksum);
                 TRACE("Stopping custom script named '%s'", cs->GetName().c_str());
             }
             else
@@ -1507,7 +1507,7 @@ namespace CLEO
                 BaseIP = cs->GetBasePointer();
                 CurrentIP = cs->GetBasePointer() - label;
                 memcpy(Name, cs->Name, sizeof(Name));
-                dwChecksum = cs->dwChecksum;
+                codeChecksum = cs->codeChecksum;
                 parentThread = cs;
                 cs->childThreads.push_back(this);
             }
@@ -1602,16 +1602,19 @@ namespace CLEO
                 {
                     if (*MissionLoaded)
                         throw std::logic_error("Starting of custom mission when other mission loaded");
+
                     *MissionLoaded = 1;
                     MissionIndex = -1;
-                    BaseIP = CurrentIP = missionBlock;
+                    BaseIP = CurrentIP = missionBlock; // TODO: there should be check length <= missionBlock size
                 }
-                else {
+                else
+                {
                     BaseIP = CurrentIP = new BYTE[length];
                 }
                 is.read(reinterpret_cast<char *>(BaseIP), length);
 
-                dwChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
+                codeSize = length;
+                codeChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
 
                 // thread name from filename
                 auto threadNamePath = path;

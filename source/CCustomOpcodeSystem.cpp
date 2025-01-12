@@ -105,6 +105,18 @@ namespace CLEO
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
 		handledParamCount = 0;
 
+		// prevent past code execution
+		if (thread->IsCustom() && !IsLegacyScript(thread))
+		{
+			auto cs = (CCustomScript*)thread;
+			auto end = (cs->GetBasePointer() + cs->GetCodeSize());
+			if ((BYTE*)lastOpcodePtr == (cs->GetBasePointer() + cs->GetCodeSize()))
+			{
+				SHOW_ERROR("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.\n\nTo ignore this error, change the file extension from .cs to .cs4 and restart the game.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+				return thread->Suspend();
+			}
+		}
+
 		// execute registered callbacks
 		OpcodeResult result = OR_NONE;
 		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcess))

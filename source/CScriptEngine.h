@@ -15,7 +15,9 @@ namespace CLEO
         friend struct ScmFunction;
         friend struct ThreadSavingInfo;
 
-        DWORD dwChecksum;
+        DWORD codeSize;
+        DWORD codeChecksum;
+
         bool bSaveEnabled;
         bool bOK;
         DWORD LastSearchPed, LastSearchCar, LastSearchObj;
