@@ -51,7 +51,7 @@ public:
         }
 
         auto config = GetConfigFilename();
-        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 200000, config.c_str());
+        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 2000000, config.c_str());
 
         // register opcodes
         CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
