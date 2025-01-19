@@ -708,16 +708,7 @@ public:
             return thread->Suspend();
         }
 
-        // memory blocks can not overlap
-        auto first = min(src, trg);
-        auto second = max(src, trg);
-        if ((first + size) > second)
-        {
-            SHOW_ERROR("Invalid overlapping memory blocks in script %s\nScript suspended.", ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
-        }
-
-        memcpy((void*)trg, (void*)src, size);
+        memmove((void*)trg, (void*)src, size);
         return OR_CONTINUE;
     }
 
