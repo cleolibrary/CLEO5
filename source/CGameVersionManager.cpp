@@ -109,6 +109,11 @@ namespace CLEO
             return CLEO_VERSION;
         }
 
+        LPCSTR WINAPI CLEO_GetVersionStr()
+        {
+            return CLEO_VERSION_STR;
+        }
+
         eGameVersion WINAPI CLEO_GetGameVersion()
         {
             return DetermineGameVersion();

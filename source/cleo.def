@@ -57,3 +57,4 @@ EXPORTS
 	_CLEO_TerminateScript@4					@54
 	_CLEO_GetGameDirectory@0				@55
 	_CLEO_GetUserDirectory@0				@56
+	_CLEO_GetVersionStr@0					@57

@@ -459,6 +459,7 @@ extern "C" {
 #endif	//__cplusplus
 
 DWORD WINAPI CLEO_GetVersion();
+LPCSTR WINAPI CLEO_GetVersionStr(); // for example "5.0.0-alpha.1"
 eGameVersion WINAPI CLEO_GetGameVersion();
 
 BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, _pOpcodeHandler callback);

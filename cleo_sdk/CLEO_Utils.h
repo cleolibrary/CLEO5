@@ -375,7 +375,8 @@ namespace CLEO
             ShowWindow(*mainWnd, SW_MINIMIZE);
         }
 
-        MessageBoxA(NULL, msg, "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
+        auto caption = StringPrintf("CLEO v%s", CLEO_GetVersionStr());
+        MessageBoxA(NULL, msg, caption.c_str(), MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
 
         if (fullscreen)
         {
