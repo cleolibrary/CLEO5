@@ -32,6 +32,7 @@ public:
 
     // limits for processing after which script is considered hanging
     static size_t configLimitCommand;
+    static size_t configLimitTime;
 
     // breakpoint continue keys
     static const int KeyFirst = VK_F5;
@@ -51,7 +52,8 @@ public:
         }
 
         auto config = GetConfigFilename();
-        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 200000, config.c_str());
+        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 2000000, config.c_str()); // 2 milion commands
+        configLimitTime = GetPrivateProfileInt("Limits", "Time", 5, config.c_str()); // 5 seconds
 
         // register opcodes
         CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
@@ -200,9 +202,27 @@ public:
     {
         currScript.ProcessCommand(thread);
 
-        if (configLimitCommand > 0 && currScript.commandCounter > configLimitCommand && !IsLegacyScript(thread))
+        // script per render frame commands limit
+        if (configLimitCommand > 0 && currScript.commandCounter > configLimitCommand)
         {
-            SHOW_ERROR("Over %d,%03d commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo ignore this error, increase 'command' property in %s.ini file and restart the game.", configLimitCommand / 1000, configLimitCommand % 1000, ScriptInfoStr(thread).c_str(), TARGET_NAME);
+            // add comma separators into huge numbers
+            std::string limitStr;
+            auto limit = configLimitCommand;
+            while (limit >= 1000)
+            {
+                limitStr = StringPrintf(",%03d%s", limit % 1000, limitStr.c_str());
+                limit /= 1000;
+            }
+            limitStr = StringPrintf("%d%s", limit, limitStr.c_str());
+
+            SHOW_ERROR("Over %s commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Command' property in %s.ini file and restart the game.", limitStr.c_str(), ScriptInfoStr(thread).c_str(), TARGET_NAME);
+            return thread->Suspend();
+        }
+
+        // script per frame time execution limit
+        if (configLimitTime > 0 && currScript.GetElapsedSeconds() > configLimitTime)
+        {
+            SHOW_ERROR("Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and restart the game.", configLimitTime, ScriptInfoStr(thread).c_str(), TARGET_NAME);
             return thread->Suspend();
         }
 
@@ -408,6 +428,7 @@ ScreenLog DebugUtils::screenLog = {};
 std::deque<DebugUtils::PausedScriptInfo> DebugUtils::pausedScripts;
 ScriptLog DebugUtils::currScript = {};
 size_t DebugUtils::configLimitCommand;
+size_t DebugUtils::configLimitTime;
 bool DebugUtils::keysReleased = true;
 std::map<std::string, std::ofstream> DebugUtils::logFiles;
 
