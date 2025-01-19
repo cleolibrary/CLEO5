@@ -22,7 +22,7 @@ struct ScriptLog
         commandCounter++;
     }
 
-    size_t GetElapsedSeconds()
+    inline size_t GetElapsedSeconds() const
     {
         return (clock() - startTime) / CLOCKS_PER_SEC;
     }

@@ -220,10 +220,13 @@ public:
         }
 
         // script per frame time execution limit
-        if (configLimitTime > 0 && currScript.GetElapsedSeconds() > configLimitTime)
+        if (currScript.commandCounter % 1000 == 0) // check once every 1000 commands
         {
-            SHOW_ERROR("Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and restart the game.", configLimitTime, ScriptInfoStr(thread).c_str(), TARGET_NAME);
-            return thread->Suspend();
+            if (configLimitTime > 0 && currScript.GetElapsedSeconds() > configLimitTime)
+            {
+                SHOW_ERROR("Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and restart the game.", configLimitTime, ScriptInfoStr(thread).c_str(), TARGET_NAME);
+                return thread->Suspend();
+            }
         }
 
         return OR_NONE;
