@@ -1,189 +1,149 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name "2400" // copy_memory
-debug_on
-
-trace "2400 (copy_memory)"
-
-wait 0
-// copy 0 bytes
-get_var_pointer 3@ {store_to} 0@
-get_var_pointer 5@ {store_to} 1@
-2@ = 0xcccccccc
-3@ = 0x11223344
-4@ = 0xdddddddd
-5@ = 0x55667788
-6@ = 0xeeeeeeee
-
-2400: copy_memory {src} 0@ {dest} 1@ {size} 0 // tested opcode
-if and
-    2@ == 0xcccccccc
-    3@ == 0x11223344
-    4@ == 0xdddddddd
-    5@ == 0x55667788
-    6@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2400 (copy_memory), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #0 FAILED!~n~cccccccc 11223344 dddddddd 55667788 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
-end
-
-
-wait 0
-// copy 1 byte
-get_var_pointer 3@ {store_to} 0@
-get_var_pointer 5@ {store_to} 1@
-2@ = 0xcccccccc
-3@ = 0x11223344
-4@ = 0xdddddddd
-5@ = 0x55667788
-6@ = 0xeeeeeeee
-
-2400: copy_memory {src} 0@ {dest} 1@ {size} 1 // tested opcode
-if and
-    2@ == 0xcccccccc
-    3@ == 0x11223344
-    4@ == 0xdddddddd
-    5@ == 0x55667744
-    6@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2400 (copy_memory), #1 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #1 FAILED!~n~cccccccc 11223344 dddddddd 55667744 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
-end
-
-
-wait 0
-// copy 2 bytes
-get_var_pointer 3@ {store_to} 0@
-get_var_pointer 5@ {store_to} 1@
-2@ = 0xcccccccc
-3@ = 0x11223344
-4@ = 0xdddddddd
-5@ = 0x55667788
-6@ = 0xeeeeeeee
-
-2400: copy_memory {src} 0@ {dest} 1@ {size} 2 // tested opcode
-if and
-    2@ == 0xcccccccc
-    3@ == 0x11223344
-    4@ == 0xdddddddd
-    5@ == 0x55663344
-    6@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2400 (copy_memory), #2 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #2 FAILED!~n~cccccccc 11223344 dddddddd 55663344 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
-end
-
-
-wait 0
-// copy 3 bytes
-get_var_pointer 3@ {store_to} 0@
-get_var_pointer 5@ {store_to} 1@
-2@ = 0xcccccccc
-3@ = 0x11223344
-4@ = 0xdddddddd
-5@ = 0x55667788
-6@ = 0xeeeeeeee
-
-2400: copy_memory {src} 0@ {dest} 1@ {size} 3 // tested opcode
-if and
-    2@ == 0xcccccccc
-    3@ == 0x11223344
-    4@ == 0xdddddddd
-    5@ == 0x55223344
-    6@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2400 (copy_memory), #3 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #3 FAILED!~n~cccccccc 11223344 dddddddd 55223344 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
-end
-
-
-wait 0
-// copy 4 bytes
-get_var_pointer 3@ {store_to} 0@
-get_var_pointer 5@ {store_to} 1@
-2@ = 0xcccccccc
-3@ = 0x11223344
-4@ = 0xdddddddd
-5@ = 0x55667788
-6@ = 0xeeeeeeee
-
-2400: copy_memory {src} 0@ {dest} 1@ {size} 4 // tested opcode
-if and
-    2@ == 0xcccccccc
-    3@ == 0x11223344
-    4@ == 0xdddddddd
-    5@ == 0x11223344
-    6@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2400 (copy_memory), #4 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #4 FAILED!~n~cccccccc 11223344 dddddddd 11223344 eeeeeeee Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
-end
-
-
-wait 0
-// copy 5 bytes
-get_var_pointer 3@ {store_to} 0@
-get_var_pointer 5@ {store_to} 1@
-2@ = 0xcccccccc
-3@ = 0x11223344
-4@ = 0xdddddddd
-5@ = 0x55667788
-6@ = 0xeeeeeeee
-
-2400: copy_memory {src} 0@ {dest} 1@ {size} 5 // tested opcode
-if and
-    2@ == 0xcccccccc
-    3@ == 0x11223344
-    4@ == 0xdddddddd
-    5@ == 0x11223344
-    6@ == 0xeeeeeedd
-then
-    trace "~g~~h~~h~2400 (copy_memory), #5 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #5 FAILED!~n~cccccccc 11223344 dddddddd 11223344 eeeeeedd Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
-end
-
-
-wait 0
-// copy 7 bytes
-get_var_pointer 3@ {store_to} 0@
-get_var_pointer 5@ {store_to} 1@
-2@ = 0xcccccccc
-3@ = 0x11223344
-4@ = 0xdddddddd
-5@ = 0x55667788
-6@ = 0xeeeeeeee
-
-2400: copy_memory {src} 0@ {dest} 1@ {size} 7 // tested opcode
-if and
-    2@ == 0xcccccccc
-    3@ == 0x11223344
-    4@ == 0xdddddddd
-    5@ == 0x11223344
-    6@ == 0xeedddddd
-then
-    trace "~g~~h~~h~2400 (copy_memory), #6 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2400 (copy_memory), #6 FAILED!~n~cccccccc 11223344 dddddddd 11223344 eedddddd Expected~n~%08x %08x %08x %08x %08x Occured" 2@ 3@ 4@ 5@ 6@
-end
-
-
+script_name "2400"
+test("2400 (copy_memory)", tests)
 terminate_this_custom_script
+
+
+function tests
+    before_each(@setup)
+
+    it("should copy nothing", test1)
+    it("should copy 1 byte", test2)
+    it("should copy 2 bytes", test3)
+    it("should copy 3 bytes", test4)
+    it("should copy 4 bytes", test5)
+    it("should copy 5 bytes", test6)
+    it("should copy 6 bytes", test7)
+    it("should copy 7 bytes", test8)
+    it("should copy 8 bytes", test9)
+    it("should copy overlapping memory", test10)
+    
+    return
+    
+    :setup
+        0@ = 0x11223344
+        1@ = 0x55667788
+        2@ = 0x99AABBCC
+        3@ = 0xDDEEFF00
+    return
+    
+    function test1
+        10@ = get_var_pointer 1@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 0
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x99AABBCC)
+        assert_eq(3@, 0xDDEEFF00)
+    end
+    
+    function test2
+        10@ = get_var_pointer 1@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 1
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x99AABB88) // modified
+        assert_eq(3@, 0xDDEEFF00)
+    end
+    
+    function test3
+        10@ = get_var_pointer 1@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 2
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x99AA7788) // modified
+        assert_eq(3@, 0xDDEEFF00)
+    end
+    
+    function test4
+        10@ = get_var_pointer 1@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 3
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x99667788) // modified
+        assert_eq(3@, 0xDDEEFF00)
+    end
+    
+    function test5
+        10@ = get_var_pointer 1@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 4
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x55667788) // modified
+        assert_eq(3@, 0xDDEEFF00)
+    end
+    
+    function test6
+        10@ = get_var_pointer 0@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 5
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x11223344) // modified
+        assert_eq(3@, 0xDDEEFF88) // modified
+    end
+    
+    function test7
+        10@ = get_var_pointer 0@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 6
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x11223344) // modified
+        assert_eq(3@, 0xDDEE7788) // modified
+    end
+    
+    function test8
+        10@ = get_var_pointer 0@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 7
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x11223344) // modified
+        assert_eq(3@, 0xDD667788) // modified
+    end
+    
+    function test9
+        10@ = get_var_pointer 0@
+        11@ = get_var_pointer 2@
+        
+        copy_memory {src} 10@ {dest} 11@ {size} 8
+
+        assert_eq(0@, 0x11223344)
+        assert_eq(1@, 0x55667788)
+        assert_eq(2@, 0x11223344) // modified
+        assert_eq(3@, 0x55667788) // modified
+    end
+    
+    function test10
+        longString str = "the test string"
+        int trg = get_var_pointer str
+        int scr = trg + 4
+        
+        copy_memory {src} scr {dest} trg {size} 8
+
+        assert_eqs(str, "test str string")
+    end
+end
