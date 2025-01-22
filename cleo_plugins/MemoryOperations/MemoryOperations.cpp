@@ -65,6 +65,8 @@ public:
         CLEO_RegisterOpcode(0x2406, opcode_2406); // get_script_struct_from_filename
         CLEO_RegisterOpcode(0x2407, opcode_2407); // is_memory_equal
         CLEO_RegisterOpcode(0x2408, opcode_2408); // terminate_script
+        CLEO_RegisterOpcode(0x2409, opcode_2409); // read_memory_fine
+        CLEO_RegisterOpcode(0x240A, opcode_240A); // write_memory_fine
         
 
         // register event callbacks
@@ -889,6 +891,136 @@ public:
         CLEO_TerminateScript(address);
 
         return (address == thread) ? OR_INTERRUPT : OR_CONTINUE;
+    }
+
+    //2409=5,read_memory_fine %1d% bitOffset %2d% bitSize %3d% signed %4d% store_to %5d%
+    static OpcodeResult __stdcall opcode_2409(CLEO::CRunningScript* thread)
+    {
+        auto ptr = (BYTE*)OPCODE_READ_PARAM_PTR();
+        auto bitOffset = OPCODE_READ_PARAM_INT();
+        auto bitCount = OPCODE_READ_PARAM_INT();
+        auto asSigned = OPCODE_READ_PARAM_BOOL();
+
+        if (bitCount < 0 || bitCount > 32)
+        {
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", bitCount, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        if (bitCount == 0)
+        {
+            OPCODE_WRITE_PARAM_ANY32(0);
+            return OR_CONTINUE; // done
+        }
+
+        // deal with negative offsets
+        while (bitOffset < 0)
+        {
+            ptr += 1;
+            bitOffset += 8;
+        }
+
+        // apply full bytes from offset to the address
+        ptr += bitOffset / 8;
+        bitOffset = bitOffset % 8;
+
+        int otherBitCount = 32 - bitCount;
+        int mask = 0xFFFFFFFF >> otherBitCount;
+
+        // read memory
+        size_t dataRequired = (bitCount + bitOffset) / 8 + 1;
+        uint64 data = 0;
+        memcpy(&data, ptr, dataRequired);
+
+        data >>= bitOffset;
+        auto value = (DWORD)data;
+        value &= mask;
+
+        if (asSigned)
+        {
+            int topBit = 1 << (bitCount - 1);
+            if (value & topBit)
+            {
+                value |= ~mask; // set sign bits
+            }
+        }
+
+        OPCODE_WRITE_PARAM_ANY32(value);
+        return OR_CONTINUE;
+    }
+
+    //240A=4,write_memory_fine %1d% bitOffset %2d% bitSize %3d% signed %4d% value %5d%
+    static OpcodeResult __stdcall opcode_240A(CLEO::CRunningScript* thread)
+    {
+        auto ptr = (BYTE*)OPCODE_READ_PARAM_PTR();
+        auto bitOffset = OPCODE_READ_PARAM_INT();
+        auto bitCount = OPCODE_READ_PARAM_INT();
+        auto asSigned = OPCODE_READ_PARAM_BOOL();
+        
+        if (bitCount < 0 || bitCount > 32)
+        {
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", bitCount, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        if (bitCount == 0)
+        {
+            CLEO_SkipOpcodeParams(thread, 1); // value not used
+            return OR_CONTINUE; // done
+        }
+
+        auto value = OPCODE_READ_PARAM_ANY32();
+
+        // deal with negative offsets
+        while (bitOffset < 0)
+        {
+            ptr += 1;
+            bitOffset += 8;
+        }
+
+        // apply full bytes from offset to the address
+        ptr += bitOffset / 8;
+        bitOffset = bitOffset % 8;
+
+        int otherBitCount = 32 - bitCount;
+        int mask = 0xFFFFFFFF >> otherBitCount;
+
+        // clamp value to range
+        if (asSigned)
+        {
+            int signedVal = (int)value;
+
+            int topBit = 1 << (bitCount - 1);
+            int maxValue = mask ^ topBit;
+            int minValue = ~maxValue;
+            signedVal = std::clamp<int>(signedVal, minValue, maxValue);
+
+            value = (DWORD)signedVal;
+        }
+        else
+        {
+            DWORD maxValue = mask;
+            value = std::clamp<DWORD>(value, 0, maxValue);
+        }
+
+        size_t dataRequired = (bitCount + bitOffset) / 8 + 1;
+        uint64 dataMask = mask << bitOffset;
+
+        uint64 newData = value << bitOffset;
+
+        // read memory
+        uint64 data = 0;
+        memcpy(&data, ptr, dataRequired);
+
+        // combine
+        newData &= dataMask;
+        data &= ~dataMask;
+        data |= newData;
+
+        // write memory back
+        memcpy(ptr, &data, dataRequired);
+
+        return OR_CONTINUE;
     }
 } Memory;
 
