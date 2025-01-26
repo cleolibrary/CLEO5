@@ -202,6 +202,11 @@ public:
     {
         currScript.ProcessCommand(thread);
 
+        if (!thread->IsCustom()) {
+            // ignore SCM/ASI scripts as they may handle timings differently
+            return OR_NONE;
+        }
+
         // script per render frame commands limit
         if (configLimitCommand > 0 && currScript.commandCounter > configLimitCommand)
         {
