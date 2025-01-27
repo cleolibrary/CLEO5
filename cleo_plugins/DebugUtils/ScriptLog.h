@@ -15,6 +15,13 @@ struct ScriptLog
         commandCounter = 0;
     }
 
+    void Clear()
+    {
+        this->thread = nullptr;
+        startTime = 0;
+        commandCounter = 0;
+    }
+
     void ProcessCommand(CRunningScript* thread)
     {
         if (this->thread != thread) Begin(thread);

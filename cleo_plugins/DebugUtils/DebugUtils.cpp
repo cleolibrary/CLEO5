@@ -181,6 +181,10 @@ public:
                 }
             }
         }
+
+        // this should be called at end of scripts processing
+        // but PluginSDK, SAMP etc. call single scripts/callbacks outside of the processing queue
+        currScript.Clear(); // make sure current script log does not persists to next render frame
     }
 
     static bool WINAPI OnScriptProcess(CScriptThread* thread)
