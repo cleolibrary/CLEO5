@@ -17,7 +17,7 @@ struct ScriptLog
 
     void Clear()
     {
-        this->thread = nullptr;
+        thread = nullptr;
         startTime = 0;
         commandCounter = 0;
     }
