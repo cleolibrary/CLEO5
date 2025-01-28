@@ -99,15 +99,16 @@ namespace CLEO
         _asm jmp oriFunc
     }
 
-    void __declspec(naked) CCleoInstance::OnDebugDisplayTextBuffer()
+    void __cdecl CCleoInstance::OnDebugDisplayTextBuffer_Idle()
     {
+        CleoInstance.GameRestartDebugDisplayTextBuffer_IdleOrig(); // call original
         CleoInstance.CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
-        static DWORD oriFunc;
-        oriFunc = (DWORD)(CleoInstance.DebugDisplayTextBuffer_Orig);
-        if (oriFunc != (DWORD)nullptr)
-            _asm jmp oriFunc
-        else
-            _asm ret
+    }
+
+    void __cdecl CCleoInstance::OnDebugDisplayTextBuffer_Frontend()
+    {
+        CleoInstance.GameRestartDebugDisplayTextBuffer_FrontendOrig(); // call original
+        CleoInstance.CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
     }
 
     void CCleoInstance::Start(InitStage stage)
@@ -157,7 +158,8 @@ namespace CLEO
         {
             TRACE("CLEO initialization: Phase 2");
 
-            CodeInjector.ReplaceJump(OnDebugDisplayTextBuffer, VersionManager.TranslateMemoryAddress(MA_DEBUG_DISPLAY_TEXT_BUFFER), &DebugDisplayTextBuffer_Orig);
+            CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Idle, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE), &GameRestartDebugDisplayTextBuffer_IdleOrig);
+            CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Frontend, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND), &GameRestartDebugDisplayTextBuffer_FrontendOrig);
 
             PluginSystem.LogLoadedPlugins();
         }

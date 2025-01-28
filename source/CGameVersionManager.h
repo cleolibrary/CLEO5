@@ -86,7 +86,8 @@ namespace CLEO
         MA_CALL_GAME_RESTART_1,
         MA_CALL_GAME_RESTART_2,
         MA_CALL_GAME_RESTART_3,
-        MA_DEBUG_DISPLAY_TEXT_BUFFER, // empty function called after everything else is drawn
+        MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE,
+        MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND,
 
         // CustomOpcodeSystem
         MA_OPCODE_HANDLER,

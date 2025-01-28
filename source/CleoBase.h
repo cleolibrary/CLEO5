@@ -87,9 +87,13 @@ namespace CLEO
         static void OnGameRestart2();
         static void OnGameRestart3();
 
-        // empty function called after everything else is drawn
-        memory_pointer DebugDisplayTextBuffer_Orig = nullptr;
-        static void OnDebugDisplayTextBuffer();
+        // calls to CDebug::DebugDisplayTextBuffer()
+        void(__cdecl* GameRestartDebugDisplayTextBuffer_IdleOrig)() = nullptr;
+        static void OnDebugDisplayTextBuffer_Idle();
+
+        void(__cdecl* GameRestartDebugDisplayTextBuffer_FrontendOrig)() = nullptr;
+        static void OnDebugDisplayTextBuffer_Frontend();
+        
 
     private:
         InitStage m_initStage = InitStage::None;
