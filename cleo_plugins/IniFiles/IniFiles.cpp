@@ -5,6 +5,10 @@
 
 using namespace CLEO;
 
+// In case of naked file names without parent path INI file APIs searchs in Windows directory. Add leading ".\" to prevent that.
+#define OPCODE_READ_PARAM_FILEPATH_INI(_varName) OPCODE_READ_PARAM_FILEPATH(_varName); \
+	if (_varName != nullptr && !std::filesystem::path(_varName).has_parent_path()) { memmove(_buff_##_varName + 2, _buff_##_varName, sizeof(_buff_##_varName) - 2); _buff_##_varName[0] = '.'; _buff_##_varName[1] = '\\'; }
+
 class IniFiles
 {
 public:
@@ -35,7 +39,7 @@ public:
 		0AF0=4,%4d% = get_int_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
@@ -87,7 +91,7 @@ public:
 		****************************************************************/
 	{
 		auto value = OPCODE_READ_PARAM_INT();
-		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
@@ -110,7 +114,7 @@ public:
 		0AF2=4,%4d% = get_float_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
@@ -151,7 +155,7 @@ public:
 		****************************************************************/
 	{
 		auto value = OPCODE_READ_PARAM_FLOAT();
-		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
@@ -174,7 +178,7 @@ public:
 		0AF4=4,%4d% = read_string_from_ini_file %1s% section %2s% key %3s%
 		****************************************************************/
 	{
-		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
@@ -199,7 +203,7 @@ public:
 		****************************************************************/
 	{
 		OPCODE_READ_PARAM_STRING(strValue);
-		OPCODE_READ_PARAM_FILEPATH(path);
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
 		OPCODE_READ_PARAM_STRING(key);
 
