@@ -6,8 +6,18 @@
 using namespace CLEO;
 
 // In case of naked file names without parent path INI file APIs searchs in Windows directory. Add leading ".\" to prevent that.
-#define OPCODE_READ_PARAM_FILEPATH_INI(_varName) OPCODE_READ_PARAM_FILEPATH(_varName); \
-	if (_varName != nullptr && !std::filesystem::path(_varName).has_parent_path()) { memmove(_buff_##_varName + 2, _buff_##_varName, sizeof(_buff_##_varName) - 2); _buff_##_varName[0] = '.'; _buff_##_varName[1] = '\\'; }
+static void fixIniFilepath(char* buff)
+{
+	if (!std::filesystem::path(buff).has_parent_path())
+	{
+		std::string filename = buff;
+		strcpy(buff, ".\\");
+		strcat(buff, filename.c_str());
+	}
+}
+
+#define OPCODE_READ_PARAM_FILEPATH_INI(_varName) OPCODE_READ_PARAM_FILEPATH(_varName); fixIniFilepath(_buff_##_varName)
+
 
 class IniFiles
 {
