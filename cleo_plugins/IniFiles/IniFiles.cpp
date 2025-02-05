@@ -58,7 +58,8 @@ public:
 			// parse
 			char* end;
 			int value = strtol(str, &end, base);
-			if (end != str) // at least one number character consumed
+			if (end != str || // at least one number character consumed
+				IsLegacyScript(thread)) // old CLEO reported success anyway with value 0
 			{
 				OPCODE_WRITE_PARAM_INT(value);
 				OPCODE_CONDITION_RESULT(true);
@@ -130,7 +131,8 @@ public:
 				value = strtof(str, &end);
 			}
 
-			if (end != str) // at least one number character consumed
+			if (end != str || // at least one number character consumed
+				IsLegacyScript(thread)) // old CLEO reported success anyway with value 0
 			{
 				OPCODE_WRITE_PARAM_FLOAT(value);
 				OPCODE_CONDITION_RESULT(true);
