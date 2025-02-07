@@ -1200,6 +1200,11 @@ namespace CLEO
         {
             for (auto script = *activeThreadQueue; script; script = script->GetNext())
             {
+                if (script->IsCustom()) 
+                {
+                    // skip custom scripts in the queue, they are handled separately
+                    continue;
+                }
                 if (_strnicmp(threadName, script->Name, sizeof(script->Name)) == 0)
                 {
                     if (resultIndex == 0) return script;

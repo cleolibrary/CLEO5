@@ -25,6 +25,8 @@ public:
         }
 
         //register opcodes
+        CLEO_RegisterOpcode(0x0459, opcode_0459); // terminate_all_scripts_with_this_name
+
         CLEO_RegisterOpcode(0x0A8C, opcode_0A8C); // write_memory
         CLEO_RegisterOpcode(0x0A8D, opcode_0A8D); // read_memory
 
@@ -215,6 +217,24 @@ public:
         }
 
         CLEO_SkipUnusedVarArgs(thread);
+        return OR_CONTINUE;
+    }
+
+    //0459=1,terminate_all_scripts_with_this_name %1s%
+    static OpcodeResult __stdcall opcode_0459(CLEO::CRunningScript* thread)
+    {
+        OPCODE_READ_PARAM_STRING(threadName);
+
+        while (true)
+        {
+            // we only want to terminate game scripts, not custom ones
+            auto found = CLEO_GetScriptByName(threadName, true, false, 0);
+            if (found == nullptr)
+                break;
+
+            CLEO_TerminateScript(found);
+        }
+
         return OR_CONTINUE;
     }
 
