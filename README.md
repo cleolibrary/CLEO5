@@ -1,6 +1,6 @@
 # CLEO Library for GTA San Andreas (Windows PC)
 
-CLEO is a hugely popular extensible library plugin which brings new possibilities in scripting for the game Grand Theft Auto: San Andreas by Rockstar Games, allowing the use of thousands of unique mods which change or expand the gameplay. You may find more information about CLEO on the official website https://cleo.li
+CLEO Library is an open-source extensible plugin for the game Grand Theft Auto: San Andreas by Rockstar Games, allowing the use of thousands of unique mods which change or expand the gameplay. You may find more information about CLEO on the official website https://cleo.li
 
 ## Installation
 
@@ -12,6 +12,7 @@ The ASI Loader replaces one original game file: `vorbisFile.dll` - be sure to ma
 CLEO itself does not replace any game file, however the following files and folders are added:
 
 - cleo\ (CLEO script directory)
+- cleo\\.cleo.log (main log file)
 - cleo\\.config\sa.json (opcodes info file)
 - cleo\cleo_plugins\SA.Audio.cleo (audio playback utilities powered by BASS.dll library)
 - cleo\cleo_plugins\SA.DebugUtils.cleo (script debugging utilities plugin)
@@ -45,7 +46,10 @@ CLEO is continually being improved and extended over time. In very rare circumst
 
 ## Credits
 
-The author and original developer of the CLEO library is Seemann. Development of CLEO 4 was led by Alien and Deji, later turned into CLEO 5 by Miran. Today the CLEO library is an open-source project being maintained at https://github.com/cleolibrary
+- Seemann - the author and original developer of the CLEO library
+- Alien, Deji - the lead developers of CLEO 4
+- Miran - the lead developer of CLEO 5
+- all contributors to the GitHub project at https://github.com/cleolibrary/CLEO5
 
 Special thanks to:
 
@@ -53,6 +57,7 @@ Special thanks to:
 - NTAuthority and LINK/2012 for additional support with CLEO 4.3.
 - mfisto for the alpha-testing of CLEO 4, his support and advices.
 - 123nir for the alpha-testing of CLEO 5.0.0, troubleshooting and valuable bug reports.
+- Hamal for the beta-testing of CLEO 5.0.0, troubleshooting and valuable bug reports
 
 The developers are not affiliated with Take 2 Interactive or Rockstar Games.
 By using this product or any of the additional products included you take your own personal responsibility for any negative consequences should they arise.
