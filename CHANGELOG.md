@@ -109,6 +109,7 @@
 - fixed clearing mission locals when new CLEO mission is started
 - when reading less than 4 bytes with **0A9D (readfile)** now remaining bytes of the target variable are set to zero
 - fixed invalid 7 characters length limit of **0AAA (get_script_struct_named)**
+- fixed an undefined behavior caused by **0459 (terminate_all_scripts_with_this_name)** when the name matches a custom script
 
 #### SDK AND PLUGINS
 
