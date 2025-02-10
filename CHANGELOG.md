@@ -29,6 +29,7 @@
   - forbidden scripts from accessing and changing any files outside game root or game settings directory
   - file related opcodes moved from CLEO core into separated plugin
   - opcode **0A9E ([write_to_file](https://library.sannybuilder.com/#/sa/file/0A9E))** now supports literal numbers and strings
+  - opcode **0AD7 ([read_string_from_file](https://library.sannybuilder.com/#/sa/file/0AD7))** no longer includes new line character(s) at end of read string
   - fixed bug causing file stream opcodes not working correctly when read-write modes are used
   - fixed buffer overflows in file stream read opcodes
   - added/fixed support of all file stream opcodes in legacy mode (Cleo3)
