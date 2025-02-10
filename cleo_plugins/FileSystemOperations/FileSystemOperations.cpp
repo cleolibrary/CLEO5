@@ -329,6 +329,22 @@ public:
         // use caller's size argument, ignoring actual target type size. Intended for legacy reasons.
         bool ok = File::readString(handle, result.data, size) != nullptr;
 
+        // remove line ending characters if present
+        if (ok && !IsLegacyScript(thread))
+        {
+            auto last = (int)strlen(result.data) - 1;
+            while (last >= 0)
+            {
+                if (result.data[last] != '\n' && result.data[last] != '\r')
+                {
+                    break;
+                }
+
+                result.data[last] = '\0';
+                last--;
+            }
+        }
+
         OPCODE_CONDITION_RESULT(ok);
         return OR_CONTINUE;
     }

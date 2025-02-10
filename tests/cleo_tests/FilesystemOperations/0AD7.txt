@@ -1,252 +1,123 @@
 {$CLEO .s}
-{$USE debug}
-{$USE file}
-{$USE bitwise}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
-
-goto @DATA_END
+goto @TEST_DATA_END
 hex
-    "t1" 0A "t2" 0D 0A "t3" 09 "e s" 0A "very long test no.4" 0A "even longer test string to read number 5" 0A
+    "1234567890ABCDEF1234567890ABCDE" 00 // data A - 32 characters
+    "123" 0A // data B
+    "12" 0D 0A // data C
+    "1234" // padding
 end
-:DATA_END
+:TEST_DATA_END
+const Test_Data_Offset_A = 7 // skip goto + target
+const Test_Data_Offset_B = 39
+const Test_Data_Offset_C = 43
 
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name "0AD7" // read_string_from_file
-debug_on
-trace "0AD7 (read_string_from_file)"
-
-
-// open the file
-wait 0
-if
-    0@ = open_file ".\0AD7.s" {mode} "r"
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #0 FAILED! Failed to open file."
-end
-
-
-// seek file to hex data block
-wait 0
-file_seek 0@ {offset} 7 {origin} SeekOrigin.Begin
-trace "~g~~h~~h~0AD7 (read_string_from_file), #1 PASSED"
-
-
-// read 0
-wait 0
-1@ = 0xcccccccc
-2@ = 0xcccccccc
-3@ = 0xcccccccc
-if
-    0AD7: read_string_from_file 0@ {store_to} 2@s {max_lenght} 0 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #2 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #2 FAILED! Condition result: FALSE"
-end
-if and
-    1@ == 0xcccccccc
-    2@ == 0xcccccccc
-    3@ == 0xcccccccc
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #3 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #3 FAILED!~n~%08x %08x %08x Expected~n~%08x %08x %08x Occured" 0xcccccccc 0xcccccccc 0xcccccccc 1@ 2@ 3@
-end
-
-
-// read 1
-wait 0
-1@ = 0xcccccccc
-2@ = 0xcccccccc
-3@ = 0xcccccccc
-4@ = 0xcccccccc
-if
-    0AD7: read_string_from_file 0@ {store_to} 2@s {max_lenght} 1 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #4 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #4 FAILED! Condition result: FALSE"
-end
-if and
-    1@ == 0xcccccccc
-    2@s == ''
-    4@ == 0xcccccccc
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #5 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #5 FAILED!~n~%08x '%s' %08x Expected~n~%08x '%s' %08x Occured" 0xcccccccc '' 0xcccccccc 1@ 2@s 4@
-end
-
-
-// read ended by new line
-wait 0
-1@ = 0xcccccccc
-2@ = 0xcccccccc
-3@ = 0xcccccccc
-4@ = 0xcccccccc
-if
-    0AD7: read_string_from_file 0@ {store_to} 2@s {max_lenght} 8 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #6 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #6 FAILED! Condition result: FALSE"
-end
-string_format 6@s {format} "t1%c" {args} 0x0A // ended with new line
-if and
-    1@ == 0xcccccccc
-    2@s == 6@s
-    4@ == 0xcccccccc
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #7 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #7 FAILED!~n~%08x '%s' %08x %08x Expected~n~%08x '%s' %08x %08x Occured" 0xcccccccc 6@s 0xcccccccc 1@ 2@s 4@
-end
-
-
-// read ended by new line (Windows)
-wait 0
-1@ = 0xcccccccc
-2@ = 0xcccccccc
-3@ = 0xcccccccc
-4@ = 0xcccccccc
-if
-    0AD7: read_string_from_file 0@ {store_to} 2@s {max_lenght} 8 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #8 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #8 FAILED! Condition result: FALSE"
-end
-string_format 6@s {format} "t2%c%c" {args} 0x0D 0x0A // ended with new line
-if and
-    1@ == 0xcccccccc
-    2@s == 6@s
-    4@ == 0xcccccccc
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #9 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #9 FAILED!~n~%08x '%s' %08x Expected~n~%08x '%s' %08x Occured" 0xcccccccc 6@s 0xcccccccc 1@ 2@s 4@
-end
-
-
-// read not splited by tab or space
-wait 0
-1@ = 0xcccccccc
-2@ = 0xcccccccc
-3@ = 0xcccccccc
-4@ = 0xcccccccc
-if
-    0AD7: read_string_from_file 0@ {store_to} 2@s {max_lenght} 8 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #10 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #10 FAILED! Condition result: FALSE"
-end
-string_format 6@s {format} "t3%ce s%c" {args} 0x09 0x0A
-if and
-    1@ == 0xcccccccc
-    2@s == 6@s
-    4@ == 0xcccccccc
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #11 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #11 FAILED!~n~%08x '%s' %08x Expected~n~%08x '%s' %08x Occured" 0xcccccccc 6@s 0xcccccccc 1@ 2@s 4@
-end
-
-
-// read longer than longString variable (expect overflow)
-wait 0
-1@ = 0xcccccccc
-2@ = 0xcccccccc
-3@ = 0xcccccccc
-4@ = 0xcccccccc
-5@ = 0xcccccccc
-6@ = 0xcccccccc
-7@ = 0xcccccccc
-8@ = 0xcccccccc
-if
-    0AD7: read_string_from_file 0@ {store_to} 2@s {max_lenght} 32 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #12 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #12 FAILED! Condition result: FALSE"
-end
-9@ = allocate_memory 64
-string_format 9@ {format} "very long test no.4%c" {args} 0x0A
-10@ = get_var_pointer 2@
-if and
-    1@ == 0xcccccccc
-    is_memory_equal 9@ 10@ {size} 21 // including terminator
-    8@ == 0xcccccccc
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #13 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #13 FAILED!~n~%08x '%s' %08x Expected~n~%08x '%s' %08x Occured" 0xcccccccc 9@ 0xcccccccc 1@ 10@ 8@
-end
-free_memory 9@
-
-
-// read limited by max_lenght param
-wait 0
-1@ = 0xcccccccc
-2@ = 0xcccccccc
-3@ = 0xcccccccc
-if
-    0AD7: read_string_from_file 0@ {store_to} 2@s {max_lenght} 4 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #14 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #14 FAILED! Condition result: FALSE"
-end
-if and
-    1@ == 0xcccccccc
-    2@ == 0x00657665 // "eve\0"
-    3@ == 0xcccccccc
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #15 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #15 FAILED!~n~%08x %08x %08x Expected~n~%08x %08x %08x Occured" 0xcccccccc 0x00657665 0xcccccccc 1@ 2@ 3@
-end
-
-
-// read into memory address
-wait 0
-1@ = allocate_memory 64
-if
-    0AD7: read_string_from_file 0@ {store_to} 1@ {max_lenght} 64 // tested opcode
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #16 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #16 FAILED! Condition result: FALSE"
-end
-2@ = allocate_memory 64
-string_format 2@ {format} "n longer test string to read number 5%c" {args} 0x0A
-if
-    is_memory_equal 1@ 2@ {size} 39 // including terminator
-then
-    trace "~g~~h~~h~0AD7 (read_string_from_file), #17 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AD7 (read_string_from_file), #17 FAILED!~n~'%s' Expected~n~'%s' Occured" 0xcccccccc 1@ 2@
-end
-free_memory 1@
-free_memory 2@
-
-
-// close the file
-wait 0
-close_file 0@
-trace "~g~~h~~h~0AD7 (read_string_from_file), #18 PASSED"
-
-
+script_name "0AD7"
+test("0AD7 (read_string_from_file)", tests)
 terminate_this_custom_script
+
+
+function tests
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should read nothing", test1)
+    it("should read one", test2)
+    it("should read two", test3)
+    it("should read four", test4)
+    it("should read eight", test5)
+    it("should overflow dest string variable", test6)
+    it("should read till line feed (\\n)", test7)
+    it("should read till line feed (\\r\\n)", test8)
+
+    return
+    
+    :setup
+        0@ = open_file {filePathName} ".\0AD7.s" {mode} "r"
+        1@ = 0xCCCCCCCC
+        2@ = 0xCCCCCCCC
+        3@ = 0xCCCCCCCC
+        4@ = 0xCCCCCCCC
+    return
+    
+    :cleanup
+        close_file 0@
+    return
+    
+    function test1
+        file_seek 0@ {offset} Test_Data_Offset_A {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 0
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eq(2@, 0xCCCCCCCC)
+        assert_eq(3@, 0xCCCCCCCC)
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+    
+    function test2
+        file_seek 0@ {offset} Test_Data_Offset_A {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 1
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eqs(2@s, "") // just terminator character
+        assert_eq(3@, 0xCCCCCCCC)
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+    
+    function test3
+        file_seek 0@ {offset} Test_Data_Offset_A {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 2
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eqs(2@s, "1")
+        assert_eq(3@, 0xCCCCCCCC)
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+    
+    function test4
+        file_seek 0@ {offset} Test_Data_Offset_A {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 4
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eqs(2@s, "123")
+        assert_eq(3@, 0xCCCCCCCC)
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+    
+    function test5
+        file_seek 0@ {offset} Test_Data_Offset_A {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eqs(2@s, "1234567")
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+    
+    function test6
+        file_seek 0@ {offset} Test_Data_Offset_A {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 10
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eqs(2@s, "12345678")
+        assert_eqs(4@s, "9") // overflowed data
+    end
+    
+    function test7
+        file_seek 0@ {offset} Test_Data_Offset_B {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eqs(2@s, "123")
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+    
+    function test8
+        file_seek 0@ {offset} Test_Data_Offset_C {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        assert_eqs(2@s, "12")
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+end
