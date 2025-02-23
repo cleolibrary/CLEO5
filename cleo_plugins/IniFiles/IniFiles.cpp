@@ -18,6 +18,18 @@ static void fixIniFilepath(char* buff)
 
 #define OPCODE_READ_PARAM_FILEPATH_INI(_varName) OPCODE_READ_PARAM_FILEPATH(_varName); fixIniFilepath(_buff_##_varName)
 
+#define OPCODE_READ_PARAM_STRING_OR_ZERO(_varName) const char* ##_varName; \
+if (IsImmInteger(thread->PeekDataType()) && CLEO_PeekIntOpcodeParam(thread) == 0) \
+{ \
+	CLEO_SkipOpcodeParams(thread, 1); \
+	##_varName = nullptr; \
+} \
+else \
+{ \
+	char _buff_##_varName[MAX_STR_LEN + 1]; \
+	##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1); \
+	if (!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; } \
+};
 
 class IniFiles
 {
@@ -104,17 +116,12 @@ public:
 		auto value = OPCODE_READ_PARAM_INT();
 		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
-		OPCODE_READ_PARAM_STRING(key);
+        OPCODE_READ_PARAM_STRING_OR_ZERO(key);	// 0 deletes the whole section
 
 		char strValue[32];
 		_itoa(value, strValue, 10);
 		auto result = WritePrivateProfileString(section, key, strValue, path);
 		
-		if (GetLastError() == ERROR_FILE_NOT_FOUND) // path points directory
-		{
-			result = false;
-		}
-
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
@@ -169,17 +176,12 @@ public:
 		auto value = OPCODE_READ_PARAM_FLOAT();
 		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
-		OPCODE_READ_PARAM_STRING(key);
+		OPCODE_READ_PARAM_STRING_OR_ZERO(key); // 0 deletes the whole section
 
 		char strValue[32];
 		sprintf(strValue, "%g", value);
 		auto result = WritePrivateProfileString(section, key, strValue, path);
 		
-		if (GetLastError() == ERROR_FILE_NOT_FOUND) // path points directory
-		{
-			result = false;
-		}
-
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;
 	}
@@ -214,17 +216,12 @@ public:
 		0AF5=4,write_string %1s% to_ini_file %2s% section %3s% key %4s%
 		****************************************************************/
 	{
-		OPCODE_READ_PARAM_STRING(strValue);
+		OPCODE_READ_PARAM_STRING_OR_ZERO(strValue); // 0 deletes the key
 		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
-		OPCODE_READ_PARAM_STRING(key);
+		OPCODE_READ_PARAM_STRING_OR_ZERO(key);		// 0 deletes the whole section
 
 		auto result = WritePrivateProfileString(section, key, strValue, path);
-
-		if (GetLastError() == ERROR_FILE_NOT_FOUND) // path points directory
-		{
-			result = false;
-		}
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;

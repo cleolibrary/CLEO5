@@ -5,7 +5,6 @@ script_name "0AF5"
 test("0AF5 (write_string_to_ini_file)", tests)
 terminate_this_custom_script
 
-
 const Test_Path = "cleo\cleo_test_file.ini"
 
 function tests
@@ -17,65 +16,101 @@ function tests
     it("should create new file", test3)
     it("should add to existing file", test4)
     it("should overwrite value", test5)
+    it("should delete section", test6)
+    it("should delete key", test7)
     return
-    
+
     :cleanup
-        delete_file {path} Test_Path
+    delete_file {path} Test_Path
     return
-    
+
     function test1
-        write_string_to_ini_file {value} "value_one" {path} "gta_sa.exe" {section} "test" {key} "test"
+        write_string_to_ini_file {value} "value_one" {path} "CLEO.asi" {section} "test" {key} "test"
         assert_result_false()
     end
-    
+
     function test2
         write_string_to_ini_file {value} "value_one" {path} "cleo" {section} "test" {key} "test"
         assert_result_false()
     end
-    
+
     function test3
         does_file_exist {path} Test_Path
         assert_result_false()
-        
+
         write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "test"
         assert_result_true()
-        
+
         does_file_exist {path} Test_Path
         assert_result_true()
-        
+
         longstring value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test"
         assert_eqs(value, "value_one")
     end
-    
+
     function test4
         does_file_exist {path} Test_Path
         assert_result_false()
-    
+
         write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "testA"
         assert_result_true()
-        
+
         write_string_to_ini_file {value} "value_two" {path} Test_Path {section} "test" {key} "testB"
         assert_result_true()
-        
+
         longstring value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "testA"
         assert_eqs(value, "value_one")
-        
+
         value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "testB"
         assert_eqs(value, "value_two")
     end
-    
+
     function test5
         does_file_exist {path} Test_Path
         assert_result_false()
-    
+
         write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "test"
         assert_result_true()
-        
+
         write_string_to_ini_file {value} "value_two" {path} Test_Path {section} "test" {key} "test"
         assert_result_true()
-                
+
         longstring value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test"
         assert_eqs(value, "value_two")
+    end
+
+    function test6
+        does_file_exist {path} Test_Path
+        assert_result_false()
+
+        write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "test"
+        assert_result_true()
+
+        longstring value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test"
+        assert_eqs(value, "value_one")
+
+        write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} 0
+        assert_result_true()
+
+        value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test"
+        assert_result_false()
+    end
+
+    function test7
+        does_file_exist {path} Test_Path
+        assert_result_false()
+
+        write_string_to_ini_file {value} "value_one" {path} Test_Path {section} "test" {key} "test"
+        assert_result_true()
+
+        longstring value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test"
+        assert_eqs(value, "value_one")
+
+        write_string_to_ini_file {value} 0 {path} Test_Path {section} "test" {key} "test"
+        assert_result_true()
+
+        value = read_string_from_ini_file {path} Test_Path {section} "test" {key} "test"
+        assert_result_false()
     end
 
 end

@@ -1940,7 +1940,7 @@ extern "C"
 
 	void WINAPI CLEO_GetScriptParamInfoStr(int idexOffset, char* buf, DWORD bufSize)
 	{
-		auto curr = idexOffset - 1 + CleoInstance.OpcodeSystem.handledParamCount;
+		auto curr = idexOffset + CleoInstance.OpcodeSystem.handledParamCount;
 		auto name = CleoInstance.OpcodeInfoDb.GetArgumentName(CleoInstance.OpcodeSystem.lastOpcode, curr);
 
 		curr++; // 1-based argument index display

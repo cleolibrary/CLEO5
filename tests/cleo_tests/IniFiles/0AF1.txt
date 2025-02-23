@@ -17,6 +17,7 @@ function tests
     it("should create new file", test3)
     it("should add to existing file", test4)
     it("should overwrite value", test5)
+    it("should delete section", test6)
     return
     
     :cleanup
@@ -24,7 +25,7 @@ function tests
     return
     
     function test1
-        write_int_to_ini_file {value} 42 {path} "gta_sa.exe" {section} "test" {key} "test"
+        write_int_to_ini_file {value} 42 {path} "CLEO.asi" {section} "test" {key} "test"
         assert_result_false()
     end
     
@@ -76,6 +77,23 @@ function tests
                 
         int value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test"
         assert_eq(value, 50)
+    end
+    
+    function test6
+        does_file_exist {path} Test_Path
+        assert_result_false()
+    
+        write_int_to_ini_file {value} 42 {path} Test_Path {section} "test" {key} "test"
+        assert_result_true()
+        
+        int value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test"
+        assert_eq(value, 42)
+        
+        write_int_to_ini_file {value} 42 {path} Test_Path {section} "test" {key} 0
+        assert_result_true()
+                
+        value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test"
+        assert_result_false()
     end
 
 end
