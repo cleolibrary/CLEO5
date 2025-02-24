@@ -81,6 +81,8 @@
   - **2000 ([get_cleo_arg_count](https://library.sannybuilder.com/#/sa/CLEO/2000))**
   - **2002 ([cleo_return_with](https://library.sannybuilder.com/#/sa/CLEO/2002))**
   - **2003 ([cleo_return_fail](https://library.sannybuilder.com/#/sa/CLEO/2003))**
+  - **2800 ([delete_section_from_ini_file](https://library.sannybuilder.com/#/sa/ini/2800))**
+  - **2801 ([delete_key_from_ini_file](https://library.sannybuilder.com/#/sa/ini/2801))**
   - 'argument count' parameter of **0AB1 (cleo_call)** is now optional. `cleo_call @LABEL args 0` can be written as `cleo_call @LABEL`
   - 'argument count' parameter of **0AB2 (cleo_return)** is now optional. `cleo_return 0` can be written as `cleo_return`
   - SCM functions can return string literals and string variables
@@ -132,6 +134,7 @@
   - CLEO_IsScriptRunning
   - CLEO_TerminateScript
   - CLEO_GetScriptVersion
+  - CLEO_SetScriptVersion
   - CLEO_GetScriptInfoStr
   - CLEO_GetScriptFilename
   - CLEO_GetScriptWorkDir
