@@ -49,11 +49,8 @@ function set_current_script_compat_to(compat: int)
         if
             proc = get_dynamic_library_procedure "_CLEO_SetScriptVersion@8" {library} lib
         then
-
             int cur_script = get_this_script_struct
-            // set compatibility mode with CLEO 4.4
             call_function {address} proc {numParams} 2 {pop} 0 {funcParams} compat cur_script
-
         else
             trace "Can't find SetScriptVersion in CLEO.asi"
             breakpoint
