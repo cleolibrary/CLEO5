@@ -41,52 +41,21 @@ function test(suite_name: string, callback: int)
     cleo_call callback
 end
 
-function set_current_script_compat_to(compat: int)
-    int lib, proc, ver
-    if
-        lib = load_dynamic_library "root:\CLEO.asi"
-    then
-        if
-            proc = get_dynamic_library_procedure "_CLEO_SetScriptVersion@8" {library} lib
-        then
-            int cur_script = get_this_script_struct
-            call_function {address} proc {numParams} 2 {pop} 0 {funcParams} compat cur_script
-        else
-            trace "Can't find SetScriptVersion in CLEO.asi"
-            breakpoint
-        end
-
-        free_dynamic_library lib
-    else
-        trace "Can't load CLEO.asi"
-        breakpoint
-    end
-end
-
-function set_current_script_compat
-    int compat = _cleo_tester_read_var(VAR_COMPAT)
-    set_current_script_compat_to(compat)
-end
-
-function restore_current_script_compat
-    set_current_script_compat_to(DEFAULT_COMPAT)
-end
-
 /// registers new unit test in a test suite
 /// use assert_*(...) to validate result
 function it(spec_name: string, callback: int)
-    run_with_compat_mode(spec_name, callback, DEFAULT_COMPAT)
+    _run_with_compat_mode(spec_name, callback, DEFAULT_COMPAT)
 end
 
 /// registers new unit test in a test suite - runs in CS4 mode
 /// use assert_*(...) to validate result
 function it_cs4(spec_name: string, callback: int)
-    run_with_compat_mode(spec_name, callback, CLEO4_COMPAT)
+    _run_with_compat_mode(spec_name, callback, CLEO4_COMPAT)
 end
 
 /// registers new unit test in a test suite
 /// use assert_*(...) to validate result
-function run_with_compat_mode(spec_name: string, callback: int, compat: int)
+function _run_with_compat_mode(spec_name: string, callback: int, compat: int)
     int index = _cleo_tester_read_var(VAR_TEST_INDEX)
     _cleo_tester_write_var(VAR_COMPAT, compat)
 
@@ -123,10 +92,10 @@ function run_with_compat_mode(spec_name: string, callback: int, compat: int)
         :_cleo_tester_before_each
         gosub @_cleo_tester_stub
 
-        set_current_script_compat()
+        _set_current_script_compat()
         :_cleo_tester_run
         cleo_call @_cleo_tester_stub {numParams} 32 {params} 0@ 1@ 2@ 3@ 4@ 5@ 6@ 7@ 8@ 9@ 10@ 11@ 12@ 13@ 14@ 15@ 16@ 17@ 18@ 19@ 20@ 21@ 22@ 23@ 24@ 25@ 26@ 27@ 28@ 29@ 30@ 31@
-        restore_current_script_compat()
+        _restore_current_script_compat()
 
         :_cleo_tester_after_each
         gosub @_cleo_tester_stub
@@ -396,5 +365,37 @@ end
 function after_each(callback: int)
     _cleo_tester_write_var(VAR_AFTER_EACH, callback)
 end
+
+function _set_current_script_compat_to(compat: int)
+    int lib, proc, ver
+    if
+        lib = load_dynamic_library "root:\CLEO.asi"
+    then
+        if
+            proc = get_dynamic_library_procedure "_CLEO_SetScriptVersion@8" {library} lib
+        then
+            int cur_script = get_this_script_struct
+            call_function {address} proc {numParams} 2 {pop} 0 {funcParams} compat cur_script
+        else
+            trace "Can't find SetScriptVersion in CLEO.asi"
+            breakpoint
+        end
+
+        free_dynamic_library lib
+    else
+        trace "Can't load CLEO.asi"
+        breakpoint
+    end
+end
+
+function _set_current_script_compat
+    int compat = _cleo_tester_read_var(VAR_COMPAT)
+    _set_current_script_compat_to(compat)
+end
+
+function _restore_current_script_compat
+    _set_current_script_compat_to(DEFAULT_COMPAT)
+end
+
 
 :_cleo_tester_skip_fns
