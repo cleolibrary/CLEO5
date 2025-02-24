@@ -118,7 +118,7 @@ public:
 		auto value = OPCODE_READ_PARAM_INT();
 		OPCODE_READ_PARAM_FILEPATH_INI(path);
 		OPCODE_READ_PARAM_STRING(section);
-        OPCODE_READ_PARAM_STRING_OR_ZERO(key);	// 0 deletes the whole section
+		OPCODE_READ_PARAM_STRING_OR_ZERO(key);	// 0 deletes the whole section
 
 		char strValue[32];
 		_itoa(value, strValue, 10);
