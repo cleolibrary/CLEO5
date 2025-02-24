@@ -16,8 +16,8 @@ function tests
     it("should create new file", test3)
     it("should add to existing file", test4)
     it("should overwrite value", test5)
-    it("should delete section", test6)
-    it("should delete key", test7)
+    it_cs4("should delete section", test6)
+    it_cs4("should delete key", test7)
     return
 
     :cleanup

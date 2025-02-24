@@ -19,7 +19,7 @@ static void fixIniFilepath(char* buff)
 #define OPCODE_READ_PARAM_FILEPATH_INI(_varName) OPCODE_READ_PARAM_FILEPATH(_varName); fixIniFilepath(_buff_##_varName)
 
 #define OPCODE_READ_PARAM_STRING_OR_ZERO(_varName) const char* ##_varName; \
-if (IsImmInteger(thread->PeekDataType()) && CLEO_PeekIntOpcodeParam(thread) == 0) \
+if (IsLegacyScript(thread) && IsImmInteger(thread->PeekDataType()) && CLEO_PeekIntOpcodeParam(thread) == 0) \
 { \
 	CLEO_SkipOpcodeParams(thread, 1); \
 	##_varName = nullptr; \
@@ -46,6 +46,8 @@ public:
 			CLEO_RegisterOpcode(0x0AF3, Script_InifileWriteFloat);
 			CLEO_RegisterOpcode(0x0AF4, Script_InifileReadString);
 			CLEO_RegisterOpcode(0x0AF5, Script_InifileWriteString);
+			CLEO_RegisterOpcode(0x2800, Script_InifileDeleteSection);
+			CLEO_RegisterOpcode(0x2801, Script_InifileDeleteKey);
 		}
 		else
 		{
@@ -222,6 +224,37 @@ public:
 		OPCODE_READ_PARAM_STRING_OR_ZERO(key);		// 0 deletes the whole section
 
 		auto result = WritePrivateProfileString(section, key, strValue, path);
+
+		OPCODE_CONDITION_RESULT(result);
+		return OR_CONTINUE;
+	}
+
+	static OpcodeResult WINAPI Script_InifileDeleteSection(CScriptThread* thread)
+		/****************************************************************
+		Opcode Format
+		2800=2,delete_section_from_ini_file %1s% section %2s%
+		****************************************************************/
+	{
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
+		OPCODE_READ_PARAM_STRING(section);
+
+		auto result = WritePrivateProfileString(section, nullptr, nullptr, path);
+
+		OPCODE_CONDITION_RESULT(result);
+		return OR_CONTINUE;
+	}
+
+	static OpcodeResult WINAPI Script_InifileDeleteKey(CScriptThread* thread)
+		/****************************************************************
+		Opcode Format
+		2801=3,delete_key_from_ini_file %1s% section %2s%
+		****************************************************************/
+	{
+		OPCODE_READ_PARAM_FILEPATH_INI(path);
+		OPCODE_READ_PARAM_STRING(section);
+		OPCODE_READ_PARAM_STRING(key);
+
+		auto result = WritePrivateProfileString(section, key, nullptr, path);
 
 		OPCODE_CONDITION_RESULT(result);
 		return OR_CONTINUE;

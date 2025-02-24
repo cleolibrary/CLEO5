@@ -16,7 +16,7 @@ function tests
     it("should create new file", test3)
     it("should add to existing file", test4)
     it("should overwrite value", test5)
-    it("should delete section", test6)
+    it_cs4("should delete section with 0", test6)
     return
 
     :cleanup
@@ -85,7 +85,7 @@ function tests
         write_float_to_ini_file {value} 42.0 {path} Test_Path {section} "test" {key} "test"
         assert_result_true()
 
-        int value = read_float_from_ini_file {path} Test_Path {section} "test" {key} "test"
+        float value = read_float_from_ini_file {path} Test_Path {section} "test" {key} "test"
         assert_eqf(value, 42.0)
 
         write_float_to_ini_file {value} 42.0 {path} Test_Path {section} "test" {key} 0

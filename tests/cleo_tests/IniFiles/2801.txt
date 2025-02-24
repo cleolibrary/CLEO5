@@ -1,0 +1,38 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "2801"
+test("2801 (delete_key_from_ini_file)", tests)
+terminate_this_custom_script
+
+const Test_Path = "cleo\cleo_test_file.ini"
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+
+    it("should delete key from ini", test1)
+    return
+
+    :cleanup
+    delete_file {path} Test_Path
+    return
+
+    function test1
+        write_string_to_ini_file {value} "value1" {path} Test_Path {section} "test" {key} "key1"
+        assert_result_true()
+
+        write_string_to_ini_file {value} "value2" {path} Test_Path {section} "test" {key} "key2"
+        assert_result_true()
+
+        delete_key_from_ini_file {path} Test_Path {section} "test" {key} "key1"
+        assert_result_true()
+
+        longstring value1 = read_string_from_ini_file {path} Test_Path {section} "test" {key} "key1"
+        assert_result_false()
+
+        longstring value2 = read_string_from_ini_file {path} Test_Path {section} "test" {key} "key2"
+        assert_result_true()
+    end
+
+end

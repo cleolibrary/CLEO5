@@ -268,6 +268,14 @@ namespace CLEO
                 return CleoInstance.ScriptEngine.NativeScriptsVersion;
         }
 
+        void WINAPI CLEO_SetScriptVersion(CRunningScript* thread, eCLEO_Version version)
+        {
+            if (thread->IsCustom())
+                ((CCustomScript*)thread)->SetCompatibility(version);
+            else
+                CleoInstance.ScriptEngine.NativeScriptsVersion = version;
+        }
+
         LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread)
         {
             if (!CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
