@@ -604,7 +604,7 @@ namespace CLEO
 
         if (!_paramWasString())
         {
-            SHOW_ERROR("Input argument %s expected to be string, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str());
+            SHOW_ERROR("Input argument %s expected to be string, got %s in script %s\nScript suspended.", GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str());
             thread->Suspend();
             _lastParamType = DT_INVALID; // mark error
             return nullptr;
