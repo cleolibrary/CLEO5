@@ -20,10 +20,10 @@ void CPluginSystem::LoadPlugins()
     std::set<std::string> skippedPaths;
 
     // get blacklist from config
-    auto blackList = std::string(128, '\0');
+    auto blackList = std::string(512, '\0');
     GetPrivateProfileString("General", "PluginBlacklist", "", blackList.data(), blackList.size(), Filepath_Config.c_str());
     blackList.resize(strlen(blackList.data()));
-    FilepathNormalize(blackList, true);
+    std::transform(blackList.begin(), blackList.end(), blackList.begin(), [](unsigned char c) { return tolower(c); }); // to lower case
     blackList = "," + blackList + ",";
 
     // load plugins from main CLEO directory
@@ -46,7 +46,7 @@ void CPluginSystem::LoadPlugins()
 
             // on blacklist?
             auto blName = FS::path(files.strings[i]).filename().string();
-            FilepathNormalize(blName, true);
+            std::transform(blName.begin(), blName.end(), blName.begin(), [](unsigned char c) { return tolower(c); }); // to lower case
             blName = "," + blName + ",";
             if (blackList.find(blName) != std::string::npos)
             {
