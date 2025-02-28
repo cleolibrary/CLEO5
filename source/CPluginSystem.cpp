@@ -19,6 +19,13 @@ void CPluginSystem::LoadPlugins()
     std::vector<std::string> paths;
     std::set<std::string> skippedPaths;
 
+    // get blacklist from config
+    auto blackList = std::string(128, '\0');
+    GetPrivateProfileString("General", "PluginBlacklist", "", blackList.data(), blackList.size(), Filepath_Config.c_str());
+    blackList.resize(strlen(blackList.data()));
+    FilepathNormalize(blackList, true);
+    blackList = "," + blackList + ",";
+
     // load plugins from main CLEO directory
     auto ScanPluginsDir = [&](std::string path, const std::string prefix, const std::string extension)
     {
@@ -42,17 +49,27 @@ void CPluginSystem::LoadPlugins()
                 return _stricmp(s.c_str(), name.c_str()) == 0;
             });
 
-            if (found == names.end())
+            // on blacklist?
+            auto blName = FS::path(files.strings[i]).filename().string();
+            FilepathNormalize(blName, true);
+            blName = "," + blName + ",";
+            if (blackList.find(blName) != std::string::npos)
             {
-                names.insert(name);
-                paths.emplace_back(files.strings[i]);
-                TRACE(" %s", files.strings[i]);
+                LOG_WARNING(0, " %s - skipped, blacklisted in config", files.strings[i]);
+                continue;
             }
-            else
+
+            // duplicated?
+            if (found != names.end())
             {
                 skippedPaths.emplace(files.strings[i]);
                 LOG_WARNING(0, " %s - skipped, duplicate of '%s' plugin", files.strings[i], name.c_str());
+                continue;
             }
+
+            names.insert(name);
+            paths.emplace_back(files.strings[i]);
+            TRACE(" %s", files.strings[i]);
         }
 
         CLEO_StringListFree(files);
