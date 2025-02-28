@@ -18,9 +18,9 @@ class Starter
             "<!unknown!>");
 
         if (gv != GV_US10 && gv != GV_EU11 && gv != GV_EU10 && gv != GV_STEAM)
-            SHOW_ERROR(
+            TRACE(
                 "Unknown game version.\n"
-                "The list of all supported executables:\n\n"
+                "The list of all known executables:\n\n"
                 "  1) gta_sa.exe, original 1.0 us, 14 405 632 bytes;\n"
                 "  2) gta_sa.exe, public no-dvd 1.0 us, 14 383 616 bytes;\n"
                 "  3) gta_sa_compact.exe, listener's executable, 5 189 632 bytes;\n"
