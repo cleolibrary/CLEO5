@@ -133,6 +133,32 @@ namespace CLEO
             return _strnicmp(&str.back() + 1 - suffix.length(), suffix.data(), suffix.length()) == 0;
         }
     }
+
+    static void StringSplit(const std::string_view str, const std::string_view delimiters, std::vector<std::string>& output)
+    {
+        size_t prevPos = 0;
+        while (true)
+        {
+            size_t pos = str.find_first_of(delimiters, prevPos);
+
+            if (pos == std::string::npos)
+            {
+                if (strlen(str.data() + prevPos) > 0)
+                {
+                    output.emplace_back(str.data() + prevPos);
+                }
+                break;
+            }
+            else
+            {
+                if (pos - prevPos > 0)
+                {
+                    output.emplace_back(str.data() + prevPos, pos - prevPos);
+                }
+                prevPos = pos + 1;
+            }
+        }
+    }
   
     // erase GTA's text formatting sequences like ~r~
     static void StringRemoveFormatting(std::string& str)
@@ -167,6 +193,11 @@ namespace CLEO
         }
     }
 
+    static void StringToLower(std::string& str)
+    {
+        std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
+    }
+
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
     {
         std::string info(1024, '\0');
@@ -188,7 +219,7 @@ namespace CLEO
             path.erase(pos, 1);
         }
 
-        if (normalizeCase) std::transform(path.begin(), path.end(), path.begin(), [](unsigned char c) { return tolower(c); }); // to lower case
+        if (normalizeCase) StringToLower(path);
 
         // collapse references to parent directory
         const auto ParentRef = "\\..\\";

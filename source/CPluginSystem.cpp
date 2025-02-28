@@ -20,11 +20,12 @@ void CPluginSystem::LoadPlugins()
     std::set<std::string> skippedPaths;
 
     // get blacklist from config
-    auto blackList = std::string(512, '\0');
-    GetPrivateProfileString("General", "PluginBlacklist", "", blackList.data(), blackList.size(), Filepath_Config.c_str());
-    blackList.resize(strlen(blackList.data()));
-    std::transform(blackList.begin(), blackList.end(), blackList.begin(), [](unsigned char c) { return tolower(c); }); // to lower case
-    blackList = "," + blackList + ",";
+    auto blacklistStr = std::string(512, '\0');
+    GetPrivateProfileString("General", "PluginBlacklist", "", blacklistStr.data(), blacklistStr.size(), Filepath_Config.c_str());
+    blacklistStr.resize(strlen(blacklistStr.data()));
+    StringToLower(blacklistStr);
+    std::vector<std::string> blacklist;
+    StringSplit(blacklistStr, "\t ,", blacklist);
 
     // load plugins from main CLEO directory
     auto ScanPluginsDir = [&](std::string path, const std::string prefix, const std::string extension)
@@ -46,12 +47,11 @@ void CPluginSystem::LoadPlugins()
 
             // on blacklist?
             auto blName = FS::path(files.strings[i]).filename().string();
-            std::transform(blName.begin(), blName.end(), blName.begin(), [](unsigned char c) { return tolower(c); }); // to lower case
-            blName = "," + blName + ",";
-            if (blackList.find(blName) != std::string::npos)
+            StringToLower(blName);
+            if (std::find(blacklist.begin(), blacklist.end(), blName) != blacklist.end())
             {
                 skippedPaths.emplace(files.strings[i]);
-                LOG_WARNING(0, " %s - skipped, blacklisted in config", files.strings[i]);
+                LOG_WARNING(0, " %s - skipped, blacklisted in config.ini", files.strings[i]);
                 continue;
             }
 
