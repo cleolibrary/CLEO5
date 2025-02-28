@@ -44,20 +44,21 @@ void CPluginSystem::LoadPlugins()
             name = name.substr(prefix.length()); // cut off prefix
             name.resize(name.length() - extension.length()); // cut off extension
 
-            // case insensitive search in already listed plugin names
-            auto found = std::find_if(names.begin(), names.end(), [&](const std::string& s) {
-                return _stricmp(s.c_str(), name.c_str()) == 0;
-            });
-
             // on blacklist?
             auto blName = FS::path(files.strings[i]).filename().string();
             FilepathNormalize(blName, true);
             blName = "," + blName + ",";
             if (blackList.find(blName) != std::string::npos)
             {
+                skippedPaths.emplace(files.strings[i]);
                 LOG_WARNING(0, " %s - skipped, blacklisted in config", files.strings[i]);
                 continue;
             }
+
+            // case insensitive search in already listed plugin names
+            auto found = std::find_if(names.begin(), names.end(), [&](const std::string& s) {
+                return _stricmp(s.c_str(), name.c_str()) == 0;
+                });
 
             // duplicated?
             if (found != names.end())
