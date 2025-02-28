@@ -65,3 +65,9 @@ T MemReadOffsetPtr(U p)
 {
     return (T)((size_t)MemRead<T>(p) + p + sizeof(T));
 }
+
+inline void MemGrantAccess(size_t address, size_t size)
+{
+    DWORD oldProtect;
+    VirtualProtect((LPVOID)address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+}

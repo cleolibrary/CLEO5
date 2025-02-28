@@ -89,10 +89,16 @@ namespace CLEO
 
     eGameVersion DetermineGameVersion()
     {
+        MemGrantAccess(0x8A6168, sizeof(DWORD));
         if (MemRead<DWORD>(0x8A6168) == 0x8523A0) return GV_EU11;
+
+        MemGrantAccess(0x8A4004, sizeof(DWORD));
         if (MemRead<DWORD>(0x8A4004) == 0x8339CA) return GV_US10;
-        else if (MemRead<DWORD>(0x8A4004) == 0x833A0A) return GV_EU10;
-        else if (MemRead<DWORD>(0x913000) == 0x8A5B0C) return GV_STEAM;
+        if (MemRead<DWORD>(0x8A4004) == 0x833A0A) return GV_EU10;
+
+        MemGrantAccess(0x913000, sizeof(DWORD));
+        if (MemRead<DWORD>(0x913000) == 0x8A5B0C) return GV_STEAM;
+
         return GV_UNK;
     }
 

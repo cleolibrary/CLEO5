@@ -32,9 +32,9 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
     {
         // time stamp
         SYSTEMTIME t;
-        //GetLocalTime(&t);
-        void(__stdcall * GTA_GetLocalTime)(LPSYSTEMTIME lpSystemTime) = memory_pointer(0x0081E514); // use ingame function instead as GetLocalTime seems to be considered suspicious by some AV software
-        GTA_GetLocalTime(&t);
+        GetLocalTime(&t);
+        //void(__stdcall * GTA_GetLocalTime)(LPSYSTEMTIME lpSystemTime) = memory_pointer(0x0081E514); // use ingame function instead as GetLocalTime seems to be considered suspicious by some AV software
+        //GTA_GetLocalTime(&t);
 
         char timestampStr[32];
         sprintf(timestampStr, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
