@@ -58,7 +58,7 @@ void CPluginSystem::LoadPlugins()
             // case insensitive search in already listed plugin names
             auto found = std::find_if(names.begin(), names.end(), [&](const std::string& s) {
                 return _stricmp(s.c_str(), name.c_str()) == 0;
-                });
+            });
 
             // duplicated?
             if (found != names.end())
