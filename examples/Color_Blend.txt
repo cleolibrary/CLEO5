@@ -21,7 +21,7 @@ TimerA = 3000
 while true
     wait {time} 0
     
-    // randomize colors every 2 seconds
+    // randomize colors every 3 seconds
     if
         TimerA > 3000
     then
