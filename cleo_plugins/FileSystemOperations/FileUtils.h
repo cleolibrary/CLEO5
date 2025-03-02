@@ -46,4 +46,5 @@ private:
 	static DWORD FUNC_ferror;
 
 	static DWORD fileToHandle(FILE* file, bool legacy);
+	static void updateState(DWORD handle);
 };

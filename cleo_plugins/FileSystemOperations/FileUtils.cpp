@@ -61,6 +61,15 @@ DWORD File::fileToHandle(FILE* file, bool legacy)
 	return handle;
 }
 
+void File::updateState(DWORD handle)
+{
+	// RW streams needs synchronization of read and write positions (https://en.wikibooks.org/wiki/C_Programming/stdio.h/fopen)
+	if (isOk(handle) && !isEndOfFile(handle))
+	{
+		seek(handle, 0, SEEK_CUR);
+	}
+}
+
 bool File::flush(DWORD handle)
 {
 	FILE* file = handleToFile(handle);
@@ -288,7 +297,7 @@ DWORD File::read(DWORD handle, void* buffer, DWORD size)
 	else
 		read = fread(buffer, 1, size, file);
 
-	seek(handle, 0, SEEK_CUR); // required for RW streams (https://en.wikibooks.org/wiki/C_Programming/stdio.h/fopen)
+	updateState(handle);
 
 	return read;
 }
@@ -312,7 +321,7 @@ char File::readChar(DWORD handle)
 	else
 		result = fgetc(file);
 
-	seek(handle, 0, SEEK_CUR); // required for RW streams (https://en.wikibooks.org/wiki/C_Programming/stdio.h/fopen)
+	updateState(handle);
 
 	return result;
 }
@@ -338,7 +347,7 @@ char* File::readString(DWORD handle, char* buffer, DWORD bufferSize)
 	else
 		result = fgets(buffer, bufferSize, file);
 
-	seek(handle, 0, SEEK_CUR); // required for RW streams (https://en.wikibooks.org/wiki/C_Programming/stdio.h/fopen)
+	updateState(handle);
 
 	return result;
 }
@@ -366,7 +375,7 @@ DWORD File::write(DWORD handle, const void* buffer, DWORD size)
 	else
 		writen = (DWORD)fwrite(buffer, 1, size, file);
 
-	seek(handle, 0, SEEK_CUR); // required for RW streams (https://en.wikibooks.org/wiki/C_Programming/stdio.h/fopen)
+	updateState(handle);
 
 	return writen;
 }
@@ -391,7 +400,7 @@ bool File::writeString(DWORD handle, const char* text)
 	else
 		result = (DWORD)fputs(text, file);
 
-	seek(handle, 0, SEEK_CUR); // required for RW streams (https://en.wikibooks.org/wiki/C_Programming/stdio.h/fopen)
+	updateState(handle);
 
 	return result >= 0;
 }
@@ -465,7 +474,7 @@ DWORD File::scan(DWORD handle, const char* format, void** outputParams)
 			p[30], p[31], p[32], p[33], p[34]); // 35
 	}
 
-	seek(handle, 0, SEEK_CUR); // required for RW streams (https://en.wikibooks.org/wiki/C_Programming/stdio.h/fopen)
+	updateState(handle);
 
 	return read;
 }
