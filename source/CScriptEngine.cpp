@@ -916,6 +916,28 @@ namespace CLEO
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
     }
 
+    void CScriptEngine::InjectLate(CCodeInjector& inj)
+    {
+        TRACE("Injecting ScriptEngine (phase 2)");
+        CGameVersionManager& gvm = CleoInstance.VersionManager;
+
+        // path GetScriptStringParam again if somebody edited it meanwhile (like scrlog.asi)
+        inj.InjectFunction(GetScriptStringParam, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
+
+        // setup ScrLog plugin to not patch GetScriptStringParam again
+        auto hScrLog = GetModuleHandle("scrlog.asi");
+        if (hScrLog != 0)
+        {
+            auto path = std::string(MAX_PATH, '\0');
+            if (GetModuleFileName(hScrLog, path.data(), path.size()) != FALSE)
+            {
+                path = FilepathGetParent(path);
+                path += "\\scrlog.ini";
+                WritePrivateProfileString("CONFIG", "HOOK_COLLECT_STRING", "FALSE", path.c_str());
+            }
+        }
+    }
+
     CScriptEngine::~CScriptEngine()
     {
         GameEnd();

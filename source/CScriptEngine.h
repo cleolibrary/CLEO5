@@ -131,6 +131,7 @@ namespace CLEO
         ~CScriptEngine();
         
         virtual void Inject(CCodeInjector&);
+        void InjectLate(CCodeInjector&);
 
         void GameBegin(); // call after new game started
         void GameEnd();
