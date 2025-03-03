@@ -746,18 +746,21 @@ namespace CLEO
 		if (returnArgs)
 		{
 			DWORD returnSlotCount = GetVarArgCount(cs);
-			if (returnSlotCount > returnArgCount || (strictArgCount && returnSlotCount < returnArgCount))
+			if (returnSlotCount != returnArgCount)
 			{
-				SHOW_ERROR("Opcode [%04X] returned %d params, while function caller expected %d in script %s\nScript suspended.", opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
-				return cs->Suspend();
-			}
-			else if (returnSlotCount < returnArgCount)
-			{
-				LOG_WARNING(thread, "Opcode [%04X] returned %d params, while function caller expected %d in script %s", opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
+				if (strictArgCount)
+				{
+					SHOW_ERROR(COMPAT_MODE_TIP("Opcode [%04X] returned %d params, while function caller expected %d in script %s\nScript suspended."), opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
+					return cs->Suspend();
+				}
+				else
+				{
+					LOG_WARNING(thread, "Opcode [%04X] returned %d params, while function caller expected %d in script %s", opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
+				}
 			}
 
 			// set return args
-			for (DWORD i = 0; i < returnArgCount; i++)
+			for (DWORD i = 0; i < std::min<DWORD>(returnArgCount, returnSlotCount); i++)
 			{
 				auto arg = (SCRIPT_VAR*)thread->GetBytePointer();
 

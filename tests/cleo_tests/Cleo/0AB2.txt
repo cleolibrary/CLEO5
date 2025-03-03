@@ -1,0 +1,60 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AB2"
+test("0AB2 (cleo_return)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should return values", test1)
+    it("should keep condition result", test2)
+    it_cs4("should allow too few return params in legacy modes", test3)
+    it_cs4("should allow too many return params in legacy modes", test4)
+    return
+
+    function test1
+        int a = 0xAA 
+        int b = 0xBB
+        a, b = RETURN_TWO()
+        assert_eq(a, 0x11)
+        assert_eq(b, 0x22)
+    end
+
+    function test2
+        RETURN_TRUE()
+        assert_result_true()
+    
+        RETURN_FALSE()
+        assert_result_false()
+    end
+
+    function test3
+        int a = 0xAA
+        cleo_call RETURN_TWO {numParams} 0 {params} {return} a
+        assert_eq(a, 0x11)
+    end
+    
+    function test4
+        int a = 0xAA
+        int b = 0xBB
+        int c = 0xCC
+        cleo_call RETURN_TWO {numParams} 0 {params} {return} a b c
+        assert_eq(a, 0x11)
+        assert_eq(b, 0x22)
+        assert_eq(c, 0xCC)
+    end
+end
+
+function RETURN_TWO(): int, int
+    cleo_return 2 0x11 0x22
+end
+
+function RETURN_TRUE()
+    is_pc_version // set condition result true
+    cleo_return
+end
+
+function RETURN_FALSE()
+    is_australian_game // set condition result false
+    cleo_return
+end
