@@ -17,7 +17,7 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
     OutputDebugString("\n");
 #endif
 
-    // censor user name in paths like "C:\Users\xxx\Documments..."
+    // censor user name in paths like "C:\Users\xxx\Documents..."
     const char* UsersDir = "\\users\\";
     std::string msgStr = msg;
     StringToLower(msgStr);
