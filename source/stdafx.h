@@ -46,15 +46,9 @@ static std::string GetGameDirectory() // already stored in Filepath_Game
 
 static std::string GetUserDirectory() // already stored in Filepath_User
 {
-    static const char* GTA_User_Dir_Path = (char*)0x00C92368; // SA 1.0 US
-    static const auto GTA_InitUserDirectories = (char* (__cdecl*)())0x00744FB0; // SA 1.0 US
+    static const auto GTA_InitUserDirectories = (char* (__cdecl*)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
 
-    if (strlen(GTA_User_Dir_Path) == 0)
-    {
-        GTA_InitUserDirectories();
-    }
-
-    std::string path = GTA_User_Dir_Path;
+    std::string path = GTA_InitUserDirectories();
     CLEO::FilepathNormalize(path);
 
     return std::move(path);
