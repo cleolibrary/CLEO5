@@ -1649,7 +1649,7 @@ namespace CLEO
         }
         catch (std::exception& e)
         {
-            LOG_WARNING(0, "Error during loading of custom script %s occured.\nError message: %s", szFileName, e.what());
+            LOG_WARNING(0, "Error during loading of custom script '%s' occured.\nError message: %s", szFileName, e.what());
         }
         catch (...)
         {
