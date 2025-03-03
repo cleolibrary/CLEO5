@@ -158,6 +158,8 @@ namespace CLEO
         {
             TRACE("CLEO initialization: Phase 2");
 
+            const_cast<std::string&>(Filepath_User) = GetUserDirectory(); // force update now, as it could be modifed by PortableGTA.asi
+
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Idle, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE), &GameRestartDebugDisplayTextBuffer_IdleOrig);
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Frontend, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND), &GameRestartDebugDisplayTextBuffer_FrontendOrig);
 
