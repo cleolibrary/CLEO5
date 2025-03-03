@@ -1,0 +1,38 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AA8"
+test("0AA8 (call_method_return)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should call class getter method", test1)
+    it_cs4("should ignore null 'this' in legacy modes", test2)
+    it_cs4("should handle misused 'this' in legacy modes", test3)
+    return
+        
+    function test1
+        0@ = get_ped_pointer {char} $scplayer
+        1@ = call_method_return {address} 0x00411990 {struct} 0@ {numParams} 0 {pop} 0 // CEntity.GetMatrix()
+        2@ = read_memory_with_offset {address} 0@ {offset} 0x14 {size} 4 // CEntity::m_matrix
+        assert_eq(1@, 2@)
+    end
+    
+    function test2
+        0@ = call_method_return {address} 0x00826330 {struct} 0 {numParams} 1 {pop} 1 {funcParams} "test" // size_t strlen(const char *Str)
+        assert_eq(0@, 4)
+    end
+    
+    function test3
+        0@ = get_label_pointer @ret_ecx
+        1@ = call_method_return {address} 0@ {struct} 10 {numParams} 0 {pop} 0
+        assert_eq(1@, 11)
+    end
+end
+
+:ret_ecx
+hex
+    89 C8   // mov eax, ecx
+    40      // inc eax
+    C3      // retn
+end

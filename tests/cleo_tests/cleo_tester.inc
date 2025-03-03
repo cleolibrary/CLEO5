@@ -67,7 +67,7 @@ function _run_with_compat_mode(spec_name: string, callback: int, compat: int)
     then
         trace "~s~Test #%d %s" index spec_name
     else
-        trace "~s~Test #%d %s - COMPAT MODE %d" index spec_name compat
+        trace "~s~Test #%d %s - COMPAT MODE %p" index spec_name compat
     end
 
     wait 0
