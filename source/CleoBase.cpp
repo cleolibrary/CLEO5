@@ -189,6 +189,9 @@ namespace CLEO
 
         TRACE("Starting new game, save slot: %d", saveSlot);
 
+        // late initialization if not done yet
+        CleoInstance.Start(CCleoInstance::InitStage::OnDraw);
+
         // execute registered callbacks
         CleoInstance.CallCallbacks(eCallbackId::GameBegin, saveSlot);
     }
