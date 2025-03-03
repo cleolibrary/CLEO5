@@ -103,7 +103,7 @@ public:
 
         if (numArg != inputArgCount && !IsLegacyScript(thread)) // CLEO4 ignored param count missmatch (by providing zeros for missing)
         {
-            SHOW_ERROR("Declared %d input args, but provided %d in script %s\nScript suspended.\n\nTo ignore this error, change the file extension from .cs to .cs4 and restart the game.", numArg, inputArgCount, CLEO::ScriptInfoStr(thread).c_str());
+            SHOW_ERROR(COMPAT_MODE_TIP("Declared %d input args, but provided %d in script %s\nScript suspended."), numArg, inputArgCount, CLEO::ScriptInfoStr(thread).c_str());
             return thread->Suspend();
         }
 

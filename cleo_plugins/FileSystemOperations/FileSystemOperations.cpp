@@ -180,7 +180,7 @@ public:
         {
             if (!IsLegacyScript(thread))
             {
-                SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.\n\nTo ignore this error, change the file extension from .cs to .cs4 and restart the game.", handle, ScriptInfoStr(thread).c_str());
+                SHOW_ERROR(COMPAT_MODE_TIP("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended."), handle, ScriptInfoStr(thread).c_str());
                 return thread->Suspend();
             }
         }
