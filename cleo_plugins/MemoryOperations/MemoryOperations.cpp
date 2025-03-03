@@ -534,7 +534,7 @@ public:
         }
         else
         {
-            obj = (void*)OPCODE_READ_PARAM_INT(); // at least one mod used 0AA8 with 0 as struct argument (effectively turning it into 0AA7 opcode...)
+            obj = (void*)OPCODE_READ_PARAM_INT(); // some mods got creative and used it as way to set ECX
         }
 
         auto numArgs = OPCODE_READ_PARAM_INT();
