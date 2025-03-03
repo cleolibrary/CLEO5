@@ -180,7 +180,7 @@ public:
         {
             if (!IsLegacyScript(thread))
             {
-                SHOW_ERROR(COMPAT_MODE_TIP("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended."), handle, ScriptInfoStr(thread).c_str());
+                SHOW_ERROR_COMPAT("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, ScriptInfoStr(thread).c_str());
                 return thread->Suspend();
             }
         }

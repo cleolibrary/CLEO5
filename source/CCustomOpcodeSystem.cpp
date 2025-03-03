@@ -112,7 +112,7 @@ namespace CLEO
 			auto endPos = cs->GetBasePointer() + cs->GetCodeSize();
 			if ((BYTE*)lastOpcodePtr == endPos || (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
 			{
-				SHOW_ERROR(COMPAT_MODE_TIP("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended."), ((CCustomScript*)thread)->GetInfoStr().c_str());
+				SHOW_ERROR_COMPAT("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
 				return thread->Suspend();
 			}
 		}
@@ -750,7 +750,7 @@ namespace CLEO
 			{
 				if (strictArgCount)
 				{
-					SHOW_ERROR(COMPAT_MODE_TIP("Opcode [%04X] returned %d params, while function caller expected %d in script %s\nScript suspended."), opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
+					SHOW_ERROR_COMPAT("Opcode [%04X] returned %d params, while function caller expected %d in script %s\nScript suspended.", opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
 					return cs->Suspend();
 				}
 				else
