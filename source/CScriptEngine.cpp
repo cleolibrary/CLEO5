@@ -887,14 +887,6 @@ namespace CLEO
         auto addr = gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT);
         inj.MemoryReadOffset(addr.address + 1, ProcessScript);
         inj.ReplaceFunction(HOOK_ProcessScript, addr);
-
-        inj.InjectFunction(GetScriptStringParam, gvm.TranslateMemoryAddress(MA_GET_SCRIPT_STRING_PARAM_FUNCTION));
-        // setup ScrLog plugin to not patch it again
-        auto scrLogConfig = FS::absolute("scrlog.ini");
-        if (FS::is_regular_file(scrLogConfig)) WritePrivateProfileString("CONFIG", "HOOK_COLLECT_STRING", "FALSE", scrLogConfig.string().c_str());
-        scrLogConfig = FS::absolute("scripts\\scrlog.ini");
-        if (FS::is_regular_file(scrLogConfig)) WritePrivateProfileString("CONFIG", "HOOK_COLLECT_STRING", "FALSE", scrLogConfig.string().c_str());
-
         scriptSprites = gvm.TranslateMemoryAddress(MA_SCRIPT_SPRITE_ARRAY);
         scriptDraws = gvm.TranslateMemoryAddress(MA_SCRIPT_DRAW_ARRAY);
         scriptTexts = gvm.TranslateMemoryAddress(MA_SCRIPT_TEXT_ARRAY);
