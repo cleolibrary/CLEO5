@@ -12,21 +12,21 @@ function tests
     return
         
     function test1
-        0@ = get_ped_pointer {char} $scplayer
-        1@ = call_method_return {address} 0x00411990 {struct} 0@ {numParams} 0 {pop} 0 // CEntity.GetMatrix()
-        2@ = read_memory_with_offset {address} 0@ {offset} 0x14 {size} 4 // CEntity::m_matrix
-        assert_eq(1@, 2@)
+        int charPtr = get_ped_pointer {char} $scplayer
+        int result = call_method_return {address} 0x00411990 {struct} charPtr {numParams} 0 {pop} 0 // CEntity.GetMatrix()
+        int matrixPtr = read_memory_with_offset {address} charPtr {offset} 0x14 {size} 4 // CEntity::m_matrix
+        assert_eq(result, matrixPtr)
     end
     
     function test2
-        0@ = call_method_return {address} 0x00826330 {struct} 0 {numParams} 1 {pop} 1 {funcParams} "test" // size_t strlen(const char *Str)
-        assert_eq(0@, 4)
+        int result = call_method_return {address} 0x00826330 {struct} 0 {numParams} 1 {pop} 1 {funcParams} "test" // size_t strlen(const char *Str)
+        assert_eq(result, 4)
     end
     
     function test3
-        0@ = get_label_pointer @ret_ecx
-        1@ = call_method_return {address} 0@ {struct} 10 {numParams} 0 {pop} 0
-        assert_eq(1@, 11)
+        int funcPtr = get_label_pointer @ret_ecx
+        int result = call_method_return {address} funcPtr {struct} 10 {numParams} 0 {pop} 0
+        assert_eq(result, 11)
     end
 end
 
