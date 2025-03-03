@@ -17,6 +17,26 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
     OutputDebugString("\n");
 #endif
 
+    // censor user name in paths like "C:\Users\xxx\Documments..."
+    const char* UsersDir = "\\users\\";
+    std::string msgStr = msg;
+    StringToLower(msgStr);
+    auto usersDirPos = strstr(msgStr.c_str(), UsersDir);
+    if (usersDirPos != nullptr)
+    {
+        size_t userBegin = (size_t)(usersDirPos - msgStr.c_str()) + strlen(UsersDir);
+        
+        size_t userEnd = msgStr.find_first_of("\\/*\"<>:|?", userBegin); // till next path separator or any invalid filepath character
+        if (userEnd == std::string::npos)
+        {
+            userEnd = msgStr.length();
+        }
+
+        msgStr = msg; // restore original case
+        msgStr.replace(userBegin, userEnd - userBegin, "[redacted]");
+        msg = msgStr.c_str();
+    }
+
     // output to callbacks
     if (CleoInstance.IsStarted())
     {
