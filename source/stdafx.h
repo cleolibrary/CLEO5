@@ -31,6 +31,8 @@
 #include "..\cleo_sdk\CLEO.h"
 #include "..\cleo_sdk\CLEO_Utils.h"
 
+#include "Mem.h"
+
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
 
@@ -118,10 +120,3 @@ inline bool	IsWrecked(CVehicle* pSelf)
     return pSelf->m_nStatus == STATUS_WRECKED || pSelf->m_nVehicleFlags.bIsDrowning;
 }
 
-
-#define OP_NOP			0x90
-#define OP_RET			0xC3
-#define OP_CALL			0xE8
-#define OP_JMP			0xE9
-#define OP_JMPSHORT		0xEB
-#include "Mem.h"

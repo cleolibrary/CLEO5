@@ -1,5 +1,11 @@
 #pragma once
 
+#define OP_NOP			0x90
+#define OP_RET			0xC3
+#define OP_CALL			0xE8
+#define OP_JMP			0xE9
+#define OP_JMPSHORT		0xEB
+
 template<typename T, typename U>
 inline void MemWrite(U p, const T v) { *(T*)p = v; }
 template<typename T, typename U>
@@ -57,6 +63,32 @@ inline void MemCall(U p, const T v, T *r = nullptr)
 
     MemWrite<BYTE>(p++, OP_CALL);
     MemWrite<DWORD>(p, (DWORD)v - (DWORD)p - 4);
+}
+
+// get destination of jump
+inline void* MemGetJumpAddress(size_t address)
+{
+    if (MemRead<BYTE>(address) != OP_JMP)
+        return nullptr;
+
+    auto offset = MemRead<INT>(address + 1);
+    offset += sizeof(BYTE); // opcode
+    offset += sizeof(DWORD); // offset
+    offset += address;
+    return (void*)offset;
+}
+
+// get address of function in call
+inline void* MemGetCallAddress(size_t address)
+{
+    if (MemRead<BYTE>(address) != OP_CALL)
+        return nullptr;
+
+    auto offset = MemRead<INT>(address + 1);
+    offset += sizeof(BYTE); // opcode
+    offset += sizeof(DWORD); // offset
+    offset += address;
+    return (void*)offset;
 }
 
 // Read and convert a relative offset to full
