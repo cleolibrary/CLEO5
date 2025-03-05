@@ -10,9 +10,9 @@ namespace CLEO
     enum eStreamType
     {
         None = 0,
-        SoundEffect,
-        Music,
-        UserInterface
+        SoundEffect, // conforms to global SFX volume and in-game speed
+        Music, // conforms to global music volume
+        UserInterface // conforms to global SFX volume
     };
 
     class CSoundSystem
