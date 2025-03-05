@@ -14,7 +14,7 @@ if
 then
     // failed to load the file. Print error and exit
     debug_on
-    trace "Button Sound: ~r~Failed to load sound file '%s'" Path_Sound_Button
+    trace "CLEO Sound Button: ~r~~h~~h~Failed to load sound file '%s'" Path_Sound_Button
     terminate_this_script
 end
 set_audio_stream_type asButton {type} AudioStreamType.UserInterface
