@@ -11,7 +11,7 @@ namespace CLEO
     {
         None = 0, // user controlled
         SoundEffect, // conforms to global SFX volume and in-game speed
-        Music, // conforms to global music volume
+        Music, // conforms to global music volume, muted if game speed is not 1.0
         UserInterface // conforms to global SFX volume
     };
 

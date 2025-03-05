@@ -181,7 +181,7 @@ void CAudioStream::UpdateVolume()
     switch(type)
     {
         case SoundEffect: masterVolume = CSoundSystem::masterVolumeSfx; break;
-        case Music: masterVolume = CSoundSystem::masterVolumeMusic; break;
+        case Music: masterVolume = (CSoundSystem::masterSpeed == 1.0f) ? CSoundSystem::masterVolumeMusic : 0.0f; break;
         case UserInterface: masterVolume = CSoundSystem::masterVolumeSfx; break;
     }
 
@@ -209,6 +209,7 @@ void CAudioStream::UpdateSpeed()
     switch(type)
     {
         case eStreamType::SoundEffect:
+        case eStreamType::Music: // and muted
             masterSpeed = CSoundSystem::masterSpeed;
             break;
 
