@@ -1,0 +1,144 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+{$CLEO .cs}
+
+script_name {name} 'colgrad'
+
+const Panel_Count = 120 // limit is 128 per script
+const Panel_Width = 5.2
+
+int lastPanelIdx = Panel_Count - 1
+int middleKeyIdx
+int colorStart[3] // red, green, blue
+int colormiddle[3] // red, green, blue
+int colorEnd[3] // red, green, blue
+
+int iTmp
+float fTmp
+
+TimerA = 3000
+while true
+    wait {time} 0
+    
+    // randomize colors every 3 seconds
+    if
+        TimerA > 3000
+    then
+        colorStart[0] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colorStart[1] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colorStart[2] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        
+        colormiddle[0] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colormiddle[1] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colormiddle[2] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        
+        colorEnd[0] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colorEnd[1] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colorEnd[2] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        
+        middleKeyIdx = generate_random_int_in_range {min} 0 {max} lastPanelIdx
+        
+        TimerA = 0
+    end
+        
+    // draw on screen
+    use_text_commands {state} true
+        
+    float posX = 10.0 // start pos
+    int i = 0
+    while i < Panel_Count
+        // select color
+        int color[3]
+        switch i
+            case 0 // start panel
+                color[0] = colorStart[0]
+                color[1] = colorStart[1]
+                color[2] = colorStart[2]
+                
+            case middleKeyIdx // middle color
+                color[0] = colormiddle[0]
+                color[1] = colormiddle[1]
+                color[2] = colormiddle[2]
+                
+            case lastPanelIdx
+                color[0] = colorEnd[0]
+                color[1] = colorEnd[1]
+                color[2] = colorEnd[2]
+                
+            default // for other panels we have to calculate blend color
+                float progress
+                if
+                    i < middleKeyIdx
+                then
+                    // blending start to middle
+                    progress =# i // current
+                    fTmp =# middleKeyIdx // total
+                    progress /= fTmp // 0.0 - 1.0 range
+                    
+                    color[0] = LERP_INT(colorStart[0], colormiddle[0], progress) // red
+                    color[1] = LERP_INT(colorStart[1], colormiddle[1], progress) // green
+                    color[2] = LERP_INT(colorStart[2], colormiddle[2], progress) // blue
+                else
+                    // blending middle to end
+                    iTmp = i - middleKeyIdx
+                    progress =# iTmp // current
+                    
+                    iTmp = lastPanelIdx - middleKeyIdx
+                    fTmp =# iTmp // total
+                    
+                    progress /= fTmp // 0.0 - 1.0 range
+                    
+                    color[0] = LERP_INT(colormiddle[0], colorEnd[0], progress) // red
+                    color[1] = LERP_INT(colormiddle[1], colorEnd[1], progress) // green
+                    color[2] = LERP_INT(colormiddle[2], colorEnd[2], progress) // blue
+                end
+        end
+    
+        // draw
+        if or
+            i == 0 // start panel
+            i == middleKeyIdx
+            i == lastPanelIdx
+        then
+            draw_rect {pos} posX 240.0 {size} Panel_Width 80.0 {rgb} color[0] color[1] color[2] {alpha} 240 // tall panel
+        else
+            draw_rect {pos} posX 240.0 {size} Panel_Width 40.0 {rgb} color[0] color[1] color[2] {alpha} 240 // regular panel
+        end
+            
+        // prepare next
+        i += 1
+        posX += Panel_Width
+    end
+     
+end
+terminate_this_custom_script
+
+
+// linear interpolation (or extrapolation) of two float values
+function LERP_FLOAT(valueA :float, valueB :float, progress :float): float
+    float invProgress = 1.0
+    invProgress -= progress
+    
+    valueA *= invProgress
+    valueB *= progress
+    
+    float result
+    result += valueA
+    result += valueB
+    
+    return result
+end
+
+
+// linear interpolation (or extrapolation) of two integer values
+function LERP_INT(valueA: int, valueB: int, progress: float): int
+    float aF =# valueA // to float
+    float bF =# valueB // to float
+    
+    float fResult = LERP_FLOAT(aF, bF, progress)
+    
+    int result =# fResult // to integer
+    
+    return result
+end
