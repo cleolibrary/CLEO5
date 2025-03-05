@@ -5,7 +5,7 @@
 
 script_name {name} 'colgrad'
 
-const Panel_Count = 120 // limit is 128 peer script
+const Panel_Count = 120 // limit is 128 per script
 const Panel_Width = 5.2
 
 int lastPanelIdx = Panel_Count - 1
