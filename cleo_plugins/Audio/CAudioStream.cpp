@@ -146,6 +146,7 @@ void CLEO::CAudioStream::SetType(eStreamType value)
     {
         case eStreamType::SoundEffect:
         case eStreamType::Music:
+        case eStreamType::UserInterface:
             type = value;
             break;
 
@@ -181,6 +182,7 @@ void CAudioStream::UpdateVolume()
     {
         case SoundEffect: masterVolume = CSoundSystem::masterVolumeSfx; break;
         case Music: masterVolume = CSoundSystem::masterVolumeMusic; break;
+        case UserInterface: masterVolume = CSoundSystem::masterVolumeSfx; break;
     }
 
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, (float)volume * masterVolume);
@@ -203,7 +205,19 @@ void CAudioStream::UpdateSpeed()
         }
     }
 
-    float freq = rate * (float)speed * CSoundSystem::masterSpeed;
+    float masterSpeed;
+    switch(type)
+    {
+        case eStreamType::SoundEffect:
+            masterSpeed = CSoundSystem::masterSpeed;
+            break;
+
+        default:
+            masterSpeed = 1.0f;
+            break;
+    }
+
+    float freq = rate * (float)speed * masterSpeed;
     freq = max(freq, 0.000001f); // 0 results in original speed
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_FREQ, freq);
 }

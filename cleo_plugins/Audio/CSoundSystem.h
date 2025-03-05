@@ -12,6 +12,7 @@ namespace CLEO
         None = 0,
         SoundEffect,
         Music,
+        UserInterface
     };
 
     class CSoundSystem

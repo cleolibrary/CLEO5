@@ -1,0 +1,65 @@
+// CLEO5 example script
+// Sanny Builder 4
+// mode: GTA SA (v1.0 - SBL)
+
+{$CLEO .cs}
+
+const Path_Sound_Button = ".\cleo_tests\Audio\Ding.mp3"
+
+
+// init sounds
+int asButton
+if
+    not asButton = load_audio_stream {audioFileName} Path_Sound_Button
+then
+    // failed to load the file. Print error and exit
+    debug_on
+    trace "Button Sound: ~r~Failed to load sound file '%s'" Path_Sound_Button
+    terminate_this_script
+end
+set_audio_stream_type asButton {type} AudioStreamType.UserInterface
+
+
+// main loop
+int counter = 0
+while true
+    //wait {time} 16 // cap this script loop at 60 FPS
+    wait {time} 0 // as fast as game renders
+    
+    // slow increment button
+    if
+        is_key_pressed {keyCode} KeyCode.Space
+    then
+        set_audio_stream_state asButton {action} AudioStreamAction.Stop
+        set_audio_stream_state asButton {action} AudioStreamAction.Play
+        counter += 1
+        
+        // wait for key release or timeout
+        TimerA = 0
+        while true
+            if or 
+                not is_key_pressed {keyCode} KeyCode.Space
+                TimerA > 100
+            then
+                break // exit the loop
+            end
+            
+            wait {time} 0
+        end
+    end
+    
+    // rapid increment button
+    if
+        is_key_pressed {keyCode} KeyCode.Shift
+    then
+        set_audio_stream_state asButton {action} AudioStreamAction.Stop
+        set_audio_stream_state asButton {action} AudioStreamAction.Play
+        counter += 1
+    end
+    
+    // display message
+    print_formatted_now {format} "Count: %d~n~Press ~h~SPACE~s~ or ~h~SHIFT~s~ to increment." {time} 150 {args} counter // display longer than button timeout delay, so no text flashing occur
+end
+
+
+terminate_this_script // never executed, but good to have
