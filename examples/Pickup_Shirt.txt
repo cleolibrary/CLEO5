@@ -1,3 +1,4 @@
+// CLEO5 example script
 // Sanny Builder 4
 // mode: GTA SA (v1.0 - SBL)
 
