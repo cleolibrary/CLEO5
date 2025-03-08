@@ -88,7 +88,7 @@ jobs:
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
-          xcopy /E /I tests .output\Release\cleo
+          @REM xcopy /E /I tests .output\Release\cleo
           xcopy /E /I examples .output\Release\cleo_readme\examples
 
           @REM copy SDK
