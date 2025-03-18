@@ -117,7 +117,7 @@
 - fixed invalid 7 characters length limit of **0AAA (get_script_struct_named)**
 - fixed an undefined behavior caused by **0459 (terminate_all_scripts_with_this_name)** when the name matches a custom script
 
-#### SDK AND PLUGINS
+#### SDK and plugins
 - now all opcodes in range **0-7FFF** can be registered by plugins
 - plugins moved to _cleo\cleo_plugins_ directory
 - new SDK methods:
