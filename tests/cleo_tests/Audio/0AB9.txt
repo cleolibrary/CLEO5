@@ -1,76 +1,89 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-{$USE audio}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name "0AB9" // get_audio_stream_state
+script_name '0AB9'
+test("0AB9 (get_audio_stream_state)", tests)
+terminate_this_custom_script
 
-debug_on
+const Test_File = ".\Speech.mp3"
 
-trace "0AB9 (get_audio_stream_state)"
+function tests
+    int stream
+    before_each(@setup)
+    after_each(@cleanup)
 
+    it("should return set state", test1)
+    it("should return Stopped when finished", test2)
+    return
+    
 
-// load the file
-wait 0
-if
-    load_audio_stream ".\Ding.mp3" {store_to} 0@
-then
-    trace "~g~~h~~h~0AB9 (get_audio_stream_state), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #0 FAILED!~n~Failed to load file. Handle: %d" 0@
-end
+    :setup
+        stream = load_audio_stream Test_File
+        assert_result_true()
+    return
 
 
-// get state
-wait 0
-0AB9: get_audio_stream_state 0@ {store_to} 1@ // tested opcode
-if
-    1@ == 2 // AudioStreamState.Paused
-then
-    trace "~g~~h~~h~0AB9 (get_audio_stream_state), #1 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #1 FAILED!~n~%d Expected~n~%d Occured" 2 1@
-end
+    :cleanup
+        remove_audio_stream stream
+        stream = -1
+    return
 
 
-// set new state
-wait 0
-set_audio_stream_state 0@ {state} AudioStreamAction.Play
-trace "~g~~h~~h~0AAD (set_audio_stream_state), #2 PASSED"
+    function test1(stream: int)
+        int state
+        
+        // starts as stopped
+        state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, 2) // AudioStreamState.Paused
+        
+        // still paused
+        wait {time} 0
+        state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, 2) // AudioStreamState.Paused
+        
+        // play, effective right away
+        set_audio_stream_state stream {action} AudioStreamAction.Play
+        state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, 1) // AudioStreamState.Playing
+        
+        // still playing
+        wait {time} 0
+        state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, 1) // AudioStreamState.Playing
+        
+        // stop, effective right away
+        set_audio_stream_state stream {action} AudioStreamAction.Stop
+        state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, -1) // AudioStreamState.Stopped
+        
+        // still stopped
+        wait {time} 0
+        state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, -1) // AudioStreamState.Stopped
+        
+        // stopped can not turn into paused
+        set_audio_stream_state stream {action} AudioStreamAction.Pause
+        state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, -1) // AudioStreamState.Stopped
+    end
 
 
-// get updated state
-wait 0
-0AB9: get_audio_stream_state 0@ {store_to} 1@ // tested opcode
-if
-    1@ == 1 // AudioStreamState.Playing
-then
-    trace "~g~~h~~h~0AB9 (get_audio_stream_state), #3 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #3 FAILED!~n~%d Expected~n~%d Occured" 1 1@
-end
-
-
-// check if state updated after playback end
-wait 400 // Ding.mp3 is 0.25s long
-0AB9: get_audio_stream_state 0@ {store_to} 1@ // tested opcode
-if
-    1@ == -1 // AudioStreamState.Stopped
-then
-    trace "~g~~h~~h~0AB9 (get_audio_stream_state), #4 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AB9 (get_audio_stream_state), #4 FAILED!~n~%d Expected~n~%d Occured" -1 1@
+    function test2(stream: int)        
+        set_audio_stream_progress stream {progress} 0.99
+        set_audio_stream_state stream {action} AudioStreamAction.Play
+        
+        wait {time} 200
+        int state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, -1) // AudioStreamState.Stopped
+    end
 end
 
 

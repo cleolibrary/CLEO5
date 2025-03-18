@@ -13,6 +13,8 @@ clear_prints
 
 RUN_TESTS_DIR("cleo:", "cleo_tests")
 
+trace ""
+trace "All tests done"
 print_big_string {text} "DONE" {time} 5000 {style} TextStyle.MiddleSmaller
 
 terminate_this_custom_script

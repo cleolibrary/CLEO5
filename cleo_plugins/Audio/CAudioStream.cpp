@@ -15,7 +15,7 @@ CAudioStream::CAudioStream(const char* filepath)
         return;
     }
 
-    unsigned flags = BASS_SAMPLE_SOFTWARE;
+    unsigned flags = BASS_SAMPLE_SOFTWARE | BASS_STREAM_PRESCAN;
     if (CSoundSystem::useFloatAudio) flags |= BASS_SAMPLE_FLOAT;
 
     if (!(streamInternal = BASS_StreamCreateFile(FALSE, filepath, 0, 0, flags)) &&
