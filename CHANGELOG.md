@@ -107,7 +107,7 @@
   - some errors now cause the script to pause, instead of crashing the game
 - updated included Silent's ASI Loader to version 1.3
 
-### Bug Fixes
+#### Bug Fixes
 - fixed error in **004E (terminate_this_script)** allowing to run multiple missions
 - fixed handling of strings longer than 128 characters causing errors in some cases
 - fixed error in handling of first string argument in **0AF5 (write_string to_ini_file)**
