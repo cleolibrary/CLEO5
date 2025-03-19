@@ -1,3 +1,7 @@
+## 5.0.1
+- cleo.log file moved back to the game root (as in CLEO4)
+
+
 ## 5.0.0
 
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264
