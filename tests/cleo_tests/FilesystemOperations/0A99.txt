@@ -38,8 +38,8 @@ function tests
     
     function test2
         set_current_directory {path} 1 // user files
-        0@ = resolve_filepath ""
-        assert_suffix(0@, "\GTA San Andreas User Files", true)
+        does_file_exist {path} "gta_sa.set" // game's settings file in user dir
+        assert_result_true()
     end
     
     
@@ -47,10 +47,12 @@ function tests
         set_current_directory {path} "root:" // game root
         0@ = resolve_filepath ""
         assert_eqs(0@, "") // relative to root, so empty
+        does_file_exist {path} "gta_sa.set" // game's settings file in user dir
+        assert_result_false()
         
         set_current_directory {path} "user:" // user files
-        0@ = resolve_filepath ""
-        assert_suffix(0@, "\GTA San Andreas User Files", true)
+        does_file_exist {path} "gta_sa.set" // game's settings file in user dir
+        assert_result_true()
         
         set_current_directory {path} "cleo:" // cleo directory
         0@ = resolve_filepath ""
