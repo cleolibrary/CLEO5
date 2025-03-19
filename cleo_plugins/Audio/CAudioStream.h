@@ -5,6 +5,7 @@
 
 namespace CLEO
 {
+#pragma pack(push,4)
     class CAudioStream
     {
     public:
@@ -73,4 +74,5 @@ namespace CLEO
         void UpdateVolume();
         void UpdateSpeed();
     };
+#pragma pack(pop)
 }
