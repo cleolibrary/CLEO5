@@ -58,7 +58,7 @@ inline const std::string Filepath_Game = GetGameDirectory();
 inline const std::string Filepath_User = GetUserDirectory();
 inline const std::string Filepath_Cleo = Filepath_Game + "\\cleo";
 inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
-inline const std::string Filepath_Log = Filepath_Cleo + "\\.cleo.log";
+inline const std::string Filepath_Log = Filepath_Game + "\\cleo.log";
 
 #define NUM_SCAN_ENTITIES 16
 

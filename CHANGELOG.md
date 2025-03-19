@@ -1,8 +1,11 @@
 ## 5.0.1
+- cleo.log file moved back to the game root (as in CLEO4)
 - Restored behavior of '.\\' prefix for scripts in legacy compat mode
+- fixed **0AB9 ([get_audio_stream_state](https://library.sannybuilder.com/#/sa/audio/0AB9))** not always returning Stopped, despite playback ended
+- fixed **2507 ([get_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2507))** sometimes returning values smaller than 1.0, despite playback ended
+- fixed progress set with **2508 ([set_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2508))** being ignored by stopped streams
 
 ## 5.0.0
-
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264
 - new [Audio](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Audio) plugin
   - audio related opcodes moved from CLEO core into separated plugin
@@ -106,8 +109,7 @@
   - some errors now cause the script to pause, instead of crashing the game
 - updated included Silent's ASI Loader to version 1.3
 
-### Bug Fixes
-
+#### Bug Fixes
 - fixed error in **004E (terminate_this_script)** allowing to run multiple missions
 - fixed handling of strings longer than 128 characters causing errors in some cases
 - fixed error in handling of first string argument in **0AF5 (write_string to_ini_file)**
@@ -117,8 +119,7 @@
 - fixed invalid 7 characters length limit of **0AAA (get_script_struct_named)**
 - fixed an undefined behavior caused by **0459 (terminate_all_scripts_with_this_name)** when the name matches a custom script
 
-#### SDK AND PLUGINS
-
+#### SDK and plugins
 - now all opcodes in range **0-7FFF** can be registered by plugins
 - plugins moved to _cleo\cleo_plugins_ directory
 - new SDK methods:
@@ -154,7 +155,6 @@
   - CLEO_Log
 
 #### CLEO internal
-
 - introduced unit test scripts
 - project migrated to VS 2022
 - configured game debugging settings
@@ -162,11 +162,10 @@
 - configured automatic releases on GitHub
 - added setup_env.bat script
 
-#### Special Thanks
-
-- **123nir** for the alpha-testing, troubleshooting and valuable bug reports
-- **Hamal** for the beta-testing, troubleshooting and valuable bug reports
-
 ## Older
-
 For previous changes, see [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
+
+## Special Thanks
+- **123nir** for the v5.0.0-alpha testing, troubleshooting and valuable bug reports
+- **Hamal** for the v5.0.0-beta testing, troubleshooting and valuable bug reports
+

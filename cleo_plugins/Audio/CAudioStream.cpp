@@ -15,7 +15,7 @@ CAudioStream::CAudioStream(const char* filepath)
         return;
     }
 
-    unsigned flags = BASS_SAMPLE_SOFTWARE;
+    unsigned flags = BASS_SAMPLE_SOFTWARE | BASS_STREAM_PRESCAN;
     if (CSoundSystem::useFloatAudio) flags |= BASS_SAMPLE_FLOAT;
 
     if (!(streamInternal = BASS_StreamCreateFile(FALSE, filepath, 0, 0, flags)) &&
@@ -71,22 +71,27 @@ float CAudioStream::GetLength() const
 
 void CAudioStream::SetProgress(float value)
 {
+    if (GetState() == Stopped)
+    {
+        state = Paused; // resume from set progress
+    }
+
     value = std::clamp(value, 0.0f, 1.0f);
-    auto total = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE);
-    auto bytePos = QWORD(value * total);
+    auto bytePos = BASS_ChannelSeconds2Bytes(streamInternal, GetLength() * value);
+
     BASS_ChannelSetPosition(streamInternal, bytePos, BASS_POS_BYTE);
 }
 
 float CAudioStream::GetProgress() const
 {
-    auto total = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE); // returns -1 on error
-    auto bytePos = BASS_ChannelGetPosition(streamInternal, BASS_POS_BYTE); // returns -1 on error
-
+    auto bytePos = BASS_ChannelGetPosition(streamInternal, BASS_POS_BYTE);
     if (bytePos == -1) bytePos = 0; // error or not available yet
+    auto pos = BASS_ChannelBytes2Seconds(streamInternal, bytePos);
 
-    float progress = (float)bytePos / total;
-    progress = std::clamp(progress, 0.0f, 1.0f);
-    return progress;
+    auto byteTotal = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE);
+    auto total = BASS_ChannelBytes2Seconds(streamInternal, byteTotal);
+
+    return (float)(pos / total);
 }
 
 CAudioStream::eStreamState CAudioStream::GetState() const
@@ -240,10 +245,12 @@ void CAudioStream::Process()
         BASS_ChannelPlay(streamInternal, FALSE);
         state = Playing;
     }
-
-    if (!GetLooping() && GetProgress() >= 1.0f) // end reached
+    else
     {
-        state = Stopped;
+        if (state == Playing && BASS_ChannelIsActive(streamInternal) == BASS_ACTIVE_STOPPED) // end reached
+        {
+            state = Stopped;
+        }
     }
 
     if (state != Playing) return; // done
