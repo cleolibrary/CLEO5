@@ -1,3 +1,6 @@
+## 5.0.1
+- Restored behavior of '.\\' prefix for scripts in legacy compat mode
+
 ## 5.0.0
 
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264

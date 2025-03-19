@@ -681,7 +681,7 @@ namespace CLEO
 
             if(_strcmpi(r, DIR_GAME) == 0) virtualPrefix = VPref::Game;
             else if (_strcmpi(r, DIR_USER) == 0) virtualPrefix = VPref::User;
-            else if (_strcmpi(r, DIR_SCRIPT) == 0) virtualPrefix = VPref::Script;
+            else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript((CRunningScript*)this)) virtualPrefix = VPref::Script;
             else if (_strcmpi(r, DIR_CLEO) == 0) virtualPrefix = VPref::Cleo;
             else if (_strcmpi(r, DIR_MODULES) == 0) virtualPrefix = VPref::Modules;
         }

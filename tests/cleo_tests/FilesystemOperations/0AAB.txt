@@ -10,16 +10,33 @@ function tests
 
     it("should fail on a non-existing file", test1)
     it("should success on existing file", test2)
+    it("should handle .\ prefix", test3)
+    it_cs4("should handle .\ prefix", test4)
     return
-    
+
     function test1
         does_file_exist {path} "cleo\not_a_file.txt" // tested opcode
         assert_result_false()
     end
-    
-     function test2
+
+    function test2
         does_file_exist {path} "cleo\.cleo_config.ini" // tested opcode
         assert_result_true()
     end
-
+    
+    function test3
+        does_file_exist {path} ".\0AAB.s"
+        assert_result_true()
+        
+        does_file_exist {path} ".\cleo.asi"
+        assert_result_false()
+    end
+    
+    function test4
+        does_file_exist {path} ".\0AAB.s"
+        assert_result_false()
+        
+        does_file_exist {path} ".\cleo.asi"
+        assert_result_true()
+    end
 end
