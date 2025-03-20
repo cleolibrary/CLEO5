@@ -464,7 +464,16 @@ public:
 
         if (stream)
         {
-            progress /= stream->GetLength();
+            float len = stream->GetLength();
+            if(len > 0.0f)
+            {
+                progress /= len;
+            }
+            else
+            {
+                progress = 0.0f; // invalid total size
+            }
+
             stream->SetProgress(progress);
         }
 
