@@ -1,0 +1,80 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '250C'
+test("250C (set_audio_stream_progress_seconds)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\Speech.mp3"
+
+function tests
+    int stream
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should set progress", test1)
+    return
+
+
+    :setup
+        stream = load_audio_stream Test_File
+        assert_result_true()
+    return
+
+
+    :cleanup
+        remove_audio_stream stream
+        stream = -1
+    return
+
+
+    function test1(stream: int)
+        float progress
+                
+        // set after loaded
+        set_audio_stream_progress_seconds stream {progress} 3.7 // ~50%
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.49, 0.51)
+        
+        // still same later
+        wait {time} 0
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.49, 0.51)
+        
+        // used when playback started
+        set_audio_stream_state stream {action} AudioStreamAction.Play
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.49, 0.51)
+
+        wait {time} 0
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.49, 0.56)
+        
+        // still same after stopped
+        set_audio_stream_state stream {action} AudioStreamAction.Stop
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.49, 0.56)
+        
+        // sets progress of stopped stream
+        set_audio_stream_progress_seconds stream {progress} 1.85 // ~25%
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.24, 0.26)
+        
+        // still same after resume
+        set_audio_stream_state stream {action} AudioStreamAction.Play
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.24, 0.31)
+        
+        wait {time} 0
+        progress = -1.0
+        progress = get_audio_stream_progress stream
+        assert_rangef(progress, 0.24, 0.31)
+    end
+end

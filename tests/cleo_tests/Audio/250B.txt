@@ -1,0 +1,43 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '250B'
+test("250B (get_audio_stream_progress_seconds)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\Speech.mp3"
+
+function tests
+    int stream
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should get progress", test1)
+    return
+    
+
+    :setup
+        stream = load_audio_stream Test_File
+        assert_result_true()
+    return
+
+
+    :cleanup
+        remove_audio_stream stream
+        stream = -1
+    return
+
+
+    function test1(stream: int)
+        float progress
+        
+        progress = -1.0
+        progress = get_audio_stream_progress_seconds stream
+        assert_eqf(progress, 0.0)
+                
+        set_audio_stream_progress stream {progress} 0.5
+        progress = -1.0
+        progress = get_audio_stream_progress_seconds stream
+        assert_rangef(progress, 3.6, 3.8) // test file is about 7.4 seconds long
+    end
+end

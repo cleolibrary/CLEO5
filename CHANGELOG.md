@@ -4,6 +4,8 @@
 - fixed **0AB9 ([get_audio_stream_state](https://library.sannybuilder.com/#/sa/audio/0AB9))** not always returning Stopped, despite playback ended
 - fixed **2507 ([get_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2507))** sometimes returning values smaller than 1.0, despite playback ended
 - fixed progress set with **2508 ([set_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2508))** being ignored by stopped streams
+- added new opcode **250B ([get_audio_stream_progress_seconds](https://sannybuilder.com/lib/sa/script/audio/250B))**
+- added new opcode **250C ([set_audio_stream_progress_seconds](https://sannybuilder.com/lib/sa/script/audio/250C))**
 - fixed **0AA3 ([free_dynamic_library](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AA3))** clearing reference to libraries loaded more than once
 
 ## 5.0.0
