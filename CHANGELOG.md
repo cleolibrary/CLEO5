@@ -4,6 +4,7 @@
 - fixed **0AB9 ([get_audio_stream_state](https://library.sannybuilder.com/#/sa/audio/0AB9))** not always returning Stopped, despite playback ended
 - fixed **2507 ([get_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2507))** sometimes returning values smaller than 1.0, despite playback ended
 - fixed progress set with **2508 ([set_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2508))** being ignored by stopped streams
+- fixed **0AA3 ([free_dynamic_library](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AA3))** clearing reference to libraries loaded more than once
 
 ## 5.0.0
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264

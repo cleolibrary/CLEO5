@@ -1,0 +1,30 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AA3"
+test("0AA3 (free_dynamic_library)", tests)
+terminate_this_custom_script
+
+
+function tests
+
+    it("should load and free library", test1)
+    return
+    
+    function test1
+        int lib = load_dynamic_library {fileName} "cleo.asi"
+        assert_result_true()
+        free_dynamic_library lib
+        
+        lib = load_dynamic_library {fileName} "cleo.asi"
+        assert_result_true()
+        
+        int lib2 = load_dynamic_library {fileName} "cleo.asi"
+        assert_result_true()
+        
+        assert_eq(lib, lib2)
+        
+        free_dynamic_library lib
+        free_dynamic_library lib2
+    end
+end

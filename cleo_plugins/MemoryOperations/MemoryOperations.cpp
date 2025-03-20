@@ -3,6 +3,7 @@
 #include "plugin.h"
 #include "CTheScripts.h"
 #include <filesystem>
+#include <map>
 #include <set>
 
 using namespace CLEO;
@@ -12,7 +13,7 @@ class MemoryOperations
 {
 public:
     static std::set<void*> m_allocations;
-    static std::set<HMODULE> m_libraries;
+    static std::map<HMODULE, size_t> m_libraries;
 
     MemoryOperations()
     {
@@ -84,8 +85,16 @@ public:
         for (auto p : m_allocations) free(p);
         m_allocations.clear();
 
-        TRACE("Cleaning up %d loaded libraries...", m_libraries.size());
-        std::for_each(m_libraries.begin(), m_libraries.end(), FreeLibrary);
+        size_t libCount = std::count_if(m_libraries.begin(), m_libraries.end(), [](auto& entry) { return entry.second; });
+        TRACE("Cleaning up %d loaded libraries...", libCount);
+        for (auto& entry : m_libraries)
+        {
+            while (entry.second > 0)
+            {
+                FreeLibrary(entry.first);
+                entry.second -= 1;
+            }
+        }
         m_libraries.clear();
     }
 
@@ -430,7 +439,7 @@ public:
 
         if (ptr != nullptr)
         {
-            m_libraries.insert(ptr);
+            m_libraries[ptr] += 1;
         }
 
         OPCODE_WRITE_PARAM_PTR(ptr);
@@ -446,12 +455,18 @@ public:
         // validate
         if (m_libraries.find(ptr) == m_libraries.end())
         {
-            LOG_WARNING(thread, "Invalid '0x%X' pointer param to unknown or already freed library in script %s", ptr, ScriptInfoStr(thread).c_str());
+            LOG_WARNING(thread, "Invalid '0x%X' library pointer param in script %s", ptr, ScriptInfoStr(thread).c_str());
+            return OR_CONTINUE;
+        }
+
+        if (m_libraries[ptr] == 0)
+        {
+            LOG_WARNING(thread, "Trying to free already unloaded library in script %s", ScriptInfoStr(thread).c_str());
             return OR_CONTINUE;
         }
 
         FreeLibrary(ptr);
-        m_libraries.erase(ptr);
+        m_libraries[ptr] -= 1;
         return OR_CONTINUE;
     }
 
@@ -923,4 +938,4 @@ public:
 } Memory;
 
 std::set<void*> MemoryOperations::m_allocations;
-std::set<HMODULE> MemoryOperations::m_libraries;
+std::map<HMODULE, size_t> MemoryOperations::m_libraries;
