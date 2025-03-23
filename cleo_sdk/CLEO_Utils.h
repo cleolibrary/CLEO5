@@ -618,7 +618,8 @@ namespace CLEO
         }
 
         if (IsVarString(_lastParamType)) return true;
-        if (/*!output &&*/ IsImmString(_lastParamType)) return true; // allow writing strings into const addresses
+        if (output && IsImmInteger(_lastParamType)) return true; // allow writing strings into const addresses
+        if (!output && IsImmString(_lastParamType)) return true;
 
         // pointer to output buffer
         if (IsVariable(_lastParamType)) return true; 
@@ -721,7 +722,7 @@ namespace CLEO
             return false;
         }
 
-        if (IsVariable(_lastParamType)) // pointer to buffer
+        if (IsImmInteger(_lastParamType) || IsVariable(_lastParamType)) // pointer to buffer
         {
             auto ptr = CLEO_PeekIntOpcodeParam(thread);
 

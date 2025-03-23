@@ -7,12 +7,17 @@ terminate_this_custom_script
 
 function tests
     it("should return vehicle model name", test1)
+    it("should store vehicle name in static buffer", test2)
 
     return
 
     function test1
         0@v = get_name_of_vehicle_model {modelId} 400
-
         assert_eqs(0@v, "LANDSTK")
+    end
+
+    function test2
+        get_name_of_vehicle_model 400 0xC16F98
+        assert_eqs(0xC16F98, "LANDSTK")
     end
 end
