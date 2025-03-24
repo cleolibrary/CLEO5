@@ -1,3 +1,6 @@
+## 5.0.2
+- allow storing string result at static address (e.g. `get_name_of_vehicle_model 400 0xC16F98`)
+
 ## 5.0.1
 - cleo.log file moved back to the game root (as in CLEO4)
 - Restored behavior of '.\\' prefix for scripts in legacy compat mode
