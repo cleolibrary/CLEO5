@@ -1,3 +1,5 @@
+const { GITHUB_SHA } = process.env;
+
 if (GITHUB_SHA) {
   const sha = GITHUB_SHA.slice(7);
 
