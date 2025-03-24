@@ -2,7 +2,7 @@ const { readFileSync, writeFileSync } = require("fs");
 const { GITHUB_SHA } = process.env;
 
 if (GITHUB_SHA) {
-  const sha = GITHUB_SHA.slice(7);
+  const sha = GITHUB_SHA.slice(0, 7);
 
   // update cleo.h to replace version string
   const cleoH = readFileSync("cleo_sdk/cleo.h", { encoding: "utf-8" });
