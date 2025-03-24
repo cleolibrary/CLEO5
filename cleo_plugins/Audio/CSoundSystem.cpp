@@ -13,8 +13,6 @@ namespace CLEO
     bool CSoundSystem::allowNetworkSources = true;
     eStreamType CSoundSystem::LegacyModeDefaultStreamType = eStreamType::None;
     CVector CSoundSystem::position(0.0, 0.0, 0.0);
-    CVector CSoundSystem::forward(0.0, 1.0, 0.0);
-    CVector CSoundSystem::up(0.0, 0.0, 1.0);
     CVector CSoundSystem::velocity(0.0, 0.0, 0.0);
     bool CSoundSystem::skipFrame = true;
     float CSoundSystem::timeStep = 0.02f;
@@ -106,7 +104,7 @@ namespace CLEO
         }
 
         if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
-            BASS_Set3DFactors(1.0f, 3.0f, 80.0f))
+            BASS_Set3DFactors(1.0f, 3.0f, 1.0f))
         {
             TRACE("SoundSystem initialized");
 
@@ -204,12 +202,15 @@ namespace CLEO
         {
             if (paused) Resume();
 
-            // update globals
-            skipFrame = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd; // avoid camera change/jump cut velocity glitches
-            timeStep = CTimer::ms_fTimeStep * 0.02f; // time delta in seconds
+            // update globals            
+            timeStep = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped); // delta in seconds
             masterSpeed = CTimer::ms_fTimeScale;
             masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
             masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
+
+            // avoid jump-cut camera glitches
+            int skipFramePrev = skipFrame;
+            skipFrame = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd;
 
             CVector prevPos = position;
             position = TheCamera.GetPosition(); // get new
@@ -220,25 +221,22 @@ namespace CLEO
                 CVector vel = position - prevPos;
                 vel /= timeStep; // meters peer second
 
-                // averaging to smooth artifact caused by GTA's janky mouse camera control
-                velocity += velocity + vel;
-                velocity /= 3;
-            }
-            else
-                velocity = {};
-
-            if (!skipFrame)
-            {
-                if (paused) Resume();
-
-                forward = TheCamera.GetForward();
-                up = TheCamera.GetUp();
+                if (!skipFramePrev)
+                {
+                    // averaging to smooth artifact caused by GTA's janky mouse camera control
+                    velocity = (velocity * 2.0f) + vel;
+                    velocity /= 3.0f;
+                }
+                else
+                {
+                    velocity = vel;
+                }
 
                 BASS_Set3DPosition(
                     &toBass(position),
                     &toBass(velocity),
-                    &toBass(forward),
-                    &toBass(up)
+                    &toBass(TheCamera.GetForward()),
+                    &toBass(TheCamera.GetUp())
                 );
             }
 

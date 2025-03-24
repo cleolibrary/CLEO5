@@ -29,7 +29,7 @@ namespace CLEO
         static bool useFloatAudio;
         static bool CSoundSystem::allowNetworkSources;
 
-        static CVector position, forward, up;
+        static CVector position;
         static CVector velocity;
         static bool skipFrame; // do not apply changes during this frame
         static float timeStep; // delta time for current frame

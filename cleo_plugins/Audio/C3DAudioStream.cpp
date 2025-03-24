@@ -33,12 +33,10 @@ C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
 void C3DAudioStream::Set3dPosition(const CVector& pos)
 {
     link = nullptr;
-    position.x = pos.y;
-    position.y = pos.z;
-    position.z = pos.x;
+    position = pos;
     BASS_3DVECTOR vel = { 0.0f, 0.0f, 0.0f };
 
-    BASS_ChannelSet3DPosition(streamInternal, &position, nullptr, &vel);
+    BASS_ChannelSet3DPosition(streamInternal, &toBass(position), nullptr, &vel);
 }
 
 void C3DAudioStream::Set3dSourceSize(float radius)
@@ -65,21 +63,14 @@ void C3DAudioStream::UpdatePosition()
     if (link) // attached to entity
     {
         auto prevPos = position;
-        CVector* pVec = link->m_matrix ? &link->m_matrix->pos : &link->m_placement.m_vPosn;
-        position = BASS_3DVECTOR(pVec->y, pVec->z, pVec->x);
-
+        position = link->GetPosition();
 
         // calculate velocity
-        BASS_3DVECTOR vel = position;
-        vel.x -= prevPos.x;
-        vel.y -= prevPos.y;
-        vel.z -= prevPos.z;
         auto timeDelta = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped);
-        vel.x *= timeDelta;
-        vel.y *= timeDelta;
-        vel.z *= timeDelta;
+        auto vel = position - prevPos;
+        vel /= CSoundSystem::timeStep;
 
-        BASS_ChannelSet3DPosition(streamInternal, &position, nullptr, &vel);
+        BASS_ChannelSet3DPosition(streamInternal, &toBass(position), nullptr, &toBass(vel));
     }
 }
 
