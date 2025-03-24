@@ -11,13 +11,13 @@ namespace CLEO
         Stop();
     }
 
-    void __declspec(naked) CCleoInstance::OnUpdateGameLogics()
+    void __cdecl CCleoInstance::OnUpdateGameLogics()
     {
         CleoInstance.CallCallbacks(eCallbackId::GameProcess); // execute registered callbacks
 
-        static DWORD dwFunc;
-        dwFunc = (DWORD)(CleoInstance.UpdateGameLogics_Orig);
-        _asm jmp dwFunc
+        CleoInstance.UpdateGameLogics(); // call original function
+
+        CleoInstance.CallCallbacks(eCallbackId::GameProcessed); // execute registered callbacks
     }
 
     HWND CCleoInstance::OnCreateMainWnd(HINSTANCE hinst)

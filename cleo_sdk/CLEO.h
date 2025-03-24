@@ -288,7 +288,8 @@ const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory
 enum class eCallbackId : DWORD
 {
 	GameBegin, // void WINAPI OnGameBegin(DWORD saveSlot); // -1 if not started from save
-	GameProcess, // void WINAPI OnGameProcess(); // called once every frame during gameplay
+	GameProcess, // void WINAPI OnGameProcess(); // called once every frame before game logic processing
+	GameProcessed, // void WINAPI OnGameProcess(); // called once every frame after game logic processing
 	GameEnd, // void WINAPI OnGameEnd();
 	ScriptsLoaded, // void WINAPI OnScriptsLoaded();
 	ScriptsFinalize, // void WINAPI OnScriptsFinalize();
