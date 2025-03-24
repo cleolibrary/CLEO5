@@ -15,7 +15,7 @@ namespace CLEO
     {
         CleoInstance.CallCallbacks(eCallbackId::GameProcess); // execute registered callbacks
 
-        CleoInstance.UpdateGameLogics(); // call original function
+        CleoInstance.UpdateGameLogics_Orig(); // call original function
 
         CleoInstance.CallCallbacks(eCallbackId::GameProcessed); // execute registered callbacks
     }

@@ -4,6 +4,7 @@
 #include "CLEO_Utils.h"
 #include "CAEAudioHardware.h"
 #include "CCamera.h"
+#include "CPad.h"
 #include "CVector.h"
 
 namespace CLEO
@@ -105,8 +106,7 @@ namespace CLEO
         }
 
         if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
-            BASS_Set3DFactors(1.0f, 3.0f, 80.0f) &&
-            BASS_Set3DPosition(&pos, &vel, &front, &top))
+            BASS_Set3DFactors(1.0f, 3.0f, 80.0f))
         {
             TRACE("SoundSystem initialized");
 

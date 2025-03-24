@@ -29,7 +29,8 @@ namespace CLEO
         static bool useFloatAudio;
         static bool CSoundSystem::allowNetworkSources;
 
-        static CVector position;
+        static CVector position, forward, up;
+        static CVector velocity;
         static bool skipFrame; // do not apply changes during this frame
         static float timeStep; // delta time for current frame
         static float masterSpeed; // game simulation speed
@@ -59,6 +60,6 @@ namespace CLEO
     };
 
     // convert GTA to BASS coordinate system
-    static BASS_3DVECTOR toBass(const CVector* v) { return BASS_3DVECTOR(v->x, v->z, v->y); }
+    static BASS_3DVECTOR toBass(const CVector& v) { return BASS_3DVECTOR(v.x, v.z, v.y); }
     bool isNetworkSource(const char* path);
 }
