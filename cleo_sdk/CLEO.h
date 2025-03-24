@@ -17,7 +17,7 @@
 
 #define __TO_STR(x) #x
 #define TO_STR(x) __TO_STR(x)
-#define CLEO_VERSION_STR TO_STR(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)"-custom" // "v.v.v-custom"
+#define CLEO_VERSION_STR TO_STR(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR) // "v.v.v"
 
 namespace CLEO
 {
