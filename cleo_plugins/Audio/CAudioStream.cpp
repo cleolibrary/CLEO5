@@ -94,7 +94,7 @@ float CAudioStream::GetProgress() const
     return (float)(pos / total);
 }
 
-CAudioStream::eStreamState CAudioStream::GetState() const
+CAudioStream::StreamState CAudioStream::GetState() const
 {
     return (state == PlayingInactive) ? Playing : state;
 }

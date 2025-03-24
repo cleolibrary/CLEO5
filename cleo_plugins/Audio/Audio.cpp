@@ -183,7 +183,7 @@ public:
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
-        auto state = CAudioStream::eStreamState::Stopped;
+        auto state = CAudioStream::StreamState::Stopped;
         if (stream) state = stream->GetState();
 
         OPCODE_WRITE_PARAM_INT(state);
@@ -308,10 +308,10 @@ public:
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
-        auto state = CAudioStream::eStreamState::Stopped;
+        auto state = CAudioStream::StreamState::Stopped;
         if (stream) state = stream->GetState();
 
-        OPCODE_CONDITION_RESULT(state == CAudioStream::eStreamState::Playing);
+        OPCODE_CONDITION_RESULT(state == CAudioStream::StreamState::Playing);
         return OR_CONTINUE;
     }
 
