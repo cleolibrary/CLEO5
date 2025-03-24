@@ -1522,7 +1522,7 @@ namespace CLEO
                 // store script file directory and name
                 std::string pathStr = szFileName;
                 FilepathNormalize(pathStr, false);
-                FS::path path = FS::weakly_canonical(pathStr);
+                FS::path path = pathStr;
 
                 // file exists?
                 if (!FS::is_regular_file(path))
