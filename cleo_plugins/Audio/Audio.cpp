@@ -267,7 +267,7 @@ public:
         if (stream)
         {
             auto object = CPools::GetObject(handle);
-            stream->Link(object);
+            stream->SetHost(object, { 0.0f, 0.0f, 0.0f });
         }
 
         return OR_CONTINUE;
@@ -282,7 +282,7 @@ public:
         if (stream)
         {
             auto ped = CPools::GetPed(handle);
-            stream->Link(ped);
+            stream->SetHost(ped, { 0.0f, 0.0f, 0.0f });
         }
 
         return OR_CONTINUE;
@@ -297,7 +297,7 @@ public:
         if (stream)
         {
             auto vehicle = CPools::GetVehicle(handle);
-            stream->Link(vehicle);
+            stream->SetHost(vehicle, { 0.0f, 0.0f, 0.0f });
          }
 
         return OR_CONTINUE;

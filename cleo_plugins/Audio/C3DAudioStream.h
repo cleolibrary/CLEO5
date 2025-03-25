@@ -11,12 +11,15 @@ namespace CLEO
         // overloaded actions
         virtual void Set3dPosition(const CVector& pos);
         virtual void Set3dSourceSize(float radius);
-        virtual void Link(CPlaceable* placable = nullptr);
+        virtual void SetHost(CEntity* host, const CVector& offset);
         virtual void Process();
 
     protected:
-        CPlaceable* link = nullptr;
-        CVector position = { 0.0f, 0.0f, 0.0f };
+        CEntity* host = nullptr;
+        eEntityType hostType = ENTITY_TYPE_NOTHING;
+        CVector offset = { 0.0f, 0.0f, 0.0f }; // offset in relation to host
+
+        CVector position = { 0.0f, 0.0f, 0.0f }; // last world position
 
         C3DAudioStream(const C3DAudioStream&) = delete; // no copying!
         void UpdatePosition();

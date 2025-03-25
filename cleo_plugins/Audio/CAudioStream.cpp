@@ -269,7 +269,7 @@ void CAudioStream::Set3dSourceSize(float radius)
     // not applicable for 2d audio
 }
 
-void CAudioStream::Link(CPlaceable* placable)
+void CAudioStream::SetHost(CEntity* placable, const CVector& offset)
 {
     // not applicable for 2d audio
 }
