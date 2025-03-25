@@ -103,10 +103,9 @@ void C3DAudioStream::UpdatePosition()
         position = offset;
     }
 
-    CVector velocity = { 0.0f, 0.0f, 0.0f };
     if (prevPos.Magnitude() > 0.0f) // not equal to 0,0,0
     {
-        velocity = position - prevPos;
+        CVector velocity = position - prevPos;
         velocity /= CSoundSystem::timeStep;
         BASS_ChannelSet3DPosition(streamInternal, &toBass(position), nullptr, &toBass(velocity));
     }
