@@ -1,16 +1,16 @@
 ## 5.0.2
-- Updated BASS library
-- Fixed Doppler effect calculations for 3d audio streams
-- Fixed sound glitches of 3d audio streams when playback starts
-- Fixed sound glitches of 3d audio streams when switching camera
-- Fixed possible crashes when car/object/ped with attached 3d audio stream is deleted
-- Fixed CLEO sound artifacts when moving camera with mouse
-- Reverted muting 'music' type audio streams for game speeds other than default introduced in 5.0.1
+- updated BASS library
+- fixed Doppler effect calculations for 3d audio streams
+- fixed sound glitches of 3d audio streams when playback starts
+- fixed sound glitches of 3d audio streams when switching camera
+- fixed possible crashes when car/object/ped with attached 3d audio stream is deleted
+- fixed CLEO sound artifacts when moving camera with mouse
+- reverted muting 'music' type audio streams for game speeds other than default introduced in 5.0.1
 - allow storing string result at static address (e.g. `get_name_of_vehicle_model 400 0xC16F98`)
 
 ## 5.0.1
 - cleo.log file moved back to the game root (as in CLEO4)
-- Restored behavior of '.\\' prefix for scripts in legacy compat mode
+- restored behavior of '.\\' prefix for scripts in legacy compat mode
 - fixed **0AB9 ([get_audio_stream_state](https://library.sannybuilder.com/#/sa/audio/0AB9))** not always returning Stopped, despite playback ended
 - fixed **2507 ([get_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2507))** sometimes returning values smaller than 1.0, despite playback ended
 - fixed progress set with **2508 ([set_audio_stream_progress](https://library.sannybuilder.com/#/sa/audio/2508))** being ignored by stopped streams
