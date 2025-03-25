@@ -219,7 +219,7 @@ namespace CLEO
             if (!skipFrame)
             {
                 CVector vel = position - prevPos;
-                vel /= timeStep; // meters peer second
+                vel /= timeStep; // meters per second
 
                 if (!skipFramePrev)
                 {
