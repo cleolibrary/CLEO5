@@ -55,8 +55,6 @@ namespace CLEO
         void Pause();
         void Resume();
         void Process();
-
-        static float GetDistance(const CVector* position); // distance from coords to the camera
     };
 
     // convert GTA to BASS coordinate system

@@ -208,7 +208,7 @@ namespace CLEO
             masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
             masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
 
-            // avoid jump-cut camera glitches
+            // prevent camera jump-cut glitches
             int skipFramePrev = skipFrame;
             skipFrame = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd;
 
@@ -223,7 +223,7 @@ namespace CLEO
 
                 if (!skipFramePrev)
                 {
-                    // averaging to smooth artifact caused by GTA's janky mouse camera control
+                    // averaging to smooth artifacts caused by GTA's janky mouse camera control
                     velocity = (velocity * 2.0f) + vel;
                     velocity /= 3.0f;
                 }

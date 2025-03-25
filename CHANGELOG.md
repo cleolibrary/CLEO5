@@ -1,4 +1,11 @@
 ## 5.0.2
+- Updated BASS library
+- Fixed Doppler effect calalculations for 3d audio streams
+- Fixed sound glitches of 3d audio streams when playback starts
+- Fixed sound glitches of 3d audio streams when switching camera
+- Fixed possible crashes when car/object/ped with attached 3d audio stream is deleted
+- Fixed CLEO sound artifacts when moving camera with mouse
+- Removed muting 'music' type audio streams for game speeds other than default introduced in 5.0.1
 - allow storing string result at static address (e.g. `get_name_of_vehicle_model 400 0xC16F98`)
 
 ## 5.0.1
