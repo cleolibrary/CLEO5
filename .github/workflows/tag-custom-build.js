@@ -13,7 +13,7 @@ if (GITHUB_SHA) {
   const [, CLEO_VERSION_MAJOR] = cleoH.match('#define\\s+CLEO_VERSION_MAJOR\\s+(\\d+)');
   const [, CLEO_VERSION_MINOR] = cleoH.match('#define\\s+CLEO_VERSION_MINOR\\s+(\\d+)');
   const buildVersion = [CLEO_VERSION_MAIN, CLEO_VERSION_MAJOR, CLEO_VERSION_MINOR].join('.');
-  console.log('Build version ${buildVersion}');
+  console.log(`Build version ${buildVersion}`);
 
   const newCleoH = cleoH
     .replace('(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)', `(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)"-${sha}"`);
