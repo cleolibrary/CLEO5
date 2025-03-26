@@ -1,11 +1,11 @@
-const { appendFileSync, readFileSync, writeFileSync } = require("fs");
+const { readFileSync, writeFileSync } = require("fs");
 const { EOL } = require("os");
 const { GITHUB_REF_NAME } = process.env;
-const { addOutput } = require('./job-output');
+const addJobOutput = require('./add-job-output');
 
 if (GITHUB_REF_NAME) {
   const version = GITHUB_REF_NAME.startsWith("v") ? GITHUB_REF_NAME.slice(1) : GITHUB_REF_NAME;
-  addOutput("version", version);
+  addJobOutput("version", version);
 
   // update cleo.h to replace version
   const cleoH = readFileSync("cleo_sdk/cleo.h", { encoding: "utf-8" });
