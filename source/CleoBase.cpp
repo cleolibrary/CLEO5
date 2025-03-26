@@ -13,11 +13,11 @@ namespace CLEO
 
     void __cdecl CCleoInstance::OnUpdateGameLogics()
     {
-        CleoInstance.CallCallbacks(eCallbackId::GameProcess); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::BeforeGameProcess); // execute registered callbacks
 
         CleoInstance.UpdateGameLogics_Orig(); // call original function
 
-        CleoInstance.CallCallbacks(eCallbackId::GameProcessed); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::AfterGameProcess); // execute registered callbacks
     }
 
     HWND CCleoInstance::OnCreateMainWnd(HINSTANCE hinst)
