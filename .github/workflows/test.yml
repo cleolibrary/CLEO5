@@ -22,7 +22,7 @@ jobs:
       - name: Tag Custom build with current commit SHA
         run: |
           node.exe .github/workflows/tag-custom-build.js
-          echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 8))" >> $env:GITHUB_ENV
+          echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 7))" >> $env:GITHUB_ENV
 
       - name: Core - Build
         shell: cmd
@@ -86,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           compression-level: 6
-          name: SA.CLEO_${{ github.ref_name }}-${{ env.SHORT_SHA }}.zip
+          name: SA.CLEO_5-${{ env.SHORT_SHA }}.zip
           path: |
             .output\Release\*
             !.output\Release\*.pdb
