@@ -20,25 +20,14 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Tag Custom build with current commit SHA
-        run: |
-          node.exe .github/workflows/tag-custom-build.js
-          echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 7))" >> $env:GITHUB_ENV
+        id: custom_build
+        run: node.exe .github/workflows/tag-custom-build.js
 
       - name: Core - Build
         shell: cmd
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
-
-#      - name: Core - Sign
-#        uses: x87/code-sign-action@develop
-#        with:
-#          certificate: '${{ secrets.DIG_KEY_CERT }}'
-#          password: '${{ secrets.DIG_KEY_PWD }}'
-#          certificatename: 'Seemann'
-#          description: 'CLEO 5'
-#          timestampUrl: 'http://timestamp.digicert.com'
-#          filename: './.output/Release/cleo.asi'
 
       - name: Core - VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
@@ -51,16 +40,6 @@ jobs:
         run: |
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
-
-#      - name: Plugins - Sign
-#        uses: x87/code-sign-action@develop
-#        with:
-#          certificate: '${{ secrets.DIG_KEY_CERT }}'
-#          password: '${{ secrets.DIG_KEY_PWD }}'
-#          certificatename: 'Seemann'
-#          description: 'CLEO 5 Plugin'
-#          timestampUrl: 'http://timestamp.digicert.com'
-#          folder: './cleo_plugins/.output'
           
       - name: Plugins - VirusTotal Scan
         uses: crazy-max/ghaction-virustotal@v4
@@ -86,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           compression-level: 6
-          name: SA.CLEO_5-${{ env.SHORT_SHA }}
+          name: SA.CLEO_5-${{ steps.custom_build.outputs.sha }}
           path: |
             .output\Release\*
             !.output\Release\*.pdb

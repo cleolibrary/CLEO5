@@ -1,4 +1,5 @@
 const { readFileSync, writeFileSync } = require("fs");
+const { addOutput } = require('./job-output');
 const { GITHUB_SHA } = process.env;
 
 if (GITHUB_SHA) {
@@ -10,4 +11,6 @@ if (GITHUB_SHA) {
     .replace('(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)', `(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)"-${sha}"`);
   console.log(`Tagging current build with sha ${sha}`);
   writeFileSync("cleo_sdk/cleo.h", newCleoH, { encoding: "utf-8" });
+
+  addOutput("sha", sha);
 }
