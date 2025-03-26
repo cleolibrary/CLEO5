@@ -186,7 +186,7 @@ void CAudioStream::UpdateVolume()
     switch(type)
     {
         case SoundEffect: masterVolume = CSoundSystem::masterVolumeSfx; break;
-        case Music: CSoundSystem::masterVolumeMusic; break;
+        case Music: masterVolume = CSoundSystem::masterVolumeMusic; break;
         case UserInterface: masterVolume = CSoundSystem::masterVolumeSfx; break;
     }
 
