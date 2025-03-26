@@ -83,8 +83,8 @@ jobs:
       - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
-          compression-level: 0
-          name: SA.CLEO5
+          compression-level: 6
+          name: SA.CLEO_${{ github.ref_name }}-${{ github.sha }}.zip
           path: |
             .output\Release\*
             !.output\Release\*.pdb
