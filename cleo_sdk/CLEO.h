@@ -287,10 +287,10 @@ const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory
 // argument of CLEO_RegisterCallback
 enum class eCallbackId : DWORD
 {
-	GameBegin = 0, // void WINAPI OnGameBegin(DWORD saveSlot); // -1 if not started from save
-	GameProcess = 1, // void WINAPI OnGameProcess(); // called once every frame before game logic processing
-	GameProcessed = 14, // void WINAPI OnGameProcess(); // called once every frame after game logic processing
-	GameEnd = 2, // void WINAPI OnGameEnd();
+	GameBegin = 0, // void WINAPI OnGameBegin(DWORD saveSlot); // game session started. -1 if not started from save
+	BeforeGameProcess = 1, // void WINAPI OnBeforeGameProcess(); // called once every frame before game logic processing
+	AfterGameProcess = 14, // void WINAPI OnAfterGameProcess(); // called once every frame after game logic processing
+	GameEnd = 2, // void WINAPI OnGameEnd(); // game session ended
 	ScriptsLoaded = 3, // void WINAPI OnScriptsLoaded();
 	ScriptsFinalize = 4, // void WINAPI OnScriptsFinalize();
 	ScriptRegister = 5, // void WINAPI OnScriptRegister(CRunningScript* pScript); // called after script creation

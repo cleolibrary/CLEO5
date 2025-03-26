@@ -70,7 +70,7 @@ public:
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
-		CLEO_RegisterCallback(eCallbackId::GameProcess, OnGameProcess);
+		CLEO_RegisterCallback(eCallbackId::BeforeGameProcess, OnBeforeGameProcess);
 		CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
 		// install hooks
@@ -80,7 +80,7 @@ public:
 	~Text()
 	{
 		CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
-		CLEO_UnregisterCallback(eCallbackId::GameProcess, OnGameProcess);
+		CLEO_UnregisterCallback(eCallbackId::BeforeGameProcess, OnBeforeGameProcess);
 		CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
 		patchCTextGet.Apply(); // undo hook
@@ -91,7 +91,7 @@ public:
 		textManager.LoadFxts();
 	}
 
-	static void __stdcall OnGameProcess()
+	static void __stdcall OnBeforeGameProcess()
 	{
 		genericLabelCounter = 0;
 	}
