@@ -20,8 +20,9 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Tag Custom build with current commit SHA
-        run: node.exe .github/workflows/tag-custom-build.js
-        run: echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 8))" >> $env:GITHUB_ENV
+        run: |
+            node.exe .github/workflows/tag-custom-build.js
+            echo "SHORT_SHA=$("${{ github.sha }}".SubString(0, 8))" >> $env:GITHUB_ENV
 
       - name: Core - Build
         shell: cmd
