@@ -2,6 +2,8 @@
 #include "CSoundSystem.h"
 #include "CLEO_Utils.h"
 #include "CCamera.h"
+#include "CWaterLevel.h"
+#include "CWeather.h"
 
 using namespace CLEO;
 
@@ -28,7 +30,11 @@ C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
 
     BASS_ChannelGetAttribute(streamInternal, BASS_ATTRIB_FREQ, &rate);
     BASS_ChannelSet3DAttributes(streamInternal, BASS_3DMODE_NORMAL, -1.0f, -1.0f, -1, -1, -1.0f);
+    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_BUFFER, 0.0f); // no delay for effects
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, 0.0f); // muted until processed
+
+    effectMuffle = BASS_ChannelSetFX(streamInternal, BASS_FX_BFX_PEAKEQ, 0);
+
     ok = true;
 }
 
@@ -78,6 +84,45 @@ void C3DAudioStream::Process()
     CVector percVel = lerp(velocity, CSoundSystem::velocity, inFactor);
 
     BASS_ChannelSet3DPosition(streamInternal, &toBass(percPos), nullptr, &toBass(percVel));
+
+    // under water effect
+    if (effectMuffle != 0)
+    {
+        float muffle = 0.0f;
+        
+        // in water
+        float inWater= std::clamp((CWeather::UnderWaterness - 0.333f) * 4.0f, 0.0f, 1.0f); // listener submerged
+        if (inWater < 1.0f)
+        {
+            // TODO: source under water
+            //float level;
+            //CWaterLevel::GetWaterLevel(position.x, position.y, position.z, &level, true, nullptr);
+        }
+        TRACE("water %f", inWater);
+
+        muffle = max(muffle, inWater);
+
+        BASS_BFX_PEAKEQ eqparam;
+        eqparam.lChannel = BASS_BFX_CHANALL;
+
+        eqparam.lBand = 0;
+        eqparam.fCenter = 3000.0f;
+        eqparam.fQ = 0.2f;
+        eqparam.fGain = inWater * -120.0f;
+        BASS_FXSetParameters(effectMuffle, &eqparam);
+
+        eqparam.lBand = 1;
+        eqparam.fCenter = 40.0f;
+        eqparam.fQ = 0.22f;
+        eqparam.fGain = inWater * 22.0f;
+        BASS_FXSetParameters(effectMuffle, &eqparam);
+
+        eqparam.lBand = 2;
+        eqparam.fCenter = 200.0f;
+        eqparam.fQ = 0.32f;
+        eqparam.fGain = inWater * 35.0f;
+        BASS_FXSetParameters(effectMuffle, &eqparam);
+    }
 }
 
 float C3DAudioStream::CalculateVolume()

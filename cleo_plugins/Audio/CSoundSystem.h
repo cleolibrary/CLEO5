@@ -1,5 +1,6 @@
 #pragma once
 #include "bass.h"
+#include "bass_fx.h"
 #include "CVector.h"
 #include <set>
 

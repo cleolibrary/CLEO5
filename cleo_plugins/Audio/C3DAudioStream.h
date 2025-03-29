@@ -30,6 +30,8 @@ namespace CLEO
         CVector position = { 0.0f, 0.0f, 0.0f }; // last world position
         CVector velocity = { 0.0f, 0.0f, 0.0f };
 
+        HFX effectMuffle; // low pass filter
+
         C3DAudioStream(const C3DAudioStream&) = delete; // no copying!
         void UpdatePosition();
     };

@@ -63,10 +63,23 @@ namespace CLEO
         TRACE("Initializing SoundSystem...");
 
         auto ver = HIWORD(BASS_GetVersion());
-        TRACE("BASS library version is %d (required %d or newer)", ver, BASSVERSION);
-        if (ver < BASSVERSION)
+        if (ver >= BASSVERSION)
+        {
+            TRACE("BASS library version is %d (required %d or newer)", ver, BASSVERSION);
+        }
+        else
         {
             SHOW_ERROR("Invalid BASS library version! Expected at least %d, found %d.", BASSVERSION, ver);
+        }
+        
+        ver = HIWORD(BASS_FX_GetVersion());
+        if (ver >= BASSVERSION)
+        {
+            TRACE("BASS FX library version is %d (required %d or newer)", ver, BASSVERSION);
+        }
+        else
+        {
+            SHOW_ERROR("Invalid BASS FX library version! Expected at least %d, found %d.", BASSVERSION, ver);
         }
 
         auto config = GetConfigFilename();
@@ -97,6 +110,8 @@ namespace CLEO
         {
             TRACE("Selecting default audio device #%d: %s", deviceIndex, info.name);
         }
+
+        BASS_SetConfig(BASS_CONFIG_FLOATDSP, TRUE);
 
         if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
             BASS_Set3DFactors(1.0f, 0.0f, 1.0f))
