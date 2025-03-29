@@ -68,7 +68,7 @@ void C3DAudioStream::Process()
     // position and velocity
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormaliseAndMag();
-    float inFactor = std::clamp(2.0f - distance / radius, 0.0f, 1.0f); // sound source size simulation
+    float inFactor = CalculateDistanceDecay(max(distance - radius, 0.0f) * 5.0f); // use decay curve for blending inside-outside source effects
 
     // stereo panning
     float sign = dot(CSoundSystem::direction, relPos) > 0.0f ? 1.0f : -1.0f;
