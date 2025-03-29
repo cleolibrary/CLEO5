@@ -197,7 +197,7 @@ namespace CLEO
         {
             if (paused) Resume();
 
-            // update globals            
+            // update globals
             timeStep = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped); // delta in seconds
             masterSpeed = CTimer::ms_fTimeScale;
             masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * AEAudioHardware.m_fEffectsFaderScalingFactor * 0.5f; // fit to game's sfx volume

@@ -17,14 +17,14 @@ namespace CLEO
         virtual float CalculateSpeed();
 
     protected:
-        const float Volume_3D_Adjust = 0.4f; // match other ingame sound sources
+        const float Volume_3D_Adjust = 0.75f; // match other ingame sound sources
         static float CalculateDistanceDecay(float radius, float distance);
         static float CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos);
 
         CEntity* host = nullptr;
         eEntityType hostType = ENTITY_TYPE_NOTHING;
         CVector offset = { 0.0f, 0.0f, 0.0f }; // offset in relation to host
-        float radius = 5.0f; // size of sound source
+        float radius = 1.0f; // size of sound source
 
         bool placed = false;
         CVector position = { 0.0f, 0.0f, 0.0f }; // last world position

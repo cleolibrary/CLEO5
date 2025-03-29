@@ -124,7 +124,7 @@ float CAudioStream::GetVolume() const
 void CAudioStream::SetSpeed(float value, float transitionTime)
 {
     if (transitionTime > 0.0f) Resume();
-    volume.setValue(max(value, 0.0f), transitionTime);
+    speed.setValue(max(value, 0.0f), transitionTime);
 }
 
 float CAudioStream::GetSpeed() const

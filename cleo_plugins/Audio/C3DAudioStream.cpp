@@ -142,10 +142,15 @@ float C3DAudioStream::CalculateSpeed()
 float C3DAudioStream::CalculateDistanceDecay(float radius, float distance)
 {
     distance = max(distance - radius, 0.0f);
-    distance /= radius; // bigger source reaches further
 
-    float factor = 1.0f / powf(1.0f + distance, 2); // inverse square
-    factor -= 0.00006f;
+    // exact match to ingame sounds
+    /*float factor = 1.0f / powf(1.0f + distance, 2); // inverse square
+    factor -= 0.00006f;*/
+
+    // more natural feeling
+    float factor = 1.0f / (1.0f + 0.01f * distance * distance);
+    factor -= 0.015f;
+
     factor = std::clamp(factor, 0.0f, 1.0f);
     return factor;
 }

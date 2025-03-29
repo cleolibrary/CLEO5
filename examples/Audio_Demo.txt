@@ -4,7 +4,9 @@
 {$CLEO .cs}
 
 const Model_Speaker = 2229
+const Model_Toilet = 2984
 const Audio_Path = ".\cleo_tests\Audio\Ding.mp3" // this script's file relative location
+//const Audio_Path = "https://github.com/cleolibrary/CLEO5/blob/master/tests/cleo_tests/Audio/Speech.mp3?raw=true" // network path
 
 wait 1000
 
@@ -14,23 +16,19 @@ float value, valueCurr
 
 while true
     wait 0
-    print_formatted_now "CLEO5 Audio Plugin DEMO~n~Press key 1 - 7" {time} 0
+    print_formatted_now "CLEO5 Audio Plugin DEMO~n~Press key 1 - 8" {time} 0
     
     if
         test_cheat "1"
     then
         print_formatted_now "DEMO 1: Get progress" {time} 10000
-        START_TEST()
-
         if
-            not load_3d_audio_stream Audio_Path {store_to} soundStream
+            not soundStream, speakerObject = TEST_SETUP(Model_Speaker)
         then
-            print_formatted_now "~r~Failed to load audio file!" {time} 10000
-            END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
-        set_audio_stream_state soundStream AudioStreamAction.Play
+        
+        set_audio_stream_looped soundStream {state} false
 
         while is_audio_stream_playing soundStream
             valueCurr = get_audio_stream_progress soundStream
@@ -38,25 +36,18 @@ while true
             wait 0
         end
 
-        END_TEST()
+        TEST_CLEANUP(soundStream, speakerObject)
     end
     
     if
         test_cheat "2"
     then
         print_formatted_now "DEMO 2: Set volume" {time} 10000
-        START_TEST()
-
         if
-            not load_3d_audio_stream Audio_Path {store_to} soundStream
+            not soundStream, speakerObject = TEST_SETUP(Model_Speaker)
         then
-            print_formatted_now "~r~Failed to load audio file!" {time} 10000
-            END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
-        set_audio_stream_looped soundStream true
-        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 1000
         repeat
@@ -72,25 +63,18 @@ while true
             wait 0
         until test_cheat "2"
 
-        END_TEST()
+        TEST_CLEANUP(soundStream, speakerObject)
     end
     
     if
         test_cheat "3"
     then
         print_formatted_now "Set volume with transition" {time} 10000
-        START_TEST()
-
         if
-            not load_3d_audio_stream Audio_Path {store_to} soundStream
+            not soundStream, speakerObject = TEST_SETUP(Model_Speaker)
         then
-            print_formatted_now "~r~Failed to load audio file!" {time} 10000
-            END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
-        set_audio_stream_looped soundStream true
-        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 2000
         repeat
@@ -103,29 +87,22 @@ while true
             end
 
             valueCurr = get_audio_stream_volume soundStream
-            print_formatted_now "DEMO 3: Set volume: %.2f, Transition: 1.0s~n~Current volume: %.2f~n~Press 3 to stop" {time} 0 {args} value valueCurr
+            print_formatted_now "DEMO 3: Set volume: %.2f, Transition: 2.0s~n~Current volume: %.2f~n~Press 3 to stop" {time} 0 {args} value valueCurr
             wait 0
         until test_cheat "3"
         
-        END_TEST()
+        TEST_CLEANUP(soundStream, speakerObject)
     end
     
     if
         test_cheat "4"
     then
         print_formatted_now "DEMO 4: Set speed" {time} 10000
-        START_TEST()
-
         if
-            not load_3d_audio_stream Audio_Path {store_to} soundStream
+            not soundStream, speakerObject = TEST_SETUP(Model_Speaker)
         then
-            print_formatted_now "~r~Failed to load audio file!" {time} 10000
-            END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
-        set_audio_stream_looped soundStream true
-        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 1000
         repeat
@@ -141,25 +118,18 @@ while true
             wait 0
         until test_cheat "4"
 
-        END_TEST()
+        TEST_CLEANUP(soundStream, speakerObject)
     end
     
     if
         test_cheat "5"
     then
         print_formatted_now "DEMO 5: Set speed with transition" {time} 10000
-        START_TEST()
-
         if
-            not load_3d_audio_stream Audio_Path {store_to} soundStream
+            not soundStream, speakerObject = TEST_SETUP(Model_Speaker)
         then
-            print_formatted_now "~r~Failed to load audio file!" {time} 10000
-            END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
-        set_audio_stream_looped soundStream true
-        set_audio_stream_state soundStream AudioStreamAction.Play
 
         TIMERA = 2000
         repeat
@@ -172,45 +142,36 @@ while true
             end
 
             valueCurr = get_audio_stream_speed soundStream
-            print_formatted_now "DEMO 5: Set speed: %.2f, Transition: 1.0s~n~Current speed: %.2f~n~Press 5 to stop" {time} 0 {args} value valueCurr
+            print_formatted_now "DEMO 5: Set speed: %.2f, Transition: 2.0s~n~Current speed: %.2f~n~Press 5 to stop" {time} 0 {args} value valueCurr
             wait 0
         until test_cheat "5"
 
-        END_TEST()
+        TEST_CLEANUP(soundStream, speakerObject)
     end
     
     if
         test_cheat "6"
     then
         print_formatted_now "DEMO 6: Doppler effect" {time} 10000
-        START_TEST()
-
         if
-            not load_3d_audio_stream Audio_Path {store_to} soundStream
+            not soundStream, speakerObject = TEST_SETUP(Model_Speaker)
         then
-            print_formatted_now "~r~Failed to load audio file!" {time} 10000
-            END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
-        set_audio_stream_looped soundStream true
-        set_audio_stream_volume soundStream {volume} 4.0
-        set_audio_stream_state soundStream AudioStreamAction.Play
-        wait 1000
-
+        
         int direction = 0
         repeat
             if
                 not camera_is_vector_move_running
             then
-                camera_set_vector_track {from} 230.0 2525.0 16.5 {to} 230.0 2525.0 16.5 {time} 1000 {ease} true
+                camera_set_vector_track {from} 230.0 2525.0 16.5 {to} 230.0 2525.0 16.5 {time} 2500 {ease} true
 
                 if
                     direction == 0
                 then
-                    camera_set_vector_move {from} 260.0 2522.0 18.0 {to} 200.0 2522.0 18.0 {time} 1000 {ease} true
+                    camera_set_vector_move {from} 260.0 2522.0 18.0 {to} 200.0 2522.0 18.0 {time} 2500 {ease} true
                 else
-                    camera_set_vector_move {from} 200.0 2522.0 18.0 {to} 260.0 2522.0 18.0 {time} 1000 {ease} true
+                    camera_set_vector_move {from} 200.0 2522.0 18.0 {to} 260.0 2522.0 18.0 {time} 2500 {ease} true
                 end
                 direction = 1 - direction
             end
@@ -219,34 +180,29 @@ while true
             print_formatted_now "DEMO 6: Doppler effect~n~Press 6 to stop" {time} 0
         until test_cheat "6"
 
-        END_TEST()
+        TEST_CLEANUP(soundStream, speakerObject)
     end
     
     if
         test_cheat "7"
     then
-        print_formatted_now "DEMO 7: Game speed changes" {time} 10000
-        START_TEST()
-
+        print_formatted_now "DEMO 7: Game speed" {time} 10000
         if
-            not load_3d_audio_stream Audio_Path {store_to} soundStream
+            not soundStream, speakerObject = TEST_SETUP(Model_Speaker)
         then
-            print_formatted_now "~r~Failed to load audio file!" {time} 10000
-            END_TEST()
             continue
         end
-        set_play_3d_audio_stream_at_object soundStream {object} speakerObject
-        set_audio_stream_looped soundStream true
-        set_audio_stream_state soundStream AudioStreamAction.Play
 
         // walk
-        set_player_control 0 {control} false
+        clear_char_tasks_immediately $scplayer
+        set_char_keep_task $scplayer {state} true
+        set_player_control $player1 {control} false
         flush_route
-        extend_route {xyz} 229.0 2525.0 15.5
-        extend_route {xyz} 230.0 2524.0 15.5
-        extend_route {xyz} 231.0 2525.0 15.5
-        extend_route {xyz} 230.0 2526.0 15.5
-        task_follow_point_route $scplayer {walk_speed} 6 {flag} 3
+        extend_route {xyz} 228.0 2525.0 15.5
+        extend_route {xyz} 230.0 2523.0 15.5
+        extend_route {xyz} 232.0 2525.0 15.5
+        extend_route {xyz} 230.0 2527.0 15.5
+        task_follow_point_route {handle} $scplayer {speed} MoveState.Run {mode} RouteMode.Loop
         task_look_at_object $scplayer {object} speakerObject {time} -1
 
         TIMERA = 2000
@@ -265,46 +221,100 @@ while true
 
         set_time_scale 1.0
         clear_char_tasks_immediately $scplayer
-        set_player_control 0 {control} true
-        END_TEST()
+        set_player_control $player1 {control} true
+        TEST_CLEANUP(soundStream, speakerObject)
+    end
+    
+    if
+        test_cheat "8"
+    then
+        print_formatted_now "DEMO 8: Free mode" {time} 10000
+        if
+            not soundStream, speakerObject = TEST_SETUP(Model_Toilet)
+        then
+            continue
+        end
+        
+        set_object_collision speakerObject {state} true
+        set_object_dynamic speakerObject {state} true
+        
+        clear_char_tasks_immediately $scplayer
+        restore_camera_jumpcut
+        
+        int modelId = get_weapontype_model {weaponType} WeaponType.Grenade
+        request_model {modelId} modelId
+        load_all_models_now
+        give_weapon_to_char $scplayer {weaponType} WeaponType.Grenade {ammo} 0xFFFFFF
+        mark_model_as_no_longer_needed {modelId} modelId
+        display_hud true
+
+        repeat
+            print_formatted_now "DEMO 8: Free mode~n~Press 8 to stop" {time} 0
+            wait 0
+        until test_cheat "8"
+
+        TEST_CLEANUP(soundStream, speakerObject)
     end
 end
 
 terminate_this_script
 
 
-:START_TEST
-    remove_all_char_weapons $scplayer
-    set_max_wanted_level 0
-
-    display_radar false
-    display_hud false
-
+function TEST_SETUP(objectModel: int): int, int
+    int soundStream
+    if
+        not soundStream = load_3d_audio_stream Audio_Path
+    then
+        print_help_formatted "~r~Failed to load audio file ~w~`%s`" {args} Audio_Path
+        cleo_return_with {conditionResult} false {retArgs} -1 -1
+    end
+    
     set_char_coordinates $scplayer {xyz} 230.0 2527.0 15.5
     set_char_heading $scplayer {heading} 180.0
     set_area_visible 0
     set_char_area_visible $scplayer {interiorId} 0
     task_scratch_head $scplayer
+    
+    remove_all_char_weapons $scplayer
+    
+    set_max_wanted_level 0
+    clear_wanted_level $player1
+    set_char_health $scplayer {health} 250
+    set_char_proofs $scplayer {bulletProof} true {fireProof} true {explosionProof} true {collisionProof} true {meleeProof} true
 
+    display_radar false
+    display_hud false
     set_fixed_camera_position {xyz} 230.0 2522.0 18.0 {ypr} 0.0 0.0 0.0
     point_camera_at_char $scplayer {mode} CameraMode.Fixed {switchStyle} SwitchType.JumpCut
+    
+    // create speaker object
+    request_model {modelId} objectModel
+    load_all_models_now
+    int speakerObject = create_object {modelId} objectModel {xyz} 230.25 2525.0 15.8
+    mark_model_as_no_longer_needed {modelId} objectModel
+    set_object_collision speakerObject {state} false
+    set_object_dynamic speakerObject {state} false
+    point_camera_at_point {xyz} 230.0 2525.0 16.5 {switchStyle} SwitchType.Jumpcut
+    
     wait 1000
     
-    // create speaker object (visual only)
-    request_model {modelId} Model_Speaker
-    load_all_models_now
-    speakerObject = create_object {modelId} Model_Speaker {xyz} 230.25 2525.0 16.0
-    mark_model_as_no_longer_needed {modelId} Model_Speaker
-    set_object_collision speakerObject {state} false
-    point_camera_at_point {xyz} 230.0 2525.0 16.5 {switchStyle} SwitchType.Interpolation
-return
+    set_play_3d_audio_stream_at_object soundStream {object} speakerObject
+    set_audio_stream_looped soundStream true
+    set_audio_stream_state soundStream AudioStreamAction.Play
+    
+    cleo_return_with {conditionResult} true {retArgs} soundStream speakerObject
+end
 
 
-:END_TEST
+function TEST_CLEANUP(soundStream: int, speakerObject: int)
+    remove_all_char_weapons $scplayer    
+    //set_max_wanted_level 6
+    set_char_proofs $scplayer {bulletProof} false {fireProof} false {explosionProof} false {collisionProof} false {meleeProof} false
+
     remove_audio_stream soundStream
     delete_object speakerObject
     camera_reset_new_scriptables
     restore_camera
     display_hud true
     display_radar true
-return
+end
