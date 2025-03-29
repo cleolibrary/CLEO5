@@ -7,6 +7,7 @@
 - reverted muting 'music' type audio streams for game speeds other than default introduced in 5.0.1
 - allow storing string result at static address (e.g. `get_name_of_vehicle_model 400 0xC16F98`)
 - fixed error in **0A92 ([stream_custom_script](https://sannybuilder.com/lib/sa/script/CLEO/0A92))** when game is installed in symlink or RAM Disk directory
+- fixed audio playback not working in SAMP
 
 ## 5.0.1
 - cleo.log file moved back to the game root (as in CLEO4)
