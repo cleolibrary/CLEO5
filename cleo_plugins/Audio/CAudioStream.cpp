@@ -1,6 +1,7 @@
 #include "CAudioStream.h"
 #include "CSoundSystem.h"
 #include "CLEO_Utils.h"
+#include "CCamera.h"
 
 using namespace CLEO;
 
@@ -55,8 +56,8 @@ void CAudioStream::Stop()
     state = Stopped;
 
     // cancel ongoing transitions
-    speed = speedTarget;
-    volume = volumeTarget;
+    speed.finish();
+    volume.finish();
 }
 
 void CAudioStream::Resume()
@@ -112,37 +113,23 @@ bool CLEO::CAudioStream::GetLooping() const
 void CAudioStream::SetVolume(float value, float transitionTime)
 {
     if (transitionTime > 0.0f) Resume();
-
-    value = max(value, 0.0f);
-    volumeTarget = value;
-
-    if (transitionTime <= 0.0)
-        volume = value; // instant
-    else
-        volumeTransitionStep = (volumeTarget - volume) / (1000.0f * transitionTime);
+    volume.setValue(max(value, 0.0f), transitionTime);
 }
 
 float CAudioStream::GetVolume() const
 {
-    return (float)volume;
+    return volume.value();
 }
 
 void CAudioStream::SetSpeed(float value, float transitionTime)
 {
     if (transitionTime > 0.0f) Resume();
-
-    value = max(value, 0.0f);
-    speedTarget = value;
-
-    if (transitionTime <= 0.0)
-        speed = value; // instant
-    else
-        speedTransitionStep = (speedTarget - speed) / (1000.0f * transitionTime);
+    speed.setValue(max(value, 0.0f), transitionTime);
 }
 
 float CAudioStream::GetSpeed() const
 {
-    return (float)speed;
+    return speed.value();
 }
 
 void CLEO::CAudioStream::SetType(eStreamType value)
@@ -165,67 +152,48 @@ eStreamType CLEO::CAudioStream::GetType() const
     return type;
 }
 
-void CAudioStream::UpdateVolume()
+float CAudioStream::CalculateVolume()
 {
-    if (volume != volumeTarget)
-    {
-        auto timeDelta = CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped;
-        volume += volumeTransitionStep * (float)timeDelta; // animate the transition
+    float vol = 1.0f;
 
-        // check progress
-        auto remaining = volumeTarget - volume;
-        remaining *= (volumeTransitionStep > 0.0f) ? 1.0f : -1.0f;
-        if (remaining < 0.0) // overshoot
-        {
-            volume = volumeTarget;
-            if (volume <= 0.0f) Pause();
-        }
-    }
-
-    float masterVolume = 1.0f;
     switch(type)
     {
-        case SoundEffect: masterVolume = CSoundSystem::masterVolumeSfx; break;
-        case Music: masterVolume = CSoundSystem::masterVolumeMusic; break;
-        case UserInterface: masterVolume = CSoundSystem::masterVolumeSfx; break;
+        case SoundEffect: vol *= CSoundSystem::masterVolumeSfx; break;
+        case Music: vol *= CSoundSystem::masterVolumeMusic; break;
+        case UserInterface: vol *= CSoundSystem::masterVolumeSfx; break;
+        default: vol *= 1.0f; break;
     }
 
-    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, (float)volume * masterVolume);
+    // screen black fade
+    if (type != UserInterface && !TheCamera.m_bIgnoreFadingStuffForMusic)
+    {
+        vol *= 1.0f - TheCamera.m_fFadeAlpha / 255.0f;
+    }
+
+    // music volume lowering in cutscenes, when characters talk, mission sounds are played etc.
+    if (type == Music)
+    {
+        if (TheCamera.m_bWideScreenOn) vol *= 0.25f;
+    }
+
+    // stream's volume
+    vol *= volume.value();
+
+    return vol;
 }
 
-void CAudioStream::UpdateSpeed()
+float CAudioStream::CalculateSpeed()
 {
-    if (speed != speedTarget)
-    {
-        auto timeDelta = CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped;
-        speed += speedTransitionStep * (float)timeDelta; // animate the transition
-
-        // check progress
-        auto remaining = speedTarget - speed;
-        remaining *= (speedTransitionStep > 0.0f) ? 1.0f : -1.0f;
-        if (remaining < 0.0) // overshoot
-        {
-            speed = speedTarget; // done
-            if (speed <= 0.0f) Pause();
-        }
-    }
-
     float masterSpeed;
-    switch(type)
+    switch (type)
     {
-        case eStreamType::SoundEffect:
-        case eStreamType::Music: // and muted
-            masterSpeed = CSoundSystem::masterSpeed;
-            break;
-
-        default:
-            masterSpeed = 1.0f;
-            break;
+        case SoundEffect: masterSpeed = CSoundSystem::masterSpeed; break;
+        case Music: masterSpeed = TheCamera.m_bWideScreenOn ? 1.0f : CSoundSystem::masterSpeed; break;
+        case UserInterface: masterSpeed = 1.0f; break;
+        default: masterSpeed = 1.0f;
     }
 
-    float freq = rate * (float)speed * masterSpeed;
-    freq = max(freq, 0.000001f); // 0 results in original speed
-    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_FREQ, freq);
+    return speed.value() * masterSpeed;
 }
 
 bool CAudioStream::IsOk() const
@@ -253,10 +221,23 @@ void CAudioStream::Process()
         }
     }
 
+    // update animated params
+    speed.update(CSoundSystem::timeStep);
+    volume.update(CSoundSystem::timeStep);
+
+    if (volume.value() <= 0.0f)
+    {
+        Pause();
+    }
+
     if (state != Playing) return; // done
 
-    UpdateSpeed();
-    UpdateVolume();
+    float volume = CalculateVolume();
+    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, volume);
+
+    float freq = rate * CalculateSpeed();
+    freq = max(freq, 0.000001f); // 0 results in original speed
+    BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_FREQ, freq);
 }
 
 void CAudioStream::Set3dPosition(const CVector& pos)
