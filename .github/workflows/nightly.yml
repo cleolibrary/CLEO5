@@ -2,8 +2,12 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '8 19 * * *' # Every day at 19PM UTC
-
+    - cron: '34 0 * * *' # Every day at 00:34 UTC
+  workflow_dispatch:
+  push:
+    branches:
+      - nightly-build
+    
 jobs:
   check_date:
     runs-on: ubuntu-22.04
