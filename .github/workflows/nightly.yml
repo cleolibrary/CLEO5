@@ -2,7 +2,7 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '0 19 * * *' # Every day at 19PM UTC
+    - cron: '8 19 * * *' # Every day at 19PM UTC
 
 jobs:
   check_date:
