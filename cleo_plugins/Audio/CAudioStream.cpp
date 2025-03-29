@@ -188,7 +188,7 @@ float CAudioStream::CalculateSpeed()
     switch (type)
     {
         case SoundEffect: masterSpeed = CSoundSystem::masterSpeed; break;
-        case Music: masterSpeed = CSoundSystem::masterSpeed; break;
+        case Music: masterSpeed = TheCamera.m_bWideScreenOn ? 1.0f : CSoundSystem::masterSpeed; break;
         case UserInterface: masterSpeed = 1.0f; break;
         default: masterSpeed = 1.0f;
     }
