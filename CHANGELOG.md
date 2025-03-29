@@ -4,6 +4,10 @@
 - fixed sound glitches of 3d audio streams when playback starts or the camera mode changes
 - fixed possible crashes when car/object/ped with attached 3d audio stream is deleted
 - fixed CLEO sound artifacts when moving camera with mouse
+- updated distance decay for 3d audio streams to match behavior of in-game sounds
+- implemented proper support for 3d audio streams source size
+- CLEO sounds volume is now affected by wide screen and fades in same way as in-game sounds
+- updated "Audio_Demo" example script
 - reverted muting 'music' type audio streams for game speeds other than default introduced in 5.0.1
 - allow storing string result at static address (e.g. `get_name_of_vehicle_model 400 0xC16F98`)
 - fixed error in **0A92 ([stream_custom_script](https://sannybuilder.com/lib/sa/script/CLEO/0A92))** when game is installed in symlink or RAM Disk directory

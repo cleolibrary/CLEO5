@@ -1,5 +1,6 @@
 #pragma once
 #include "CSoundSystem.h"
+#include "CSlidingParam.h"
 #include "plugin.h"
 #include "bass.h"
 
@@ -52,6 +53,8 @@ namespace CLEO
         virtual void SetHost(CEntity* placable, const CVector& offset);
 
         virtual void Process();
+        virtual float CalculateVolume();
+        virtual float CalculateSpeed();
 
     protected:
         HSTREAM streamInternal = 0;
@@ -59,20 +62,11 @@ namespace CLEO
         eStreamType type = eStreamType::SoundEffect;
         bool ok = false;
         float rate = 44100.0f; // file's sampling rate
-        float speed = 1.0f;
-        float volume = 1.0f;
-
-        // transitions
-        float volumeTarget = 1.0f;
-        float volumeTransitionStep = 1.0f;
-        float speedTarget = 1.0f;
-        float speedTransitionStep = 1.0f;
+        CSlidingParam speed = { 1.0f };
+        CSlidingParam volume = { 1.0f };
 
         CAudioStream() = default;
         CAudioStream(const CAudioStream&) = delete; // no copying!
-
-        void UpdateVolume();
-        void UpdateSpeed();
     };
 #pragma pack(pop)
 }

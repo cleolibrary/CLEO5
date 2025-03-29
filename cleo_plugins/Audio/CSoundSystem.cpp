@@ -12,8 +12,9 @@ namespace CLEO
     bool CSoundSystem::useFloatAudio = false;
     bool CSoundSystem::allowNetworkSources = true;
     eStreamType CSoundSystem::LegacyModeDefaultStreamType = eStreamType::None;
-    CVector CSoundSystem::position(0.0, 0.0, 0.0);
-    CVector CSoundSystem::velocity(0.0, 0.0, 0.0);
+    CVector CSoundSystem::position(0.0f, 0.0f, 0.0f);
+    CVector CSoundSystem::direction(0.0f, 1.0f, 0.0f);
+    CVector CSoundSystem::velocity(0.0f, 0.0f, 0.0f);
     bool CSoundSystem::skipFrame = true;
     float CSoundSystem::timeStep = 0.02f;
     float CSoundSystem::masterSpeed = 1.0f;
@@ -37,12 +38,6 @@ namespace CLEO
             TRACE(" %d: %s%s", total, info.name, isEnabled ? "" : " (disabled)");
         }
         TRACE(" Default device index: %d", default_device);
-    }
-
-    bool isNetworkSource(const char* path)
-    {
-        return _strnicmp("http:", path, 5) == 0 ||
-            _strnicmp("https:", path, 6) == 0;
     }
 
     CSoundSystem::~CSoundSystem()
@@ -103,8 +98,10 @@ namespace CLEO
             TRACE("Selecting default audio device #%d: %s", deviceIndex, info.name);
         }
 
+        BASS_SetConfig(BASS_CONFIG_FLOATDSP, TRUE);
+
         if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
-            BASS_Set3DFactors(1.0f, 3.0f, 1.0f))
+            BASS_Set3DFactors(1.0f, 0.0f, 1.0f))
         {
             TRACE("SoundSystem initialized");
 
@@ -202,18 +199,19 @@ namespace CLEO
         {
             if (paused) Resume();
 
-            // update globals            
+            // update globals
             timeStep = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped); // delta in seconds
             masterSpeed = CTimer::ms_fTimeScale;
-            masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
-            masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
+            masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * AEAudioHardware.m_fEffectsFaderScalingFactor * 0.5f; // fit to game's sfx volume
+            masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * AEAudioHardware.m_fMusicFaderScalingFactor * 0.5f;
 
             // prevent camera jump-cut glitches
             int skipFramePrev = skipFrame;
             skipFrame = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd;
 
             CVector prevPos = position;
-            position = TheCamera.GetPosition(); // get new
+            position = TheCamera.GetPosition();
+            direction = TheCamera.GetForward();
 
             // new camera velocity
             if (!skipFrame)
@@ -235,7 +233,7 @@ namespace CLEO
                 BASS_Set3DPosition(
                     &toBass(position),
                     &toBass(velocity),
-                    &toBass(TheCamera.GetForward()),
+                    &toBass(direction),
                     &toBass(TheCamera.GetUp())
                 );
             }

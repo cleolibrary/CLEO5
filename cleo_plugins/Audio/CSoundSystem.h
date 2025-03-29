@@ -30,6 +30,7 @@ namespace CLEO
         static bool CSoundSystem::allowNetworkSources;
 
         static CVector position;
+        static CVector direction;
         static CVector velocity;
         static bool skipFrame; // do not apply changes during this frame
         static float timeStep; // delta time for current frame
@@ -57,7 +58,9 @@ namespace CLEO
         void Process();
     };
 
-    // convert GTA to BASS coordinate system
-    static BASS_3DVECTOR toBass(const CVector& v) { return BASS_3DVECTOR(v.x, v.z, v.y); }
-    bool isNetworkSource(const char* path);
+    static bool isNetworkSource(const char* path) { return _strnicmp("http:", path, 5) == 0 || _strnicmp("https:", path, 6) == 0; }
+    static float dot(CVector a, CVector b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+    static float lerp(float a, float b, float progress) { return a * (1.0f - progress) + b * progress; }
+    static CVector lerp(CVector a, CVector b, float progress) { return a * (1.0f - progress) + b * progress; }
+    static BASS_3DVECTOR toBass(const CVector& v) { return BASS_3DVECTOR(v.x, v.z, v.y); } // convert GTA to BASS coordinate system
 }
