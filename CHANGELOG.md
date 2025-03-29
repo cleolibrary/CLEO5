@@ -4,8 +4,8 @@
 - fixed sound glitches of 3d audio streams when playback starts or the camera mode changes
 - fixed possible crashes when car/object/ped with attached 3d audio stream is deleted
 - fixed CLEO sound artifacts when moving camera with mouse
-- updated distance decay for 3d CLEO sounds to match behavior of in-game sounds
-- implemented propper support for 3d CLEO sounds source size
+- updated distance decay for 3d audio streams to match behavior of in-game sounds
+- implemented proper support for 3d audio streams source size
 - CLEO sounds volume is now affected by wide screen and fades in same way as in-game sounds
 - updated "Audio_Demo" example script
 - reverted muting 'music' type audio streams for game speeds other than default introduced in 5.0.1
