@@ -2,12 +2,8 @@ name: Nightly Build
 
 on:
   schedule:
-    - cron: '34 0 * * *' # Every day at 00:34 UTC
-  workflow_dispatch:
-  push:
-    branches:
-      - nightly-build
-    
+    - cron: "34 1 * * *" # Every day at 01:34 UTC
+
 jobs:
   check_date:
     runs-on: ubuntu-22.04
@@ -29,7 +25,7 @@ jobs:
     needs: check_date
     if: ${{ needs.check_date.outputs.should_run != 'false' }}
     runs-on: windows-2022
-    steps:    
+    steps:
       - uses: actions/checkout@v4
         with:
           submodules: "recursive"
@@ -55,7 +51,7 @@ jobs:
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: './.output/Release/CLEO.asi'
+          files: "./.output/Release/CLEO.asi"
 
       - name: Plugins - Build
         shell: cmd
@@ -67,7 +63,7 @@ jobs:
         uses: crazy-max/ghaction-virustotal@v4
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: './cleo_plugins/.output/*.cleo'
+          files: "./cleo_plugins/.output/*.cleo"
 
       - name: Gather Output Files
         id: prepare_archive
@@ -93,7 +89,7 @@ jobs:
 
           @REM copy SDK
           copy .output\Release\CLEO.lib cleo_sdk\CLEO.lib
-          
+
           @REM download Sanny Builder Library json
           curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
 
@@ -155,7 +151,7 @@ jobs:
           type: "zip"
           filename: SA.CLEO_SDK-nightly.zip
           exclusions: "*.pdb *.exp"
-          
+
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
