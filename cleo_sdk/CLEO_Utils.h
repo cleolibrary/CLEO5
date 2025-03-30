@@ -256,7 +256,7 @@ namespace CLEO
     {
         if (path.length() < base.length()) return; // can not hold that prefix
         if (!StringStartsWith(path, base, false)) return;
-        if (path.length() > base.length() && path[base.length()] != '\\') && (path[base.length()-1] != ':') return; // just similar base
+        if (path.length() > base.length() && path[base.length()] != '\\' && path[base.length()-1] != ':') return; // just similar base
 
         auto to = base.length();
         if (path[to] == '\\')
