@@ -256,9 +256,15 @@ namespace CLEO
     {
         if (path.length() < base.length()) return; // can not hold that prefix
         if (!StringStartsWith(path, base, false)) return;
-        if (path.length() > base.length() && path[base.length()] != '\\') return; // just similar base
+        if (path.length() > base.length() && path[base.length()] != '\\') && (path[base.length()-1] != ':') return; // just similar base
 
-        path.replace(0, base.length() + 1, ""); // remove path separator too if present
+        auto to = base.length();
+        if (path[to] == '\\')
+        {
+            // remove path separator too if present
+            to += 1;
+        }
+        path.replace(0, to, ""); 
     }
 
     // get path without last file/directory element
