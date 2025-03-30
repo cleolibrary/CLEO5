@@ -1,6 +1,6 @@
 #pragma once
 #include "CSoundSystem.h"
-#include "CSlidingParam.h"
+#include "CInterpolatedValue.h"
 #include "plugin.h"
 #include "bass.h"
 
@@ -62,8 +62,8 @@ namespace CLEO
         eStreamType type = eStreamType::SoundEffect;
         bool ok = false;
         float rate = 44100.0f; // file's sampling rate
-        CSlidingParam speed = { 1.0f };
-        CSlidingParam volume = { 1.0f };
+        CInterpolatedValue speed = { 1.0f };
+        CInterpolatedValue volume = { 1.0f };
 
         CAudioStream() = default;
         CAudioStream(const CAudioStream&) = delete; // no copying!

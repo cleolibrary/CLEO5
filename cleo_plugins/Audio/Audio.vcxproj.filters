@@ -61,7 +61,7 @@
     </ClInclude>
     <ClInclude Include="CAudioStream.h" />
     <ClInclude Include="C3DAudioStream.h" />
-    <ClInclude Include="CSlidingParam.h" />
+    <ClInclude Include="CInterpolatedValue.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="plugin_sdk">

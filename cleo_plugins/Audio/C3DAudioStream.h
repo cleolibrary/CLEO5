@@ -19,7 +19,7 @@ namespace CLEO
     protected:
         const float Volume_3D_Adjust = 0.5f; // match other ingame sound sources
         static double CalculateDistanceDecay(float distance);
-        static double CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos);
+        static float CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos);
 
         CEntity* host = nullptr;
         eEntityType hostType = ENTITY_TYPE_NOTHING;

@@ -1,9 +1,9 @@
 #pragma once
 
-class CSlidingParam
+class CInterpolatedValue
 {
 public:
-    CSlidingParam(float value)
+    CInterpolatedValue(float value)
     {
         currValue = value;
         targetValue = value;

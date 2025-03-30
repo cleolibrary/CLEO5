@@ -68,7 +68,7 @@ void C3DAudioStream::Process()
     // position and velocity
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormaliseAndMag();
-    float inFactor = CalculateDistanceDecay(max(distance - radius, 0.0f) * 5.0f); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(max(distance - radius, 0.0f) * 5.0f); // use decay curve for blending inside-outside source effects
 
     // stereo panning
     float sign = dot(CSoundSystem::direction, relPos) > 0.0f ? 1.0f : -1.0f;
@@ -90,7 +90,7 @@ float C3DAudioStream::CalculateVolume()
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormaliseAndMag();
     distance = max(distance - radius, 0.0f);
-    float inFactor = CalculateDistanceDecay(distance * 5.0f); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(distance * 5.0f); // use decay curve for blending inside-outside source effects
 
     double vol = Volume_3D_Adjust;
 
@@ -150,7 +150,7 @@ double C3DAudioStream::CalculateDistanceDecay(float distance)
     return exp(-0.008 * powf(distance, 1.5f)); // more natural feeling
 }
 
-double C3DAudioStream::CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos)
+float C3DAudioStream::CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos)
 {
     float factor = dot(listenerDir, relativePos);
     factor = 0.6f + 0.4f * factor; // 0.2 to 1.0
