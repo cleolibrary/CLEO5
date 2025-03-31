@@ -129,7 +129,7 @@ jobs:
         with:
           path: ./.output/Release/*
           type: "zip"
-          filename: SA.CLEO_${{ github.ref_name }}.zip
+          filename: SA.CLEO-${{ github.ref_name }}.zip
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack Base + Silent's ASI Loader
@@ -137,7 +137,7 @@ jobs:
         with:
           path: ./.output/Release_with_Silent_ASI_Loader/*
           type: "zip"
-          filename: SA.CLEO_${{ github.ref_name }}+Silent_ASI_Loader.zip
+          filename: SA.CLEO-${{ github.ref_name }}+Silent_ASI_Loader.zip
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack Base + UAL
@@ -145,7 +145,7 @@ jobs:
         with:
           path: ./.output/Release_with_Ultimate_ASI_Loader/*
           type: "zip"
-          filename: SA.CLEO_${{ github.ref_name }}+Ultimate_ASI_Loader.zip
+          filename: SA.CLEO-${{ github.ref_name }}+Ultimate_ASI_Loader.zip
           exclusions: "*.pdb *.lib *.exp"
 
       - name: CLEO SDK
@@ -153,7 +153,7 @@ jobs:
         with:
           path: ./cleo_sdk/*
           type: "zip"
-          filename: SA.CLEO_${{ github.ref_name }}_SDK.zip
+          filename: SA.CLEO_SDK-${{ github.ref_name }}.zip
           exclusions: "*.pdb *.exp"
           
       - name: Upload Release
@@ -164,5 +164,5 @@ jobs:
           bodyFile: 'changes.txt' # generated in read_version
           tag: ${{ github.ref_name }}
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
-          artifacts: "SA.CLEO_*.zip"
+          artifacts: "SA.CLEO*.zip"
           allowUpdates: true
