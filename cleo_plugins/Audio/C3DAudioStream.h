@@ -18,13 +18,13 @@ namespace CLEO
 
     protected:
         const float Volume_3D_Adjust = 0.5f; // match other ingame sound sources
-        static double CalculateDistanceDecay(float distance);
+        static double CalculateDistanceDecay(float radius, float distance);
         static float CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos);
 
         CEntity* host = nullptr;
         eEntityType hostType = ENTITY_TYPE_NOTHING;
         CVector offset = { 0.0f, 0.0f, 0.0f }; // offset in relation to host
-        float radius = 1.0f; // size of sound source
+        float radius = 0.5f; // size of sound source
 
         bool placed = false;
         CVector position = { 0.0f, 0.0f, 0.0f }; // last world position
@@ -32,6 +32,8 @@ namespace CLEO
 
         C3DAudioStream(const C3DAudioStream&) = delete; // no copying!
         void UpdatePosition();
+
+        static float audioDecay(float value) { return exp(-6.0f * value * value); } // bell-shaped 0.0-1.0 fade-out
     };
 }
 

@@ -41,7 +41,7 @@ void C3DAudioStream::Set3dPosition(const CVector& pos)
 
 void C3DAudioStream::Set3dSourceSize(float radius)
 {
-    this->radius = std::max<float>(radius, 0.1f);
+    this->radius = std::max<float>(radius, 0.01f);
 }
 
 void C3DAudioStream::SetHost(CEntity* host, const CVector& offset)
@@ -68,7 +68,7 @@ void C3DAudioStream::Process()
     // position and velocity
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormaliseAndMag();
-    float inFactor = (float)CalculateDistanceDecay(max(distance - radius, 0.0f) * 5.0f); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
 
     // stereo panning
     float sign = dot(CSoundSystem::direction, relPos) > 0.0f ? 1.0f : -1.0f;
@@ -89,8 +89,7 @@ float C3DAudioStream::CalculateVolume()
 
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormaliseAndMag();
-    distance = max(distance - radius, 0.0f);
-    float inFactor = (float)CalculateDistanceDecay(distance * 5.0f); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
 
     double vol = Volume_3D_Adjust;
 
@@ -103,7 +102,7 @@ float C3DAudioStream::CalculateVolume()
     }
 
     // distance decay
-    vol *= CalculateDistanceDecay(distance);
+    vol *= CalculateDistanceDecay(radius, distance);
 
     // "look" direction decay
     vol *= lerp(CalculateDirectionDecay(CSoundSystem::direction, relPos), 1.0f, inFactor);
@@ -140,14 +139,16 @@ float C3DAudioStream::CalculateSpeed()
     return masterSpeed * speed.value();
 }
 
-double C3DAudioStream::CalculateDistanceDecay(float distance)
+double C3DAudioStream::CalculateDistanceDecay(float radius, float distance)
 {
+    distance = std::max<float>(distance - radius, 0.0f);
+
     // exact match to ingame sounds
     /*float factor = 1.0f / powf(1.0f + distance, 2); // inverse square
     factor -= 0.00006f;
     factor = std::clamp(factor, 0.0f, 1.0f);*/
 
-    return exp(-0.008 * powf(distance, 1.5f)); // more natural feeling
+    return exp(-0.017 * pow(distance, 1.3)); // more natural feeling
 }
 
 float C3DAudioStream::CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos)
