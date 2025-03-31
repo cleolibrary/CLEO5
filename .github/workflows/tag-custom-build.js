@@ -16,7 +16,7 @@ if (GITHUB_SHA) {
   console.log(`Build version ${buildVersion}`);
 
   const newCleoH = cleoH
-    .replace('(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)', `(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)"-${sha}"`);
+    .replace('(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR)', `(CLEO_VERSION_MAIN.CLEO_VERSION_MAJOR.CLEO_VERSION_MINOR-${sha})`);
   console.log(`Tagging current build with sha ${sha}`);
   writeFileSync("cleo_sdk/cleo.h", newCleoH, { encoding: "utf-8" });
 
