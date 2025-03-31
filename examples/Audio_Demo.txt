@@ -241,11 +241,18 @@ while true
         clear_char_tasks_immediately $scplayer
         restore_camera_jumpcut
         
-        int modelId = get_weapontype_model {weaponType} WeaponType.Grenade
+        int modelId = get_weapontype_model {weaponType} WeaponType.Satchel
         request_model {modelId} modelId
         load_all_models_now
-        give_weapon_to_char $scplayer {weaponType} WeaponType.Grenade {ammo} 0xFFFFFF
+        give_weapon_to_char $scplayer {weaponType} WeaponType.Satchel {ammo} 0xFFFFFF
         mark_model_as_no_longer_needed {modelId} modelId
+        
+        modelId = get_weapontype_model {weaponType} WeaponType.Detonator
+        request_model {modelId} modelId
+        load_all_models_now
+        give_weapon_to_char $scplayer {weaponType} WeaponType.Satchel {ammo} 0xFFFFFF
+        mark_model_as_no_longer_needed {modelId} modelId
+        
         display_hud true
 
         repeat

@@ -32,8 +32,6 @@ namespace CLEO
 
         C3DAudioStream(const C3DAudioStream&) = delete; // no copying!
         void UpdatePosition();
-
-        static float audioDecay(float value) { return exp(-6.0f * value * value); } // bell-shaped 0.0-1.0 fade-out
     };
 }
 
