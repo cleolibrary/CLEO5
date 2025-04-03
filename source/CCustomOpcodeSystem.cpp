@@ -39,7 +39,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
-	OpcodeResult __stdcall opcode_0AB5(CRunningScript* thread); // store_closest_entities
 	OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread); // get_target_blip_coords
 	OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread); // get_car_number_of_gears
 	OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread); // get_car_current_gear
@@ -260,7 +259,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
-		CLEO_RegisterOpcode(0x0AB5, opcode_0AB5);
 		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6);
 		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
 		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
@@ -1194,40 +1192,6 @@ namespace CLEO
 
 		opcodeParams[0].dwParam = CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam;
 		CLEO_RecordOpcodeParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0AB5=3,store_actor %1d% closest_vehicle_to %2d% closest_ped_to %3d%
-	OpcodeResult __stdcall opcode_0AB5(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_PED_HANDLE();
-
-		auto pPlayerPed = CPools::GetPed(handle);
-
-		CPedIntelligence * pedintel;
-		if (pPlayerPed && (pedintel = pPlayerPed->m_pIntelligence))
-		{
-			CVehicle * pVehicle = nullptr;
-			for (int i = 0; i < NUM_SCAN_ENTITIES; i++)
-			{
-				pVehicle = (CVehicle*)pedintel->m_vehicleScanner.m_apEntities[i];
-				if (pVehicle && pVehicle->m_nCreatedBy != 2 && !pVehicle->m_nVehicleFlags.bFadeOut)
-					break;
-				pVehicle = nullptr;
-			}
-
-			CPed * pPed = nullptr;
-			for (int i = 0; i < NUM_SCAN_ENTITIES; i++)
-			{
-				pPed = (CPed*)pedintel->m_pedScanner.m_apEntities[i];
-				if (pPed && pPed != pPlayerPed && (pPed->m_nCreatedBy & 0xFF) == 1 && !pPed->m_nPedFlags.bFadeOut)
-					break;
-				pPed = nullptr;
-			}
-
-			*thread << (pVehicle ? CPools::GetVehicleRef(pVehicle) : -1) << (pPed ? CPools::GetPedRef(pPed) : -1);
-		}
-		else *thread << -1 << -1;
 		return OR_CONTINUE;
 	}
 
