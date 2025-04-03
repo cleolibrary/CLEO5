@@ -39,7 +39,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
-	OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread); // get_target_blip_coords
 	OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread); // get_car_number_of_gears
 	OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread); // get_car_current_gear
 
@@ -78,9 +77,6 @@ namespace CLEO
 	void RunScriptDeleteDelegate(CRunningScript *script) { scriptDeleteDelegate(script); }
 
 	void(__thiscall * ProcessScript)(CRunningScript*);
-
-	float(__cdecl * FindGroundZ)(float x, float y);
-	CMarker		* RadarBlips;
 
 	CPlayerPed * (__cdecl * GetPlayerPed)(DWORD);
 
@@ -221,20 +217,8 @@ namespace CLEO
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
 
-		FindGroundZ = gvm.TranslateMemoryAddress(MA_FIND_GROUND_Z_FUNCTION);
 		GetPlayerPed = gvm.TranslateMemoryAddress(MA_GET_PLAYER_PED_FUNCTION);
 		SpawnCar = gvm.TranslateMemoryAddress(MA_SPAWN_CAR_FUNCTION);
-
-		// TODO: consider version-agnostic code
-		if (gvm.GetGameVersion() == GV_US10)
-		{
-			// make it compatible with fastman92's limit adjuster (only required for 1.0 US)
-			RadarBlips = injector::ReadMemory<CMarker*>(0x583A05 + 2, true);
-		}
-		else
-		{
-			RadarBlips = gvm.TranslateMemoryAddress(MA_RADAR_BLIPS);
-		}
 	}
 
 	void CCustomOpcodeSystem::Init()
@@ -259,7 +243,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
-		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6);
 		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
 		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
 		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
@@ -1192,32 +1175,6 @@ namespace CLEO
 
 		opcodeParams[0].dwParam = CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam;
 		CLEO_RecordOpcodeParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0AB6=3,store_target_marker_coords_to %1d% %2d% %3d% // IF and SET
-	OpcodeResult __stdcall opcode_0AB6(CRunningScript *thread)
-	{
-		// steam offset is different, so get it manually for now
-		CGameVersionManager& gvm = CleoInstance.VersionManager;
-		DWORD hMarker = gvm.GetGameVersion() !=  GV_STEAM ? MenuManager->m_nTargetBlipIndex : *((DWORD*)0xC3312C);
-		CMarker *pMarker;
-		if (hMarker && (pMarker = &RadarBlips[LOWORD(hMarker)]) && /*pMarker->m_nPoolIndex == HIWORD(hMarker) && */pMarker->m_nBlipDisplay)
-		{
-			CVector coords(pMarker->m_vecPos);
-			coords.z = FindGroundZ(coords.x, coords.y);
-
-			OPCODE_WRITE_PARAM_FLOAT(coords.x);
-			OPCODE_WRITE_PARAM_FLOAT(coords.y);
-			OPCODE_WRITE_PARAM_FLOAT(coords.z);
-			OPCODE_CONDITION_RESULT(true);
-		}
-		else
-		{
-			OPCODE_SKIP_PARAMS(3);
-			OPCODE_CONDITION_RESULT(false);
-		}
-
 		return OR_CONTINUE;
 	}
 

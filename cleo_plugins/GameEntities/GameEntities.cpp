@@ -1,6 +1,9 @@
 #include "plugin.h"
 #include "CLEO.h"
 #include "CLEO_Utils.h"
+#include "CMenuManager.h"
+#include "CRadar.h"
+#include "CWorld.h"
 
 using namespace CLEO;
 using namespace plugin;
@@ -21,9 +24,11 @@ public:
 
 		// register opcodes
 		CLEO_RegisterOpcode(0x0AB5, opcode_0AB5); // store_closest_entities
+		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6); // get_target_blip_coords
 	}
 
-	//0AB5=3,store_closest_entities {char} %1d% {carHandle} %2d% {charHandle} %3d%
+	// store_closest_entities
+	// [var carHandle: Car], [var charHandle: Char] = store_closest_entities [Char]
 	static OpcodeResult __stdcall opcode_0AB5(CRunningScript* thread)
 	{
 		auto pedHandle = OPCODE_READ_PARAM_PED_HANDLE();
@@ -66,6 +71,30 @@ public:
 
 		OPCODE_WRITE_PARAM_INT(foundCar);
 		OPCODE_WRITE_PARAM_INT(foundPed);
+		return OR_CONTINUE;
+	}
+
+	// get_target_blip_coords
+	// [var x: float], [var y: float], [var z: float] = get_target_blip_coords (logical)
+	static OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread)
+	{
+		auto blipIdx = CRadar::GetActualBlipArrayIndex(FrontEndMenuManager.m_nTargetBlipIndex);
+		if (blipIdx == -1)
+		{
+			OPCODE_SKIP_PARAMS(3);
+			OPCODE_CONDITION_RESULT(false); // no target marker placed
+			return OR_CONTINUE;
+		}
+
+		auto pos = CRadar::ms_RadarTrace[blipIdx].m_vecPos; // TODO: support for Fastman92's Limit Adjuster
+
+		// TODO: load world collisions for the coords
+		pos.z = CWorld::FindGroundZForCoord(pos.x, pos.z);
+
+		OPCODE_WRITE_PARAM_FLOAT(pos.x);
+		OPCODE_WRITE_PARAM_FLOAT(pos.y);
+		OPCODE_WRITE_PARAM_FLOAT(pos.z);
+		OPCODE_CONDITION_RESULT(true);
 		return OR_CONTINUE;
 	}
 } Instance;

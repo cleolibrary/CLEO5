@@ -8,6 +8,4 @@ namespace CLEO
     public:
         virtual void Inject(CCodeInjector& inj);
     };
-
-    extern CMenuManager *	MenuManager;
 }

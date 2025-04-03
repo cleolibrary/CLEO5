@@ -185,7 +185,7 @@ namespace CLEO
         if (m_bGameInProgress) return;
         m_bGameInProgress = true;
 
-        saveSlot = MenuManager->m_bWantToLoad ? MenuManager->m_nSelectedSaveGame : -1;
+        saveSlot = FrontEndMenuManager.m_bWantToLoad ? FrontEndMenuManager.m_nSelectedSaveGame : -1;
 
         TRACE("Starting new game, save slot: %d", saveSlot);
 
