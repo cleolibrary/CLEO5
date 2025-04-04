@@ -259,7 +259,7 @@ public:
 	}
 
 	// get_random_char_in_sphere_no_save_recursive
-	// [var handle: Char] = get_random_char_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {skipDead} [bool]
+	// [var handle: Char] = get_random_char_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {filter} [int] (logical)
 	static OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread)
 	{
 		CVector center = {};
@@ -268,12 +268,10 @@ public:
 		center.z = OPCODE_READ_PARAM_FLOAT();
 		auto radius = OPCODE_READ_PARAM_FLOAT();
 		auto findNext = OPCODE_READ_PARAM_BOOL();
-		auto skipDead = OPCODE_READ_PARAM_INT();
+		auto filter = OPCODE_READ_PARAM_INT();
 
-		if (IsLegacyScript(thread))
-		{
-			skipDead = (skipDead != -1); // for some reason in old CLEO '-1' was used to accept dead
-		}
+		bool skipDead = (filter == 1);
+		bool skipPlayer = (filter != -1);
 
 		int& searchIdx = Instance.charSearchState[thread];
 		if (!findNext) searchIdx = 0;
@@ -283,9 +281,14 @@ public:
 		{
 			auto ped = CPools::ms_pPedPool->GetAt(index);
 
-			if (ped == nullptr || ped->IsPlayer() || ped->m_nPedFlags.bFadeOut)
+			if (ped == nullptr || ped->m_nPedFlags.bFadeOut)
 			{
-				continue; // invalid or player
+				continue; // invalid or about to be deleted
+			}
+
+			if (skipPlayer && ped->IsPlayer())
+			{
+				continue; // player
 			}
 
 			if (skipDead)
