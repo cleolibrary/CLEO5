@@ -17,6 +17,7 @@ class GameEntities
 public:
 	std::map<CRunningScript*, int> charSearchState; // for get_random_char_in_sphere_no_save_recursive
 	std::map<CRunningScript*, int> carSearchState; // for get_random_car_in_sphere_no_save_recursive
+	std::map<CRunningScript*, int> objectSearchState; // for get_random_object_in_sphere_no_save_recursive
 
 	GameEntities()
 	{
@@ -40,6 +41,7 @@ public:
 		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD); // spawn_vehicle_by_cheating
 		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1); // get_random_char_in_sphere_no_save_recursive
 		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2); // get_random_car_in_sphere_no_save_recursive
+		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3); // get_random_object_in_sphere_no_save_recursive
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
@@ -54,6 +56,7 @@ public:
 	{
 		Instance.charSearchState.clear();
 		Instance.carSearchState.clear();
+		Instance.objectSearchState.clear();
 	}
 
 	// store_closest_entities
@@ -323,7 +326,7 @@ public:
 	}
 
 	// get_random_car_in_sphere_no_save_recursive
-	// [var handle: Car] = get_random_car_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {acceptWrecked} [bool]
+	// [var handle: Car] = get_random_car_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {skipWrecked} [bool] (logical)
 	static OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread)
 	{
 		CVector center = {};
@@ -372,6 +375,59 @@ public:
 		if (found != nullptr)
 		{
 			handle = CPools::ms_pVehiclePool->GetRef(found);
+		}
+		else
+		{
+			handle = -1;
+			searchIdx = 0;
+		}
+
+		OPCODE_WRITE_PARAM_INT(handle);
+		OPCODE_CONDITION_RESULT(handle != -1);
+		return OR_CONTINUE;
+	}
+
+	// get_random_object_in_sphere_no_save_recursive
+	// [var handle: Object] = get_random_object_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] (logical)
+	static OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread)
+	{
+		CVector center = {};
+		center.x = OPCODE_READ_PARAM_FLOAT();
+		center.y = OPCODE_READ_PARAM_FLOAT();
+		center.z = OPCODE_READ_PARAM_FLOAT();
+		auto radius = OPCODE_READ_PARAM_FLOAT();
+		auto findNext = OPCODE_READ_PARAM_BOOL();
+
+		int& searchIdx = Instance.objectSearchState[thread];
+		if (!findNext) searchIdx = 0;
+
+		CObject* found = nullptr;
+		for (int index = searchIdx; index < CPools::ms_pObjectPool->m_nSize; index++)
+		{
+			auto object = CPools::ms_pObjectPool->GetAt(index);
+
+			if (object == nullptr)
+			{
+				continue; // invalid
+			}
+
+			if (radius < 1000.0f)
+			{
+				if ((object->GetPosition() - center).Magnitude() > radius)
+				{
+					continue; // out of search radius
+				}
+			}
+
+			found = object;
+			searchIdx = index + 1; // next search start index
+			break;
+		}
+
+		DWORD handle;
+		if (found != nullptr)
+		{
+			handle = CPools::ms_pObjectPool->GetRef(found);
 		}
 		else
 		{

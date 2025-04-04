@@ -42,8 +42,6 @@ namespace CLEO
 
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread); // test_cheat
 
-	OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread); // get_random_object_in_sphere_no_save_recursive
-
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 
 	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // get_cleo_arg_count
@@ -226,7 +224,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
-		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
 
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 
@@ -1166,50 +1163,6 @@ namespace CLEO
 		}
 
 		SetScriptCondResult(thread, false);
-		return OR_CONTINUE;
-	}
-
-	//0AE3=6,%6d% = find_object_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% //IF and SET
-	OpcodeResult __stdcall opcode_0AE3(CRunningScript *thread)
-	{
-		CVector center = {};
-		center.x = OPCODE_READ_PARAM_FLOAT();
-		center.y = OPCODE_READ_PARAM_FLOAT();
-		center.z = OPCODE_READ_PARAM_FLOAT();
-		auto radius = OPCODE_READ_PARAM_FLOAT();
-		auto findNext = OPCODE_READ_PARAM_BOOL();
-
-		static DWORD stat_last_found = 0;
-		auto& pool = *CPools::ms_pObjectPool;
-
-		auto cs = reinterpret_cast<CCustomScript *>(thread);
-		DWORD& last_found = cs->IsCustom() ? cs->GetLastSearchObject() : stat_last_found;
-
-		if (!findNext) last_found = 0;
-
-		for (int index = last_found; index < pool.m_nSize; ++index)
-		{
-			if (auto obj = pool.GetAt(index))
-			{
-				if (obj->m_nObjectFlags.bFadingIn) continue; // this is actually .bFadingOut (yet?)
-
-				if (radius >= 1000.0f || (VectorSqrMagnitude(obj->GetPosition() - center) <= radius * radius))
-				{
-					last_found = index + 1;	// on next opcode call start search from next index
-											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
-											// obj.referenceType = 2; // add reference to found actor
-
-					auto found = pool.GetRef(obj);
-					OPCODE_WRITE_PARAM_INT(found);
-					OPCODE_CONDITION_RESULT(true);
-					return OR_CONTINUE;
-				}
-			}
-		}
-
-		last_found = 0;
-		OPCODE_WRITE_PARAM_INT(-1);
-		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 

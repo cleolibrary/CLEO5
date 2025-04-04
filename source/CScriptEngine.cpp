@@ -1475,7 +1475,6 @@ namespace CLEO
     // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
     CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label)
         : CRunningScript(), bSaveEnabled(false), bOK(false),
-        LastSearchCar(0), LastSearchObj(0),
         CompatVer(CLEO_VER_CUR)
     {
         TRACE(""); // separator
@@ -1654,6 +1653,4 @@ namespace CLEO
 
         if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
     }
-
-    float VectorSqrMagnitude(CVector vector) { return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z; }
 }
