@@ -39,12 +39,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
-	OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread); // get_car_number_of_gears
-	OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread); // get_car_current_gear
-
-	OpcodeResult __stdcall opcode_0ABD(CRunningScript* thread); // is_car_siren_on
-	OpcodeResult __stdcall opcode_0ABE(CRunningScript* thread); // is_car_engine_on
-	OpcodeResult __stdcall opcode_0ABF(CRunningScript* thread); // cleo_set_car_engine_on
 
 	OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread); // get_char_player_is_targeting
 
@@ -243,11 +237,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
-		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
-		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
-		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
-		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE);
-		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF);
 		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
 		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
@@ -1175,66 +1164,6 @@ namespace CLEO
 
 		opcodeParams[0].dwParam = CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam;
 		CLEO_RecordOpcodeParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0AB7=2,get_vehicle %1d% number_of_gears_to %2d%
-	OpcodeResult __stdcall opcode_0AB7(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto gears = vehicle->m_pHandlingData->m_transmissionData.m_nNumberOfGears;
-
-		OPCODE_WRITE_PARAM_INT(gears);
-		return OR_CONTINUE;
-	}
-
-	//0AB8=2,get_vehicle %1d% current_gear_to %2d%
-	OpcodeResult __stdcall opcode_0AB8(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto gear = vehicle->m_nCurrentGear;
-
-		OPCODE_WRITE_PARAM_INT(gear);
-		return OR_CONTINUE;
-	}
-
-	//0ABD=1,  vehicle %1d% siren_on
-	OpcodeResult __stdcall opcode_0ABD(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto state = vehicle->m_nVehicleFlags.bSirenOrAlarm;
-
-		OPCODE_CONDITION_RESULT(state);
-		return OR_CONTINUE;
-	}
-
-	//0ABE=1,  vehicle %1d% engine_on
-	OpcodeResult __stdcall opcode_0ABE(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto state = vehicle->m_nVehicleFlags.bEngineOn;
-
-		OPCODE_CONDITION_RESULT(state);
-		return OR_CONTINUE;
-	}
-
-	//0ABF=2,set_vehicle %1d% engine_state_to %2d%
-	OpcodeResult __stdcall opcode_0ABF(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-		auto state = OPCODE_READ_PARAM_BOOL();
-
-		auto vehicle = CPools::GetVehicle(handle);
-
-		vehicle->m_nVehicleFlags.bEngineOn = state != false;
 		return OR_CONTINUE;
 	}
 
