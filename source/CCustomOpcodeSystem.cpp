@@ -40,8 +40,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
 
-	OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread); // get_char_player_is_targeting
-
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread); // test_cheat
 	OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread); // spawn_vehicle_by_cheating
 
@@ -71,8 +69,6 @@ namespace CLEO
 	void RunScriptDeleteDelegate(CRunningScript *script) { scriptDeleteDelegate(script); }
 
 	void(__thiscall * ProcessScript)(CRunningScript*);
-
-	CPlayerPed * (__cdecl * GetPlayerPed)(DWORD);
 
 	void(__cdecl * SpawnCar)(DWORD);
 
@@ -211,7 +207,6 @@ namespace CLEO
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
 
-		GetPlayerPed = gvm.TranslateMemoryAddress(MA_GET_PLAYER_PED_FUNCTION);
 		SpawnCar = gvm.TranslateMemoryAddress(MA_SPAWN_CAR_FUNCTION);
 	}
 
@@ -237,7 +232,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
-		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
 		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
 		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
@@ -1164,29 +1158,6 @@ namespace CLEO
 
 		opcodeParams[0].dwParam = CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam;
 		CLEO_RecordOpcodeParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0AD2=2,  %2d% = player %1d% targeted_actor //IF and SET
-	OpcodeResult __stdcall opcode_0AD2(CRunningScript *thread)
-	{
-		auto playerId = OPCODE_READ_PARAM_INT();
-
-		auto pPlayerPed = GetPlayerPed(playerId); // TODO: use plugin SDK instead
-		auto pTargetEntity = GetWeaponTarget(pPlayerPed);
-
-		if (!pTargetEntity) pTargetEntity = (CEntity*)pPlayerPed->m_pPlayerTargettedPed;
-		if (pTargetEntity && pTargetEntity->m_nType == ENTITY_TYPE_PED)
-		{
-			auto handle = CPools::GetPedRef(reinterpret_cast<CPed*>(pTargetEntity));
-			OPCODE_WRITE_PARAM_INT(handle);
-			OPCODE_CONDITION_RESULT(true);
-		}
-		else
-		{
-			OPCODE_WRITE_PARAM_INT(-1);
-			OPCODE_CONDITION_RESULT(false);
-		}
 		return OR_CONTINUE;
 	}
 

@@ -101,11 +101,6 @@ public:
 
 VALIDATE_SIZE(CTextDrawer, 0x44);
 
-inline CEntity* GetWeaponTarget(CPed* pSelf)
-{
-    return reinterpret_cast<int>(pSelf->m_pTargetedObject) != -1 ? pSelf->m_pTargetedObject : nullptr;
-}
-
 inline bool IsAvailable(CPed* pSelf)
 {
     return pSelf->m_nPedState != PEDSTATE_DIE && pSelf->m_nPedState != PEDSTATE_DEAD;

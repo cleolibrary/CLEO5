@@ -30,6 +30,7 @@ public:
 		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD); // is_car_siren_on
 		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE); // is_car_engine_on
 		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF); // cleo_set_car_engine_on
+		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2); // get_char_player_is_targeting
 	}
 
 	// store_closest_entities
@@ -165,6 +166,31 @@ public:
 		auto vehicle = CPools::GetVehicle(handle);
 
 		vehicle->m_nVehicleFlags.bEngineOn = (state != false);
+		return OR_CONTINUE;
+	}
+
+	// get_char_player_is_targeting
+	// [var handle: Char] = get_char_player_is_targeting [Player] (logical)
+	static OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread)
+	{
+		auto playerId = OPCODE_READ_PARAM_PLAYER_ID();
+
+		auto ped = FindPlayerPed(playerId);
+
+		auto target = ped->m_pPlayerTargettedPed;
+		if (target == nullptr) target = (CPed*)ped->m_pTargetedObject;
+		
+		if (target == nullptr || target->m_nType != ENTITY_TYPE_PED)
+		{
+			OPCODE_WRITE_PARAM_INT(-1);
+			OPCODE_CONDITION_RESULT(false);
+			return OR_CONTINUE;
+		}
+
+		auto handle = CPools::GetPedRef(target);
+
+		OPCODE_WRITE_PARAM_INT(handle);
+		OPCODE_CONDITION_RESULT(true);
 		return OR_CONTINUE;
 	}
 } Instance;
