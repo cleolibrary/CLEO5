@@ -101,11 +101,6 @@ public:
 
 VALIDATE_SIZE(CTextDrawer, 0x44);
 
-inline bool	IsWrecked(CVehicle* pSelf)
-{
-    return pSelf->m_nStatus == STATUS_WRECKED || pSelf->m_nVehicleFlags.bIsDrowning;
-}
-
 
 #define OP_NOP			0x90
 #define OP_RET			0xC3

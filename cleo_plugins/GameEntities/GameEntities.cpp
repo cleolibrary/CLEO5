@@ -16,6 +16,7 @@ class GameEntities
 {
 public:
 	std::map<CRunningScript*, int> charSearchState; // for get_random_char_in_sphere_no_save_recursive
+	std::map<CRunningScript*, int> carSearchState; // for get_random_car_in_sphere_no_save_recursive
 
 	GameEntities()
 	{
@@ -38,6 +39,7 @@ public:
 		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2); // get_char_player_is_targeting
 		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD); // spawn_vehicle_by_cheating
 		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1); // get_random_char_in_sphere_no_save_recursive
+		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2); // get_random_car_in_sphere_no_save_recursive
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
@@ -51,6 +53,7 @@ public:
 	static void __stdcall OnScriptsFinalize()
 	{
 		Instance.charSearchState.clear();
+		Instance.carSearchState.clear();
 	}
 
 	// store_closest_entities
@@ -307,6 +310,68 @@ public:
 		if (found != nullptr)
 		{
 			handle = CPools::ms_pPedPool->GetRef(found);
+		}
+		else
+		{
+			handle = -1;
+			searchIdx = 0;
+		}
+
+		OPCODE_WRITE_PARAM_INT(handle);
+		OPCODE_CONDITION_RESULT(handle != -1);
+		return OR_CONTINUE;
+	}
+
+	// get_random_car_in_sphere_no_save_recursive
+	// [var handle: Car] = get_random_car_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {acceptWrecked} [bool]
+	static OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread)
+	{
+		CVector center = {};
+		center.x = OPCODE_READ_PARAM_FLOAT();
+		center.y = OPCODE_READ_PARAM_FLOAT();
+		center.z = OPCODE_READ_PARAM_FLOAT();
+		auto radius = OPCODE_READ_PARAM_FLOAT();
+		auto findNext = OPCODE_READ_PARAM_BOOL();
+		auto skipWrecked = OPCODE_READ_PARAM_BOOL();
+
+		int& searchIdx = Instance.carSearchState[thread];
+		if (!findNext) searchIdx = 0;
+
+		CVehicle* found = nullptr;
+		for (int index = searchIdx; index < CPools::ms_pVehiclePool->m_nSize; index++)
+		{
+			auto car = CPools::ms_pVehiclePool->GetAt(index);
+
+			if (car == nullptr || car->m_nVehicleFlags.bFadeOut)
+			{
+				continue; // invalid or about to be deleted
+			}
+
+			if (skipWrecked)
+			{
+				if (car->m_nStatus == STATUS_WRECKED || car->m_nVehicleFlags.bIsDrowning)
+				{
+					continue; // wrecked
+				}
+			}
+
+			if (radius < 1000.0f)
+			{
+				if ((car->GetPosition() - center).Magnitude() > radius)
+				{
+					continue; // out of search radius
+				}
+			}
+
+			found = car;
+			searchIdx = index + 1; // next search start index
+			break;
+		}
+
+		DWORD handle;
+		if (found != nullptr)
+		{
+			handle = CPools::ms_pVehiclePool->GetRef(found);
 		}
 		else
 		{
