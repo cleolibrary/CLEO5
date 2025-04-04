@@ -1,7 +1,9 @@
 #include "plugin.h"
 #include "CLEO.h"
 #include "CLEO_Utils.h"
+#include "CCheat.h"
 #include "CMenuManager.h"
+#include "CModelInfo.h"
 #include "CRadar.h"
 #include "CWorld.h"
 
@@ -31,6 +33,7 @@ public:
 		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE); // is_car_engine_on
 		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF); // cleo_set_car_engine_on
 		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2); // get_char_player_is_targeting
+		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD); // spawn_vehicle_by_cheating
 	}
 
 	// store_closest_entities
@@ -191,6 +194,44 @@ public:
 
 		OPCODE_WRITE_PARAM_INT(handle);
 		OPCODE_CONDITION_RESULT(true);
+		return OR_CONTINUE;
+	}
+
+	// spawn_vehicle_by_cheating
+	// spawn_vehicle_by_cheating {modelId} [model_vehicle]
+	static OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread)
+	{
+		auto modelIndex = OPCODE_READ_PARAM_INT();
+
+		auto model = CModelInfo::GetModelInfo(modelIndex);
+		if (model == nullptr || model->GetModelType() != MODEL_INFO_VEHICLE)
+		{
+			return OR_CONTINUE;
+		}
+
+		auto veh = (CVehicleModelInfo*)model;
+		switch (veh->m_nVehicleType)
+		{
+			case VEHICLE_AUTOMOBILE:
+			case VEHICLE_MTRUCK:
+			case VEHICLE_QUAD:
+			case VEHICLE_HELI:
+			case VEHICLE_PLANE:
+			case VEHICLE_BOAT:
+			//case VEHICLE_TRAIN:
+			//case VEHICLE_FHELI:
+			//case VEHICLE_FPLANE:
+			case VEHICLE_BIKE:
+			case VEHICLE_BMX:
+			case VEHICLE_TRAILER:
+				break;
+
+			default:
+				return OR_CONTINUE; // unsupported type
+		}
+
+		CCheat::VehicleCheat(modelIndex);
+
 		return OR_CONTINUE;
 	}
 } Instance;

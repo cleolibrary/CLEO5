@@ -41,7 +41,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
 
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread); // test_cheat
-	OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread); // spawn_vehicle_by_cheating
 
 	OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread); // get_random_char_in_sphere_no_save_recursive
 	OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread); // get_random_car_in_sphere_no_save_recursive
@@ -69,8 +68,6 @@ namespace CLEO
 	void RunScriptDeleteDelegate(CRunningScript *script) { scriptDeleteDelegate(script); }
 
 	void(__thiscall * ProcessScript)(CRunningScript*);
-
-	void(__cdecl * SpawnCar)(DWORD);
 
 	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
 	WORD CCustomOpcodeSystem::lastOpcode = 0xFFFF;
@@ -206,8 +203,6 @@ namespace CLEO
 		}
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
-
-		SpawnCar = gvm.TranslateMemoryAddress(MA_SPAWN_CAR_FUNCTION);
 	}
 
 	void CCustomOpcodeSystem::Init()
@@ -233,7 +228,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
-		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
 		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
 		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
 		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
@@ -1176,21 +1170,6 @@ namespace CLEO
 		}
 
 		SetScriptCondResult(thread, false);
-		return OR_CONTINUE;
-	}
-
-	//0ADD=1,spawn_car_with_model %1o% at_player_location 
-	OpcodeResult __stdcall opcode_0ADD(CRunningScript *thread)
-	{
-		auto modelIndex = OPCODE_READ_PARAM_INT();
-
-		auto model = (CVehicleModelInfo*)CModelInfo::GetModelInfo(modelIndex); // compatible with fastman92's limit adjuster
-
-		if (model->m_nVehicleType != -1 && model->m_nVehicleType != eVehicleType::VEHICLE_TRAIN)
-		{
-			SpawnCar(modelIndex);
-		}
-
 		return OR_CONTINUE;
 	}
 

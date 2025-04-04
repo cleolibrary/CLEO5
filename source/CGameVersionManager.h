@@ -94,7 +94,6 @@ namespace CLEO
         MA_PED_POOL,
         MA_VEHICLE_POOL,
         MA_OBJECT_POOL,
-        MA_SPAWN_CAR_FUNCTION,
 
         MA_CALL_CREATE_MAIN_WINDOW,
 

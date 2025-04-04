@@ -77,7 +77,6 @@ namespace CLEO
         { 0x00B74490,	memory_und, 0x00B74490, 0x00B76B10, 0x00C01038 },		// MA_PED_POOL,
         { 0x00B74494,	memory_und, 0x00B74494, 0x00B76B14, 0x00C0103C },		// MA_VEHICLE_POOL,
         { 0x00B7449C,	memory_und, 0x00B7449C, 0x00B76B18, 0x00C01044 },		// MA_OBJECT_POOL,
-        { 0x0043A0B0,	memory_und, 0x0043A0B0, 0x0043A136, 0x0043D3D0 },		// MA_SPAWN_CAR_FUNCTION,
 
                                                                                 // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
         { 0x007487A8,	memory_und, 0x007487F8, 0x0074907C, 0x0078276D },		// MA_CALL_CREATE_MAIN_WINDOW,
