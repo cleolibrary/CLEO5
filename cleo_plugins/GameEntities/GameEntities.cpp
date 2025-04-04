@@ -6,6 +6,7 @@
 #include "CModelInfo.h"
 #include "CRadar.h"
 #include "CWorld.h"
+#include <map>
 
 using namespace CLEO;
 using namespace plugin;
@@ -14,6 +15,8 @@ using namespace std;
 class GameEntities
 {
 public:
+	std::map<CRunningScript*, int> charSearchState; // for get_random_char_in_sphere_no_save_recursive
+
 	GameEntities()
 	{
 		auto cleoVer = CLEO_GetVersion();
@@ -34,6 +37,20 @@ public:
 		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF); // cleo_set_car_engine_on
 		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2); // get_char_player_is_targeting
 		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD); // spawn_vehicle_by_cheating
+		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1); // get_random_char_in_sphere_no_save_recursive
+
+		// register event callbacks
+		CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
+	}
+
+	~GameEntities()
+	{
+		CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
+	}
+
+	static void __stdcall OnScriptsFinalize()
+	{
+		Instance.charSearchState.clear();
 	}
 
 	// store_closest_entities
@@ -232,6 +249,74 @@ public:
 
 		CCheat::VehicleCheat(modelIndex);
 
+		return OR_CONTINUE;
+	}
+
+	// get_random_char_in_sphere_no_save_recursive
+	// [var handle: Char] = get_random_char_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {skipDead} [bool]
+	static OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread)
+	{
+		CVector center = {};
+		center.x = OPCODE_READ_PARAM_FLOAT();
+		center.y = OPCODE_READ_PARAM_FLOAT();
+		center.z = OPCODE_READ_PARAM_FLOAT();
+		auto radius = OPCODE_READ_PARAM_FLOAT();
+		auto findNext = OPCODE_READ_PARAM_BOOL();
+		auto skipDead = OPCODE_READ_PARAM_INT();
+
+		if (IsLegacyScript(thread))
+		{
+			skipDead = (skipDead != -1); // for some reason in old CLEO '-1' was used to accept dead
+		}
+
+		int& searchIdx = Instance.charSearchState[thread];
+		if (!findNext) searchIdx = 0;
+
+		CPed* found = nullptr;
+		for (int index = searchIdx; index < CPools::ms_pPedPool->m_nSize; index++)
+		{
+			if (auto ped = CPools::ms_pPedPool->GetAt(index))
+			{
+				if (ped == nullptr || ped->IsPlayer() || ped->m_nPedFlags.bFadeOut)
+				{
+					continue; // invalid or player
+				}
+
+				if (skipDead)
+				{
+					if (ped->m_nPedState == PEDSTATE_DIE || ped->m_nPedState == PEDSTATE_DEAD)
+					{
+						continue; // dead
+					}
+				}
+
+				if (radius < 1000.0f)
+				{
+					if((ped->GetPosition() - center).Magnitude() > radius)
+					{
+						continue; // out of search radius
+					}
+				}
+
+				found = ped;
+				searchIdx = index + 1; // next search start index
+				break;
+			}
+		}
+
+		DWORD handle;
+		if (found != nullptr)
+		{
+			handle = CPools::ms_pPedPool->GetRef(found);
+		}
+		else
+		{
+			handle = -1;
+			searchIdx = 0;
+		}
+
+		OPCODE_WRITE_PARAM_INT(handle);
+		OPCODE_CONDITION_RESULT(handle != -1);
 		return OR_CONTINUE;
 	}
 } Instance;

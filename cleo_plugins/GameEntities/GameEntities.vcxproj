@@ -134,6 +134,10 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\DynAddress.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\GameVersion.cpp" />
     <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\Patch.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CAESound.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CAEWeaponAudioEntity.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPed.cpp" />
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CVector.cpp" />
     <ClCompile Include="GameEntities.cpp" />
   </ItemGroup>
   <ItemGroup>

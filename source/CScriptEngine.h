@@ -20,7 +20,7 @@ namespace CLEO
 
         bool bSaveEnabled;
         bool bOK;
-        DWORD LastSearchPed, LastSearchCar, LastSearchObj;
+        DWORD LastSearchCar, LastSearchObj;
         eCLEO_Version CompatVer;
         BYTE UseTextCommands;
         int NumDraws;
@@ -56,7 +56,6 @@ namespace CLEO
         inline void enable_saving(bool en = true) { bSaveEnabled = en; }
         inline void SetCompatibility(eCLEO_Version ver) { CompatVer = ver; }
         inline eCLEO_Version GetCompatibility() const { return CompatVer; }
-        inline DWORD& GetLastSearchPed() { return LastSearchPed; }
         inline DWORD& GetLastSearchVehicle() { return LastSearchCar; }
         inline DWORD& GetLastSearchObject() { return LastSearchObj; }
 

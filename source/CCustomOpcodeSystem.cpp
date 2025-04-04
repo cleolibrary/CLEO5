@@ -42,7 +42,6 @@ namespace CLEO
 
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread); // test_cheat
 
-	OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread); // get_random_char_in_sphere_no_save_recursive
 	OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread); // get_random_car_in_sphere_no_save_recursive
 	OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread); // get_random_object_in_sphere_no_save_recursive
 
@@ -228,7 +227,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
-		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
 		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
 		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
 
@@ -1170,53 +1168,6 @@ namespace CLEO
 		}
 
 		SetScriptCondResult(thread, false);
-		return OR_CONTINUE;
-	}
-
-	//0AE1=7,%7d% = find_actor_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% pass_deads %6h% //IF and SET
-	OpcodeResult __stdcall opcode_0AE1(CRunningScript *thread)
-	{
-		CVector center = {};
-		center.x = OPCODE_READ_PARAM_FLOAT();
-		center.y = OPCODE_READ_PARAM_FLOAT();
-		center.z = OPCODE_READ_PARAM_FLOAT();
-		auto radius = OPCODE_READ_PARAM_FLOAT();
-		auto findNext = OPCODE_READ_PARAM_BOOL();
-		auto passDead = OPCODE_READ_PARAM_INT();
-
-		static DWORD stat_last_found = 0;
-		auto& pool = *CPools::ms_pPedPool;
-
-		DWORD& last_found = reinterpret_cast<CCustomScript *>(thread)->IsCustom() ?
-			reinterpret_cast<CCustomScript *>(thread)->GetLastSearchPed() :
-			stat_last_found;
-
-		if (!findNext) last_found = 0;
-
-		for (int index = last_found; index < pool.m_nSize; ++index)
-		{
-			if (auto obj = pool.GetAt(index))
-			{
-				if (passDead != -1 && (obj->IsPlayer() || (passDead && !IsAvailable(obj))/* || obj->GetOwner() == 2*/ || obj->m_nPedFlags.bFadeOut))
-					continue;
-
-				if (radius >= 1000.0f || (VectorSqrMagnitude(obj->GetPosition() - center) <= radius * radius))
-				{
-					last_found = index + 1;	// on next opcode call start search from next index
-											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
-											//obj->PedCreatedBy = 2; // add reference to found actor
-
-					auto found = pool.GetRef(obj);
-					OPCODE_WRITE_PARAM_INT(found);
-					OPCODE_CONDITION_RESULT(true);
-					return OR_CONTINUE;
-				}
-			}
-		}
-
-		last_found = 0;
-		OPCODE_WRITE_PARAM_INT(-1);
-		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 

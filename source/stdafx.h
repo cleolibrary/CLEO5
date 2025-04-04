@@ -101,11 +101,6 @@ public:
 
 VALIDATE_SIZE(CTextDrawer, 0x44);
 
-inline bool IsAvailable(CPed* pSelf)
-{
-    return pSelf->m_nPedState != PEDSTATE_DIE && pSelf->m_nPedState != PEDSTATE_DEAD;
-}
-
 inline bool	IsWrecked(CVehicle* pSelf)
 {
     return pSelf->m_nStatus == STATUS_WRECKED || pSelf->m_nVehicleFlags.bIsDrowning;
