@@ -275,33 +275,32 @@ public:
 		CPed* found = nullptr;
 		for (int index = searchIdx; index < CPools::ms_pPedPool->m_nSize; index++)
 		{
-			if (auto ped = CPools::ms_pPedPool->GetAt(index))
+			auto ped = CPools::ms_pPedPool->GetAt(index);
+
+			if (ped == nullptr || ped->IsPlayer() || ped->m_nPedFlags.bFadeOut)
 			{
-				if (ped == nullptr || ped->IsPlayer() || ped->m_nPedFlags.bFadeOut)
-				{
-					continue; // invalid or player
-				}
-
-				if (skipDead)
-				{
-					if (ped->m_nPedState == PEDSTATE_DIE || ped->m_nPedState == PEDSTATE_DEAD)
-					{
-						continue; // dead
-					}
-				}
-
-				if (radius < 1000.0f)
-				{
-					if((ped->GetPosition() - center).Magnitude() > radius)
-					{
-						continue; // out of search radius
-					}
-				}
-
-				found = ped;
-				searchIdx = index + 1; // next search start index
-				break;
+				continue; // invalid or player
 			}
+
+			if (skipDead)
+			{
+				if (ped->m_nPedState == PEDSTATE_DIE || ped->m_nPedState == PEDSTATE_DEAD)
+				{
+					continue; // dead
+				}
+			}
+
+			if (radius < 1000.0f)
+			{
+				if((ped->GetPosition() - center).Magnitude() > radius)
+				{
+					continue; // out of search radius
+				}
+			}
+
+			found = ped;
+			searchIdx = index + 1; // next search start index
+			break;
 		}
 
 		DWORD handle;
