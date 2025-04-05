@@ -39,23 +39,8 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
-	OpcodeResult __stdcall opcode_0AB5(CRunningScript* thread); // store_closest_entities
-	OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread); // get_target_blip_coords
-	OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread); // get_car_number_of_gears
-	OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread); // get_car_current_gear
-
-	OpcodeResult __stdcall opcode_0ABD(CRunningScript* thread); // is_car_siren_on
-	OpcodeResult __stdcall opcode_0ABE(CRunningScript* thread); // is_car_engine_on
-	OpcodeResult __stdcall opcode_0ABF(CRunningScript* thread); // cleo_set_car_engine_on
-
-	OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread); // get_char_player_is_targeting
 
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread); // test_cheat
-	OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread); // spawn_vehicle_by_cheating
-
-	OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread); // get_random_char_in_sphere_no_save_recursive
-	OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread); // get_random_car_in_sphere_no_save_recursive
-	OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread); // get_random_object_in_sphere_no_save_recursive
 
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 
@@ -79,13 +64,6 @@ namespace CLEO
 	void RunScriptDeleteDelegate(CRunningScript *script) { scriptDeleteDelegate(script); }
 
 	void(__thiscall * ProcessScript)(CRunningScript*);
-
-	float(__cdecl * FindGroundZ)(float x, float y);
-	CMarker		* RadarBlips;
-
-	CPlayerPed * (__cdecl * GetPlayerPed)(DWORD);
-
-	void(__cdecl * SpawnCar)(DWORD);
 
 	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
 	WORD CCustomOpcodeSystem::lastOpcode = 0xFFFF;
@@ -221,21 +199,6 @@ namespace CLEO
 		}
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
-
-		FindGroundZ = gvm.TranslateMemoryAddress(MA_FIND_GROUND_Z_FUNCTION);
-		GetPlayerPed = gvm.TranslateMemoryAddress(MA_GET_PLAYER_PED_FUNCTION);
-		SpawnCar = gvm.TranslateMemoryAddress(MA_SPAWN_CAR_FUNCTION);
-
-		// TODO: consider version-agnostic code
-		if (gvm.GetGameVersion() == GV_US10)
-		{
-			// make it compatible with fastman92's limit adjuster (only required for 1.0 US)
-			RadarBlips = injector::ReadMemory<CMarker*>(0x583A05 + 2, true);
-		}
-		else
-		{
-			RadarBlips = gvm.TranslateMemoryAddress(MA_RADAR_BLIPS);
-		}
 	}
 
 	void CCustomOpcodeSystem::Init()
@@ -260,19 +223,7 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
-		CLEO_RegisterOpcode(0x0AB5, opcode_0AB5);
-		CLEO_RegisterOpcode(0x0AB6, opcode_0AB6);
-		CLEO_RegisterOpcode(0x0AB7, opcode_0AB7);
-		CLEO_RegisterOpcode(0x0AB8, opcode_0AB8);
-		CLEO_RegisterOpcode(0x0ABD, opcode_0ABD);
-		CLEO_RegisterOpcode(0x0ABE, opcode_0ABE);
-		CLEO_RegisterOpcode(0x0ABF, opcode_0ABF);
-		CLEO_RegisterOpcode(0x0AD2, opcode_0AD2);
 		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
-		CLEO_RegisterOpcode(0x0ADD, opcode_0ADD);
-		CLEO_RegisterOpcode(0x0AE1, opcode_0AE1);
-		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2);
-		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3);
 
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 
@@ -1197,149 +1148,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB5=3,store_actor %1d% closest_vehicle_to %2d% closest_ped_to %3d%
-	OpcodeResult __stdcall opcode_0AB5(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_PED_HANDLE();
-
-		auto pPlayerPed = CPools::GetPed(handle);
-
-		CPedIntelligence * pedintel;
-		if (pPlayerPed && (pedintel = pPlayerPed->m_pIntelligence))
-		{
-			CVehicle * pVehicle = nullptr;
-			for (int i = 0; i < NUM_SCAN_ENTITIES; i++)
-			{
-				pVehicle = (CVehicle*)pedintel->m_vehicleScanner.m_apEntities[i];
-				if (pVehicle && pVehicle->m_nCreatedBy != 2 && !pVehicle->m_nVehicleFlags.bFadeOut)
-					break;
-				pVehicle = nullptr;
-			}
-
-			CPed * pPed = nullptr;
-			for (int i = 0; i < NUM_SCAN_ENTITIES; i++)
-			{
-				pPed = (CPed*)pedintel->m_pedScanner.m_apEntities[i];
-				if (pPed && pPed != pPlayerPed && (pPed->m_nCreatedBy & 0xFF) == 1 && !pPed->m_nPedFlags.bFadeOut)
-					break;
-				pPed = nullptr;
-			}
-
-			*thread << (pVehicle ? CPools::GetVehicleRef(pVehicle) : -1) << (pPed ? CPools::GetPedRef(pPed) : -1);
-		}
-		else *thread << -1 << -1;
-		return OR_CONTINUE;
-	}
-
-	//0AB6=3,store_target_marker_coords_to %1d% %2d% %3d% // IF and SET
-	OpcodeResult __stdcall opcode_0AB6(CRunningScript *thread)
-	{
-		// steam offset is different, so get it manually for now
-		CGameVersionManager& gvm = CleoInstance.VersionManager;
-		DWORD hMarker = gvm.GetGameVersion() !=  GV_STEAM ? MenuManager->m_nTargetBlipIndex : *((DWORD*)0xC3312C);
-		CMarker *pMarker;
-		if (hMarker && (pMarker = &RadarBlips[LOWORD(hMarker)]) && /*pMarker->m_nPoolIndex == HIWORD(hMarker) && */pMarker->m_nBlipDisplay)
-		{
-			CVector coords(pMarker->m_vecPos);
-			coords.z = FindGroundZ(coords.x, coords.y);
-
-			OPCODE_WRITE_PARAM_FLOAT(coords.x);
-			OPCODE_WRITE_PARAM_FLOAT(coords.y);
-			OPCODE_WRITE_PARAM_FLOAT(coords.z);
-			OPCODE_CONDITION_RESULT(true);
-		}
-		else
-		{
-			OPCODE_SKIP_PARAMS(3);
-			OPCODE_CONDITION_RESULT(false);
-		}
-
-		return OR_CONTINUE;
-	}
-
-	//0AB7=2,get_vehicle %1d% number_of_gears_to %2d%
-	OpcodeResult __stdcall opcode_0AB7(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto gears = vehicle->m_pHandlingData->m_transmissionData.m_nNumberOfGears;
-
-		OPCODE_WRITE_PARAM_INT(gears);
-		return OR_CONTINUE;
-	}
-
-	//0AB8=2,get_vehicle %1d% current_gear_to %2d%
-	OpcodeResult __stdcall opcode_0AB8(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto gear = vehicle->m_nCurrentGear;
-
-		OPCODE_WRITE_PARAM_INT(gear);
-		return OR_CONTINUE;
-	}
-
-	//0ABD=1,  vehicle %1d% siren_on
-	OpcodeResult __stdcall opcode_0ABD(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto state = vehicle->m_nVehicleFlags.bSirenOrAlarm;
-
-		OPCODE_CONDITION_RESULT(state);
-		return OR_CONTINUE;
-	}
-
-	//0ABE=1,  vehicle %1d% engine_on
-	OpcodeResult __stdcall opcode_0ABE(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-
-		auto vehicle = CPools::GetVehicle(handle);
-		auto state = vehicle->m_nVehicleFlags.bEngineOn;
-
-		OPCODE_CONDITION_RESULT(state);
-		return OR_CONTINUE;
-	}
-
-	//0ABF=2,set_vehicle %1d% engine_state_to %2d%
-	OpcodeResult __stdcall opcode_0ABF(CRunningScript *thread)
-	{
-		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
-		auto state = OPCODE_READ_PARAM_BOOL();
-
-		auto vehicle = CPools::GetVehicle(handle);
-
-		vehicle->m_nVehicleFlags.bEngineOn = state != false;
-		return OR_CONTINUE;
-	}
-
-	//0AD2=2,  %2d% = player %1d% targeted_actor //IF and SET
-	OpcodeResult __stdcall opcode_0AD2(CRunningScript *thread)
-	{
-		auto playerId = OPCODE_READ_PARAM_INT();
-
-		auto pPlayerPed = GetPlayerPed(playerId); // TODO: use plugin SDK instead
-		auto pTargetEntity = GetWeaponTarget(pPlayerPed);
-
-		if (!pTargetEntity) pTargetEntity = (CEntity*)pPlayerPed->m_pPlayerTargettedPed;
-		if (pTargetEntity && pTargetEntity->m_nType == ENTITY_TYPE_PED)
-		{
-			auto handle = CPools::GetPedRef(reinterpret_cast<CPed*>(pTargetEntity));
-			OPCODE_WRITE_PARAM_INT(handle);
-			OPCODE_CONDITION_RESULT(true);
-		}
-		else
-		{
-			OPCODE_WRITE_PARAM_INT(-1);
-			OPCODE_CONDITION_RESULT(false);
-		}
-		return OR_CONTINUE;
-	}
-
 	//0ADC=1,  test_cheat %1d%
 	OpcodeResult __stdcall opcode_0ADC(CRunningScript *thread)
 	{
@@ -1355,159 +1163,6 @@ namespace CLEO
 		}
 
 		SetScriptCondResult(thread, false);
-		return OR_CONTINUE;
-	}
-
-	//0ADD=1,spawn_car_with_model %1o% at_player_location 
-	OpcodeResult __stdcall opcode_0ADD(CRunningScript *thread)
-	{
-		auto modelIndex = OPCODE_READ_PARAM_INT();
-
-		auto model = (CVehicleModelInfo*)CModelInfo::GetModelInfo(modelIndex); // compatible with fastman92's limit adjuster
-
-		if (model->m_nVehicleType != -1 && model->m_nVehicleType != eVehicleType::VEHICLE_TRAIN)
-		{
-			SpawnCar(modelIndex);
-		}
-
-		return OR_CONTINUE;
-	}
-
-	//0AE1=7,%7d% = find_actor_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% pass_deads %6h% //IF and SET
-	OpcodeResult __stdcall opcode_0AE1(CRunningScript *thread)
-	{
-		CVector center = {};
-		center.x = OPCODE_READ_PARAM_FLOAT();
-		center.y = OPCODE_READ_PARAM_FLOAT();
-		center.z = OPCODE_READ_PARAM_FLOAT();
-		auto radius = OPCODE_READ_PARAM_FLOAT();
-		auto findNext = OPCODE_READ_PARAM_BOOL();
-		auto passDead = OPCODE_READ_PARAM_INT();
-
-		static DWORD stat_last_found = 0;
-		auto& pool = *CPools::ms_pPedPool;
-
-		DWORD& last_found = reinterpret_cast<CCustomScript *>(thread)->IsCustom() ?
-			reinterpret_cast<CCustomScript *>(thread)->GetLastSearchPed() :
-			stat_last_found;
-
-		if (!findNext) last_found = 0;
-
-		for (int index = last_found; index < pool.m_nSize; ++index)
-		{
-			if (auto obj = pool.GetAt(index))
-			{
-				if (passDead != -1 && (obj->IsPlayer() || (passDead && !IsAvailable(obj))/* || obj->GetOwner() == 2*/ || obj->m_nPedFlags.bFadeOut))
-					continue;
-
-				if (radius >= 1000.0f || (VectorSqrMagnitude(obj->GetPosition() - center) <= radius * radius))
-				{
-					last_found = index + 1;	// on next opcode call start search from next index
-											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
-											//obj->PedCreatedBy = 2; // add reference to found actor
-
-					auto found = pool.GetRef(obj);
-					OPCODE_WRITE_PARAM_INT(found);
-					OPCODE_CONDITION_RESULT(true);
-					return OR_CONTINUE;
-				}
-			}
-		}
-
-		last_found = 0;
-		OPCODE_WRITE_PARAM_INT(-1);
-		OPCODE_CONDITION_RESULT(false);
-		return OR_CONTINUE;
-	}
-
-	//0AE2=7,%7d% = find_vehicle_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% pass_wrecked %6h% //IF and SET
-	OpcodeResult __stdcall opcode_0AE2(CRunningScript *thread)
-	{
-		CVector center = {};
-		center.x = OPCODE_READ_PARAM_FLOAT();
-		center.y = OPCODE_READ_PARAM_FLOAT();
-		center.z = OPCODE_READ_PARAM_FLOAT();
-		auto radius = OPCODE_READ_PARAM_FLOAT();
-		auto findNext = OPCODE_READ_PARAM_BOOL();
-		auto passWreck = OPCODE_READ_PARAM_INT();
-
-		static DWORD stat_last_found = 0;
-		auto& pool = *CPools::ms_pVehiclePool;
-
-		DWORD& last_found = reinterpret_cast<CCustomScript*>(thread)->IsCustom() ?
-			reinterpret_cast<CCustomScript *>(thread)->GetLastSearchVehicle() :
-			stat_last_found;
-
-		if (!findNext) last_found = 0;
-
-		for (int index = last_found; index < pool.m_nSize; ++index)
-		{
-			if (auto obj = pool.GetAt(index))
-			{
-				if ((passWreck && IsWrecked(obj)) || (/*obj->GetOwner() == 2 ||*/ obj->m_nVehicleFlags.bFadeOut))
-					continue;
-
-				if (radius >= 1000.0f || (VectorSqrMagnitude(obj->GetPosition() - center) <= radius * radius))
-				{
-					last_found = index + 1;	// on next opcode call start search from next index
-											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
-											// obj.referenceType = 2; // add reference to found actor
-
-					auto found = pool.GetRef(obj);
-					OPCODE_WRITE_PARAM_INT(found);
-					OPCODE_CONDITION_RESULT(true);
-					return OR_CONTINUE;
-				}
-			}
-		}
-
-		last_found = 0;
-		OPCODE_WRITE_PARAM_INT(-1);
-		OPCODE_CONDITION_RESULT(false);
-		return OR_CONTINUE;
-	}
-
-	//0AE3=6,%6d% = find_object_near_point %1d% %2d% %3d% in_radius %4d% find_next %5h% //IF and SET
-	OpcodeResult __stdcall opcode_0AE3(CRunningScript *thread)
-	{
-		CVector center = {};
-		center.x = OPCODE_READ_PARAM_FLOAT();
-		center.y = OPCODE_READ_PARAM_FLOAT();
-		center.z = OPCODE_READ_PARAM_FLOAT();
-		auto radius = OPCODE_READ_PARAM_FLOAT();
-		auto findNext = OPCODE_READ_PARAM_BOOL();
-
-		static DWORD stat_last_found = 0;
-		auto& pool = *CPools::ms_pObjectPool;
-
-		auto cs = reinterpret_cast<CCustomScript *>(thread);
-		DWORD& last_found = cs->IsCustom() ? cs->GetLastSearchObject() : stat_last_found;
-
-		if (!findNext) last_found = 0;
-
-		for (int index = last_found; index < pool.m_nSize; ++index)
-		{
-			if (auto obj = pool.GetAt(index))
-			{
-				if (obj->m_nObjectFlags.bFadingIn) continue; // this is actually .bFadingOut (yet?)
-
-				if (radius >= 1000.0f || (VectorSqrMagnitude(obj->GetPosition() - center) <= radius * radius))
-				{
-					last_found = index + 1;	// on next opcode call start search from next index
-											//if(last_found >= (unsigned)pool.GetSize()) last_found = 0;
-											// obj.referenceType = 2; // add reference to found actor
-
-					auto found = pool.GetRef(obj);
-					OPCODE_WRITE_PARAM_INT(found);
-					OPCODE_CONDITION_RESULT(true);
-					return OR_CONTINUE;
-				}
-			}
-		}
-
-		last_found = 0;
-		OPCODE_WRITE_PARAM_INT(-1);
-		OPCODE_CONDITION_RESULT(false);
 		return OR_CONTINUE;
 	}
 

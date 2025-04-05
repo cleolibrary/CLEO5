@@ -8,8 +8,6 @@
 
 namespace CLEO
 {
-    CMenuManager* MenuManager;
-
     DWORD CTexture__DrawInRect; // original address
     void CTexture_DrawInRect(void* pTexture, RwRect2D* rect, RwRGBA* colour)
     {
@@ -82,10 +80,7 @@ namespace CLEO
     void CGameMenu::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting MenuStatusNotifier...");
-        CGameVersionManager& gvm = CleoInstance.VersionManager;
-        MenuManager = gvm.TranslateMemoryAddress(MA_MENU_MANAGER);
-
-        inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT).address + 1, CTexture__DrawInRect, true);
-        inj.ReplaceFunction(OnDrawMenuBackground, gvm.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT));
+        inj.MemoryReadOffset(CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT).address + 1, CTexture__DrawInRect, true);
+        inj.ReplaceFunction(OnDrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT));
     }
 }

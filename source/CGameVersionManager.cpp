@@ -10,7 +10,6 @@ namespace CLEO
         { 0x0053BEE0,	memory_und, 0x0053BEE0, 0x0053C380, 0x0054DE60 },		// MA_UPDATE_GAME_LOGICS_FUNCTION,
 
                                                                                 // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
-        { 0x00BA6748,	memory_und, 0x00BA6748, 0x00BA8DC8, 0x00C33100 },		// MA_MENU_MANAGER,
         { 0x0071A700,	memory_und, 0x0071A700, 0x0071AF30, 0x0073BF50 },		// MA_DRAW_TEXT_FUNCTION,
         { 0x00719610,	memory_und, 0x00719610, 0x00719E40, 0x0073ABC0 },		// MA_SET_TEXT_ALIGN_FUNCTION,
         { 0x00719490,	memory_und, 0x00719490, 0x00719CC0, 0x0073AA00 },		// MA_SET_TEXT_FONT_FUNCTION,
@@ -78,10 +77,6 @@ namespace CLEO
         { 0x00B74490,	memory_und, 0x00B74490, 0x00B76B10, 0x00C01038 },		// MA_PED_POOL,
         { 0x00B74494,	memory_und, 0x00B74494, 0x00B76B14, 0x00C0103C },		// MA_VEHICLE_POOL,
         { 0x00B7449C,	memory_und, 0x00B7449C, 0x00B76B18, 0x00C01044 },		// MA_OBJECT_POOL,
-        { 0x00569660,	memory_und, 0x00569660, 0x00569B00, 0x00583CB0 },		// MA_FIND_GROUND_Z_FUNCTION,
-        { 0x00BA86F0,	memory_und, 0x00BA86F0, 0x00BAAD70, 0x00C36020 },		// MA_RADAR_BLIPS,
-        { 0x0056E210,	memory_und, 0x0056E210, 0x0056E6B0, 0x00563900 },		// MA_GET_PLAYER_PED_FUNCTION,
-        { 0x0043A0B0,	memory_und, 0x0043A0B0, 0x0043A136, 0x0043D3D0 },		// MA_SPAWN_CAR_FUNCTION,
 
                                                                                 // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
         { 0x007487A8,	memory_und, 0x007487F8, 0x0074907C, 0x0078276D },		// MA_CALL_CREATE_MAIN_WINDOW,

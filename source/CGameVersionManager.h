@@ -28,7 +28,6 @@ namespace CLEO
         MA_UPDATE_GAME_LOGICS_FUNCTION,
 
         // MenuStatusNotifier
-        MA_MENU_MANAGER,
         MA_DRAW_TEXT_FUNCTION,
         MA_SET_TEXT_ALIGN_FUNCTION,
         MA_SET_TEXT_FONT_FUNCTION,
@@ -95,10 +94,6 @@ namespace CLEO
         MA_PED_POOL,
         MA_VEHICLE_POOL,
         MA_OBJECT_POOL,
-        MA_FIND_GROUND_Z_FUNCTION,
-        MA_RADAR_BLIPS,
-        MA_GET_PLAYER_PED_FUNCTION,
-        MA_SPAWN_CAR_FUNCTION,
 
         MA_CALL_CREATE_MAIN_WINDOW,
 

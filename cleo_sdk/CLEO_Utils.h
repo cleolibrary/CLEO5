@@ -55,6 +55,7 @@ namespace CLEO
     OPCODE_READ_PARAM_PTR() // read and validate memory address argument
     OPCODE_READ_PARAM_OBJECT_HANDLE() // read and validate game object handle
     OPCODE_READ_PARAM_PED_HANDLE() // read and validate character (ped/actor) handle
+    OPCODE_READ_PARAM_PLAYER_ID() // read and validate player id
     OPCODE_READ_PARAM_VEHICLE_HANDLE() // read and validate vehicle handle
 
     // for opcodes with mixed params order, where 'strore_to' occurs before input arguments 
@@ -366,6 +367,19 @@ namespace CLEO
             return false; // flags mismatch
 
         return true;
+    }
+
+    static bool IsPlayerIdValid(int id)
+    {
+        switch (id)
+        {
+            case -1: // player in focus
+            case 0: // player 1
+            case 1: // player 2
+                return true;
+        }
+
+        return false;
     }
 
     static const char* TraceVArg(CLEO::eLogLevel level, const char* format, va_list args)
@@ -809,6 +823,10 @@ namespace CLEO
     #define OPCODE_READ_PARAM_VEHICLE_HANDLE() _readParam(thread).dwParam; \
         if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
         else if (!IsVehicleHandleValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid vehicle handle '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+
+    #define OPCODE_READ_PARAM_PLAYER_ID() _readParam(thread).dwParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
+        else if (!IsPlayerIdValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid player id '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_READ_PARAM_OUTPUT_VAR_ANY32() _readParamVariable(thread); \
         if (!_paramWasVariable()) { SHOW_ERROR("Output argument %s expected to be variable int or float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }

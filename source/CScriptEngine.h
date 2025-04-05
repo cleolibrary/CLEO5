@@ -20,7 +20,6 @@ namespace CLEO
 
         bool bSaveEnabled;
         bool bOK;
-        DWORD LastSearchPed, LastSearchCar, LastSearchObj;
         eCLEO_Version CompatVer;
         BYTE UseTextCommands;
         int NumDraws;
@@ -56,9 +55,6 @@ namespace CLEO
         inline void enable_saving(bool en = true) { bSaveEnabled = en; }
         inline void SetCompatibility(eCLEO_Version ver) { CompatVer = ver; }
         inline eCLEO_Version GetCompatibility() const { return CompatVer; }
-        inline DWORD& GetLastSearchPed() { return LastSearchPed; }
-        inline DWORD& GetLastSearchVehicle() { return LastSearchCar; }
-        inline DWORD& GetLastSearchObject() { return LastSearchObj; }
 
         CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
         CCustomScript(const CCustomScript&) = delete; // no copying
@@ -184,7 +180,5 @@ namespace CLEO
 
     extern BYTE *scmBlock, *missionBlock;
     extern int MissionIndex;
-
-	extern float VectorSqrMagnitude(CVector vector);
 }
 

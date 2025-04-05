@@ -1153,12 +1153,8 @@ namespace CLEO
 
             CleoSafeHeader header = { CleoSafeHeader::sign, savedThreads.size(), InactiveScriptHashes.size() };
 
-            // steam offset is different, so get it manually for now
-            CGameVersionManager& gvm = CleoInstance.VersionManager;
-            int nSlot = gvm.GetGameVersion() != GV_STEAM ? *(BYTE*)&MenuManager->m_nSelectedSaveGame : *((BYTE*)MenuManager + 0x15B);
-
             char safe_name[MAX_PATH];
-            sprintf(safe_name, "./cleo/cleo_saves/cs%d.sav", nSlot);
+            sprintf(safe_name, "./cleo/cleo_saves/cs%d.sav", FrontEndMenuManager.m_nSelectedSaveGame);
             TRACE("Saving script engine state to the file '%s'", safe_name);
 
             CreateDirectory("cleo", NULL);
@@ -1479,7 +1475,6 @@ namespace CLEO
     // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
     CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label)
         : CRunningScript(), bSaveEnabled(false), bOK(false),
-        LastSearchPed(0), LastSearchCar(0), LastSearchObj(0),
         CompatVer(CLEO_VER_CUR)
     {
         TRACE(""); // separator
@@ -1658,6 +1653,4 @@ namespace CLEO
 
         if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
     }
-
-    float VectorSqrMagnitude(CVector vector) { return vector.x * vector.x + vector.y * vector.y + vector.z * vector.z; }
 }

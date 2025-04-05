@@ -60,8 +60,6 @@ inline const std::string Filepath_Cleo = Filepath_Game + "\\cleo";
 inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
 inline const std::string Filepath_Log = Filepath_Game + "\\cleo.log";
 
-#define NUM_SCAN_ENTITIES 16
-
 using RGBA = CRGBA;
 using RwV3D = RwV3d;
 struct RwRect2D;
@@ -102,21 +100,6 @@ public:
 };
 
 VALIDATE_SIZE(CTextDrawer, 0x44);
-
-inline CEntity* GetWeaponTarget(CPed* pSelf)
-{
-    return reinterpret_cast<int>(pSelf->m_pTargetedObject) != -1 ? pSelf->m_pTargetedObject : nullptr;
-}
-
-inline bool IsAvailable(CPed* pSelf)
-{
-    return pSelf->m_nPedState != PEDSTATE_DIE && pSelf->m_nPedState != PEDSTATE_DEAD;
-}
-
-inline bool	IsWrecked(CVehicle* pSelf)
-{
-    return pSelf->m_nStatus == STATUS_WRECKED || pSelf->m_nVehicleFlags.bIsDrowning;
-}
 
 
 #define OP_NOP			0x90
