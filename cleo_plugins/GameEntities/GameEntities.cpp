@@ -1,11 +1,11 @@
 #include "plugin.h"
 #include "CLEO.h"
 #include "CLEO_Utils.h"
-#include "CCheat.h"
-#include "CMenuManager.h"
-#include "CModelInfo.h"
-#include "CRadar.h"
-#include "CWorld.h"
+#include <CCheat.h>
+#include <CMenuManager.h>
+#include <CModelInfo.h>
+#include <CRadar.h>
+#include <CWorld.h>
 #include <map>
 
 using namespace CLEO;
@@ -113,7 +113,7 @@ public:
 		auto blipIdx = CRadar::GetActualBlipArrayIndex(FrontEndMenuManager.m_nTargetBlipIndex);
 		if (blipIdx == -1)
 		{
-			OPCODE_SKIP_PARAMS(3);
+			OPCODE_SKIP_PARAMS(3); // x, y, z
 			OPCODE_CONDITION_RESULT(false); // no target marker placed
 			return OR_CONTINUE;
 		}
@@ -121,7 +121,7 @@ public:
 		CVector pos = CRadar::ms_RadarTrace[blipIdx].m_vecPos; // TODO: support for Fastman92's Limit Adjuster
 
 		// TODO: load world collisions for the coords
-		pos.z = CWorld::FindGroundZForCoord(pos.x, pos.z);
+		pos.z = CWorld::FindGroundZForCoord(pos.x, pos.y);
 
 		OPCODE_WRITE_PARAM_FLOAT(pos.x);
 		OPCODE_WRITE_PARAM_FLOAT(pos.y);
@@ -229,7 +229,7 @@ public:
 		auto model = CModelInfo::GetModelInfo(modelIndex);
 		if (model == nullptr || model->GetModelType() != MODEL_INFO_VEHICLE)
 		{
-			return OR_CONTINUE;
+			return OR_CONTINUE; // modelIndex is not vehicle
 		}
 
 		auto veh = (CVehicleModelInfo*)model;
@@ -250,7 +250,7 @@ public:
 				break;
 
 			default:
-				return OR_CONTINUE; // unsupported type
+				return OR_CONTINUE; // unsupported vehicle type
 		}
 
 		CCheat::VehicleCheat(modelIndex);
@@ -409,7 +409,7 @@ public:
 		{
 			auto object = CPools::ms_pObjectPool->GetAt(index);
 
-			if (object == nullptr)
+			if (object == nullptr || object->m_nObjectFlags.bFadingIn) // this is actually .bFadingOut
 			{
 				continue; // invalid
 			}
