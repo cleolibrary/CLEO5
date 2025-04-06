@@ -19,7 +19,7 @@ function tests
         assert_eq(count, 5)
         delete_car carHandle
         
-        // Trashmaster: 4 gears
+        // Bus: 4 gears
         carHandle = SpawnCar(#BUS)
         count = 0x666
         count = get_car_number_of_gears carHandle
