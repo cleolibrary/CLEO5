@@ -50,118 +50,118 @@ function tests
 
 
     function test1()
-        int foundPed
+        int found
         
         float x, y, z
         x, y, z = get_char_coordinates $scplayer
 
         // no peds nearby
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 1 // CharSearchFilter.AnyAliveNPC
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyAliveNPC
         assert_result_false()
-        assert_eq(foundPed, -1)
+        assert_eq(found, -1)
         
         // mission ped
-        int pedHandle = SpawnPed(7)
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 1 // CharSearchFilter.AnyAliveNPC
+        int handle = SpawnPed(7)
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyAliveNPC
         assert_result_true()
-        assert_eq(foundPed, pedHandle)
+        assert_eq(found, handle)
         
         // non-mission ped
-        mark_char_as_no_longer_needed foundPed
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 1 // CharSearchFilter.AnyAliveNPC
+        mark_char_as_no_longer_needed found
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyAliveNPC
         assert_result_true()
-        assert_eq(foundPed, pedHandle)
+        assert_eq(found, handle)
         
         // dead mission ped
-        delete_char pedHandle
-        pedHandle = SpawnPed(7)
-        task_die {handle} pedHandle
+        delete_char handle
+        handle = SpawnPed(7)
+        task_die {handle} handle
         wait 0
         wait 0
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 1 // CharSearchFilter.AnyAliveNPC
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyAliveNPC
         assert_result_false()
-        assert_eq(foundPed, -1)
+        assert_eq(found, -1)
         
         // dead non-mission ped
-        mark_char_as_no_longer_needed foundPed
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 1 // CharSearchFilter.AnyAliveNPC
+        mark_char_as_no_longer_needed found
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyAliveNPC
         assert_result_false()
-        assert_eq(foundPed, -1)
+        assert_eq(found, -1)
         
-        delete_char pedHandle
+        delete_char handle
     end
     
     
     function test2()
-        int foundPed
+        int found
         
         float x, y, z
         x, y, z = get_char_coordinates $scplayer
 
         // no peds nearby
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 0 // CharSearchFilter.AnyNPC
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyNPC
         assert_result_false()
-        assert_eq(foundPed, -1)
+        assert_eq(found, -1)
         
         // mission ped
-        int pedHandle = SpawnPed(7)
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 0 // CharSearchFilter.AnyNPC
+        int handle = SpawnPed(7)
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyNPC
         assert_result_true()
-        assert_eq(foundPed, pedHandle)
+        assert_eq(found, handle)
         
         // non-mission ped
-        mark_char_as_no_longer_needed foundPed
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 0 // CharSearchFilter.AnyNPC
+        mark_char_as_no_longer_needed found
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyNPC
         assert_result_true()
-        assert_eq(foundPed, pedHandle)
+        assert_eq(found, handle)
         
         // dead mission ped
-        delete_char pedHandle
-        pedHandle = SpawnPed(7)
-        task_die {handle} pedHandle
+        delete_char handle
+        handle = SpawnPed(7)
+        task_die {handle} handle
         wait 0
         wait 0
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 0 // CharSearchFilter.AnyNPC
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyNPC
         assert_result_true()
-        assert_eq(foundPed, pedHandle)
+        assert_eq(found, handle)
         
         // dead non-mission ped
-        mark_char_as_no_longer_needed foundPed
-        foundPed = 0x666
-        foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} 0 // CharSearchFilter.AnyNPC
+        mark_char_as_no_longer_needed found
+        found = 0x666
+        found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyNPC
         assert_result_true()
-        assert_eq(foundPed, pedHandle)
+        assert_eq(found, handle)
         
-        delete_char pedHandle
+        delete_char handle
     end
 end
 
 
 function test3()
-    int foundPed
+    int found
     
     float x, y, z
     x, y, z = get_char_coordinates $scplayer
 
     // no peds nearby
-    foundPed = 0x666
-    foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} -1 // CharSearchFilter.Any
+    found = 0x666
+    found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.Any
     assert_result_true()
-    assert_eq(foundPed, $scplayer)
+    assert_eq(found, $scplayer)
 end
 
 
 function test4()
-    int foundPed
+    int found
     
     float x, y, z
     x, y, z = get_char_coordinates $scplayer
@@ -171,28 +171,28 @@ function test4()
     mark_char_as_no_longer_needed pedB
     
     // #1
-    foundPed = 0x666
-    foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} -1 // CharSearchFilter.Any
+    found = 0x666
+    found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.Any
     assert_result_true()
-    assert_one_of_3(foundPed, $scplayer, pedA, pedB)
+    assert_one_of_3(found, $scplayer, pedA, pedB)
     
     // #2
-    foundPed = 0x666
-    foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {filter} -1 // CharSearchFilter.Any
+    found = 0x666
+    found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {filter} CharSearchFilter.Any
     assert_result_true()
-    assert_one_of_3(foundPed, $scplayer, pedA, pedB)
+    assert_one_of_3(found, $scplayer, pedA, pedB)
     
     // #3
-    foundPed = 0x666
-    foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {filter} -1 // CharSearchFilter.Any
+    found = 0x666
+    found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {filter} CharSearchFilter.Any
     assert_result_true()
-    assert_one_of_3(foundPed, $scplayer, pedA, pedB)
+    assert_one_of_3(found, $scplayer, pedA, pedB)
     
     // no more to find
-    foundPed = 0x666
-    foundPed = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {filter} -1 // CharSearchFilter.Any
+    found = 0x666
+    found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {filter} CharSearchFilter.Any
     assert_result_false()
-    assert_eq(foundPed, -1)
+    assert_eq(found, -1)
     
     delete_char pedA
     delete_char pedB
@@ -209,9 +209,9 @@ function SpawnPed(modelIdx: int): int
     
     request_model modelIdx
     load_all_models_now
-    int pedHandle = create_char {type} PedType.CivMale {model} modelIdx {pos} x y z
+    int handle = create_char {type} PedType.CivMale {model} modelIdx {pos} x y z
     mark_model_as_no_longer_needed modelIdx
     
-    return pedHandle
+    return handle
 end
 

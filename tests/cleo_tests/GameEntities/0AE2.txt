@@ -1,0 +1,194 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AE2'
+test("0AE2 (get_random_car_in_sphere_no_save_recursive)", tests)
+terminate_this_custom_script
+
+function tests
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should return alive car in sphere", test1)
+    it("should return any car in sphere", test2)
+    it("should find multiple cars in sphere", test3)
+    return
+    
+    
+    :setup
+        while not is_player_playing $player1
+            wait 0
+        end
+        
+        set_player_control $player1 {state} false
+        set_police_ignore_player {player} $player1 {state} true
+        set_char_proofs $scplayer {bulletProof} true {fireProof} true {explosionProof} true {collisionProof} true {meleeProof} true
+        
+        set_area_visible {areaId} 0
+        set_char_area_visible $scplayer {areaId} 0
+        warp_char_from_car_to_coord $scplayer {pos} 2737.8 -1760.3 43.15
+        set_char_heading $scplayer {heading} 0.0
+        restore_camera_jumpcut
+        load_scene {pos} 2737.8 -1760.3 43.15
+        request_collision {xy} 2737.8 -1760.3
+        
+        set_ped_density_multiplier {multiplier} 0.0
+        set_car_density_multiplier {multiplier} 0.0
+        clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
+    return
+
+
+    :cleanup
+        set_player_control $player1 {state} true
+        set_police_ignore_player {player} $player1 {state} false
+        set_char_proofs $scplayer {bulletProof} false {fireProof} false {explosionProof} false {collisionProof} false {meleeProof} false
+        
+        clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
+    return
+
+
+    function test1()
+        int found
+        
+        float x, y, z
+        x, y, z = get_char_coordinates $scplayer
+
+        // no cars nearby
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} true
+        assert_result_false()
+        assert_eq(found, -1)
+        
+        // mission car
+        int handle = SpawnCar(#LANDSTAL)
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} true
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        // non-mission car
+        mark_car_as_no_longer_needed found
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} true
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        // dead mission car
+        delete_car handle
+        handle = SpawnCar(#LANDSTAL)
+        explode_car handle
+        wait 0
+        wait 0
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} true
+        assert_result_false()
+        assert_eq(found, -1)
+        
+        // dead non-mission car
+        mark_car_as_no_longer_needed found
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} true
+        assert_result_false()
+        assert_eq(found, -1)
+        
+        delete_car handle
+    end
+    
+    
+    function test2()
+        int found
+        
+        float x, y, z
+        x, y, z = get_char_coordinates $scplayer
+
+        // no cars nearby
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} false
+        assert_result_false()
+        assert_eq(found, -1)
+        
+        // mission car
+        int handle = SpawnCar(#LANDSTAL)
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} false
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        // non-mission car
+        mark_car_as_no_longer_needed found
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} false
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        // dead mission car
+        delete_car handle
+        handle = SpawnCar(#LANDSTAL)
+        explode_car handle
+        wait 0
+        wait 0
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} false
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        // dead non-mission car
+        mark_car_as_no_longer_needed found
+        found = 0x666
+        found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} false
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        delete_car handle
+    end
+end
+
+
+function test3()
+    int found
+    
+    float x, y, z
+    x, y, z = get_char_coordinates $scplayer
+    
+    int carA = SpawnCar(#LANDSTAL)
+    int carB = SpawnCar(#LANDSTAL)
+    mark_car_as_no_longer_needed carB
+    
+    // #1
+    found = 0x666
+    found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} false
+    assert_result_true()
+    assert_one_of_2(found, carA, carB)
+    
+    // #2
+    found = 0x666
+    found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {skipWrecked} false
+    assert_result_true()
+    assert_one_of_2(found, carA, carB)
+    
+    // no more to find
+    found = 0x666
+    found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true {skipWrecked} false
+    assert_result_false()
+    assert_eq(found, -1)
+    
+    delete_car carA
+    delete_car carB
+end
+
+
+function SpawnCar(modelIdx: int): int
+    float x, y, z
+    x = generate_random_float_in_range {min} -5.0 {max} 5.0
+    y = generate_random_float_in_range {min} 4.0 {max} 6.0
+    z = -1.0
+
+    x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
+    
+    request_model modelIdx
+    load_all_models_now
+    int carHandle = create_car {modelId} modelIdx {pos} x y z
+    mark_model_as_no_longer_needed modelIdx
+    
+    return carHandle
+end

@@ -1,0 +1,127 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AE3'
+test("0AE3 (get_random_object_in_sphere_no_save_recursive)", tests)
+terminate_this_custom_script
+
+function tests
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should return object in sphere", test1)
+    it("should find multiple objects in sphere", test2)
+    return
+    
+    
+    :setup
+        while not is_player_playing $player1
+            wait 0
+        end
+        
+        set_player_control $player1 {state} false
+        set_police_ignore_player {player} $player1 {state} true
+        set_char_proofs $scplayer {bulletProof} true {fireProof} true {explosionProof} true {collisionProof} true {meleeProof} true
+        
+        set_area_visible {areaId} 0
+        set_char_area_visible $scplayer {areaId} 0
+        warp_char_from_car_to_coord $scplayer {pos} 2737.8 -1760.3 43.15
+        set_char_heading $scplayer {heading} 0.0
+        restore_camera_jumpcut
+        load_scene {pos} 2737.8 -1760.3 43.15
+        request_collision {xy} 2737.8 -1760.3
+        
+        set_ped_density_multiplier {multiplier} 0.0
+        set_car_density_multiplier {multiplier} 0.0
+        clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
+    return
+
+
+    :cleanup
+        set_player_control $player1 {state} true
+        set_police_ignore_player {player} $player1 {state} false
+        set_char_proofs $scplayer {bulletProof} false {fireProof} false {explosionProof} false {collisionProof} false {meleeProof} false
+        
+        clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
+    return
+
+
+    function test1()
+        int found
+        
+        float x, y, z
+        x, y, z = get_char_coordinates $scplayer
+
+        // no objects nearby
+        found = 0x666
+        found = get_random_object_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false
+        assert_result_false()
+        assert_eq(found, -1)
+        
+        // mission object
+        int handle = SpawnObject(#BOMB)
+        found = 0x666
+        found = get_random_object_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        // non-mission object
+        mark_object_as_no_longer_needed found
+        found = 0x666
+        found = get_random_object_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false
+        assert_result_true()
+        assert_eq(found, handle)
+        
+        delete_object handle
+    end
+    
+        
+    function test2()
+        int found
+        
+        float x, y, z
+        x, y, z = get_char_coordinates $scplayer
+        
+        int objectA = SpawnObject(#BOMB)
+        int objectB = SpawnObject(#BOMB)
+        mark_object_as_no_longer_needed objectB
+        
+        // #1
+        found = 0x666
+        found = get_random_object_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false
+        assert_result_true()
+        assert_one_of_2(found, objectA, objectB)
+        
+        // #2
+        found = 0x666
+        found = get_random_object_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true
+        assert_result_true()
+        assert_one_of_2(found, objectA, objectB)
+        
+        // no more to find
+        found = 0x666
+        found = get_random_object_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} true
+        assert_result_false()
+        assert_eq(found, -1)
+        
+        delete_object objectA
+        delete_object objectB
+    end
+end
+
+
+function SpawnObject(modelIdx: int): int
+    float x, y, z
+    x = generate_random_float_in_range {min} -5.0 {max} 5.0
+    y = generate_random_float_in_range {min} 4.0 {max} 6.0
+    z = -1.0
+
+    x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
+    
+    request_model modelIdx
+    load_all_models_now
+    int objectHandle = create_object {modelId} modelIdx {pos} x y z
+    mark_model_as_no_longer_needed modelIdx
+    
+    return objectHandle
+end
