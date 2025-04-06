@@ -62,7 +62,7 @@ function tests
         assert_eq(found, -1)
         
         // mission ped
-        int handle = SpawnPed(7)
+        int handle = SpawnPed(#MALE01)
         found = 0x666
         found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyAliveNPC
         assert_result_true()
@@ -77,7 +77,7 @@ function tests
         
         // dead mission ped
         delete_char handle
-        handle = SpawnPed(7)
+        handle = SpawnPed(#MALE01)
         task_die {handle} handle
         wait 0
         wait 0
@@ -110,7 +110,7 @@ function tests
         assert_eq(found, -1)
         
         // mission ped
-        int handle = SpawnPed(7)
+        int handle = SpawnPed(#MALE01)
         found = 0x666
         found = get_random_char_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {filter} CharSearchFilter.AnyNPC
         assert_result_true()
@@ -125,7 +125,7 @@ function tests
         
         // dead mission ped
         delete_char handle
-        handle = SpawnPed(7)
+        handle = SpawnPed(#MALE01)
         task_die {handle} handle
         wait 0
         wait 0
@@ -166,8 +166,8 @@ function test4()
     float x, y, z
     x, y, z = get_char_coordinates $scplayer
     
-    int pedA = SpawnPed(7)
-    int pedB = SpawnPed(7)
+    int pedA = SpawnPed(#MALE01)
+    int pedB = SpawnPed(#MALE01)
     mark_char_as_no_longer_needed pedB
     
     // #1

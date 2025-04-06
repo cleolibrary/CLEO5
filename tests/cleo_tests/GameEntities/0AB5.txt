@@ -39,7 +39,7 @@ function tests
         
         // spawn test entities
         carHandle = SpawnCar(#LANDSTAL)
-        pedHandle = SpawnPed(7)
+        pedHandle = SpawnPed(#MALE01)
     return
 
 
