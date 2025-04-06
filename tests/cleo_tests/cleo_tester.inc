@@ -239,6 +239,35 @@ function assert_range(actual: int, expectedMin: int, expectedMax: int)
     end
 end
 
+// checks if int value is equal to one of two specified values, otherwise stops the test execution
+function assert_one_of_2(actual: int, expected1: int, expected2: int)
+    _cleo_tester_increment_assert()
+    if and
+        actual <> expected1
+        actual <> expected2
+    then
+        _cleo_tester_fail()
+        trace "~g~~h~~h~%08X or %08X~s~ expected~n~~r~~h~~h~%08X~s~ occured" expected1 expected2 actual
+        breakpoint
+        terminate_this_custom_script
+    end
+end
+
+// checks if int value is equal to one of three specified values, otherwise stops the test execution
+function assert_one_of_3(actual: int, expected1: int, expected2: int, expected3: int)
+    _cleo_tester_increment_assert()
+    if and
+        actual <> expected1
+        actual <> expected2
+        actual <> expected3
+    then
+        _cleo_tester_fail()
+        trace "~g~~h~~h~%08X, %08X or %08X~s~ expected~n~~r~~h~~h~%08X~s~ occured" expected1 expected2 expected3 actual
+        breakpoint
+        terminate_this_custom_script
+    end
+end
+
 /// checks if two float values are equal, otherwise stops the test execution
 function assert_eqf(actual: float, expected: float)
     _cleo_tester_increment_assert()

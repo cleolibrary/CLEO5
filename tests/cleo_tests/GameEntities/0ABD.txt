@@ -33,7 +33,7 @@ function SpawnCar(modelIdx: int): int
     float x, y, z
     x = generate_random_float_in_range {min} -5.0 {max} 5.0
     y = generate_random_float_in_range {min} 4.0 {max} 6.0
-    z = 0.0
+    z = -1.0
 
     x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
     

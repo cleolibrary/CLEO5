@@ -1,29 +1,33 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name '0AB7'
-test("0AB7 (get_car_number_of_gears)", tests)
+script_name '0ABF'
+test("0ABF (cleo_set_car_engine_on)", tests)
 terminate_this_custom_script
 
 function tests
-    it("should get car gear count", test1)
+    it("should set car engine state", test1)
     return
     
     function test1()
-        int carHandle, count
+        int carHandle
     
-        // Landstalker: 5 gears
         carHandle = SpawnCar(#LANDSTAL)
-        count = 0x666
-        count = get_car_number_of_gears carHandle
-        assert_eq(count, 5)
-        delete_car carHandle
+
+        wait {time} 0
+        is_car_engine_on carHandle
+        assert_result_false()
         
-        // Trashmaster: 4 gears
-        carHandle = SpawnCar(#BUS)
-        count = 0x666
-        count = get_car_number_of_gears carHandle
-        assert_eq(count, 4)
+        cleo_set_car_engine_on carHandle {state} true
+        wait {time} 0
+        is_car_engine_on carHandle
+        assert_result_true()
+        
+        cleo_set_car_engine_on carHandle {state} false
+        wait {time} 0
+        is_car_engine_on carHandle
+        assert_result_false()
+        
         delete_car carHandle
     end
 end

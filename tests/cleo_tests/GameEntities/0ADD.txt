@@ -1,18 +1,14 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name '0AB5'
-test("0AB5 (store_closest_entities)", tests)
+script_name '0ADD'
+test("0ADD (spawn_vehicle_by_cheating)", tests)
 terminate_this_custom_script
 
-
 function tests
-    int carHandle = -1
-    int pedHandle = -1
     before_each(@setup)
     after_each(@cleanup)
-
-    it("should find entities", test1)
+    it("should spawn car like cheat", test1)
     return
     
     
@@ -36,84 +32,32 @@ function tests
         set_ped_density_multiplier {multiplier} 0.0
         set_car_density_multiplier {multiplier} 0.0
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
-        
-        // spawn test entities
-        carHandle = SpawnCar(#LANDSTAL)
-        pedHandle = SpawnPed(7)
     return
-
-
+    
+    
     :cleanup
         set_player_control $player1 {state} true
         set_police_ignore_player {player} $player1 {state} false
         set_char_proofs $scplayer {bulletProof} false {fireProof} false {explosionProof} false {collisionProof} false {meleeProof} false
         
-        if
-            does_vehicle_exist {handle} carHandle
-        then
-            delete_car carHandle
-        end
-        carHandle = -1
-        
-        if
-            does_char_exist {handle} pedHandle
-        then
-            delete_char pedHandle
-        end
-        pedHandle = -1
-        
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
     return
-
-
-    function test1(carHandle: int, pedHandle: int)
-        int foundCar, foundPed
-                
-        // ignore mission entities
-        wait {time} 250
-        foundCar = 0x666
-        foundPed = 0x666
-        foundCar, foundPed = store_closest_entities $scplayer
-        assert_eq(foundCar, -1)
-        assert_eq(foundPed, -1)
-        
-        // detect non-mission entities
-        mark_car_as_no_longer_needed carHandle
-        mark_char_as_no_longer_needed pedHandle
+    
+    
+    function test1()
+        int pedHandle, vehHandle
         
         wait {time} 250
-        foundCar = 0x666
-        foundPed = 0x666
-        foundCar, foundPed = store_closest_entities $scplayer
-        assert_eq(foundCar, carHandle)
-        assert_eq(foundPed, pedHandle)
+        vehHandle, pedHandle = store_closest_entities $scplayer
+        assert_eq(vehHandle, -1)
         
-        // should find nothing
+        spawn_vehicle_by_cheating {modelId} #LANDSTAL
+        wait {time} 250
+        vehHandle, pedHandle = store_closest_entities $scplayer
+        assert_neq(vehHandle, -1)
+        
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
-        wait {time} 250
-        foundCar = 0x666
-        foundPed = 0x666
-        foundCar, foundPed = store_closest_entities $scplayer
-        assert_eq(foundCar, -1)
-        assert_eq(foundPed, -1)
     end
-end
-
-
-function SpawnCar(modelIdx: int): int
-    float x, y, z
-    x = generate_random_float_in_range {min} -5.0 {max} 5.0
-    y = generate_random_float_in_range {min} 4.0 {max} 6.0
-    z = -1.0
-
-    x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
-    
-    request_model modelIdx
-    load_all_models_now
-    int carHandle = create_car {modelId} modelIdx {pos} x y z
-    mark_model_as_no_longer_needed modelIdx
-    
-    return carHandle
 end
 
 
@@ -132,4 +76,3 @@ function SpawnPed(modelIdx: int): int
     
     return pedHandle
 end
-

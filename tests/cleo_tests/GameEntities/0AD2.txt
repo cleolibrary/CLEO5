@@ -1,18 +1,15 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name '0AB5'
-test("0AB5 (store_closest_entities)", tests)
+script_name '0AD2'
+test("0AD2 (get_char_player_is_targeting)", tests)
 terminate_this_custom_script
 
-
 function tests
-    int carHandle = -1
-    int pedHandle = -1
+    int pedHandle
     before_each(@setup)
     after_each(@cleanup)
-
-    it("should find entities", test1)
+    it("should return char player is targeting", test1)
     return
     
     
@@ -38,7 +35,6 @@ function tests
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
         
         // spawn test entities
-        carHandle = SpawnCar(#LANDSTAL)
         pedHandle = SpawnPed(7)
     return
 
@@ -49,13 +45,6 @@ function tests
         set_char_proofs $scplayer {bulletProof} false {fireProof} false {explosionProof} false {collisionProof} false {meleeProof} false
         
         if
-            does_vehicle_exist {handle} carHandle
-        then
-            delete_car carHandle
-        end
-        carHandle = -1
-        
-        if
             does_char_exist {handle} pedHandle
         then
             delete_char pedHandle
@@ -64,56 +53,37 @@ function tests
         
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
     return
-
-
-    function test1(carHandle: int, pedHandle: int)
-        int foundCar, foundPed
-                
-        // ignore mission entities
-        wait {time} 250
-        foundCar = 0x666
-        foundPed = 0x666
-        foundCar, foundPed = store_closest_entities $scplayer
-        assert_eq(foundCar, -1)
-        assert_eq(foundPed, -1)
+    
+    
+    function test1(pedHandle: int)
+        int modelId = get_weapontype_model {weaponType} WeaponType.Pistol
+        request_model {modelId} modelId
+        load_all_models_now
+        give_weapon_to_char $scplayer {weaponType} WeaponType.Pistol {ammo} 0xFFFFFF
+        mark_model_as_no_longer_needed {modelId} modelId
+        wait {time} 0
         
-        // detect non-mission entities
-        mark_car_as_no_longer_needed carHandle
-        mark_char_as_no_longer_needed pedHandle
+        int targeted 
         
-        wait {time} 250
-        foundCar = 0x666
-        foundPed = 0x666
-        foundCar, foundPed = store_closest_entities $scplayer
-        assert_eq(foundCar, carHandle)
-        assert_eq(foundPed, pedHandle)
+        // no target
+        wait {time} 0
+        targeted = 0x666
+        targeted = get_char_player_is_targeting $player1
+        assert_result_false()
+        assert_eq(targeted, -1)
         
-        // should find nothing
-        clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
-        wait {time} 250
-        foundCar = 0x666
-        foundPed = 0x666
-        foundCar, foundPed = store_closest_entities $scplayer
-        assert_eq(foundCar, -1)
-        assert_eq(foundPed, -1)
+        /*// target - it does not work this way
+        set_char_stay_in_same_place pedHandle {state} true
+        set_char_proofs pedHandle {bulletProof} true {fireProof} true {explosionProof} true {collisionProof} true {meleeProof} true
+        
+        set_char_stay_in_same_place $scplayer {state} true
+        task_kill_char_on_foot {killer} $scplayer {target} pedHandle
+        wait {time} 1000
+        targeted = 0x666
+        targeted = get_char_player_is_targeting $player1
+        assert_result_true()
+        assert_eq(targeted, pedHandle)*/
     end
-end
-
-
-function SpawnCar(modelIdx: int): int
-    float x, y, z
-    x = generate_random_float_in_range {min} -5.0 {max} 5.0
-    y = generate_random_float_in_range {min} 4.0 {max} 6.0
-    z = -1.0
-
-    x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
-    
-    request_model modelIdx
-    load_all_models_now
-    int carHandle = create_car {modelId} modelIdx {pos} x y z
-    mark_model_as_no_longer_needed modelIdx
-    
-    return carHandle
 end
 
 
@@ -132,4 +102,3 @@ function SpawnPed(modelIdx: int): int
     
     return pedHandle
 end
-
