@@ -38,8 +38,8 @@ function tests
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
         
         // spawn test entities
-        carHandle = SpawnCar()
-        pedHandle = SpawnPed()
+        carHandle = SpawnCar(#LANDSTAL)
+        pedHandle = SpawnPed(7)
     return
 
 
@@ -68,7 +68,7 @@ function tests
         int foundCar, foundPed
                 
         // ignore mission entities
-        wait {time} 1000
+        wait {time} 250
         foundCar = 0x666
         foundPed = 0x666
         foundCar, foundPed = store_closest_entities $scplayer
@@ -79,7 +79,7 @@ function tests
         mark_car_as_no_longer_needed carHandle
         mark_char_as_no_longer_needed pedHandle
         
-        wait {time} 1000
+        wait {time} 250
         foundCar = 0x666
         foundPed = 0x666
         foundCar, foundPed = store_closest_entities $scplayer
@@ -88,7 +88,7 @@ function tests
         
         // should find nothing
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
-        wait {time} 1000
+        wait {time} 250
         foundCar = 0x666
         foundPed = 0x666
         foundCar, foundPed = store_closest_entities $scplayer
@@ -98,7 +98,7 @@ function tests
 end
 
 
-function SpawnCar(): int
+function SpawnCar(modelIdx: int): int
     float x, y, z
     x = generate_random_float_in_range {min} -5.0 {max} 5.0
     y = generate_random_float_in_range {min} 4.0 {max} 6.0
@@ -106,16 +106,16 @@ function SpawnCar(): int
 
     x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
     
-    request_model 400
+    request_model modelIdx
     load_all_models_now
-    int carHandle = create_car {modelId} 400 {pos} x y z
-    mark_model_as_no_longer_needed 400
+    int carHandle = create_car {modelId} modelIdx {pos} x y z
+    mark_model_as_no_longer_needed modelIdx
     
     return carHandle
 end
 
 
-function SpawnPed(): int
+function SpawnPed(modelIdx: int): int
     float x, y, z
     x = generate_random_float_in_range {min} -5.0 {max} 5.0
     y = generate_random_float_in_range {min} 4.0 {max} 6.0
@@ -123,10 +123,10 @@ function SpawnPed(): int
 
     x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
     
-    request_model 7
+    request_model modelIdx
     load_all_models_now
-    int pedHandle = create_char {type} PedType.CivMale {model} 7 {pos} x y z
-    mark_model_as_no_longer_needed 7
+    int pedHandle = create_char {type} PedType.CivMale {model} modelIdx {pos} x y z
+    mark_model_as_no_longer_needed modelIdx
     
     return pedHandle
 end

@@ -1,0 +1,48 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AB8'
+test("0AB8 (get_car_current_gear)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should get car current gear", test1)
+    return
+    
+    function test1()
+        int carHandle, gear
+    
+        carHandle = SpawnCar(#LANDSTAL)
+        int pedHandle = create_random_char_as_driver {vehicle} carHandle
+
+        wait {time} 250
+        gear = 0x666
+        gear = get_car_current_gear carHandle
+        assert_eq(gear, 1)
+        
+        set_car_temp_action carHandle {actionId} TempAction.Reverse {time} 5000
+        wait {time} 250
+        gear = 0x666
+        gear = get_car_current_gear carHandle
+        assert_eq(gear, 0) // reverse
+        
+        delete_car carHandle
+    end
+end
+
+
+function SpawnCar(modelIdx: int): int
+    float x, y, z
+    x = generate_random_float_in_range {min} -5.0 {max} 5.0
+    y = generate_random_float_in_range {min} 4.0 {max} 6.0
+    z = 0.0
+
+    x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
+    
+    request_model modelIdx
+    load_all_models_now
+    int carHandle = create_car {modelId} modelIdx {pos} x y z
+    mark_model_as_no_longer_needed modelIdx
+    
+    return carHandle
+end
