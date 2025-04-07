@@ -15,7 +15,6 @@ namespace CLEO
 
         static const size_t LastOriginalOpcode = 0x0A4E; // GTA SA
         static const size_t LastCustomOpcode = 0x7FFF;
-        static std::set<size_t> ProtectedOpcodes; // these can not be overwritten
 
         // most recently processed
         static CRunningScript* lastScript;

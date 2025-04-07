@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CleoBase.h"
 #include "Singleton.h"
+#include <CMenuManager.h>
 
 namespace CLEO
 {

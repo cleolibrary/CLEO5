@@ -2,25 +2,24 @@
 #include "CGameMenu.h"
 #include "CleoBase.h"
 #include "CDebug.h"
-#include "CFont.h"
-#include "plugin.h"
+#include <CFont.h>
 #include <sstream>
 
 namespace CLEO
 {
-    DWORD CTexture__DrawInRect; // original address
-    void CTexture_DrawInRect(void* pTexture, RwRect2D* rect, RwRGBA* colour)
+    DWORD CTexture__DrawInRect_Orig; // original address
+    void CTexture_DrawInRect(void* pTexture, CRect* rect, RwRGBA* colour)
     {
         _asm
         {
             push colour
             push rect
             mov ecx, pTexture
-            call CTexture__DrawInRect
+            call CTexture__DrawInRect_Orig
         }
     }
 
-    void __fastcall OnDrawMenuBackground(void *texture, int dummy, RwRect2D *rect, RwRGBA *color)
+    void __fastcall OnDrawMenuBackground(void *texture, int dummy, CRect* rect, RwRGBA *color)
     {
         CleoInstance.Start(CCleoInstance::InitStage::OnDraw); // late initialization
 
@@ -80,7 +79,7 @@ namespace CLEO
     void CGameMenu::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting MenuStatusNotifier...");
-        inj.MemoryReadOffset(CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT).address + 1, CTexture__DrawInRect, true);
+        inj.MemoryReadOffset(CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT).address + 1, CTexture__DrawInRect_Orig, true);
         inj.ReplaceFunction(OnDrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT));
     }
 }

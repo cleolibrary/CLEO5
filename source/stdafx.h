@@ -19,17 +19,9 @@
 #include <set>
 #include <cstdint>
 
-#include <game_sa/CPools.h>
-#include <game_sa/CMenuManager.h>
-#include <game_sa/CText.h>
-#include <game/CRGBA.h>
-#include <game_sa/cHandlingDataMgr.h>
-#include <game_sa/CPlayerPed.h>
-#include <game_sa/CRadar.h>
-#include <game_sa/CTheScripts.h>
-
 #include "..\cleo_sdk\CLEO.h"
 #include "..\cleo_sdk\CLEO_Utils.h"
+#include <plugin.h>
 
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
@@ -59,12 +51,6 @@ inline const std::string Filepath_User = GetUserDirectory();
 inline const std::string Filepath_Cleo = Filepath_Game + "\\cleo";
 inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
 inline const std::string Filepath_Log = Filepath_Game + "\\cleo.log";
-
-using RGBA = CRGBA;
-using RwV3D = RwV3d;
-struct RwRect2D;
-using CHandling = cHandlingDataMgr;
-using CMarker = tRadarTrace;
 
 class CTexture
 {
@@ -101,10 +87,3 @@ public:
 
 VALIDATE_SIZE(CTextDrawer, 0x44);
 
-
-#define OP_NOP			0x90
-#define OP_RET			0xC3
-#define OP_CALL			0xE8
-#define OP_JMP			0xE9
-#define OP_JMPSHORT		0xEB
-#include "Mem.h"

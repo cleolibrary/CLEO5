@@ -45,7 +45,6 @@
     <ClCompile Include="source\CScriptEngine.cpp" />
     <ClCompile Include="source\dllmain.cpp" />
     <ClCompile Include="source\OpcodeInfoDatabase.cpp" />
-    <ClCompile Include="source\PluginSdkExternals.cpp" />
     <ClCompile Include="source\ScmFunction.cpp" />
     <ClCompile Include="source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

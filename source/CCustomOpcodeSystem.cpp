@@ -3,9 +3,7 @@
 #include "CGameVersionManager.h"
 #include "CCustomOpcodeSystem.h"
 #include "ScmFunction.h"
-#include "CCheat.h"
-#include "CModelInfo.h"
-#include "CVehicle.h"
+#include <CCheat.h>
 
 #include <sstream>
 #include <forward_list>

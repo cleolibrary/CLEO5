@@ -1,5 +1,6 @@
 #pragma once
 #include "CDebug.h"
+#include "Mem.h"
 
 namespace CLEO
 {
