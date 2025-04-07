@@ -1227,10 +1227,6 @@ namespace CLEO
 extern "C"
 {
 	using namespace CLEO;
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4550)
-#endif
 
 	BOOL __stdcall CLEO_RegisterOpcode(WORD opcode, CustomOpcodeHandler callback)
 	{
@@ -1248,10 +1244,6 @@ extern "C"
 
 		return CCustomOpcodeSystem::RegisterOpcode(opcode, callback);
 	}
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 	DWORD __stdcall CLEO_GetIntOpcodeParam(CLEO::CRunningScript* thread)
 	{

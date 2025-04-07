@@ -104,13 +104,9 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 		return false;
 	}
 
-#pragma warning ( push )
-#pragma warning ( disable: 4838 )
-#pragma warning ( disable: 4309 )
-	const char Segment_First_Instruction[] = { 0x02, 0x00, 0x01 }; // jump, param type
-	const char Segment_Magic[] = { 0xFF, 0x7F, 0xFE, 0x00, 0x00 }; // Rockstar custom header magic
+	const BYTE Segment_First_Instruction[] = { 0x02, 0x00, 0x01 }; // jump, param type
+	const BYTE Segment_Magic[] = { 0xFF, 0x7F, 0xFE, 0x00, 0x00 }; // Rockstar custom header magic
 	const char Header_Signature_Module_Exports[] = { 'E', 'X', 'P', 'T' }; // CLEO's module header signature
-#pragma warning ( pop )
 
 	// read first instruction
 #pragma pack(push, 1)
