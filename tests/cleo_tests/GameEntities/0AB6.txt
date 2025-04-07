@@ -1,0 +1,50 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AB6'
+test("0AB6 (get_target_blip_coords)", tests)
+terminate_this_custom_script
+
+const Target_Blip_GTA_SA = 0x00BA6774
+
+function tests
+    it("should get target blip info", test1)
+    return
+    
+    function test1()
+        int handle
+        float x, y, z
+    
+        // delete target blip if set
+        handle = read_memory {address} Target_Blip_GTA_SA {size} 4 {vp} false
+        if
+            handle <> 0
+        then
+            remove_blip handle
+            write_memory {address} Target_Blip_GTA_SA {size} 4 {value} 0 {vp} false
+        end
+    
+        // test no blip
+        x = 111.0
+        y = 222.0
+        z = 333.0
+        x, y, z = get_target_blip_coords
+        assert_result_false()
+        assert_eqf(x, 111.0)
+        assert_eqf(y, 222.0)
+        assert_eqf(z, 333.0)
+        
+        // create target blip
+        handle = add_blip_for_coord {pos} 125.0 -98.0 20.0 // Blue Berry
+        write_memory {address} Target_Blip_GTA_SA {size} 4 {value} handle {vp} false
+        
+        x, y, z = get_target_blip_coords
+        assert_result_true()
+        assert_eqf(x, 125.0)
+        assert_eqf(y, -98.0)
+        //assert_rangef(z, 1.5, 1.6) // actual ground height
+        
+        remove_blip handle
+    end
+end
+
