@@ -72,17 +72,16 @@ function tests
         assert_result_false()
         assert_eq(targeted, -1)
         
-        /*// target - it does not work this way
-        set_char_stay_in_same_place pedHandle {state} true
-        set_char_proofs pedHandle {bulletProof} true {fireProof} true {explosionProof} true {collisionProof} true {meleeProof} true
+        // hack set target as otherwise it would need user action
+        int playerPtr = get_ped_pointer {char} $scplayer
+        int targetPtr = get_ped_pointer {char} pedHandle
+        write_memory_with_offset {address} playerPtr {offset} 0x79C {size} 4 {value} targetPtr // CPlayerPed::m_pPlayerTargettedPed
         
-        set_char_stay_in_same_place $scplayer {state} true
-        task_kill_char_on_foot {killer} $scplayer {target} pedHandle
-        wait {time} 1000
+        // get target
         targeted = 0x666
         targeted = get_char_player_is_targeting $player1
         assert_result_true()
-        assert_eq(targeted, pedHandle)*/
+        assert_eq(targeted, pedHandle)
     end
 end
 
