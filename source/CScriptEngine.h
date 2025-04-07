@@ -1,6 +1,4 @@
 #pragma once
-#include "CCodeInjector.h"
-#include "CCustomOpcodeSystem.h"
 
 namespace CLEO
 {
@@ -69,10 +67,6 @@ namespace CLEO
         void RestoreScriptTextures();
         void StoreScriptDraws();
         void RestoreScriptDraws();
-
-        void LoadCleoSave(int slot);
-        void StoreScriptCustoms();
-        void RestoreScriptCustoms();
 
         // debug related utils enabled?
         bool GetDebugMode() const;

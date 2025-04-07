@@ -1,8 +1,6 @@
 #pragma once
 #include "CCodeInjector.h"
 #include "CDebug.h"
-#include <direct.h>
-#include <set>
 
 namespace CLEO
 {

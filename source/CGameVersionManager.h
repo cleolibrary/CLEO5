@@ -1,6 +1,5 @@
 #pragma once
 #include "CCodeInjector.h"
-#include "Mem.h"
 
 namespace CLEO
 {

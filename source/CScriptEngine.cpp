@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CleoBase.h"
+#include "crc32.h"
 #include <CGame.h>
 #include <CMenuManager.h>
 #include <CTheScripts.h>

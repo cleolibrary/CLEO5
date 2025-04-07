@@ -2,15 +2,12 @@
 
 #include "CCodeInjector.h"
 #include "CGameVersionManager.h"
-#include "CDebug.h"
 #include "CDmaFix.h"
 #include "CGameMenu.h"
 #include "CModuleSystem.h"
 #include "CPluginSystem.h"
 #include "CScriptEngine.h"
 #include "CCustomOpcodeSystem.h"
-#include "FileEnumerator.h"
-#include "crc32.h"
 #include "OpcodeInfoDatabase.h"
 
 namespace CLEO

@@ -1,11 +1,7 @@
 #pragma once
-#include "FileEnumerator.h"
-#include "CDebug.h"
 #include <windows.h>
 #include <list>
 #include <string>
-#include <CMenuSystem.h>
-
 
 namespace CLEO
 {
