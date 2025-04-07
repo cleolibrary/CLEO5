@@ -261,7 +261,7 @@ namespace CLEO
     DWORD* GameTimer;
     extern "C"
     {
-        eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread)
+        eCLEO_Version __stdcall CLEO_GetScriptVersion(const CRunningScript* thread)
         {
             if (thread->IsCustom())
                 return reinterpret_cast<const CCustomScript*>(thread)->GetCompatibility();
@@ -269,7 +269,7 @@ namespace CLEO
                 return CleoInstance.ScriptEngine.NativeScriptsVersion;
         }
 
-        void WINAPI CLEO_SetScriptVersion(CRunningScript* thread, eCLEO_Version version)
+        void __stdcall CLEO_SetScriptVersion(CRunningScript* thread, eCLEO_Version version)
         {
             if (thread->IsCustom())
                 ((CCustomScript*)thread)->SetCompatibility(version);
@@ -277,7 +277,7 @@ namespace CLEO
                 CleoInstance.ScriptEngine.NativeScriptsVersion = version;
         }
 
-        LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread)
+        LPCSTR __stdcall CLEO_GetScriptFilename(const CRunningScript* thread)
         {
             if (!CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
             {
@@ -288,13 +288,13 @@ namespace CLEO
             return cs->GetScriptFileName();
         }
 
-        LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread)
+        LPCSTR __stdcall CLEO_GetScriptWorkDir(const CRunningScript* thread)
         {
             auto cs = (CCustomScript*)thread;
             return cs->GetWorkDir();
         }
 
-        void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path)
+        void __stdcall CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path)
         {
             auto cs = (CCustomScript*)thread;
             cs->SetWorkDir(path);
@@ -417,7 +417,7 @@ namespace CLEO
         bool process = true;
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcess))
         {
-            typedef bool WINAPI callback(CRunningScript*);
+            typedef bool __stdcall callback(CRunningScript*);
             process = process && ((callback*)func)(pScript);
         }
         if (!process)
@@ -441,7 +441,7 @@ namespace CLEO
         // run registered callbacks
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
         {
-            typedef void WINAPI callback(bool);
+            typedef void __stdcall callback(bool);
             ((callback*)func)(bBeforeFade != 0);
         }
     }
@@ -1354,7 +1354,7 @@ namespace CLEO
         // run registered callbacks
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptRegister))
         {
-            typedef void WINAPI callback(CCustomScript*);
+            typedef void __stdcall callback(CCustomScript*);
             ((callback*)func)(cs);
         }
     }
@@ -1380,7 +1380,7 @@ namespace CLEO
         // run registered callbacks
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptUnregister))
         {
-            typedef void WINAPI callback(CCustomScript*);
+            typedef void __stdcall callback(CCustomScript*);
             ((callback*)func)(cs);
         }
 

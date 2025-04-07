@@ -19,7 +19,7 @@ public:
     static std::set<DWORD> m_hFiles;
     static std::set<HANDLE> m_hFileSearches;
 
-    static void WINAPI OnFinalizeScriptObjects()
+    static void __stdcall OnFinalizeScriptObjects()
     {
         // clean up opened files
         for (auto handle : m_hFiles) File::close(handle);
@@ -124,7 +124,7 @@ public:
     }
 
     //0A9A=3,%3d% = openfile %1d% mode %2d% // IF and SET
-    static OpcodeResult WINAPI opcode_0A9A(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9A(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -167,7 +167,7 @@ public:
     }
 
     //0A9B=1,closefile %1d%
-    static OpcodeResult WINAPI opcode_0A9B(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9B(CRunningScript* thread)
     {
         auto handle = OPCODE_READ_PARAM_INT();
 
@@ -189,7 +189,7 @@ public:
     }
 
     //0A9C=2,get_file_size %1d% store_to %2d%
-    static OpcodeResult WINAPI opcode_0A9C(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9C(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -200,7 +200,7 @@ public:
     }
 
     //0A9D=3,read_from_file %1d% size %2d% store_to %3d%
-    static OpcodeResult WINAPI opcode_0A9D(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9D(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -218,7 +218,7 @@ public:
     }
 
     //0A9E=3,write_to_file %1d% size %2d% from %3d%
-    static OpcodeResult WINAPI opcode_0A9E(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9E(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -272,7 +272,7 @@ public:
     }
 
     // 0AAB=1,  does_file_exist %1s%
-    static OpcodeResult WINAPI Script_FS_FileExists(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FileExists(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -284,7 +284,7 @@ public:
     }
 
     //0AD5=3,  file_seek %1d% offset %2d% origin %3d% //IF and SET
-    static OpcodeResult WINAPI opcode_0AD5(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD5(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto offset = OPCODE_READ_PARAM_INT();
@@ -297,7 +297,7 @@ public:
     }
 
     //0AD6=1,  is_end_of_file_reached %1d%
-    static OpcodeResult WINAPI opcode_0AD6(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD6(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -308,7 +308,7 @@ public:
     }
 
     //0AD7=3,  read_string_from_file %1d% to %2d% size %3d% //IF and SET
-    static OpcodeResult WINAPI opcode_0AD7(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD7(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
@@ -350,7 +350,7 @@ public:
     }
 
     //0AD8=2,  write_string_to_file %1d% from %2d% //IF and SET
-    static OpcodeResult WINAPI opcode_0AD8(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD8(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(text);
@@ -368,7 +368,7 @@ public:
     }
 
     //0AD9=-1,write_formated_text %2d% to_file %1d%
-    static OpcodeResult WINAPI opcode_0AD9(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD9(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
@@ -384,7 +384,7 @@ public:
     }
 
     //0ADA=-1,  %3d% = scan_file %1d% format %2d% //IF and SET
-    static OpcodeResult WINAPI opcode_0ADA(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0ADA(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(format);
@@ -407,7 +407,7 @@ public:
     }
 
     // 0AE4=1,  directory_exist %1s%
-    static OpcodeResult WINAPI Script_FS_DirectoryExists(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_DirectoryExists(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -419,7 +419,7 @@ public:
     }
 
     // 0AE5=1,  create_directory %1s% //IF and SET
-    static OpcodeResult WINAPI Script_FS_CreateDirectory(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_CreateDirectory(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -430,7 +430,7 @@ public:
     }
 
     // 0AE6=3,  %2d% = find_first_file %1s% get_filename_to %3s% //IF and SET
-    static OpcodeResult WINAPI Script_FS_FindFirstFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FindFirstFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -454,7 +454,7 @@ public:
     }
 
     // 0AE7=2,%2s% = find_next_file %1d% //IF and SET
-    static OpcodeResult WINAPI Script_FS_FindNextFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FindNextFile(CRunningScript* thread)
     {
         auto handle = (HANDLE)OPCODE_READ_PARAM_INT();
 
@@ -480,7 +480,7 @@ public:
     }
 
     // 0AE8=1,find_close %1d%
-    static OpcodeResult WINAPI Script_FS_FindClose(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FindClose(CRunningScript* thread)
     {
         auto handle = (HANDLE)OPCODE_READ_PARAM_INT();
 
@@ -496,7 +496,7 @@ public:
     }
 
     // 0B00=1,  delete_file %1s% //IF and SET
-    static OpcodeResult WINAPI Script_FS_DeleteFile(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_DeleteFile(CScriptThread* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -552,7 +552,7 @@ public:
     }
 
     // 0B01=1, delete_directory %1s% with_all_files_and_subdirectories %2d% //IF and SET
-    static OpcodeResult WINAPI Script_FS_DeleteDirectory(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_DeleteDirectory(CScriptThread* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
         auto deleteContents = OPCODE_READ_PARAM_BOOL();
@@ -574,7 +574,7 @@ public:
     }
 
     // 0B02=2, move_file %1s% to %2s% //IF and SET
-    static OpcodeResult WINAPI Script_FS_MoveFile(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_MoveFile(CScriptThread* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -594,7 +594,7 @@ public:
     }
 
     // 0B03=2, move_directory %1s% to %2s% //IF and SET
-    static OpcodeResult WINAPI Script_FS_MoveDir(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_MoveDir(CScriptThread* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -614,7 +614,7 @@ public:
     }
 
     // 0B04=2, copy_file %1s% to %2s% //IF and SET
-    static OpcodeResult WINAPI Script_FS_CopyFile(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_CopyFile(CScriptThread* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -632,7 +632,7 @@ public:
     }
 
     // 0B05=2,  copy_directory %1d% to %2d% //IF and SET
-    static OpcodeResult WINAPI Script_FS_CopyDir(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_CopyDir(CScriptThread* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -652,7 +652,7 @@ public:
     }
 
     //2300=2,get_file_position %1d% store_to %2d%
-    static OpcodeResult WINAPI opcode_2300(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2300(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -663,7 +663,7 @@ public:
     }
 
     //2301=3,read_block_from_file %1d% size %2d% buffer %3d% // IF and SET
-    static OpcodeResult WINAPI opcode_2301(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2301(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -693,7 +693,7 @@ public:
     }
 
     //2302=3,  write_block_to_file %1d% size %2d% address %3d% // IF and SET
-    static OpcodeResult WINAPI opcode_2302(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2302(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();

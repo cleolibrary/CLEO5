@@ -57,7 +57,7 @@ public:
 		}
 	}
 
-	static OpcodeResult WINAPI Script_InifileGetInt(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileGetInt(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		0AF0=4,%4d% = get_int_from_ini_file %1s% section %2s% key %3s%
@@ -109,7 +109,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult WINAPI Script_InifileWriteInt(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileWriteInt(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		0AF1=4,write_int %1d% to_ini_file %2s% section %3s% key %4s%
@@ -128,7 +128,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult WINAPI Script_InifileGetFloat(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileGetFloat(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		0AF2=4,%4d% = get_float_from_ini_file %1s% section %2s% key %3s%
@@ -169,7 +169,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult WINAPI Script_InifileWriteFloat(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileWriteFloat(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		0AF3=4,write_float %1d% to_ini_file %2s% section %3s% key %4s%
@@ -188,7 +188,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult WINAPI Script_InifileReadString(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileReadString(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		0AF4=4,%4d% = read_string_from_ini_file %1s% section %2s% key %3s%
@@ -212,7 +212,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult WINAPI Script_InifileWriteString(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileWriteString(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		0AF5=4,write_string %1s% to_ini_file %2s% section %3s% key %4s%
@@ -229,7 +229,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult WINAPI Script_InifileDeleteSection(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileDeleteSection(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		2800=2,delete_section_from_ini_file %1s% section %2s%
@@ -244,7 +244,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult WINAPI Script_InifileDeleteKey(CScriptThread* thread)
+	static OpcodeResult __stdcall Script_InifileDeleteKey(CScriptThread* thread)
 		/****************************************************************
 		Opcode Format
 		2801=3,delete_key_from_ini_file %1s% section %2s%

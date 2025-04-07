@@ -624,7 +624,7 @@ public:
     }
 
     //0AC8=2,  allocate_memory size %1d% store_to %2d%
-    static OpcodeResult WINAPI opcode_0AC8(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AC8(CLEO::CRunningScript* thread)
     {
         // collect params
         int size = OPCODE_READ_PARAM_INT();

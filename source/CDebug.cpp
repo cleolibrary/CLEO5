@@ -42,7 +42,7 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
     {
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::Log))
         {
-            typedef void WINAPI callback(eLogLevel, const char*);
+            typedef void __stdcall callback(eLogLevel, const char*);
             ((callback*)func)(level, msg);
         }
     }
@@ -78,7 +78,7 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
 
 extern "C" 
 {
-    void WINAPI CLEO_Log(eLogLevel level, const char* msg)
+    void __stdcall CLEO_Log(eLogLevel level, const char* msg)
     {
         Debug.Trace(level, msg);
     }
