@@ -31,8 +31,6 @@ namespace CLEO
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
 
-	void RunScriptDeleteDelegate(CRunningScript *script);
-
     void __fastcall _AddScriptToQueue(CRunningScript *pScript, int dummy, CRunningScript **queue)
     {
         _asm
@@ -1650,7 +1648,7 @@ namespace CLEO
     CCustomScript::~CCustomScript()
     {
         if (BaseIP && !bIsMission) delete[] BaseIP;
-        RunScriptDeleteDelegate(reinterpret_cast<CRunningScript*>(this));
+        CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
 
         if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
     }

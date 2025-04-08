@@ -47,20 +47,6 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
 	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
 
-
-	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript *script);
-	struct ScriptDeleteDelegate {
-		std::vector<FuncScriptDeleteDelegateT> funcs;
-		template<class FuncScriptDeleteDelegateT> void operator+=(FuncScriptDeleteDelegateT mFunc) { funcs.push_back(mFunc); }
-		template<class FuncScriptDeleteDelegateT> void operator-=(FuncScriptDeleteDelegateT mFunc) { funcs.erase(std::remove(funcs.begin(), funcs.end(), mFunc), funcs.end()); }
-		void operator()(CRunningScript *script)
-		{
-			for (auto& f : funcs) f(script);
-		}
-	};
-	ScriptDeleteDelegate scriptDeleteDelegate;
-	void RunScriptDeleteDelegate(CRunningScript *script) { scriptDeleteDelegate(script); }
-
 	void(__thiscall * ProcessScript)(CRunningScript*);
 
 	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
@@ -1548,12 +1534,12 @@ extern "C"
 
 	void WINAPI CLEO_AddScriptDeleteDelegate(FuncScriptDeleteDelegateT func)
 	{
-		scriptDeleteDelegate += func;
+		CleoInstance.OpcodeSystem.scriptDeleteDelegate += func;
 	}
 
 	void WINAPI CLEO_RemoveScriptDeleteDelegate(FuncScriptDeleteDelegateT func)
 	{
-		scriptDeleteDelegate -= func;
+		CleoInstance.OpcodeSystem.scriptDeleteDelegate -= func;
 	}
 
 	BOOL WINAPI CLEO_GetScriptDebugMode(const CLEO::CRunningScript* thread)

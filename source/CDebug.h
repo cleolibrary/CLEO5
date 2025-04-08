@@ -1,11 +1,6 @@
 #pragma once
 #include <mutex>
 
-namespace CLEO
-{
-    class CRunningScript;
-}
-
 class CDebug
 {
 public:

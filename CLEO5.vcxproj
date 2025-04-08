@@ -93,6 +93,7 @@
     <ClInclude Include="source\OpcodeInfoDatabase.h" />
     <ClInclude Include="source\resource.h" />
     <ClInclude Include="source\ScmFunction.h" />
+    <ClInclude Include="source\ScriptDelegate.h" />
     <ClInclude Include="source\Singleton.h" />
     <ClInclude Include="source\stdafx.h" />
     <ClInclude Include="third-party\simdjson\simdjson.h" />

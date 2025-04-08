@@ -1,6 +1,7 @@
 #pragma once
 #include "CCodeInjector.h"
 #include "CDebug.h"
+#include "ScriptDelegate.h"
 
 namespace CLEO
 {
@@ -22,7 +23,9 @@ namespace CLEO
         static std::string lastErrorMsg;
         static WORD prevOpcode; // previous
         static BYTE handledParamCount; // read/writen since current opcode handling started
-        
+
+        ScriptDeleteDelegate scriptDeleteDelegate;
+
         void FinalizeScriptObjects();
 
         CCustomOpcodeSystem() = default;
