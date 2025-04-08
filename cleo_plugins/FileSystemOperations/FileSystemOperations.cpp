@@ -19,7 +19,7 @@ public:
     static std::set<DWORD> m_hFiles;
     static std::set<HANDLE> m_hFileSearches;
 
-    static void __stdcall OnFinalizeScriptObjects()
+    static void WINAPI OnFinalizeScriptObjects()
     {
         // clean up opened files
         for (auto handle : m_hFiles) File::close(handle);

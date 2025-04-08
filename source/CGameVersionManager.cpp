@@ -105,17 +105,17 @@ namespace CLEO
 
     extern "C"
     {
-        DWORD __stdcall CLEO_GetVersion()
+        DWORD WINAPI CLEO_GetVersion()
         {
             return CLEO_VERSION;
         }
 
-        LPCSTR __stdcall CLEO_GetVersionStr()
+        LPCSTR WINAPI CLEO_GetVersionStr()
         {
             return CLEO_VERSION_STR;
         }
 
-        eGameVersion __stdcall CLEO_GetGameVersion()
+        eGameVersion WINAPI CLEO_GetGameVersion()
         {
             return DetermineGameVersion();
         }

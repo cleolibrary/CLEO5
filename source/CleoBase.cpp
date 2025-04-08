@@ -229,7 +229,7 @@ namespace CLEO
     {
         for (void* func : GetCallbacks(id))
         {
-            typedef void __stdcall callback(void);
+            typedef void WINAPI callback(void);
             ((callback*)func)();
         }
     }
@@ -238,27 +238,27 @@ namespace CLEO
     {
         for (void* func : GetCallbacks(id))
         {
-            typedef void __stdcall callback(DWORD);
+            typedef void WINAPI callback(DWORD);
             ((callback*)func)(arg);
         }
     }
 
-    void __stdcall CLEO_RegisterCallback(eCallbackId id, void* func)
+    void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func)
     {
         CleoInstance.AddCallback(id, func);
     }
 
-    void __stdcall CLEO_UnregisterCallback(eCallbackId id, void* func)
+    void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func)
     {
         CleoInstance.RemoveCallback(id, func);
     }
 
-    DWORD __stdcall CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
+    DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
     {
         return *(DWORD*)(audioStreamPtr + 0x4); // CAudioStream->streamInternal
     }
 
-    void __stdcall CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
+    void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
     {
         if (thread == nullptr || inOutPath == nullptr || pathMaxLen < 2)
         {
@@ -273,7 +273,7 @@ namespace CLEO
         std::memcpy(inOutPath, resolved.c_str(), resolved.length() + 1); // with terminator
     }
 
-    void __stdcall CLEO_StringListFree(StringList list)
+    void WINAPI CLEO_StringListFree(StringList list)
     {
         if (list.count > 0 && list.strings != nullptr)
         {
@@ -286,7 +286,7 @@ namespace CLEO
         }
     }
 
-    StringList __stdcall CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+    StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
     {
         if (searchPath == nullptr)
             return {}; // invalid param
@@ -330,12 +330,12 @@ namespace CLEO
         return CreateStringList(found);
     }
 
-    LPCSTR __stdcall CLEO_GetGameDirectory()
+    LPCSTR WINAPI CLEO_GetGameDirectory()
     {
         return Filepath_Game.c_str();
     }
 
-    LPCSTR __stdcall CLEO_GetUserDirectory()
+    LPCSTR WINAPI CLEO_GetUserDirectory()
     {
         return Filepath_User.c_str();
     }

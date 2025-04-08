@@ -91,18 +91,18 @@ public:
 
     // ---------------------------------------------- event callbacks -------------------------------------------------
 
-    static void __stdcall OnGameBegin(DWORD saveSlot)
+    static void WINAPI OnGameBegin(DWORD saveSlot)
     {
         screenLog.Clear();
     }
 
-    static void __stdcall OnScriptsFinalize()
+    static void WINAPI OnScriptsFinalize()
     {
         pausedScripts.clear();
         logFiles.clear(); // close all
     }
 
-    static void __stdcall OnDrawingFinished()
+    static void WINAPI OnDrawingFinished()
     {
         auto GTA_GetKeyState = (SHORT (__stdcall*)(int))0x0081E64C; // use ingame function as GetKeyState might look like keylogger to some AV software
 
@@ -187,7 +187,7 @@ public:
         currScript.Clear(); // make sure current script log does not persists to next render frame
     }
 
-    static bool __stdcall OnScriptProcess(CScriptThread* thread)
+    static bool WINAPI OnScriptProcess(CScriptThread* thread)
     {
         currScript.Begin(thread);
 
@@ -202,7 +202,7 @@ public:
         return true;
     }
 
-    static OpcodeResult __stdcall OnScriptOpcodeProcess(CRunningScript* thread, DWORD opcode)
+    static OpcodeResult WINAPI OnScriptOpcodeProcess(CRunningScript* thread, DWORD opcode)
     {
         currScript.ProcessCommand(thread);
 
@@ -236,7 +236,7 @@ public:
         return OR_NONE;
     }
 
-    static void __stdcall OnLog(eLogLevel level, const char* msg)
+    static void WINAPI OnLog(eLogLevel level, const char* msg)
     {
         screenLog.Add(level, msg);
     }
