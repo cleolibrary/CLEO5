@@ -75,11 +75,3 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
         m_hFile << std::endl;
     }
 }
-
-extern "C" 
-{
-    void WINAPI CLEO_Log(eLogLevel level, const char* msg)
-    {
-        Debug.Trace(level, msg);
-    }
-}

@@ -260,47 +260,6 @@ namespace CLEO
     DWORD* GameTimer;
     extern "C"
     {
-        eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread)
-        {
-            if (thread->IsCustom())
-                return reinterpret_cast<const CCustomScript*>(thread)->GetCompatibility();
-            else
-                return CleoInstance.ScriptEngine.NativeScriptsVersion;
-        }
-
-        void WINAPI CLEO_SetScriptVersion(CRunningScript* thread, eCLEO_Version version)
-        {
-            if (thread->IsCustom())
-                ((CCustomScript*)thread)->SetCompatibility(version);
-            else
-                CleoInstance.ScriptEngine.NativeScriptsVersion = version;
-        }
-
-        LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread)
-        {
-            if (!CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
-            {
-                return nullptr;
-            }
-
-            auto cs = (CCustomScript*)thread;
-            return cs->GetScriptFileName();
-        }
-
-        LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread)
-        {
-            auto cs = (CCustomScript*)thread;
-            return cs->GetWorkDir();
-        }
-
-        void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path)
-        {
-            auto cs = (CCustomScript*)thread;
-            cs->SetWorkDir(path);
-        }
-
-        SCRIPT_VAR *opcodeParams;
-        SCRIPT_VAR *missionLocals;
         CRunningScript *staticThreads;
     }
 

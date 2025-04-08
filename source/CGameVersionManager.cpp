@@ -102,22 +102,4 @@ namespace CLEO
     {
         return MemoryAddresses[addrId][GetGameVersion()];
     }
-
-    extern "C"
-    {
-        DWORD WINAPI CLEO_GetVersion()
-        {
-            return CLEO_VERSION;
-        }
-
-        LPCSTR WINAPI CLEO_GetVersionStr()
-        {
-            return CLEO_VERSION_STR;
-        }
-
-        eGameVersion WINAPI CLEO_GetGameVersion()
-        {
-            return DetermineGameVersion();
-        }
-    }
 }

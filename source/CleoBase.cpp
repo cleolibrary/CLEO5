@@ -243,21 +243,6 @@ namespace CLEO
         }
     }
 
-    void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func)
-    {
-        CleoInstance.AddCallback(id, func);
-    }
-
-    void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func)
-    {
-        CleoInstance.RemoveCallback(id, func);
-    }
-
-    DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
-    {
-        return *(DWORD*)(audioStreamPtr + 0x4); // CAudioStream->streamInternal
-    }
-
     void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
     {
         if (thread == nullptr || inOutPath == nullptr || pathMaxLen < 2)
@@ -328,16 +313,6 @@ namespace CLEO
         FindClose(hSearch);
 
         return CreateStringList(found);
-    }
-
-    LPCSTR WINAPI CLEO_GetGameDirectory()
-    {
-        return Filepath_Game.c_str();
-    }
-
-    LPCSTR WINAPI CLEO_GetUserDirectory()
-    {
-        return Filepath_User.c_str();
     }
 }
 

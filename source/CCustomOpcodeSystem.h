@@ -7,6 +7,8 @@ namespace CLEO
 {
     typedef OpcodeResult(__stdcall * CustomOpcodeHandler)(CRunningScript*);
 
+    void ThreadJump(CRunningScript* thread, int off);
+
     class CCustomOpcodeSystem : public VInjectible
     {
     public:

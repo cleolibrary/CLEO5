@@ -44,6 +44,7 @@
     <ClCompile Include="source\crc32.cpp" />
     <ClCompile Include="source\CScriptEngine.cpp" />
     <ClCompile Include="source\dllmain.cpp" />
+    <ClCompile Include="source\exports.cpp" />
     <ClCompile Include="source\OpcodeInfoDatabase.cpp" />
     <ClCompile Include="source\ScmFunction.cpp" />
     <ClCompile Include="source\stdafx.cpp">
