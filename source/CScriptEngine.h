@@ -106,7 +106,8 @@ namespace CLEO
         CCustomScript *CustomMission = nullptr;
         CCustomScript *LastScriptCreated = nullptr;
 
-        CCustomScript *LoadScript(const char *szFilePath);
+        CCustomScript* LoadScript(const char* filePath);
+        CCustomScript* CreateCustomScript(CRunningScript* fromThread, const char* filePath, int label);
 
         bool NativeScriptsDebugMode; // debug mode enabled?
         CLEO::eCLEO_Version NativeScriptsVersion; // allows using legacy modes
@@ -167,10 +168,6 @@ namespace CLEO
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
 
     inline SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread);
-
-    extern "C" {
-        extern CRunningScript *staticThreads;
-    }
 
     extern BYTE *scmBlock, *missionBlock;
     extern int MissionIndex;

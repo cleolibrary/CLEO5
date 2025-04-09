@@ -1051,6 +1051,38 @@ namespace CLEO
         return cs;
     }
 
+    CCustomScript* CScriptEngine::CreateCustomScript(CRunningScript* fromThread, const char* script_name, int label)
+    {
+        auto filename = reinterpret_cast<CCustomScript*>(fromThread)->ResolvePath(script_name, DIR_CLEO); // legacy: default search location is game\cleo directory
+
+        if (label != 0) // create from label
+        {
+            TRACE("Starting new custom script from thread named '%s' label 0x%08X", filename.c_str(), label);
+        }
+        else
+        {
+            TRACE("Starting new custom script '%s'", filename.c_str());
+        }
+
+        // if "label == 0" then "script_name" need to be the file name
+        auto cs = new CCustomScript(filename.c_str(), false, fromThread, label);
+        if (fromThread) SetScriptCondResult(fromThread, cs && cs->IsOK());
+        if (cs && cs->IsOK())
+        {
+            AddCustomScript(cs);
+            if (fromThread) TransmitScriptParams(fromThread, cs);
+        }
+        else
+        {
+            if (cs) delete cs;
+            if (fromThread) SkipUnusedVarArgs(fromThread);
+            LOG_WARNING(0, "Failed to load script '%s'", filename.c_str());
+            return nullptr;
+        }
+
+        return cs;
+    }
+
     void CScriptEngine::LoadState(int saveSlot)
     {
         memset(CleoVariables, 0, sizeof(CleoVariables));

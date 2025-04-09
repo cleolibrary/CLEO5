@@ -157,6 +157,7 @@ extern "C"
 
     SCRIPT_VAR* opcodeParams;
     SCRIPT_VAR* missionLocals;
+    CRunningScript* staticThreads;
 
     SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray()
     {
@@ -389,8 +390,10 @@ extern "C"
         reinterpret_cast<CCustomScript*>(thread)->SetDebugMode(enabled);
     }
 
-    // CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char *script_name, int label)
-    // defined in CCustomOpcodeSystem.cpp
+    CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* filePath, int label)
+    {
+        return (CLEO::CRunningScript*)CleoInstance.ScriptEngine.CreateCustomScript(fromThread, filePath, label);
+    }
 
     CLEO::CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript()
     {
