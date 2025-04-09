@@ -258,10 +258,6 @@ namespace CLEO
     void(__cdecl * DrawScriptStuff_H)(char bBeforeFade);
 
     DWORD* GameTimer;
-    extern "C"
-    {
-        CRunningScript *staticThreads;
-    }
 
     BYTE *scmBlock;
     BYTE *MissionLoaded;

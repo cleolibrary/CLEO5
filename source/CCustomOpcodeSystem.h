@@ -34,13 +34,7 @@ namespace CLEO
         CCustomOpcodeSystem(const CCustomOpcodeSystem&) = delete; // no copying
         virtual void Inject(CCodeInjector& inj);
         void Init();
-        ~CCustomOpcodeSystem()
-        {
-            TRACE(""); // separator
-            TRACE("Custom Opcode System finalized:");
-            TRACE(" Last opcode executed: %04X", lastOpcode);
-            TRACE(" Previous opcode executed: %04X", prevOpcode);
-        }
+        ~CCustomOpcodeSystem();
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
 

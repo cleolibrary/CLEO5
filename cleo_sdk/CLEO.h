@@ -494,6 +494,7 @@ DWORD WINAPI CLEO_GetVarArgCount(CRunningScript* thread); // peek remaining var-
 
 extern SCRIPT_VAR* opcodeParams;
 extern SCRIPT_VAR* missionLocals;
+extern CRunningScript* staticThreads;
 
 SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray(); // get pointer to 'SCRIPT_VAR[32] opcodeParams'. Used by Retrieve/Record opcode params functions
 BYTE WINAPI CLEO_GetParamsHandledCount(); // number of already read/written opcode parameters since current opcode handler was called

@@ -219,6 +219,14 @@ namespace CLEO
 		initialized = true;
 	}
 
+	CCustomOpcodeSystem::~CCustomOpcodeSystem()
+	{
+		TRACE(""); // separator
+		TRACE("Custom Opcode System finalized:");
+		TRACE(" Last opcode executed: %04X", lastOpcode);
+		TRACE(" Previous opcode executed: %04X", prevOpcode);
+	}
+
 	CCustomOpcodeSystem::_OpcodeHandler CCustomOpcodeSystem::originalOpcodeHandlers[OriginalOpcodeHandlersCount];
 	CCustomOpcodeSystem::_OpcodeHandler CCustomOpcodeSystem::customOpcodeHandlers[CustomOpcodeHandlersCount];
 	CustomOpcodeHandler CCustomOpcodeSystem::customOpcodeProc[LastCustomOpcode + 1];
