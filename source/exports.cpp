@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "CleoBase.h"
 
-using namespace CLEO;
-
+namespace CLEO
+{
 extern "C"
 {
     DWORD WINAPI CLEO_GetVersion()
@@ -164,7 +164,7 @@ extern "C"
         return CLEO::opcodeParams;
     }
 
-    DWORD WINAPI CLEO_GetParamsHandledCount()
+    BYTE WINAPI CLEO_GetParamsHandledCount()
     {
         return CleoInstance.OpcodeSystem.handledParamCount;
     }
@@ -410,14 +410,14 @@ extern "C"
         return CleoInstance.ScriptEngine.FindScriptByFilename(path, resultIndex);
     }
 
-    RwTexture* WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
+    DWORD WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
     {
         CCustomScript* customScript = reinterpret_cast<CCustomScript*>(thread);
         // We need to store-restore to update the texture list, not optimized, but this will not be used every frame anyway
         customScript->StoreScriptTextures();
         RwTexture* texture = customScript->GetScriptTextureById(id - 1);
         customScript->RestoreScriptTextures();
-        return texture;
+        return (DWORD)texture;
     }
 
     DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
@@ -444,4 +444,5 @@ extern "C"
     {
         Debug.Trace(level, msg);
     }
+}
 }
