@@ -93,6 +93,9 @@
     <ClCompile Include="source\CScriptEngine.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\exports.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
     <ClCompile Include="source\CDebug.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
@@ -165,6 +168,9 @@
       <Filter>source\extensions</Filter>
     </ClInclude>
     <ClInclude Include="source\CPluginSystem.h">
+      <Filter>source\extensions</Filter>
+    </ClInclude>
+    <ClInclude Include="source\ScriptDelegate.h">
       <Filter>source\extensions</Filter>
     </ClInclude>
     <ClInclude Include="source\CScriptEngine.h">
