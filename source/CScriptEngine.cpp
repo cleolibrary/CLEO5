@@ -257,8 +257,6 @@ namespace CLEO
     void(__cdecl * DrawScriptStuff)(char bBeforeFade);
     void(__cdecl * DrawScriptStuff_H)(char bBeforeFade);
 
-    DWORD* GameTimer;
-
     BYTE *scmBlock;
     BYTE *MissionLoaded;
     BYTE *missionBlock;
@@ -314,7 +312,7 @@ namespace CLEO
             hash(cs->codeChecksum), condResult(cs->bCondResult),
             logicalOp(cs->LogicalOp), notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
         {
-            sleepTime = cs->WakeTime >= *GameTimer ? 0 : cs->WakeTime - *GameTimer;
+            sleepTime = cs->WakeTime >= CTimer::m_snTimeInMilliseconds ? 0 : cs->WakeTime - CTimer::m_snTimeInMilliseconds;
             std::copy(cs->LocalVar, cs->LocalVar + 32, tls);
             std::copy(cs->Timers, cs->Timers + 2, timers);
             std::copy(cs->Name, cs->Name + 8, threadName);
@@ -326,7 +324,7 @@ namespace CLEO
             std::copy(tls, tls + 32, cs->LocalVar);
             std::copy(timers, timers + 2, cs->Timers);
             cs->bCondResult = condResult;
-            cs->WakeTime = *GameTimer + sleepTime;
+            cs->WakeTime = CTimer::m_snTimeInMilliseconds + sleepTime;
             cs->LogicalOp = logicalOp;
             cs->NotFlag = notFlag;
             cs->CurrentIP = reinterpret_cast<BYTE*>(cs->BaseIP) + ip_diff;
@@ -830,7 +828,6 @@ namespace CLEO
         SaveScmData = gvm.TranslateMemoryAddress(MA_SAVE_SCM_DATA_FUNCTION);
         LoadScmData = gvm.TranslateMemoryAddress(MA_LOAD_SCM_DATA_FUNCTION);
 
-        GameTimer = gvm.TranslateMemoryAddress(MA_GAME_TIMER);
         opcodeParams = gvm.TranslateMemoryAddress(MA_OPCODE_PARAMS);
         missionLocals = gvm.TranslateMemoryAddress(MA_MISSION_LOCALS);
         scmBlock = gvm.TranslateMemoryAddress(MA_SCM_BLOCK);

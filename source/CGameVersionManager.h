@@ -53,7 +53,6 @@ namespace CLEO
         MA_INIT_SCM_FUNCTION,
         MA_SAVE_SCM_DATA_FUNCTION,
         MA_LOAD_SCM_DATA_FUNCTION,
-        MA_GAME_TIMER,
         MA_OPCODE_PARAMS,
         MA_SCM_BLOCK,
         MA_MISSION_LOCALS,
