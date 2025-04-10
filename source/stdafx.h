@@ -37,13 +37,6 @@
 #include <CGame.h>
 #include <CMenuManager.h>
 #include <CRGBA.h>
-#include <CRunningScript.h>
-#include <CSprite2d.h>
-#include <CTheScripts.h>
-#include <CTimer.h>
-#include <DynAddress.h>
-#include <GameVersion.h>
-#include <Patch.h>
 #include <RenderWare.h>
 #include <extensions/Screen.h>
 
