@@ -18,10 +18,10 @@ namespace CLEO
 
         bool bSaveEnabled;
         bool bOK;
-        eCLEO_Version CompatVer;
-        BYTE UseTextCommands;
-        int NumDraws;
-        int NumTexts;
+        eCLEO_Version compatVer;
+        BYTE useTextCommands;
+        int numDraws;
+        int numTexts;
 		CCustomScript *parentThread;
 		std::list<CCustomScript*> childThreads;
         std::list<RwTexture*> script_textures;
@@ -51,8 +51,8 @@ namespace CLEO
         inline DWORD GetCodeSize() const { return codeSize; }
         inline DWORD GetCodeChecksum() const { return codeChecksum; }
         inline void enable_saving(bool en = true) { bSaveEnabled = en; }
-        inline void SetCompatibility(eCLEO_Version ver) { CompatVer = ver; }
-        inline eCLEO_Version GetCompatibility() const { return CompatVer; }
+        inline void SetCompatibility(eCLEO_Version ver) { compatVer = ver; }
+        inline eCLEO_Version GetCompatibility() const { return compatVer; }
 
         CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
         CCustomScript(const CCustomScript&) = delete; // no copying
