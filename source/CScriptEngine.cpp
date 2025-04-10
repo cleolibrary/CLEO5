@@ -501,9 +501,9 @@ namespace CLEO
         else if (script_texts.size())
             script_texts.clear();
 
-        UseTextCommands = *useTextCommands;
-        NumDraws = *numScriptDraws;
-        NumTexts = *numScriptTexts;
+        useTextCommands = *useTextCommands;
+        numDraws = *numScriptDraws;
+        numTexts = *numScriptTexts;
 
         // restore SCM draws + texts
         if (numStoredDraws) std::copy(storedDraws, storedDraws + (numStoredDraws * DRAW_DATA_SIZE), scriptDraws);
@@ -530,15 +530,15 @@ namespace CLEO
         else
         {
             std::copy(script_draws.begin(), script_draws.end(), scriptDraws);
-            *numScriptDraws = NumDraws;
+            *numScriptDraws = numDraws;
         }
         if (!script_texts.size()) *numScriptTexts = 0;
         else
         {
             std::copy(script_texts.begin(), script_texts.end(), scriptTexts);
-            *numScriptTexts = NumTexts;
+            *numScriptTexts = numTexts;
         }
-        *useTextCommands = UseTextCommands;
+        *useTextCommands = useTextCommands;
     }
 
     bool CCustomScript::GetDebugMode() const
@@ -1449,16 +1449,16 @@ namespace CLEO
     // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
     CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label)
         : CRunningScript(), bSaveEnabled(false), bOK(false),
-        CompatVer(CLEO_VER_CUR)
+        compatVer(CLEO_VER_CUR)
     {
         TRACE(""); // separator
         TRACE("Loading custom script '%s'...", szFileName);
 
         bIsCustom = true;
         bIsMission = bUseMissionCleanup = bIsMiss;
-        UseTextCommands = 0;
-        NumDraws = 0;
-        NumTexts = 0;
+        useTextCommands = 0;
+        numDraws = 0;
+        numTexts = 0;
 
         try
         {
@@ -1473,7 +1473,7 @@ namespace CLEO
 
                 auto cs = (CCustomScript*)parent;
 
-                CompatVer = cs->GetCompatibility();
+                compatVer = cs->GetCompatibility();
                 bDebugMode = cs->GetDebugMode();
                 scriptFileDir = cs->GetScriptFileDir();
                 scriptFileName = cs->GetScriptFileName();
@@ -1525,26 +1525,26 @@ namespace CLEO
 
                 // deduce compatibility mode from filetype extension
                 if (path.extension() == cs4_ext)
-                    CompatVer = CLEO_VER_4;
+                    compatVer = CLEO_VER_4;
                 else
                 if (path.extension() == cs3_ext)
-                    CompatVer = CLEO_VER_3;
+                    compatVer = CLEO_VER_3;
 
-                if (CompatVer == CLEO_VER_CUR && parent != nullptr)
+                if (compatVer == CLEO_VER_CUR && parent != nullptr)
                 {
                     // inherit compatibility mode from parent
-                    CompatVer = CLEO_GetScriptVersion(parent);
+                    compatVer = CLEO_GetScriptVersion(parent);
 
                     // try loading file with same compatibility mode filetype extension
                     auto compatPath = path;
-                    if (CompatVer == CLEO_VER_4)
+                    if (compatVer == CLEO_VER_4)
                     {
                         compatPath.replace_extension(cs4_ext);
                         if (FS::is_regular_file(compatPath))
                             path = compatPath;
                     }
                     else
-                    if (CompatVer == CLEO_VER_3)
+                    if (compatVer == CLEO_VER_3)
                     {
                         compatPath.replace_extension(cs3_ext);
                         if (FS::is_regular_file(compatPath))
