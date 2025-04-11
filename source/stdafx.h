@@ -38,6 +38,7 @@
 #include <CMenuManager.h>
 #include <CRGBA.h>
 #include <CSprite2d.h>
+#include <CRunningScript.h>
 #include <CTheScripts.h>
 #include <CTimer.h>
 #include <DynAddress.h>
