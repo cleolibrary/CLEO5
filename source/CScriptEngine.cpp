@@ -220,9 +220,6 @@ namespace CLEO
     BYTE *missionBlock;
     int MissionIndex;
     BOOL *onMissionFlag;
-    CTexture *scriptSprites;
-    BYTE *scriptDraws;
-    BYTE *scriptTexts;
 
     CRunningScript **inactiveThreadQueue, **activeThreadQueue;
 
@@ -353,48 +350,72 @@ namespace CLEO
         }
     }
 
-#define NUM_STORED_SPRITES 128
-#define NUM_STORED_DRAWS 128
-#define NUM_STORED_TEXTS 96
-#define DRAW_DATA_SIZE 60
-#define TEXT_DATA_SIZE 68
-#define DRAW_ARRAY_SIZE NUM_STORED_DRAWS*DRAW_DATA_SIZE
-#define TEXT_ARRAY_SIZE NUM_STORED_TEXTS*TEXT_DATA_SIZE
-    CTexture storedSprites[NUM_STORED_SPRITES];
-    BYTE storedDraws[DRAW_ARRAY_SIZE];
-    BYTE storedTexts[TEXT_ARRAY_SIZE];
-    BYTE storedUseTextCommands = 0;
-    WORD numStoredDraws = 0;
-    WORD numStoredTexts = 0;
-
-    static void RestoreTextDrawDefaults()
+    void CScriptEngine::StoreScriptDrawsState()
     {
-        for (int i = 0; i<NUM_STORED_TEXTS; ++i)
-        {
-            CTextDrawer * pText = (CTextDrawer*)&scriptTexts[i*TEXT_DATA_SIZE];
-            pText->m_fScaleX = 0.48f;
-            pText->m_fScaleY = 1.12f;
-            pText->m_Colour = CRGBA(0xE1, 0xE1, 0xE1, 0xFF);
-            pText->m_bJustify = false;
-            pText->m_bAlignRight = false;
-            pText->m_bCenter = false;
-            pText->m_bBackground = false;
-            pText->m_bUnk1 = false;
-            pText->m_fLineHeight = 182.0f;
-            pText->m_fLineWidth = 640.0f;
-            pText->m_BackgroundColour = CRGBA(0x80, 0x80, 0x80, 0x80);
-            pText->m_bProportional = true;
-            pText->m_EffectColour = CRGBA(0, 0, 0, 0xFF);
-            strncpy(pText->m_szGXT, "", 8);
-            pText->m_ucShadow = 2;
-            pText->m_ucOutline = 0;
-            pText->m_bDrawBeforeFade = false;
-            pText->m_nFont = 1;
-            pText->m_fPosX = 0.0;
-            pText->m_fPosY = 0.0;
-            pText->m_nParam1 = -1;
-            pText->m_nParam2 = -1;
-        }
+        storedUseTextCommands = CTheScripts::UseTextCommands;
+
+        storedDrawsCount = CTheScripts::NumberOfIntroRectanglesThisFrame;
+        std::memcpy(storedDraws.data(), CTheScripts::IntroRectangles, sizeof(storedDraws));
+
+        std::memcpy(storedSprites.data(), CTheScripts::ScriptSprites, sizeof(storedSprites));
+
+        storedTextsCount = CTheScripts::NumberOfIntroTextLinesThisFrame;
+        std::memcpy(storedTexts.data(), CTheScripts::IntroTextLines, sizeof(storedTexts));
+    }
+
+    void CScriptEngine::RestoreScriptDrawsState()
+    {
+        CTheScripts::UseTextCommands = storedUseTextCommands;
+
+        CTheScripts::NumberOfIntroRectanglesThisFrame = storedDrawsCount;
+        std::memcpy(CTheScripts::IntroRectangles, storedDraws.data(), sizeof(storedDraws));
+
+        std::memcpy(CTheScripts::ScriptSprites, storedSprites.data(), sizeof(storedSprites));
+
+        CTheScripts::NumberOfIntroTextLinesThisFrame = storedTextsCount;
+        std::memcpy(CTheScripts::IntroTextLines, storedTexts.data(), sizeof(storedTexts));
+    }
+
+    void CScriptEngine::SetScriptSpritesDefaults()
+    {
+        std::fill(
+            CTheScripts::ScriptSprites,
+            CTheScripts::ScriptSprites + CScriptEngine::Script_Sprites_Capacity,
+            CSprite2d{}
+        );
+    }
+
+    void CScriptEngine::SetScriptTextsDefaults()
+    {
+        auto& txt = CTheScripts::IntroTextLines[0];
+        txt.letterWidth = 0.48f;
+        *((float*)&txt.letterHeight) = 1.12f; // invalid type in Plugin SDK
+        txt.color = RwRGBA{ 0xE1, 0xE1, 0xE1, 0xFF };
+        txt.m_bJustify = false;
+        txt.centered = false;
+        txt.withBackground = false;
+        txt._pad = false;
+        *((float*)&txt.lineHeight) = plugin::screen::GetScreenHeight(); // 182.0f invalid type in Plugin SDK
+        *((float*)&txt.lineWidth) = plugin::screen::GetScreenWidth(); // 640.0f invalid type in Plugin SDK
+        txt.backgroundColor = RwRGBA{ 0x80, 0x80, 0x80, 0x80 };
+        txt.proportional = true;
+        txt.backgroundBoxColor = RwRGBA{ 0, 0, 0, 0xFF };
+        txt.shadowType = 2;
+        txt.outlineType = 0;
+        txt.m_bDrawBeforeFade = false;
+        txt.m_bRightJustify = false;
+        txt.font = 1;
+        *((float*)&txt.xPosition) = 0.0f; // invalid type in Plugin SDK
+        *((float*)&txt.yPosition) = 0.0f; // invalid type in Plugin SDK
+        std::memset(txt.gxtEntry, '\0', sizeof(txt.gxtEntry));
+        txt.param1 = -1;
+        txt.param2 = -1;
+
+        std::fill(
+            CTheScripts::IntroTextLines + 1,
+            CTheScripts::IntroTextLines + CScriptEngine::Script_Texts_Capacity,
+            txt
+        );
     }
 
     void CScriptEngine::DrawScriptStuff(char bBeforeFade)
@@ -410,22 +431,26 @@ namespace CLEO
 
     void CCustomScript::Process()
     {
-        RestoreScriptSpecifics();
+        ApplyScriptDraws();
 
-        bool bNeedDefaults = false;
         if (CTheScripts::UseTextCommands)
         {
-            RestoreTextDrawDefaults();
-            CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
-            std::fill(scriptDraws, scriptDraws + DRAW_ARRAY_SIZE, 0);
-            CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
             CTheScripts::UseTextCommands = false;
-        }
-		
-		ProcessScript(this);
 
-        StoreScriptSpecifics();
+            CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
+            //std::fill(scriptDraws.begin(), scriptDraws.end(), tScriptRectangle{}); // TODO: is it needed at all?
+
+            CScriptEngine::SetScriptSpritesDefaults();
+
+            CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
+            CScriptEngine::SetScriptTextsDefaults();
+        }
+
+        ProcessScript(this);
+
+        StoreScriptDraws();
     }
+    
     void CCustomScript::ShutdownThisScript()
     {
         ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
@@ -433,69 +458,56 @@ namespace CLEO
 
     void CCustomScript::Draw(char bBeforeFade)
     {
-        // no point if this script doesn't draw
-        if (script_draws.size() || script_texts.size())
+        if (!m_scriptDraws.empty() || !m_scriptTexts.empty())
         {
-            static CCustomScript * last;
-            last = this;
-            RestoreScriptDraws();
-            RestoreScriptTextures();
+            ApplyScriptDraws();
+
             if (bBeforeFade) DrawScriptStuff_H(bBeforeFade);
             else DrawScriptStuff(bBeforeFade);
+
             StoreScriptDraws();
-            StoreScriptTextures();
         }
     }
+
     void CCustomScript::StoreScriptDraws()
     {
-        // store this scripts draws + texts
-        if (CTheScripts::NumberOfIntroRectanglesThisFrame)
-            script_draws.assign(scriptDraws, scriptDraws + (CTheScripts::NumberOfIntroRectanglesThisFrame * DRAW_DATA_SIZE));
-        else if (script_draws.size())
-            script_draws.clear();
-        if (CTheScripts::NumberOfIntroTextLinesThisFrame)
-            script_texts.assign(scriptTexts, scriptTexts + (CTheScripts::NumberOfIntroTextLinesThisFrame * TEXT_DATA_SIZE));
-        else if (script_texts.size())
-            script_texts.clear();
+        // take this script's draws from global state and store locally
+        m_useTextCommands = CTheScripts::UseTextCommands;
 
-        useTextCommands = CTheScripts::UseTextCommands;
-        NumDraws = CTheScripts::NumberOfIntroRectanglesThisFrame;
-        NumTexts = CTheScripts::NumberOfIntroTextLinesThisFrame;
+        m_scriptDraws.assign(
+            CTheScripts::IntroRectangles,
+            CTheScripts::IntroRectangles + min(CTheScripts::NumberOfIntroRectanglesThisFrame, CScriptEngine::Script_Draws_Capacity) // clamp, as original SA scripts seems do not care
+        );
 
-        // restore SCM draws + texts
-        if (numStoredDraws) std::copy(storedDraws, storedDraws + (numStoredDraws * DRAW_DATA_SIZE), scriptDraws);
-        else std::fill(scriptDraws, scriptDraws + DRAW_ARRAY_SIZE, 0);
-        if (numStoredTexts) std::copy(storedTexts, storedTexts + (numStoredTexts * TEXT_DATA_SIZE), scriptTexts);
-        else RestoreTextDrawDefaults();
-        CTheScripts::NumberOfIntroRectanglesThisFrame = numStoredDraws;
-        CTheScripts::NumberOfIntroTextLinesThisFrame = numStoredTexts;
-        CTheScripts::UseTextCommands = storedUseTextCommands;
+        m_scriptSprites.assign(
+            CTheScripts::ScriptSprites,
+            CTheScripts::ScriptSprites + CScriptEngine::Script_Sprites_Capacity
+        );
+
+        m_scriptTexts.assign(
+            CTheScripts::IntroTextLines,
+            CTheScripts::IntroTextLines + min(CTheScripts::NumberOfIntroTextLinesThisFrame, CScriptEngine::Script_Texts_Capacity)
+        );
+
+        // restore SCM script draws into global state
+        CleoInstance.ScriptEngine.RestoreScriptDrawsState();
     }
-    void CCustomScript::RestoreScriptDraws()
-    {
-        // store SCM draws + texts
-        storedUseTextCommands = CTheScripts::UseTextCommands;
-        numStoredDraws = CTheScripts::NumberOfIntroRectanglesThisFrame;
-        numStoredTexts = CTheScripts::NumberOfIntroTextLinesThisFrame;
-        if (numStoredDraws)
-            std::copy(scriptDraws, scriptDraws + (numStoredDraws *  DRAW_DATA_SIZE), storedDraws);
-        if (numStoredTexts)
-            std::copy(scriptTexts, scriptTexts + (numStoredTexts * TEXT_DATA_SIZE), storedTexts);
 
-        // restore script draws + texts
-        if (!script_draws.size()) CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
-        else
-        {
-            std::copy(script_draws.begin(), script_draws.end(), scriptDraws);
-            CTheScripts::NumberOfIntroRectanglesThisFrame = NumDraws;
-        }
-        if (!script_texts.size()) CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
-        else
-        {
-            std::copy(script_texts.begin(), script_texts.end(), scriptTexts);
-            CTheScripts::NumberOfIntroTextLinesThisFrame = NumTexts;
-        }
-        CTheScripts::UseTextCommands = useTextCommands;
+    void CCustomScript::ApplyScriptDraws()
+    {
+        // store SCM script draws
+        CleoInstance.ScriptEngine.StoreScriptDrawsState();
+
+        // restore this script's draws
+        CTheScripts::UseTextCommands = m_useTextCommands;
+
+        CTheScripts::NumberOfIntroRectanglesThisFrame = (WORD)m_scriptDraws.size();
+        std::memcpy(CTheScripts::IntroRectangles, m_scriptDraws.data(), m_scriptDraws.size() * sizeof(decltype(m_scriptDraws)::value_type));
+
+        std::memcpy(CTheScripts::ScriptSprites, m_scriptSprites.data(), m_scriptSprites.size() * sizeof(decltype(m_scriptSprites)::value_type));
+
+        CTheScripts::NumberOfIntroTextLinesThisFrame = (WORD)m_scriptTexts.size();
+        std::memcpy(CTheScripts::IntroTextLines, m_scriptTexts.data(), m_scriptTexts.size() * sizeof(decltype(m_scriptTexts)::value_type));
     }
 
     bool CCustomScript::GetDebugMode() const
@@ -705,54 +717,6 @@ namespace CLEO
         return ss.str();
     }
 
-    void CCustomScript::StoreScriptTextures()
-    {
-        // store this scripts textures + restore SCM textures + make sure this scripts textures arent cleared by another
-        if (script_textures.size())
-            script_textures.clear();
-        for (int i = 0; i<NUM_STORED_SPRITES; ++i)
-        {
-            script_textures.push_back(*(RwTexture**)&scriptSprites[i]);
-            scriptSprites[i] = storedSprites[i];
-        }
-
-        //std::copy(scriptSprites, scriptSprites + NUM_STORED_SPRITES, storedSprites);
-    }
-    void CCustomScript::RestoreScriptTextures()
-    {
-        int n = 0;
-
-        // store SCM textures
-        for (int i = 0; i<NUM_STORED_SPRITES; ++i)
-        {
-            storedSprites[i] = scriptSprites[i];
-        }
-        //std::copy(scriptSprites, scriptSprites + NUM_STORED_SPRITES, storedSprites);
-
-        // ensure SCM textures arent cleared - except by the SCM
-        if (!script_textures.size())
-            std::fill((RwTexture**)scriptSprites, (RwTexture**)scriptSprites + NUM_STORED_SPRITES, nullptr);
-        else
-        {
-            // restore textures for this script
-            for (auto i = script_textures.begin(); i != script_textures.end(); ++i, ++n)
-            {
-                if (n >= NUM_STORED_SPRITES) break;
-                *(RwTexture**)(&scriptSprites[n]) = *i;
-            }
-        }
-    }
-    void CCustomScript::StoreScriptSpecifics()
-    {
-        StoreScriptDraws();
-        StoreScriptTextures();
-    }
-    void CCustomScript::RestoreScriptSpecifics()
-    {
-        RestoreScriptDraws();
-        RestoreScriptTextures();
-    }
-
     void CScriptEngine::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting ScriptEngine...");
@@ -788,9 +752,6 @@ namespace CLEO
         auto addr = gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT);
         inj.MemoryReadOffset(addr.address + 1, ProcessScript);
         inj.ReplaceFunction(HOOK_ProcessScript, addr);
-        scriptSprites = gvm.TranslateMemoryAddress(MA_SCRIPT_SPRITE_ARRAY);
-        scriptDraws = gvm.TranslateMemoryAddress(MA_SCRIPT_DRAW_ARRAY);
-        scriptTexts = gvm.TranslateMemoryAddress(MA_SCRIPT_TEXT_ARRAY);
 
         inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE).address + 1, CLEO::DrawScriptStuff);
         inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE).address + 1, DrawScriptStuff_H);
@@ -938,7 +899,7 @@ namespace CLEO
     {
         auto cs = new CCustomScript(szFilePath);
 
-        if (!cs || !cs->bOK)
+        if (!cs || !cs->IsOK())
         {
             TRACE("Loading of custom script '%s' failed", szFilePath);
             if (cs) delete cs;
@@ -1391,19 +1352,28 @@ namespace CLEO
         });
     }
 
+    CSprite2d* CCustomScript::GetScriptSprite(size_t index)
+    {
+        if (index >= m_scriptSprites.size())
+        {
+            return nullptr;
+        }
+
+        return &m_scriptSprites[index];
+    }
+
     // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
-    CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label)
-        : CRunningScript(), bSaveEnabled(false), bOK(false),
-        compatVer(CLEO_VER_CUR)
+    CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label) : CRunningScript()
     {
         TRACE(""); // separator
         TRACE("Loading custom script '%s'...", szFileName);
 
+        bSaveEnabled = false;
+        bOK = false;
+        compatVer = CLEO_VER_CUR;
         bIsCustom = true;
         bIsMission = bUseMissionCleanup = bIsMiss;
-        useTextCommands = 0;
-        numDraws = 0;
-        numTexts = 0;
+        m_useTextCommands = false;
 
         try
         {
