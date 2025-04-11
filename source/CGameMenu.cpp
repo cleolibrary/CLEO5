@@ -2,8 +2,6 @@
 #include "CGameMenu.h"
 #include "CleoBase.h"
 #include "CDebug.h"
-#include <CFont.h>
-#include <sstream>
 
 namespace CLEO
 {

@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "CDebug.h"
 #include "CleoBase.h"
-#include <CTimer.h>
-#include <shellapi.h>
+
 
 CDebug Debug;
 using namespace CLEO;

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "crc32.h"
-#include <ctype.h>
+
 
 static const unsigned long crcTable[256] = {
     0x00000000UL, 0x77073096UL, 0xee0e612cUL, 0x990951baUL, 0x076dc419UL,

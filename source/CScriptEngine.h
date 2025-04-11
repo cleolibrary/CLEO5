@@ -18,15 +18,15 @@ namespace CLEO
 
         bool bSaveEnabled;
         bool bOK;
-        eCLEO_Version CompatVer;
-        BYTE UseTextCommands;
-        int NumDraws;
-        int NumTexts;
-		CCustomScript *parentThread;
-		std::list<CCustomScript*> childThreads;
-        std::list<RwTexture*> script_textures;
-        std::vector<BYTE> script_draws;
-        std::vector<BYTE> script_texts;
+        eCLEO_Version compatVer;
+
+        CCustomScript *parentThread;
+        std::list<CCustomScript*> childThreads;
+        
+        bool m_useTextCommands;
+        std::vector<tScriptRectangle> m_scriptDraws;
+        std::vector<CSprite2d> m_scriptSprites;
+        std::vector<tScriptText> m_scriptTexts;
 
         bool bDebugMode; // debug mode enabled?
 
@@ -35,38 +35,29 @@ namespace CLEO
         std::string workDir;
 
     public:
-		inline RwTexture* GetScriptTextureById(unsigned int id)
-		{
-			if (script_textures.size() > id)
-			{
-				auto it = script_textures.begin();
-				std::advance(it, id);
-				return *it;
-			}
-			return nullptr;
-		}
+        CSprite2d* GetScriptSprite(size_t index);
 
         inline SCRIPT_VAR * GetVarsPtr() { return LocalVar; }
         inline bool IsOK() const { return bOK; }
         inline DWORD GetCodeSize() const { return codeSize; }
         inline DWORD GetCodeChecksum() const { return codeChecksum; }
         inline void enable_saving(bool en = true) { bSaveEnabled = en; }
-        inline void SetCompatibility(eCLEO_Version ver) { CompatVer = ver; }
-        inline eCLEO_Version GetCompatibility() const { return CompatVer; }
+        inline void SetCompatibility(eCLEO_Version ver) { compatVer = ver; }
+        inline eCLEO_Version GetCompatibility() const { return compatVer; }
 
         CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
         CCustomScript(const CCustomScript&) = delete; // no copying
         ~CCustomScript();
 
-        void Process();
-        void Draw(char bBeforeFade);
+        void AddScriptToList(CRunningScript** queuelist);
+        void RemoveScriptFromList(CRunningScript** queuelist);
 
-        void StoreScriptSpecifics();
-        void RestoreScriptSpecifics();
-        void StoreScriptTextures();
-        void RestoreScriptTextures();
+        void Process();
+        void ShutdownThisScript();
+
+        void Draw(char bBeforeFade);
         void StoreScriptDraws();
-        void RestoreScriptDraws();
+        void ApplyScriptDraws(); // apply this script's draws to global state
 
         // debug related utils enabled?
         bool GetDebugMode() const;
@@ -144,16 +135,30 @@ namespace CLEO
 
         void DrawScriptStuff(char bBeforeFade);
 
+        void StoreScriptDrawsState();
+        void RestoreScriptDrawsState();
+        static void SetScriptSpritesDefaults();
+        static void SetScriptTextsDefaults();
+
         inline CCustomScript* GetCustomMission() { return CustomMission; }
         inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
 
     private:
+        static constexpr size_t Script_Draws_Capacity = 0x80;
+        static constexpr size_t Script_Sprites_Capacity = 0x80;
+        static constexpr size_t Script_Texts_Capacity = 0x60;
+
+        // stored script draws state
+        bool storedUseTextCommands = false;
+        WORD storedDrawsCount = 0;
+        std::array<tScriptRectangle, Script_Draws_Capacity> storedDraws;
+        std::array<CSprite2d, Script_Sprites_Capacity> storedSprites;
+        WORD storedTextsCount = 0;
+        std::array<tScriptText, Script_Texts_Capacity> storedTexts;
+
         void RemoveCustomScript(CCustomScript*);
     };
 
-    extern void(__thiscall * AddScriptToQueue)(CRunningScript *, CRunningScript **queue);
-    extern void(__thiscall * RemoveScriptFromQueue)(CRunningScript *, CRunningScript **queue);
-    extern void(__thiscall * StopScript)(CRunningScript *);
     extern char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
     extern void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     extern void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);

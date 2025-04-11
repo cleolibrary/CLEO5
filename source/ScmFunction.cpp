@@ -3,6 +3,7 @@
 #include "CCustomOpcodeSystem.h"
 #include "CScriptEngine.h"
 
+
 namespace CLEO
 {
 	ScmFunction* ScmFunction::store[Store_Size] = { 0 };
