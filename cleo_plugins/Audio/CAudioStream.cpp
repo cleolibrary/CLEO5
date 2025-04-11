@@ -210,8 +210,10 @@ void CAudioStream::Process()
 {
     if (state == PlayingInactive)
     {
-        BASS_ChannelPlay(streamInternal, FALSE);
-        state = Playing;
+        if (BASS_ChannelPlay(streamInternal, FALSE))
+        {
+            state = Playing;
+        }
     }
     else
     {
