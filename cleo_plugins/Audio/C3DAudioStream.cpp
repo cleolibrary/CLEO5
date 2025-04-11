@@ -148,7 +148,7 @@ double C3DAudioStream::CalculateDistanceDecay(float radius, float distance)
     factor -= 0.00006f;
     factor = std::clamp(factor, 0.0f, 1.0f);*/
 
-    return exp(-0.017 * pow(distance, 1.3)); // more natural feeling
+    return exp(-0.013 * pow(distance, 1.4)); // more natural feeling
 }
 
 float C3DAudioStream::CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos)
