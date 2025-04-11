@@ -53,9 +53,10 @@ namespace CLEO
         void RemoveScriptFromList(CRunningScript** queuelist);
 
         void Process();
-        void Draw(char bBeforeFade);
+        void ShutdownThisScript();
         void ShutdownThisScript();
 
+        void Draw(char bBeforeFade);
         void StoreScriptDraws();
         void ApplyScriptDraws(); // apply this script's draws to global state
 

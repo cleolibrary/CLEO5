@@ -456,6 +456,11 @@ namespace CLEO
         ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
     }
 
+    void CCustomScript::ShutdownThisScript()
+    {
+        ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
+    }
+
     void CCustomScript::Draw(char bBeforeFade)
     {
         if (!m_scriptDraws.empty() || !m_scriptTexts.empty())
