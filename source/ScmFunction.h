@@ -2,9 +2,6 @@
 #include "..\cleo_sdk\CLEO.h"
 #include "CDebug.h"
 
-#include <wtypes.h>
-#include <list>
-#include <string>
 
 namespace CLEO
 {

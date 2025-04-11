@@ -3,7 +3,6 @@
 #include "CModuleSystem.h"
 #include "FileEnumerator.h"
 
-#include <fstream>
 
 using namespace CLEO;
 

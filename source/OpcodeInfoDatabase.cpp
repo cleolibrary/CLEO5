@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "OpcodeInfoDatabase.h"
-#include "simdjson.h"
-#include <vector>
+
 
 using namespace std;
 using namespace simdjson;

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CleoBase.h"
 
+
 namespace CLEO
 {
 extern "C"
@@ -414,9 +415,9 @@ extern "C"
     {
         CCustomScript* customScript = reinterpret_cast<CCustomScript*>(thread);
         // We need to store-restore to update the texture list, not optimized, but this will not be used every frame anyway
-        customScript->StoreScriptTextures();
-        RwTexture* texture = customScript->GetScriptTextureById(id - 1);
-        customScript->RestoreScriptTextures();
+        customScript->StoreScriptDraws();
+        auto* texture = customScript->GetScriptSprite(id - 1);
+        customScript->ApplyScriptDraws();
         return (DWORD)texture;
     }
 

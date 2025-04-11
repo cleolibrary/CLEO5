@@ -3,12 +3,7 @@
 #include "CGameVersionManager.h"
 #include "CCustomOpcodeSystem.h"
 #include "ScmFunction.h"
-#include <CCheat.h>
 
-#include <sstream>
-#include <forward_list>
-#include <set>
-#include <string>
 
 #define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
 #define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
