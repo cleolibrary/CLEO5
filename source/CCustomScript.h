@@ -6,7 +6,6 @@ namespace CLEO
     class CCustomScript : public CRunningScript
     {
         friend class CScriptEngine;
-        friend struct ScmFunction;
         friend struct ThreadSavingInfo;
 
         bool m_ok = false;
