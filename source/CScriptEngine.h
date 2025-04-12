@@ -64,6 +64,7 @@ namespace CLEO
 
         void StoreScriptDrawsState();
         void RestoreScriptDrawsState();
+        CSprite2d* GetScriptSprite(size_t index);
         static void SetScriptSpritesDefaults();
         static void SetScriptTextsDefaults();
 
@@ -76,6 +77,7 @@ namespace CLEO
         void(__cdecl* DrawScriptTextAfterFade_Orig)(uchar beforeFade) = nullptr;
         
         // stored script draws state
+        bool storedDrawsState = false;
         bool storedUseTextCommands = false;
         WORD storedDrawsCount = 0;
         std::array<tScriptRectangle, Script_Draws_Capacity> storedDraws;

@@ -364,6 +364,8 @@ namespace CLEO
 
         storedTextsCount = CTheScripts::NumberOfIntroTextLinesThisFrame;
         std::memcpy(storedTexts.data(), CTheScripts::IntroTextLines, sizeof(storedTexts));
+
+        storedDrawsState = true;
     }
 
     void CScriptEngine::RestoreScriptDrawsState()
@@ -377,6 +379,19 @@ namespace CLEO
 
         CTheScripts::NumberOfIntroTextLinesThisFrame = storedTextsCount;
         std::memcpy(CTheScripts::IntroTextLines, storedTexts.data(), sizeof(storedTexts));
+
+        storedDrawsState = false;
+    }
+
+    CSprite2d* CScriptEngine::GetScriptSprite(size_t index)
+    {
+        if (index == 0 || index > CScriptEngine::Script_Sprites_Capacity)
+        {
+            return nullptr; // invalid argument
+        }
+
+        index -= 1; // 1-based to 0-based
+        return storedDrawsState ? &storedSprites[index] : &CTheScripts::ScriptSprites[index];
     }
 
     void CScriptEngine::SetScriptSpritesDefaults()

@@ -280,12 +280,6 @@ CSprite2d* CCustomScript::GetScriptSprite(size_t index)
     }
 
     index -= 1; // 1-based to 0-based
-
-    if (index == 0 || index >= m_scriptSprites.size())
-    {
-        return nullptr;
-    }
-
     return m_processedNow ? &CTheScripts::ScriptSprites[index] : &m_scriptSprites[index];
 }
 

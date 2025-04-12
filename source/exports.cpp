@@ -415,13 +415,9 @@ extern "C"
     DWORD WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
     {
         if (thread->IsCustom())
-        {
             return (DWORD)reinterpret_cast<CCustomScript*>(thread)->GetScriptSprite(id);
-        }
         else
-        {
-            return (DWORD)nullptr; // TODO: handle properly for native scripts
-        }
+            return (DWORD)CleoInstance.ScriptEngine.GetScriptSprite(id);
     }
 
     DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
