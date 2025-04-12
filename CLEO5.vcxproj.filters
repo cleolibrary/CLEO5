@@ -84,6 +84,9 @@
     <ClCompile Include="source\CleoBase.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\CCustomScript.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
     <ClCompile Include="source\CCustomOpcodeSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
@@ -168,6 +171,9 @@
       <Filter>source\game_sa</Filter>
     </ClInclude>
     <ClInclude Include="source\CleoBase.h">
+      <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\CCustomScript.h">
       <Filter>source\core</Filter>
     </ClInclude>
     <ClInclude Include="source\CCustomOpcodeSystem.h">

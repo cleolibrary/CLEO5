@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "CleoBase.h"
-#include "crc32.h"
+#include "CCustomScript.h"
 
 
 namespace CLEO
@@ -212,10 +212,6 @@ namespace CLEO
         }
     }
 
-    void(__cdecl * InitScm)();
-    void(__cdecl * DrawScriptStuff)(char bBeforeFade);
-    void(__cdecl * DrawScriptStuff_H)(char bBeforeFade);
-
     BYTE *scmBlock;
     BYTE *missionBlock;
     int MissionIndex;
@@ -261,7 +257,7 @@ namespace CLEO
         char threadName[8];
 
         ThreadSavingInfo(CCustomScript *cs) :
-            hash(cs->codeChecksum), condResult(cs->bCondResult),
+            hash(cs->GetCodeChecksum()), condResult(cs->bCondResult),
             logicalOp(cs->LogicalOp), notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
         {
             sleepTime = cs->WakeTime >= CTimer::m_snTimeInMilliseconds ? 0 : cs->WakeTime - CTimer::m_snTimeInMilliseconds;
@@ -272,7 +268,7 @@ namespace CLEO
 
         void Apply(CCustomScript *cs)
         {
-            cs->codeChecksum = hash;
+            cs->m_codeChecksum = hash;
             std::copy(tls, tls + 32, cs->LocalVar);
             std::copy(timers, timers + 2, cs->Timers);
             cs->bCondResult = condResult;
@@ -281,7 +277,7 @@ namespace CLEO
             cs->NotFlag = notFlag;
             cs->CurrentIP = reinterpret_cast<BYTE*>(cs->BaseIP) + ip_diff;
             std::copy(threadName, threadName + 8, cs->Name);
-            cs->bSaveEnabled = true;
+            cs->m_saveEnabled = true;
         }
 
         ThreadSavingInfo() { }
@@ -333,20 +329,27 @@ namespace CLEO
         else ProcessScript(pScript);
     }
 
-    void HOOK_DrawScriptStuff(char bBeforeFade)
+    void __cdecl CScriptEngine::OnDrawScriptText(uchar beforeFade)
     {
-        CleoInstance.ScriptEngine.DrawScriptStuff(bBeforeFade);
+        for (auto& script : CleoInstance.ScriptEngine.CustomScripts)
+        {
+            script->Draw(beforeFade);
+        }
 
-        if(bBeforeFade)
-            DrawScriptStuff_H(bBeforeFade);
+        if (auto script = CleoInstance.ScriptEngine.GetCustomMission())
+            script->Draw(beforeFade);
+
+        // call original
+        if(beforeFade)
+            CleoInstance.ScriptEngine.DrawScriptTextBeforeFade_Orig(beforeFade);
         else
-            DrawScriptStuff(bBeforeFade);
+            CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(beforeFade);
 
         // run registered callbacks
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
         {
             typedef void WINAPI callback(bool);
-            ((callback*)func)(bBeforeFade != 0);
+            ((callback*)func)(beforeFade != 0);
         }
     }
 
@@ -418,308 +421,9 @@ namespace CLEO
         );
     }
 
-    void CScriptEngine::DrawScriptStuff(char bBeforeFade)
-    {
-        for (auto i = CustomScripts.begin(); i != CustomScripts.end(); ++i)
-        {
-            auto script = *i;
-            script->Draw(bBeforeFade);
-        }
-        if (auto script = GetCustomMission())
-            script->Draw(bBeforeFade);
-    }
-
-    void CCustomScript::Process()
-    {
-        ApplyScriptDraws();
-
-        if (CTheScripts::UseTextCommands)
-        {
-            CTheScripts::UseTextCommands = false;
-
-            CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
-            //std::fill(scriptDraws.begin(), scriptDraws.end(), tScriptRectangle{}); // TODO: is it needed at all?
-
-            CScriptEngine::SetScriptSpritesDefaults();
-
-            CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
-            CScriptEngine::SetScriptTextsDefaults();
-        }
-
-        ProcessScript(this);
-
-        StoreScriptDraws();
-    }
-    
     void CCustomScript::ShutdownThisScript()
     {
         ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
-    }
-
-    void CCustomScript::ShutdownThisScript()
-    {
-        ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
-    }
-
-    void CCustomScript::Draw(char bBeforeFade)
-    {
-        if (!m_scriptDraws.empty() || !m_scriptTexts.empty())
-        {
-            ApplyScriptDraws();
-
-            if (bBeforeFade) DrawScriptStuff_H(bBeforeFade);
-            else DrawScriptStuff(bBeforeFade);
-
-            StoreScriptDraws();
-        }
-    }
-
-    void CCustomScript::StoreScriptDraws()
-    {
-        // take this script's draws from global state and store locally
-        m_useTextCommands = CTheScripts::UseTextCommands;
-
-        m_scriptDraws.assign(
-            CTheScripts::IntroRectangles,
-            CTheScripts::IntroRectangles + min(CTheScripts::NumberOfIntroRectanglesThisFrame, CScriptEngine::Script_Draws_Capacity) // clamp, as original SA scripts seems do not care
-        );
-
-        m_scriptSprites.assign(
-            CTheScripts::ScriptSprites,
-            CTheScripts::ScriptSprites + CScriptEngine::Script_Sprites_Capacity
-        );
-
-        m_scriptTexts.assign(
-            CTheScripts::IntroTextLines,
-            CTheScripts::IntroTextLines + min(CTheScripts::NumberOfIntroTextLinesThisFrame, CScriptEngine::Script_Texts_Capacity)
-        );
-
-        // restore SCM script draws into global state
-        CleoInstance.ScriptEngine.RestoreScriptDrawsState();
-    }
-
-    void CCustomScript::ApplyScriptDraws()
-    {
-        // store SCM script draws
-        CleoInstance.ScriptEngine.StoreScriptDrawsState();
-
-        // restore this script's draws
-        CTheScripts::UseTextCommands = m_useTextCommands;
-
-        CTheScripts::NumberOfIntroRectanglesThisFrame = (WORD)m_scriptDraws.size();
-        std::memcpy(CTheScripts::IntroRectangles, m_scriptDraws.data(), m_scriptDraws.size() * sizeof(decltype(m_scriptDraws)::value_type));
-
-        std::memcpy(CTheScripts::ScriptSprites, m_scriptSprites.data(), m_scriptSprites.size() * sizeof(decltype(m_scriptSprites)::value_type));
-
-        CTheScripts::NumberOfIntroTextLinesThisFrame = (WORD)m_scriptTexts.size();
-        std::memcpy(CTheScripts::IntroTextLines, m_scriptTexts.data(), m_scriptTexts.size() * sizeof(decltype(m_scriptTexts)::value_type));
-    }
-
-    bool CCustomScript::GetDebugMode() const
-    {
-        if (!bIsCustom)
-            return CleoInstance.ScriptEngine.NativeScriptsDebugMode;
-
-        return bDebugMode;
-    }
-
-    void CCustomScript::SetDebugMode(bool enabled)
-    {
-        if (!bIsCustom)
-            CleoInstance.ScriptEngine.NativeScriptsDebugMode = enabled;
-        else
-            bDebugMode = enabled;
-    }
-
-    const char* CCustomScript::GetScriptFileDir() const
-    {
-        if(!bIsCustom)
-            return CleoInstance.ScriptEngine.MainScriptFileDir.c_str();
-
-        return scriptFileDir.c_str();
-    }
-
-    void CCustomScript::SetScriptFileDir(const char* directory)
-    {
-        if (!bIsCustom)
-            CleoInstance.ScriptEngine.MainScriptFileDir = directory;
-        else
-            scriptFileDir = directory;
-    }
-
-    const char* CCustomScript::GetScriptFileName() const 
-    {
-        if (!bIsCustom)
-            return CleoInstance.ScriptEngine.MainScriptFileName.c_str();
-
-        return scriptFileName.c_str();
-    }
-
-    void CCustomScript::SetScriptFileName(const char* filename) 
-    {
-        if (!bIsCustom)
-            CleoInstance.ScriptEngine.MainScriptFileName = filename;
-        else
-            scriptFileName = filename;
-    }
-
-    std::string CCustomScript::GetScriptFileFullPath() const
-    {
-        std::string path = GetScriptFileDir();
-        path += '\\';
-        path += GetScriptFileName();
-        return path;
-    }
-
-    const char* CCustomScript::GetWorkDir() const
-    {
-        if (!bIsCustom)
-            return CleoInstance.ScriptEngine.MainScriptCurWorkDir.c_str();
-
-        return workDir.c_str(); 
-    }
-
-    void CCustomScript::SetWorkDir(const char* directory)
-    {
-        if(directory == nullptr || strlen(directory) == 0)
-            return;  // Already done. Empty path is relative path starting at current work dir
-
-        auto resolved = ResolvePath(directory);
-
-        if (!bIsCustom)
-            CleoInstance.ScriptEngine.MainScriptCurWorkDir = resolved;
-        else
-            workDir = resolved;
-    }
-
-    std::string CCustomScript::ResolvePath(const char* path, const char* customWorkDir) const
-    {
-        if (path == nullptr)
-        {
-            return {};
-        }
-
-        auto fsPath = FS::path(path);
-
-        // check for virtual path root
-        enum class VPref{ None, Game, User, Script, Cleo, Modules } virtualPrefix = VPref::None;
-        if(!fsPath.empty())
-        {
-            const auto root = fsPath.begin()->string(); // first path element
-            const auto r = root.c_str();
-
-            if(_strcmpi(r, DIR_GAME) == 0) virtualPrefix = VPref::Game;
-            else if (_strcmpi(r, DIR_USER) == 0) virtualPrefix = VPref::User;
-            else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript((CRunningScript*)this)) virtualPrefix = VPref::Script;
-            else if (_strcmpi(r, DIR_CLEO) == 0) virtualPrefix = VPref::Cleo;
-            else if (_strcmpi(r, DIR_MODULES) == 0) virtualPrefix = VPref::Modules;
-        }
-
-        // not virtual
-        if(virtualPrefix == VPref::None)
-        {
-            if(fsPath.is_relative())
-            {
-                if(customWorkDir != nullptr)
-                    fsPath = ResolvePath(customWorkDir) / fsPath;
-                else
-                    fsPath = GetWorkDir() / fsPath;
-            }
-
-            auto result = fsPath.string();
-            FilepathNormalize(result, false);
-
-            // ModLoader support: make paths withing game directory relative to it
-            FilepathRemoveParent(result, Filepath_Game);
-
-            return std::move(result);
-        }
-
-        // expand virtual paths
-        FS::path resolved;
-        switch(virtualPrefix)
-        {
-            case VPref::User: resolved = Filepath_User; break;
-            case VPref::Script: resolved = GetScriptFileDir(); break;
-            case VPref::Game: resolved = Filepath_Game; break;
-            case VPref::Cleo: resolved = Filepath_Cleo; break;
-            case VPref::Modules: resolved = Filepath_Cleo + "\\cleo_modules"; break;
-            default : resolved = "<error>"; break; // should never happen
-        }
-
-        // append all but virtual prefix from original path
-        for (auto it = ++fsPath.begin(); it != fsPath.end(); it++)
-            resolved /= *it;
-
-        auto result = resolved.string();
-        FilepathNormalize(result, false);
-        return std::move(result);
-    }
-
-    std::string CCustomScript::GetInfoStr(bool currLineInfo) const
-    {
-        std::ostringstream ss;
-
-        auto threadName = GetName();
-        auto fileName = GetScriptFileName();
-
-        if(memcmp(threadName.c_str(), fileName, threadName.length()) != 0) // thread name no longer same as filename (was set with 03A4)
-        {
-            ss << "'" << threadName << "' from ";
-        }
-
-        ss << "'" << fileName << "'";
-
-        if(currLineInfo)
-        {
-            ss << " at ";
-
-            if(false)
-            {
-                // TODO: get Sanny's SMC extra info
-                ss << "line " << 0;
-                ss << " - ";
-                ss << "CODE";
-            }
-            else
-            {
-                auto base = (DWORD)BaseIP;
-                if (base == 0) base = (DWORD)scmBlock;
-                auto currPos = (DWORD)CCustomOpcodeSystem::lastOpcodePtr;
-
-                if (IsMission() && !IsCustom())
-                {
-                    if (currPos >= (DWORD)missionBlock)
-                    {
-                        // we are in mission code buffer
-                        // native missions are loaded from script file into mission block area
-                        currPos += ((DWORD*)CTheScripts::MultiScriptArray)[MissionIndex]; // start offset of this mission within source script file
-                    }
-                    else
-                    {
-                        base = (DWORD)scmBlock; // seems that mission uses main scm code
-                    }
-                }
-
-                auto offset = currPos - base;
-
-                ss << "offset {" << offset << "}"; // Sanny offsets style
-                ss << " - ";
-                ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
-
-                auto commandName = CleoInstance.OpcodeInfoDb.GetCommandName(CCustomOpcodeSystem::lastOpcode);
-                if (commandName != nullptr)
-                {
-                    ss << ": " << commandName;
-                }
-                else
-                {
-                    ss << ": ...";
-                }
-            }
-        }
-
-        return ss.str();
     }
 
     void CScriptEngine::Inject(CCodeInjector& inj)
@@ -758,10 +462,9 @@ namespace CLEO
         inj.MemoryReadOffset(addr.address + 1, ProcessScript);
         inj.ReplaceFunction(HOOK_ProcessScript, addr);
 
-        inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE).address + 1, CLEO::DrawScriptStuff);
-        inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE).address + 1, DrawScriptStuff_H);
-        inj.ReplaceFunction(HOOK_DrawScriptStuff, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE));
-        inj.ReplaceFunction(HOOK_DrawScriptStuff, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE));
+        inj.ReplaceFunction(OnDrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
+        inj.ReplaceFunction(OnDrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
+
         inj.MemoryWrite(gvm.TranslateMemoryAddress(MA_CODE_JUMP_FOR_TXD_STORE), OP_RET);
 
         inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);
@@ -904,7 +607,7 @@ namespace CLEO
     {
         auto cs = new CCustomScript(szFilePath);
 
-        if (!cs || !cs->IsOK())
+        if (!cs || !cs->IsOk())
         {
             TRACE("Loading of custom script '%s' failed", szFilePath);
             if (cs) delete cs;
@@ -916,7 +619,7 @@ namespace CLEO
         {
             for (size_t i = 0; i < safe_header.n_stopped_threads; ++i)
             {
-                if (stopped_info[i] == cs->codeChecksum)
+                if (stopped_info[i] == cs->GetCodeChecksum())
                 {
                     TRACE("Custom script '%s' found in the stop-list", szFilePath);
                     InactiveScriptHashes.insert(stopped_info[i]);
@@ -931,7 +634,7 @@ namespace CLEO
         {
             for (size_t i = 0; i < safe_header.n_saved_threads; ++i)
             {
-                if (safe_info[i].hash == cs->codeChecksum)
+                if (safe_info[i].hash == cs->GetCodeChecksum())
                 {
                     TRACE("Custom script '%s' found in the safe-list", szFilePath);
                     safe_info[i].Apply(cs);
@@ -959,8 +662,8 @@ namespace CLEO
 
         // if "label == 0" then "script_name" need to be the file name
         auto cs = new CCustomScript(filename.c_str(), false, fromThread, label);
-        if (fromThread) SetScriptCondResult(fromThread, cs && cs->IsOK());
-        if (cs && cs->IsOK())
+        if (fromThread) SetScriptCondResult(fromThread, cs && cs->IsOk());
+        if (cs && cs->IsOk())
         {
             AddCustomScript(cs);
             if (fromThread) TransmitScriptParams(fromThread, cs);
@@ -1029,8 +732,9 @@ namespace CLEO
         try
         {
             std::list<CCustomScript *> savedThreads;
-            std::for_each(CustomScripts.begin(), CustomScripts.end(), [this, &savedThreads](CCustomScript *cs) {
-                if (cs->bSaveEnabled)
+            std::for_each(CustomScripts.begin(), CustomScripts.end(), [this, &savedThreads](CCustomScript *cs)
+            {
+                if (cs->GetSavingEnabled())
                     savedThreads.push_back(cs);
             });
 
@@ -1269,14 +973,15 @@ namespace CLEO
             ((callback*)func)(cs);
         }
 
-		if (cs->parentThread)
+		if (cs->m_parentThread)
 		{
 			cs->BaseIP = 0; // don't delete BaseIP if child thread
 		}
-		for (auto childThread : cs->childThreads)
+		for (auto childThread : cs->m_childThreads)
 		{
 			CScriptEngine::RemoveScript(childThread);
 		}
+
         if (cs == CustomMission)
         {
             TRACE("Unregistering custom mission named '%s'", cs->GetName().c_str());
@@ -1288,9 +993,9 @@ namespace CLEO
         }
         else
         {
-            if (cs->bSaveEnabled)
+            if (cs->GetSavingEnabled())
             {
-                InactiveScriptHashes.insert(cs->codeChecksum);
+                InactiveScriptHashes.insert(cs->GetCodeChecksum());
                 TRACE("Stopping custom script named '%s'", cs->GetName().c_str());
             }
             else
@@ -1355,206 +1060,5 @@ namespace CLEO
             cs->AddScriptToList(activeThreadQueue);
             cs->SetActive(true);
         });
-    }
-
-    CSprite2d* CCustomScript::GetScriptSprite(size_t index)
-    {
-        if (index >= m_scriptSprites.size())
-        {
-            return nullptr;
-        }
-
-        return &m_scriptSprites[index];
-    }
-
-    // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
-    CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label) : CRunningScript()
-    {
-        TRACE(""); // separator
-        TRACE("Loading custom script '%s'...", szFileName);
-
-        bSaveEnabled = false;
-        bOK = false;
-        compatVer = CLEO_VER_CUR;
-        bIsCustom = true;
-        bIsMission = bUseMissionCleanup = bIsMiss;
-        m_useTextCommands = false;
-
-        try
-        {
-            std::ifstream is;
-            if (label != 0) // Create external from label.
-            {
-                if (!parent)
-                    throw std::logic_error("Trying to create external thread from label without parent thread");
-
-                if (!parent->IsCustom())
-                    throw std::logic_error("Only custom threads can spawn children threads from label");
-
-                auto cs = (CCustomScript*)parent;
-
-                compatVer = cs->GetCompatibility();
-                bDebugMode = cs->GetDebugMode();
-                scriptFileDir = cs->GetScriptFileDir();
-                scriptFileName = cs->GetScriptFileName();
-                workDir = cs->GetWorkDir();
-
-                BaseIP = cs->GetBasePointer();
-                CurrentIP = cs->GetBasePointer() - label;
-                memcpy(Name, cs->Name, sizeof(Name));
-                codeChecksum = cs->codeChecksum;
-                parentThread = cs;
-                cs->childThreads.push_back(this);
-            }
-            else
-            {
-                // store script file directory and name
-                std::string pathStr = szFileName;
-                FilepathNormalize(pathStr, false);
-                FS::path path = pathStr;
-
-                // file exists?
-                if (!FS::is_regular_file(path))
-                {
-                    if (path.extension() == cs_ext)
-                    {
-                        // maybe it was renamed to enable compatibility mode?
-                        auto compatPath = path;
-
-                        compatPath.replace_extension(cs4_ext);
-                        if (FS::is_regular_file(compatPath))
-                        {
-                            path = compatPath;
-                        }
-                        else
-                        {
-                            compatPath.replace_extension(cs3_ext);
-                            if (FS::is_regular_file(compatPath))
-                            {
-                                path = compatPath;
-                            }
-                            else
-                            {
-                                throw std::logic_error("File does not exists");
-                            }
-                        }
-                    }
-                    else
-                        throw std::logic_error("File does not exists");
-                }
-
-                // deduce compatibility mode from filetype extension
-                if (path.extension() == cs4_ext)
-                    compatVer = CLEO_VER_4;
-                else
-                if (path.extension() == cs3_ext)
-                    compatVer = CLEO_VER_3;
-
-                if (compatVer == CLEO_VER_CUR && parent != nullptr)
-                {
-                    // inherit compatibility mode from parent
-                    compatVer = CLEO_GetScriptVersion(parent);
-
-                    // try loading file with same compatibility mode filetype extension
-                    auto compatPath = path;
-                    if (compatVer == CLEO_VER_4)
-                    {
-                        compatPath.replace_extension(cs4_ext);
-                        if (FS::is_regular_file(compatPath))
-                            path = compatPath;
-                    }
-                    else
-                    if (compatVer == CLEO_VER_3)
-                    {
-                        compatPath.replace_extension(cs3_ext);
-                        if (FS::is_regular_file(compatPath))
-                            path = compatPath;
-                    }
-                }
-
-                scriptFileDir = path.parent_path().string();
-                scriptFileName = path.filename().string();
-
-                if(parent != nullptr)
-                {
-                    bDebugMode = ((CCustomScript*)parent)->GetDebugMode();
-                    workDir = ((CCustomScript*)parent)->GetWorkDir();
-                }
-                else
-                {
-                    bDebugMode = CleoInstance.ScriptEngine.NativeScriptsDebugMode; // global setting
-                    workDir = Filepath_Game; // game root
-                }
-
-                using std::ios;
-                std::ifstream is(path.string().c_str(), std::ios::binary);
-                is.exceptions(std::ios::badbit | std::ios::failbit);
-                std::size_t length;
-                is.seekg(0, std::ios::end);
-                length = (size_t)is.tellg();
-                is.seekg(0, std::ios::beg);
-
-                if (bIsMiss)
-                {
-                    if (CTheScripts::bAlreadyRunningAMissionScript)
-                        throw std::logic_error("Starting of custom mission when other mission loaded");
-
-                    CTheScripts::bAlreadyRunningAMissionScript = 1;
-                    MissionIndex = -1;
-                    BaseIP = CurrentIP = missionBlock; // TODO: there should be check length <= missionBlock size
-                }
-                else
-                {
-                    BaseIP = CurrentIP = new BYTE[length];
-                }
-                is.read(reinterpret_cast<char *>(BaseIP), length);
-
-                codeSize = length;
-                codeChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
-
-                // thread name from filename
-                auto threadNamePath = path;
-                if(threadNamePath.extension() == cs3_ext || threadNamePath.extension() == cs4_ext)
-                {
-                    threadNamePath.replace_extension(cs_ext); // keep original extension even in compatibility modes
-                }
-                auto fName = threadNamePath.filename().string();
-
-                memset(Name, '\0', sizeof(Name));
-                if(!fName.empty())
-                {
-                    auto len = min(fName.length(), sizeof(Name) - 1); // and text terminator
-                    memcpy(Name, fName.c_str(), len);
-                }
-            }
-            CleoInstance.ScriptEngine.LastScriptCreated = this;
-            bOK = true;
-        }
-        catch (std::exception& e)
-        {
-            LOG_WARNING(0, "Error during loading of custom script '%s' occured.\nError message: %s", szFileName, e.what());
-        }
-        catch (...)
-        {
-            LOG_WARNING(0, "Unknown error during loading of custom script '%s' occured.", szFileName);
-        }
-    }
-
-    CCustomScript::~CCustomScript()
-    {
-        if (BaseIP && !bIsMission) delete[] BaseIP;
-        CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
-
-        if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
-    }
-
-    void CCustomScript::AddScriptToList(CRunningScript** queuelist)
-    {
-        ((::CRunningScript*)this)->AddScriptToList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
-    }
-
-    void CCustomScript::RemoveScriptFromList(CRunningScript** queuelist)
-    {
-        ((::CRunningScript*)this)->RemoveScriptFromList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
     }
 }

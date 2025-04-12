@@ -6,97 +6,25 @@ namespace CLEO
     const char cs4_ext[] = ".cs4";
     const char cs3_ext[] = ".cs3";
 
-    class CCustomScript : public CRunningScript
-    {
-        friend class CScriptEngine;
-        friend class CCustomOpcodeSystem;
-        friend struct ScmFunction;
-        friend struct ThreadSavingInfo;
-
-        DWORD codeSize;
-        DWORD codeChecksum;
-
-        bool bSaveEnabled;
-        bool bOK;
-        eCLEO_Version compatVer;
-
-        CCustomScript *parentThread;
-        std::list<CCustomScript*> childThreads;
-        
-        bool m_useTextCommands;
-        std::vector<tScriptRectangle> m_scriptDraws;
-        std::vector<CSprite2d> m_scriptSprites;
-        std::vector<tScriptText> m_scriptTexts;
-
-        bool bDebugMode; // debug mode enabled?
-
-        std::string scriptFileDir;
-        std::string scriptFileName;
-        std::string workDir;
-
-    public:
-        CSprite2d* GetScriptSprite(size_t index);
-
-        inline SCRIPT_VAR * GetVarsPtr() { return LocalVar; }
-        inline bool IsOK() const { return bOK; }
-        inline DWORD GetCodeSize() const { return codeSize; }
-        inline DWORD GetCodeChecksum() const { return codeChecksum; }
-        inline void enable_saving(bool en = true) { bSaveEnabled = en; }
-        inline void SetCompatibility(eCLEO_Version ver) { compatVer = ver; }
-        inline eCLEO_Version GetCompatibility() const { return compatVer; }
-
-        CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
-        CCustomScript(const CCustomScript&) = delete; // no copying
-        ~CCustomScript();
-
-        void AddScriptToList(CRunningScript** queuelist);
-        void RemoveScriptFromList(CRunningScript** queuelist);
-
-        void Process();
-        void ShutdownThisScript();
+    class CCodeInjector;
+    class CCustomScript;
         void ShutdownThisScript();
 
-        void Draw(char bBeforeFade);
-        void StoreScriptDraws();
-        void ApplyScriptDraws(); // apply this script's draws to global state
-
-        // debug related utils enabled?
-        bool GetDebugMode() const;
-        void SetDebugMode(bool enabled);
-
-        // absolute path to directory where script's source file is located
-        const char* GetScriptFileDir() const;
-        void SetScriptFileDir(const char* directory);
-
-        // filename with type extension of script's source file
-        const char* GetScriptFileName() const;
-        void SetScriptFileName(const char* filename);
-
-        // absolute path to the script file
-        std::string GetScriptFileFullPath() const;
-
-        // current working directory of this script. Can be changed ith 0A99
-        const char* GetWorkDir() const;
-        void SetWorkDir(const char* directory);
-
-        // create absolute file path
-        std::string ResolvePath(const char* path, const char* customWorkDir = nullptr) const;
-
-        // get short info text about script
-        std::string GetInfoStr(bool currLineInfo = true) const;
-    };
-
-    class CScriptEngine : VInjectible
+    class CScriptEngine
     {
     public:
+        static constexpr size_t Script_Draws_Capacity = 0x80;
+        static constexpr size_t Script_Sprites_Capacity = 0x80;
+        static constexpr size_t Script_Texts_Capacity = 0x60;
+
         bool gameInProgress = false;
 
         friend class CCustomScript;
-        std::list<CCustomScript *> CustomScripts;
-        std::list<CCustomScript *> ScriptsWaitingForDelete;
+        std::list<CCustomScript*> CustomScripts;
+        std::list<CCustomScript*> ScriptsWaitingForDelete;
         std::set<unsigned long> InactiveScriptHashes;
-        CCustomScript *CustomMission = nullptr;
-        CCustomScript *LastScriptCreated = nullptr;
+        CCustomScript* CustomMission = nullptr;
+        CCustomScript* LastScriptCreated = nullptr;
 
         CCustomScript* LoadScript(const char* filePath);
         CCustomScript* CreateCustomScript(CRunningScript* fromThread, const char* filePath, int label);
@@ -113,7 +41,7 @@ namespace CLEO
         CScriptEngine(const CScriptEngine&) = delete; // no copying
         ~CScriptEngine();
         
-        virtual void Inject(CCodeInjector&);
+        void Inject(CCodeInjector&);
 
         void GameBegin(); // call after new game started
         void GameEnd();
@@ -134,21 +62,19 @@ namespace CLEO
         void UnregisterAllScripts();
         void ReregisterAllScripts();
 
-        void DrawScriptStuff(char bBeforeFade);
-
         void StoreScriptDrawsState();
         void RestoreScriptDrawsState();
         static void SetScriptSpritesDefaults();
         static void SetScriptTextsDefaults();
 
         inline CCustomScript* GetCustomMission() { return CustomMission; }
-        inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
+        inline size_t WorkingScriptsCount() const { return CustomScripts.size(); }
 
     private:
-        static constexpr size_t Script_Draws_Capacity = 0x80;
-        static constexpr size_t Script_Sprites_Capacity = 0x80;
-        static constexpr size_t Script_Texts_Capacity = 0x60;
-
+        static void __cdecl OnDrawScriptText(uchar beforeFade); // hook
+        void(__cdecl* DrawScriptTextBeforeFade_Orig)(uchar beforeFade) = nullptr;
+        void(__cdecl* DrawScriptTextAfterFade_Orig)(uchar beforeFade) = nullptr;
+        
         // stored script draws state
         bool storedUseTextCommands = false;
         WORD storedDrawsCount = 0;

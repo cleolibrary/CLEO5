@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CleoBase.h"
+#include "CCustomScript.h"
 #include "Singleton.h"
 
 
