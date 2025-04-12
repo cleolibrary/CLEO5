@@ -196,11 +196,12 @@ void CCustomScript::RemoveScriptFromList(CRunningScript** queuelist)
 
 void CCustomScript::Process()
 {
+    m_processedNow = true;
+
     // save native scripts' drawing state
     CleoInstance.ScriptEngine.StoreScriptDrawsState();
 
     // initialize script drawings
-    m_drawingNow = true;
     CTheScripts::UseTextCommands = m_useTextCommands;
     CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
     memcpy(CTheScripts::ScriptSprites, m_scriptSprites.data(), sizeof(m_scriptSprites)); // restore loaded textures
@@ -210,7 +211,6 @@ void CCustomScript::Process()
     ProcessScript(this);
 
     // store this script's drawings
-    m_drawingNow = false;
     m_useTextCommands = CTheScripts::UseTextCommands;
     if (m_useTextCommands)
     {
@@ -233,6 +233,8 @@ void CCustomScript::Process()
 
     // restore native scripts' drawing state
     CleoInstance.ScriptEngine.RestoreScriptDrawsState();
+
+    m_processedNow = false;
 }
 
 void CCustomScript::ShutdownThisScript()
@@ -252,7 +254,6 @@ void CCustomScript::Draw(uchar beforeFade)
     CleoInstance.ScriptEngine.StoreScriptDrawsState();
 
     // apply this script's draws
-    m_drawingNow = true;
     CTheScripts::UseTextCommands = m_useTextCommands;
 
     CTheScripts::NumberOfIntroRectanglesThisFrame = (WORD)m_scriptDraws.size();
@@ -268,7 +269,6 @@ void CCustomScript::Draw(uchar beforeFade)
     else CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(beforeFade);
 
     // restore native scripts' drawing state
-    m_drawingNow = false;
     CleoInstance.ScriptEngine.RestoreScriptDrawsState();
 }
 
@@ -286,7 +286,7 @@ CSprite2d* CCustomScript::GetScriptSprite(size_t index)
         return nullptr;
     }
 
-    return m_drawingNow ? &CTheScripts::ScriptSprites[index] : &m_scriptSprites[index];
+    return m_processedNow ? &CTheScripts::ScriptSprites[index] : &m_scriptSprites[index];
 }
 
 bool CCustomScript::GetDebugMode() const

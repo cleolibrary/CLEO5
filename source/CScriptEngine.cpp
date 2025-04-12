@@ -400,9 +400,9 @@ namespace CLEO
         txt._pad = false;
         *((float*)&txt.lineHeight) = plugin::screen::GetScreenHeight(); // 182.0f invalid type in Plugin SDK
         *((float*)&txt.lineWidth) = plugin::screen::GetScreenWidth(); // 640.0f invalid type in Plugin SDK
-        txt.backgroundColor = RwRGBA{ 0x80, 0x80, 0x80, 0x80 };
+        txt.backgroundBoxColor = RwRGBA{ 0x80, 0x80, 0x80, 0x80 }; 
         txt.proportional = true;
-        txt.backgroundBoxColor = RwRGBA{ 0, 0, 0, 0xFF };
+        txt.backgroundColor = RwRGBA{ 0, 0, 0, 0xFF };
         txt.shadowType = 2;
         txt.outlineType = 0;
         txt.m_bDrawBeforeFade = false;

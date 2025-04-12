@@ -20,13 +20,13 @@ namespace CLEO
         bool m_saveEnabled = false;
 
         // script draws
-        bool m_drawingNow = false;
         bool m_useTextCommands = false;
         std::vector<tScriptRectangle> m_scriptDraws;
         std::array<CSprite2d, CScriptEngine::Script_Sprites_Capacity> m_scriptSprites = {}; // loaded textures
         std::vector<tScriptText> m_scriptTexts;
 
         bool m_debugMode = false; // debug opcodes enabled
+        bool m_processedNow = false;
 
         std::string m_scriptFileDir;
         std::string m_scriptFileName;
