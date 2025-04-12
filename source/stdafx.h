@@ -38,6 +38,7 @@
 #include <CMenuManager.h>
 #include <CRGBA.h>
 #include <CRunningScript.h>
+#include <CSprite2d.h>
 #include <RenderWare.h>
 #include <extensions/Screen.h>
 
