@@ -17,7 +17,6 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
     try
     {
-        ifstream is;
         if (label != 0) // Create external from label.
         {
             if (!parent)

@@ -71,7 +71,7 @@ namespace CLEO
         // absolute path to the script file
         std::string GetScriptFileFullPath() const;
 
-        // current working directory of this script. Can be changed ith 0A99
+        // current working directory of this script. Can be changed with 0A99
         const char* GetWorkDir() const;
         void SetWorkDir(const char* directory);
 
