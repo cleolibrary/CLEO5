@@ -112,7 +112,6 @@ bool CLEO::CAudioStream::GetLooping() const
 
 void CAudioStream::SetVolume(float value, float transitionTime)
 {
-    if (value > 0.0f && transitionTime > 0.0f) Resume();
     volume.setValue(max(value, 0.0f), transitionTime);
 }
 
@@ -224,15 +223,13 @@ void CAudioStream::Process()
     }
 
     float prevSpeed = speed.value();
-    float prevVolume = volume.value();
 
     // update animated params
     speed.update(CSoundSystem::timeStep);
     volume.update(CSoundSystem::timeStep);
 
-    // transitioning speed or volume to 0 pauses playback
-    if ((prevSpeed > 0.0f && speed.value() <= 0.0f) ||
-        (prevVolume > 0.0f && volume.value() <= 0.0f))
+    // transitioning speed to 0 pauses playback
+    if (prevSpeed > 0.0f && speed.value() <= 0.0f)
     {
         Pause();
     }
