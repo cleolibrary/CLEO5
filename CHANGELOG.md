@@ -1,3 +1,6 @@
+## 5.0.3
+- added GxtHook.cleo plugin to ignored list
+
 ## 5.0.2
 - updated BASS library
 - fixed Doppler effect calculations for 3d audio streams
