@@ -47,7 +47,6 @@ namespace CLEO
         { 0x00A44B5C,	memory_und, 0x00A44B5C,	0x00A471DC, 0x00AB9C8C },		// MA_NUM_SCRIPT_DRAWS
         { 0x00465A6F,	memory_und, 0x00465A6F, 0x00465AEF, 0x0046B291 },		// MA_CODE_JUMP_FOR_TXD_STORE
         { 0x00A913E8,	memory_und,	0x00A913E8, 0x00A93A68, 0x00B06500 },		// MA_SCRIPT_TEXT_ARRAY
-        { 0x00A44B68,	memory_und, 0x00A44B68,	0x00A471E8, 0x00AB9C98 },		// MA_NUM_SCRIPT_TEXTS
         { 0x0058FCE4,	memory_und, 0x0058FCE4, 0x005904B4, 0x0059E73C },		// MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE
         { 0x0058D552,	memory_und, 0x0058D552, 0x0058DD22, 0x0059BAD4 },		// MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE
         { 0x00748E6B,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_GAME_SHUTDOWN TODO: find for other versions

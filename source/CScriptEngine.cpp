@@ -265,7 +265,6 @@ namespace CLEO
     CTexture *scriptSprites;
     BYTE *scriptDraws;
     WORD *numScriptDraws;
-    WORD *numScriptTexts;
     BYTE *scriptTexts;
 
     CRunningScript **inactiveThreadQueue, **activeThreadQueue;
@@ -460,7 +459,7 @@ namespace CLEO
         if (CTheScripts::UseTextCommands)
         {
             RestoreTextDrawDefaults();
-            *numScriptTexts = 0;
+            CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
             std::fill(scriptDraws, scriptDraws + DRAW_ARRAY_SIZE, 0);
             *numScriptDraws = 0;
             CTheScripts::UseTextCommands = false;
@@ -492,14 +491,14 @@ namespace CLEO
             script_draws.assign(scriptDraws, scriptDraws + (*numScriptDraws * DRAW_DATA_SIZE));
         else if (script_draws.size())
             script_draws.clear();
-        if (*numScriptTexts)
-            script_texts.assign(scriptTexts, scriptTexts + (*numScriptTexts * TEXT_DATA_SIZE));
+        if (CTheScripts::NumberOfIntroTextLinesThisFrame)
+            script_texts.assign(scriptTexts, scriptTexts + (CTheScripts::NumberOfIntroTextLinesThisFrame * TEXT_DATA_SIZE));
         else if (script_texts.size())
             script_texts.clear();
 
         UseTextCommands = CTheScripts::UseTextCommands;
         NumDraws = *numScriptDraws;
-        NumTexts = *numScriptTexts;
+        NumTexts = CTheScripts::NumberOfIntroTextLinesThisFrame;
 
         // restore SCM draws + texts
         if (numStoredDraws) std::copy(storedDraws, storedDraws + (numStoredDraws * DRAW_DATA_SIZE), scriptDraws);
@@ -507,7 +506,7 @@ namespace CLEO
         if (numStoredTexts) std::copy(storedTexts, storedTexts + (numStoredTexts * TEXT_DATA_SIZE), scriptTexts);
         else RestoreTextDrawDefaults();
         *numScriptDraws = numStoredDraws;
-        *numScriptTexts = numStoredTexts;
+        CTheScripts::NumberOfIntroTextLinesThisFrame = numStoredTexts;
         CTheScripts::UseTextCommands = storedUseTextCommands;
     }
     void CCustomScript::RestoreScriptDraws()
@@ -515,7 +514,7 @@ namespace CLEO
         // store SCM draws + texts
         storedUseTextCommands = CTheScripts::UseTextCommands;
         numStoredDraws = *numScriptDraws;
-        numStoredTexts = *numScriptTexts;
+        numStoredTexts = CTheScripts::NumberOfIntroTextLinesThisFrame;
         if (numStoredDraws)
             std::copy(scriptDraws, scriptDraws + (numStoredDraws *  DRAW_DATA_SIZE), storedDraws);
         if (numStoredTexts)
@@ -528,11 +527,11 @@ namespace CLEO
             std::copy(script_draws.begin(), script_draws.end(), scriptDraws);
             *numScriptDraws = NumDraws;
         }
-        if (!script_texts.size()) *numScriptTexts = 0;
+        if (!script_texts.size()) CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
         else
         {
             std::copy(script_texts.begin(), script_texts.end(), scriptTexts);
-            *numScriptTexts = NumTexts;
+            CTheScripts::NumberOfIntroTextLinesThisFrame = NumTexts;
         }
         CTheScripts::UseTextCommands = UseTextCommands;
     }
@@ -841,7 +840,6 @@ namespace CLEO
         scriptDraws = gvm.TranslateMemoryAddress(MA_SCRIPT_DRAW_ARRAY);
         scriptTexts = gvm.TranslateMemoryAddress(MA_SCRIPT_TEXT_ARRAY);
         numScriptDraws = gvm.TranslateMemoryAddress(MA_NUM_SCRIPT_DRAWS);
-        numScriptTexts = gvm.TranslateMemoryAddress(MA_NUM_SCRIPT_TEXTS);
 
         inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE).address + 1, CLEO::DrawScriptStuff);
         inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE).address + 1, DrawScriptStuff_H);
