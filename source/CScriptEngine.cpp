@@ -266,7 +266,6 @@ namespace CLEO
     BYTE *scriptDraws;
     WORD *numScriptDraws;
     WORD *numScriptTexts;
-    BYTE *useTextCommands;
     BYTE *scriptTexts;
 
     CRunningScript **inactiveThreadQueue, **activeThreadQueue;
@@ -458,14 +457,13 @@ namespace CLEO
         RestoreScriptSpecifics();
 
         bool bNeedDefaults = false;
-        if (*useTextCommands)
+        if (CTheScripts::UseTextCommands)
         {
             RestoreTextDrawDefaults();
             *numScriptTexts = 0;
             std::fill(scriptDraws, scriptDraws + DRAW_ARRAY_SIZE, 0);
             *numScriptDraws = 0;
-            if (*useTextCommands == 1)
-                *useTextCommands = 0;
+            CTheScripts::UseTextCommands = false;
         }
 		
 		ProcessScript(this);
@@ -499,7 +497,7 @@ namespace CLEO
         else if (script_texts.size())
             script_texts.clear();
 
-        UseTextCommands = *useTextCommands;
+        UseTextCommands = CTheScripts::UseTextCommands;
         NumDraws = *numScriptDraws;
         NumTexts = *numScriptTexts;
 
@@ -510,12 +508,12 @@ namespace CLEO
         else RestoreTextDrawDefaults();
         *numScriptDraws = numStoredDraws;
         *numScriptTexts = numStoredTexts;
-        *useTextCommands = storedUseTextCommands;
+        CTheScripts::UseTextCommands = storedUseTextCommands;
     }
     void CCustomScript::RestoreScriptDraws()
     {
         // store SCM draws + texts
-        storedUseTextCommands = *useTextCommands;
+        storedUseTextCommands = CTheScripts::UseTextCommands;
         numStoredDraws = *numScriptDraws;
         numStoredTexts = *numScriptTexts;
         if (numStoredDraws)
@@ -536,7 +534,7 @@ namespace CLEO
             std::copy(script_texts.begin(), script_texts.end(), scriptTexts);
             *numScriptTexts = NumTexts;
         }
-        *useTextCommands = UseTextCommands;
+        CTheScripts::UseTextCommands = UseTextCommands;
     }
 
     bool CCustomScript::GetDebugMode() const
@@ -844,7 +842,6 @@ namespace CLEO
         scriptTexts = gvm.TranslateMemoryAddress(MA_SCRIPT_TEXT_ARRAY);
         numScriptDraws = gvm.TranslateMemoryAddress(MA_NUM_SCRIPT_DRAWS);
         numScriptTexts = gvm.TranslateMemoryAddress(MA_NUM_SCRIPT_TEXTS);
-        useTextCommands = gvm.TranslateMemoryAddress(MA_USE_TEXT_COMMANDS);
 
         inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE).address + 1, CLEO::DrawScriptStuff);
         inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE).address + 1, DrawScriptStuff_H);
