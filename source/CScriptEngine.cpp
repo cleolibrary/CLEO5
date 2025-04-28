@@ -982,17 +982,7 @@ namespace CLEO
 
             for (const auto& path : found)
             {
-                if (auto cs = LoadScript(path.c_str()))
-                {
-                    cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
-
-                    // compatibility modes
-                    const auto ext = FS::path(path).extension();
-                    if (ext == cs4_ext) 
-                        cs->SetCompatibility(CLEO_VER_4);
-                    else if (ext == cs3_ext)
-                        cs->SetCompatibility(CLEO_VER_3);
-                }
+                LoadScript(path.c_str());
             }
         }
         else
@@ -1011,8 +1001,6 @@ namespace CLEO
             if (cs) delete cs;
             return nullptr;
         }
-
-        cs->SetDebugMode(NativeScriptsDebugMode); // inherit from global state
 
         // check whether the script is in stop-list
         if (stopped_info)

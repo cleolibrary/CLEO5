@@ -811,7 +811,6 @@ namespace CLEO
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			TransmitScriptParams(thread, cs);
-			cs->SetDebugMode(reinterpret_cast<CCustomScript*>(thread)->GetDebugMode());
 		}
 		else
 		{
@@ -853,7 +852,6 @@ namespace CLEO
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			memset(missionLocals, 0, 1024 * sizeof(SCRIPT_VAR)); // same as CTheScripts::WipeLocalVariableMemoryForMissionScript
 			TransmitScriptParams(thread, (CRunningScript*)((BYTE*)missionLocals - 0x3C));
-			cs->SetDebugMode(reinterpret_cast<CCustomScript*>(thread)->GetDebugMode());
 		}
 		else
 		{
