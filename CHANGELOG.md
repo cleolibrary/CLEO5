@@ -1,5 +1,7 @@
 ## 5.0.3
 - added GxtHook.cleo plugin to ignored list
+- fixed audio streams stopping when volume was set to 0.0
+- fixed audio streams potentially not starting to play if still decoding or downloading
 
 ## 5.0.2
 - updated BASS library
