@@ -5,22 +5,48 @@
 #undef UNICODE
 
 #include <windows.h>
+#include <assert.h>
+#include <ctype.h>
+#include <psapi.h>
+#include <shellapi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <memory>
-#include <assert.h>
+
 #include <algorithm>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include <direct.h>
+#include <memory>
+#include <array>
+#include <forward_list>
 #include <list>
-#include <vector>
+#include <map>
 #include <set>
-#include <cstdint>
+#include <vector>
+#include <string>
+#include <sstream>
 
 #include "..\cleo_sdk\CLEO.h"
 #include "..\cleo_sdk\CLEO_Utils.h"
+
+#include "simdjson.h"
+
 #include <plugin.h>
+#include <CCheat.h>
+#include <CFont.h>
+#include <CGame.h>
+#include <CMenuManager.h>
+#include <CRGBA.h>
+#include <CRunningScript.h>
+#include <CSprite2d.h>
+#include <CTheScripts.h>
+#include <CTimer.h>
+#include <DynAddress.h>
+#include <GameVersion.h>
+#include <Patch.h>
+#include <RenderWare.h>
+#include <extensions/Screen.h>
+
 
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
