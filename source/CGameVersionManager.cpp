@@ -5,23 +5,13 @@ namespace CLEO
 {
     memory_pointer MemoryAddresses[MA_TOTAL][GV_TOTAL] =
     {
-        // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
+        // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x0053E981,	memory_und, 0x0053E981, 0x0053EE21, 0x00551174 },		// MA_CALL_UPDATE_GAME_LOGICS,
-        { 0x0053BEE0,	memory_und, 0x0053BEE0, 0x0053C380, 0x0054DE60 },		// MA_UPDATE_GAME_LOGICS_FUNCTION,
 
-                                                                                // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
-        { 0x0071A700,	memory_und, 0x0071A700, 0x0071AF30, 0x0073BF50 },		// MA_DRAW_TEXT_FUNCTION,
-        { 0x00719610,	memory_und, 0x00719610, 0x00719E40, 0x0073ABC0 },		// MA_SET_TEXT_ALIGN_FUNCTION,
-        { 0x00719490,	memory_und, 0x00719490, 0x00719CC0, 0x0073AA00 },		// MA_SET_TEXT_FONT_FUNCTION,
-        { 0x00719590,	memory_und, memory_und, memory_und, 0x0073AB30 },		// MA_SET_TEXT_EDGE_FUNCTION,
-        { 0x005733E0,	memory_und, 0x005733E0, 0x00573950, 0x005885C0 },		// MA_CMENU_SCALE_X_FUNCTION,
-        { 0x00573410,	memory_und, 0x00573410, 0x00573980, 0x00588600 },		// MA_CMENU_SCALE_Y_FUNCTION,
-        { 0x00719380,	memory_und, 0x00719380, 0x00719BB0, 0x0073A8D0 },		// MA_SET_LETTER_SIZE_FUNCTION,
-        { 0x00719430,	memory_und, 0x00719430, 0x00719C60, 0x0073A970 },		// MA_SET_LETTER_COLOR_FUNCTION,
-        { 0x00728350,	memory_und, 0x00728350, 0x00728B80, 0x0075D640 },		// MA_CTEXTURE_DRAW_IN_RECT_FUNCTION,
+        // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x0057B9FD,	memory_und, 0x0057B9FD, 0x0057BF71, 0x00591379 },		// MA_CALL_CTEXTURE_DRAW_BG_RECT,
 
-                                                                                // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
+        // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x00464C00,	memory_und, 0x00464C00, 0x00464C80, 0x0046A490 },		// MA_ADD_SCRIPT_TO_QUEUE_FUNCTION,
         { 0x00464BD0,	memory_und, 0x00464BD0, 0x00464C50, 0x0046A460 },		// MA_REMOVE_SCRIPT_FROM_QUEUE_FUNCTION,
         { 0x00465AA0,	memory_und, 0x00465AA0, 0x00465B20, 0x0046B2C0 },		// MA_STOP_SCRIPT_FUNCTION,
@@ -33,11 +23,10 @@ namespace CLEO
         { 0x00464700,	memory_und, 0x00464700, 0x00464780, 0x00469DE0 },		// MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION,
         { 0x00463D50,	memory_und, 0x00463D50, 0x00463DD0, 0x00469420 },		// MA_GET_SCRIPT_STRING_PARAM_FUNCTION,
         { 0x00464790,	memory_und, 0x00464790, 0x00464810, 0x00469E80 },		// MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION,
-        { 0x00468D50,	memory_und, 0x00468D50, 0x00468DD0, 0x0046E440 },		// MA_INIT_SCM_FUNCTION,
         { 0x005D4C40,	memory_und, 0x005D4C40, 0x005D5420, 0x005F13E0 },		// MA_SAVE_SCM_DATA_FUNCTION,
         { 0x005D4FD0,	memory_und, 0x005D4FD0, 0x005D57B0, 0x005F1770 },		// MA_LOAD_SCM_DATA_FUNCTION,
 
-                                                                                // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
+        // GV_US10,		GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x00A43C78,	memory_und, 0x00A43C78, 0x00A462F8, 0x00AB8DD0 },		// MA_OPCODE_PARAMS,
         { 0x00A49960,	memory_und, 0x00A49960, 0x00A4BFE0, 0x00ABEA90 },		// MA_SCM_BLOCK,
         { 0x00A48960,	memory_und, 0x00A48960, 0x00A4AFE0, 0x00ABDA90 },		// MA_MISSION_LOCALS,
@@ -54,8 +43,6 @@ namespace CLEO
         { 0x005D18F0,	memory_und, 0x005D18F0, 0x005D20D0, 0x005EE017 },		// MA_CALL_LOAD_SCM_DATA,
         { 0x0046A21B,	memory_und,	0x0046A21B, 0x0046AE9B, 0x0046F9A8 },		// MA_CALL_PROCESS_SCRIPT
         { 0x00A94B68,	memory_und, 0x00A94B68,	0x00A971E8, 0x00B09C80 },		// MA_SCRIPT_SPRITE_ARRAY
-        { 0x00464980,	memory_und, 0x00464980, 0x00465600, 0x0046A130 },		// MA_DRAW_SCRIPT_SPRITES
-        { 0x0058C092,	memory_und, 0x0058C092, 0x0058D462, 0x0059A3F2 },		// MA_CALL_DRAW_SCRIPT_SPRITES
         { 0x00A92D68,	memory_und,	0x00A92D68, 0x00A953E8, 0x00B07E80 },		// MA_SCRIPT_DRAW_ARRAY
         { 0x00A44B5C,	memory_und, 0x00A44B5C,	0x00A471DC, 0x00AB9C8C },		// MA_NUM_SCRIPT_DRAWS
         { 0x00465A6F,	memory_und, 0x00465A6F, 0x00465AEF, 0x0046B291 },		// MA_CODE_JUMP_FOR_TXD_STORE
@@ -70,14 +57,12 @@ namespace CLEO
         { 0x00748E3E,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_GAME_RESTART_3 TODO: find for other versions
         { 0x0053EBE4,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE TODO: find for other versions
         { 0x0053E86C,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND TODO: find for other versions
-                                                                                // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
+
+        // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x008A6168,	memory_und, 0x008A6168, 0x008A7450, 0x00913C20 },		// MA_OPCODE_HANDLER,
         { 0x00469FEE,	memory_und, 0x00469FEE, 0x0046A06E, 0x0046F75C },		// MA_OPCODE_HANDLER_REF,
-        { 0x00B74490,	memory_und, 0x00B74490, 0x00B76B10, 0x00C01038 },		// MA_PED_POOL,
-        { 0x00B74494,	memory_und, 0x00B74494, 0x00B76B14, 0x00C0103C },		// MA_VEHICLE_POOL,
-        { 0x00B7449C,	memory_und, 0x00B7449C, 0x00B76B18, 0x00C01044 },		// MA_OBJECT_POOL,
 
-                                                                                // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
+        // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x007487A8,	memory_und, 0x007487F8, 0x0074907C, 0x0078276D },		// MA_CALL_CREATE_MAIN_WINDOW,
     };
 
