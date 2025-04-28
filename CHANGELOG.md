@@ -1,3 +1,7 @@
+## 5.0.3
+- Fixed audio streams stopping when volume was set to 0.0
+- Fixed audio streams potentially not starting to play if still decoding or downloading
+
 ## 5.0.2
 - updated BASS library
 - fixed Doppler effect calculations for 3d audio streams
