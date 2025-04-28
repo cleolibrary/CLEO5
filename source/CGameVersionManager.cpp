@@ -36,7 +36,6 @@ namespace CLEO
         { 0x00468D50,	memory_und, 0x00468D50, 0x00468DD0, 0x0046E440 },		// MA_INIT_SCM_FUNCTION,
         { 0x005D4C40,	memory_und, 0x005D4C40, 0x005D5420, 0x005F13E0 },		// MA_SAVE_SCM_DATA_FUNCTION,
         { 0x005D4FD0,	memory_und, 0x005D4FD0, 0x005D57B0, 0x005F1770 },		// MA_LOAD_SCM_DATA_FUNCTION,
-        { 0x00B7CB84,	memory_und, 0x00B7CB84, 0x00B7F204, 0x00C0F538 },		// MA_GAME_TIMER,
 
                                                                                 // GV_US10,		GV_US11,		GV_EU10,		GV_EU11,		GV_STEAM
         { 0x00A43C78,	memory_und, 0x00A43C78, 0x00A462F8, 0x00AB8DD0 },		// MA_OPCODE_PARAMS,
