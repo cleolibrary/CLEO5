@@ -252,13 +252,10 @@ namespace CLEO
     }
 
     void(__cdecl * InitScm)();
-    void(__cdecl * SaveScmData)();
-    void(__cdecl * LoadScmData)();
     void(__cdecl * DrawScriptStuff)(char bBeforeFade);
     void(__cdecl * DrawScriptStuff_H)(char bBeforeFade);
 
     BYTE *scmBlock;
-    BYTE *MissionLoaded;
     BYTE *missionBlock;
     int MissionIndex;
     BOOL *onMissionFlag;
@@ -273,7 +270,7 @@ namespace CLEO
     void OnLoadScmData(void)
     {
         TRACE("Loading scripts save data...");
-        LoadScmData();
+        CTheScripts::Load();
     }
 
     void OnSaveScmData(void)
@@ -281,7 +278,7 @@ namespace CLEO
         TRACE("Saving scripts save data...");
         CleoInstance.ScriptEngine.SaveState();
         CleoInstance.ScriptEngine.UnregisterAllScripts();
-        SaveScmData();
+        CTheScripts::Save();
         CleoInstance.ScriptEngine.ReregisterAllScripts();
     }
 
@@ -823,13 +820,9 @@ namespace CLEO
         GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR * (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR * (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
-        SaveScmData = gvm.TranslateMemoryAddress(MA_SAVE_SCM_DATA_FUNCTION);
-        LoadScmData = gvm.TranslateMemoryAddress(MA_LOAD_SCM_DATA_FUNCTION);
-
         opcodeParams = gvm.TranslateMemoryAddress(MA_OPCODE_PARAMS);
         missionLocals = gvm.TranslateMemoryAddress(MA_MISSION_LOCALS);
         scmBlock = gvm.TranslateMemoryAddress(MA_SCM_BLOCK);
-        MissionLoaded = gvm.TranslateMemoryAddress(MA_MISSION_LOADED);
         missionBlock = gvm.TranslateMemoryAddress(MA_MISSION_BLOCK);
         onMissionFlag = gvm.TranslateMemoryAddress(MA_ON_MISSION_FLAG);
 
@@ -1329,7 +1322,7 @@ namespace CLEO
 
     void CScriptEngine::RemoveScript(CRunningScript* thread)
     {
-        if (thread->IsMission()) *MissionLoaded = false;
+        if (thread->IsMission()) CTheScripts::bAlreadyRunningAMissionScript = false;
 
         if (thread->IsCustom())
         {
@@ -1367,7 +1360,7 @@ namespace CLEO
             ScriptsWaitingForDelete.push_back(cs);
             CustomMission->SetActive(false);
             CustomMission = nullptr;
-            *MissionLoaded = false;
+            CTheScripts::bAlreadyRunningAMissionScript = false;
         }
         else
         {
@@ -1418,7 +1411,7 @@ namespace CLEO
             CustomMission->SetActive(false);
             delete CustomMission;
             CustomMission = nullptr;
-            *MissionLoaded = false;
+            CTheScripts::bAlreadyRunningAMissionScript = false;
         }
     }
 
@@ -1570,10 +1563,10 @@ namespace CLEO
 
                 if (bIsMiss)
                 {
-                    if (*MissionLoaded)
+                    if (CTheScripts::bAlreadyRunningAMissionScript)
                         throw std::logic_error("Starting of custom mission when other mission loaded");
 
-                    *MissionLoaded = 1;
+                    CTheScripts::bAlreadyRunningAMissionScript = 1;
                     MissionIndex = -1;
                     BaseIP = CurrentIP = missionBlock; // TODO: there should be check length <= missionBlock size
                 }
