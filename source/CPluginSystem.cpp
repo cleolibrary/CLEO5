@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "CPluginSystem.h"
 #include "CleoBase.h"
-#include <psapi.h>
 
 
 using namespace CLEO;
