@@ -107,6 +107,10 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CRunningScript.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+    </ClCompile>
     <ClCompile Include="third-party\simdjson\simdjson.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>

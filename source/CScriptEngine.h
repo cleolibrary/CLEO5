@@ -58,8 +58,12 @@ namespace CLEO
         CCustomScript(const CCustomScript&) = delete; // no copying
         ~CCustomScript();
 
+        void AddScriptToList(CRunningScript** queuelist);
+        void RemoveScriptFromList(CRunningScript** queuelist);
+
         void Process();
         void Draw(char bBeforeFade);
+        void ShutdownThisScript();
 
         void StoreScriptSpecifics();
         void RestoreScriptSpecifics();
@@ -151,9 +155,6 @@ namespace CLEO
         void RemoveCustomScript(CCustomScript*);
     };
 
-    extern void(__thiscall * AddScriptToQueue)(CRunningScript *, CRunningScript **queue);
-    extern void(__thiscall * RemoveScriptFromQueue)(CRunningScript *, CRunningScript **queue);
-    extern void(__thiscall * StopScript)(CRunningScript *);
     extern char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
     extern void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     extern void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);

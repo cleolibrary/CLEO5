@@ -9,9 +9,6 @@
 
 namespace CLEO
 {
-    DWORD FUNC_AddScriptToQueue;
-    DWORD FUNC_RemoveScriptFromQueue;
-    DWORD FUNC_StopScript;
     DWORD FUNC_ScriptOpcodeHandler00;
     DWORD FUNC_GetScriptParams;
     DWORD FUNC_TransmitScriptParams;
@@ -20,9 +17,6 @@ namespace CLEO
     DWORD FUNC_GetScriptParamPointer1;
     DWORD FUNC_GetScriptParamPointer2;
 
-    void(__thiscall * AddScriptToQueue)(CRunningScript *, CRunningScript **queue);
-    void(__thiscall * RemoveScriptFromQueue)(CRunningScript *, CRunningScript **queue);
-    void(__thiscall * StopScript)(CRunningScript *);
     char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
     void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
@@ -30,35 +24,6 @@ namespace CLEO
     void(__thiscall * SetScriptCondResult)(CRunningScript *, bool);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
-    void __fastcall _AddScriptToQueue(CRunningScript *pScript, int dummy, CRunningScript **queue)
-    {
-        _asm
-        {
-            push queue
-            mov ecx, pScript
-            call FUNC_AddScriptToQueue
-        }
-    }
-
-    void __fastcall _RemoveScriptFromQueue(CRunningScript *pScript, int dummy, CRunningScript **queue)
-    {
-        _asm
-        {
-            push queue
-            mov ecx, pScript
-            call FUNC_RemoveScriptFromQueue
-        }
-    }
-
-    void __fastcall _StopScript(CRunningScript *pScript)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            call FUNC_StopScript
-        }
-    }
 
     char __fastcall _ScriptOpcodeHandler00(CRunningScript *pScript, int dummy, WORD opcode)
     {
@@ -466,6 +431,11 @@ namespace CLEO
 
         StoreScriptSpecifics();
     }
+    void CCustomScript::ShutdownThisScript()
+    {
+        ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
+    }
+
     void CCustomScript::Draw(char bBeforeFade)
     {
         // no point if this script doesn't draw
@@ -797,9 +767,6 @@ namespace CLEO
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
 
         // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-        FUNC_AddScriptToQueue = gvm.TranslateMemoryAddress(MA_ADD_SCRIPT_TO_QUEUE_FUNCTION);
-        FUNC_RemoveScriptFromQueue = gvm.TranslateMemoryAddress(MA_REMOVE_SCRIPT_FROM_QUEUE_FUNCTION);
-        FUNC_StopScript = gvm.TranslateMemoryAddress(MA_STOP_SCRIPT_FUNCTION);
         FUNC_ScriptOpcodeHandler00 = gvm.TranslateMemoryAddress(MA_SCRIPT_OPCODE_HANDLER0_FUNCTION);
         FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
         FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
@@ -808,9 +775,6 @@ namespace CLEO
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
-        AddScriptToQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_AddScriptToQueue);
-        RemoveScriptFromQueue = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript**)>(_RemoveScriptFromQueue);
-        StopScript = reinterpret_cast<void(__thiscall*)(CRunningScript*)>(_StopScript);
         ScriptOpcodeHandler00 = reinterpret_cast<char(__thiscall*)(CRunningScript*, WORD)>(_ScriptOpcodeHandler00);
         GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
         TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
@@ -1307,7 +1271,8 @@ namespace CLEO
             TRACE("Registering custom script named '%s'", cs->GetName().c_str());
             CustomScripts.push_back(cs);
         }
-        AddScriptToQueue(cs, activeThreadQueue);
+
+        cs->AddScriptToList(activeThreadQueue);
         cs->SetActive(true);
 
         // run registered callbacks
@@ -1328,9 +1293,10 @@ namespace CLEO
         }
         else // native script
         {
-            RemoveScriptFromQueue(thread, activeThreadQueue);
-            AddScriptToQueue(thread, inactiveThreadQueue);
-            StopScript(thread);
+            auto cs = (CCustomScript*)thread;
+            cs->RemoveScriptFromList(activeThreadQueue);
+            cs->AddScriptToList(inactiveThreadQueue);
+            cs->ShutdownThisScript();
         }
     }
 
@@ -1354,7 +1320,7 @@ namespace CLEO
         if (cs == CustomMission)
         {
             TRACE("Unregistering custom mission named '%s'", cs->GetName().c_str());
-            RemoveScriptFromQueue(CustomMission, activeThreadQueue);
+            CustomMission->RemoveScriptFromList(activeThreadQueue);
             ScriptsWaitingForDelete.push_back(cs);
             CustomMission->SetActive(false);
             CustomMission = nullptr;
@@ -1373,10 +1339,8 @@ namespace CLEO
                 ScriptsWaitingForDelete.push_back(cs);
             }
 
-            //TRACE("Psyke!");
-
             CustomScripts.remove(cs);
-            RemoveScriptFromQueue(cs, activeThreadQueue);
+            cs->RemoveScriptFromList(activeThreadQueue);
             cs->SetActive(false);
 
             /*if(!pScript->IsMission()) *MissionLoaded = false;
@@ -1405,7 +1369,7 @@ namespace CLEO
         if (CustomMission)
         {
             TRACE(" Unregistering custom mission named '%s'", CustomMission->GetName().c_str());
-            RemoveScriptFromQueue(CustomMission, activeThreadQueue);
+            CustomMission->RemoveScriptFromList(activeThreadQueue);
             CustomMission->SetActive(false);
             delete CustomMission;
             CustomMission = nullptr;
@@ -1416,8 +1380,9 @@ namespace CLEO
     void CScriptEngine::UnregisterAllScripts()
     {
         TRACE("Unregistering all custom scripts");
-        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs) {
-            RemoveScriptFromQueue(cs, activeThreadQueue);
+        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
+        {
+            cs->RemoveScriptFromList(activeThreadQueue);
             cs->SetActive(false);
         });
     }
@@ -1425,8 +1390,9 @@ namespace CLEO
     void CScriptEngine::ReregisterAllScripts()
     {
         TRACE("Reregistering all custom scripts");
-        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs) {
-            AddScriptToQueue(cs, activeThreadQueue);
+        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
+        {
+            cs->AddScriptToList(activeThreadQueue);
             cs->SetActive(true);
         });
     }
@@ -1611,5 +1577,15 @@ namespace CLEO
         CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
 
         if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
+    }
+
+    void CCustomScript::AddScriptToList(CRunningScript** queuelist)
+    {
+        ((::CRunningScript*)this)->AddScriptToList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
+    }
+
+    void CCustomScript::RemoveScriptFromList(CRunningScript** queuelist)
+    {
+        ((::CRunningScript*)this)->RemoveScriptFromList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
     }
 }
