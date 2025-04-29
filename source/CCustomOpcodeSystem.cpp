@@ -1,7 +1,8 @@
 #include "stdafx.h"
-#include "CleoBase.h"
-#include "CGameVersionManager.h"
 #include "CCustomOpcodeSystem.h"
+#include "CleoBase.h"
+#include "CCustomScript.h"
+#include "CGameVersionManager.h"
 #include "ScmFunction.h"
 
 
@@ -801,8 +802,8 @@ namespace CLEO
 		TRACE("[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), false, thread);
-		SetScriptCondResult(thread, cs && cs->IsOK());
-		if (cs && cs->IsOK())
+		SetScriptCondResult(thread, cs && cs->IsOk());
+		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			TransmitScriptParams(thread, cs);
@@ -841,8 +842,8 @@ namespace CLEO
 		TRACE("[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), true, thread);
-		SetScriptCondResult(thread, cs && cs->IsOK());
-		if (cs && cs->IsOK())
+		SetScriptCondResult(thread, cs && cs->IsOk());
+		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			memset(missionLocals, 0, 1024 * sizeof(SCRIPT_VAR)); // same as CTheScripts::WipeLocalVariableMemoryForMissionScript
@@ -859,9 +860,13 @@ namespace CLEO
 	}
 
 	//0A95=0,enable_thread_saving
-	OpcodeResult __stdcall opcode_0A95(CRunningScript *thread)
+	OpcodeResult __stdcall opcode_0A95(CRunningScript* thread)
 	{
-		reinterpret_cast<CCustomScript *>(thread)->enable_saving();
+		if (thread->IsCustom())
+		{
+			reinterpret_cast<CCustomScript*>(thread)->SetSavingEnabled(true);
+		}
+
 		return OR_CONTINUE;
 	}
 

@@ -84,6 +84,9 @@
     <ClCompile Include="source\CleoBase.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
+    <ClCompile Include="source\CCustomScript.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
     <ClCompile Include="source\CCustomOpcodeSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
@@ -135,6 +138,12 @@
     <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CRunningScript.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\extensions\Screen.cpp">
+      <Filter>third_party\plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CRunningScript.cpp">
+      <Filter>third_party\plugin_sdk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -162,6 +171,9 @@
       <Filter>source\game_sa</Filter>
     </ClInclude>
     <ClInclude Include="source\CleoBase.h">
+      <Filter>source\core</Filter>
+    </ClInclude>
+    <ClInclude Include="source\CCustomScript.h">
       <Filter>source\core</Filter>
     </ClInclude>
     <ClInclude Include="source\CCustomOpcodeSystem.h">

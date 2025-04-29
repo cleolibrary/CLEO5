@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ScmFunction.h"
 #include "CCustomOpcodeSystem.h"
+#include "CCustomScript.h"
 #include "CScriptEngine.h"
 
 
