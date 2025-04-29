@@ -436,11 +436,6 @@ namespace CLEO
         );
     }
 
-    void CCustomScript::ShutdownThisScript()
-    {
-        ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
-    }
-
     void CScriptEngine::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting ScriptEngine...");
