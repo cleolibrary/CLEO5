@@ -77,11 +77,6 @@ inline const std::string Filepath_Cleo = Filepath_Game + "\\cleo";
 inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
 inline const std::string Filepath_Log = Filepath_Game + "\\cleo.log";
 
-class CTexture
-{
-    RwTexture *texture;
-};
-
 // stolen from GTASA
 class CTextDrawer
 {

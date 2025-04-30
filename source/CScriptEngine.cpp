@@ -220,7 +220,7 @@ namespace CLEO
     BYTE *missionBlock;
     int MissionIndex;
     BOOL *onMissionFlag;
-    CTexture *scriptSprites;
+    CSprite2d* scriptSprites;
     BYTE *scriptDraws;
     BYTE *scriptTexts;
 
@@ -360,7 +360,7 @@ namespace CLEO
 #define TEXT_DATA_SIZE 68
 #define DRAW_ARRAY_SIZE NUM_STORED_DRAWS*DRAW_DATA_SIZE
 #define TEXT_ARRAY_SIZE NUM_STORED_TEXTS*TEXT_DATA_SIZE
-    CTexture storedSprites[NUM_STORED_SPRITES];
+    CSprite2d storedSprites[NUM_STORED_SPRITES];
     BYTE storedDraws[DRAW_ARRAY_SIZE];
     BYTE storedTexts[TEXT_ARRAY_SIZE];
     BYTE storedUseTextCommands = 0;
