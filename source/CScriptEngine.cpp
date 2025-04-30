@@ -284,7 +284,7 @@ namespace CLEO
             cs->NotFlag = notFlag;
             cs->CurrentIP = reinterpret_cast<BYTE*>(cs->BaseIP) + ip_diff;
             std::copy(threadName, threadName + 8, cs->Name);
-            cs->m_saveEnabled = true;
+            cs->EnableSaving(true);
         }
 
         ThreadSavingInfo() { }

@@ -861,7 +861,10 @@ namespace CLEO
 	//0A95=0,enable_thread_saving
 	OpcodeResult __stdcall opcode_0A95(CRunningScript *thread)
 	{
-		reinterpret_cast<CCustomScript *>(thread)->enable_saving();
+		if (thread->IsCustom())
+		{
+			reinterpret_cast<CCustomScript*>(thread)->EnableSaving();
+		}
 		return OR_CONTINUE;
 	}
 

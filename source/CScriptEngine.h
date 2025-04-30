@@ -49,7 +49,7 @@ namespace CLEO
         inline bool IsOk() const { return m_ok; }
         inline DWORD GetCodeSize() const { return m_codeSize; }
         inline DWORD GetCodeChecksum() const { return m_codeChecksum; }
-        inline void enable_saving(bool en = true) { m_saveEnabled = en; }
+        inline void EnableSaving(bool en = true) { m_saveEnabled = en; }
         inline void SetCompatibility(eCLEO_Version ver) { m_compatVer = ver; }
         inline eCLEO_Version GetCompatibility() const { return m_compatVer; }
 
