@@ -1303,11 +1303,11 @@ namespace CLEO
             ((callback*)func)(cs);
         }
 
-		if (cs->m_parentThread)
+		if (cs->m_parentScript)
 		{
 			cs->BaseIP = 0; // don't delete BaseIP if child thread
 		}
-		for (auto childThread : cs->m_childThreads)
+		for (auto childThread : cs->m_childScripts)
 		{
 			CScriptEngine::RemoveScript(childThread);
 		}
@@ -1428,8 +1428,8 @@ namespace CLEO
                 CurrentIP = cs->GetBasePointer() - label;
                 memcpy(Name, cs->Name, sizeof(Name));
                 m_codeChecksum = cs->m_codeChecksum;
-                m_parentThread = cs;
-                cs->m_childThreads.push_back(this);
+                m_parentScript = cs;
+                cs->m_childScripts.push_back(this);
             }
             else
             {
