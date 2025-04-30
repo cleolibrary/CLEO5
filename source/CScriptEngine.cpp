@@ -369,32 +369,37 @@ namespace CLEO
 
     static void RestoreTextDrawDefaults()
     {
-        for (int i = 0; i<NUM_STORED_TEXTS; ++i)
-        {
-            CTextDrawer * pText = (CTextDrawer*)&scriptTexts[i*TEXT_DATA_SIZE];
-            pText->m_fScaleX = 0.48f;
-            pText->m_fScaleY = 1.12f;
-            pText->m_Colour = CRGBA(0xE1, 0xE1, 0xE1, 0xFF);
-            pText->m_bJustify = false;
-            pText->m_bAlignRight = false;
-            pText->m_bCenter = false;
-            pText->m_bBackground = false;
-            pText->m_bUnk1 = false;
-            pText->m_fLineHeight = 182.0f;
-            pText->m_fLineWidth = 640.0f;
-            pText->m_BackgroundColour = CRGBA(0x80, 0x80, 0x80, 0x80);
-            pText->m_bProportional = true;
-            pText->m_EffectColour = CRGBA(0, 0, 0, 0xFF);
-            strncpy(pText->m_szGXT, "", 8);
-            pText->m_ucShadow = 2;
-            pText->m_ucOutline = 0;
-            pText->m_bDrawBeforeFade = false;
-            pText->m_nFont = 1;
-            pText->m_fPosX = 0.0;
-            pText->m_fPosY = 0.0;
-            pText->m_nParam1 = -1;
-            pText->m_nParam2 = -1;
-        }
+        // configure first one
+        auto& txt = CTheScripts::IntroTextLines[0];
+        txt.letterWidth = 0.48f;
+        *((float*)&txt.letterHeight) = 1.12f; // invalid type in Plugin SDK
+        txt.color = RwRGBA{ 0xE1, 0xE1, 0xE1, 0xFF };
+        txt.m_bJustify = false;
+        txt.centered = false;
+        txt.withBackground = false;
+        txt._pad = false;
+        *((float*)&txt.lineHeight) = plugin::screen::GetScreenHeight(); // 182.0f invalid type in Plugin SDK
+        *((float*)&txt.lineWidth) = plugin::screen::GetScreenWidth(); // 640.0f invalid type in Plugin SDK
+        txt.backgroundBoxColor = RwRGBA{ 0x80, 0x80, 0x80, 0x80 }; 
+        txt.proportional = true;
+        txt.backgroundColor = RwRGBA{ 0, 0, 0, 0xFF };
+        txt.shadowType = 2;
+        txt.outlineType = 0;
+        txt.m_bDrawBeforeFade = false;
+        txt.m_bRightJustify = false;
+        txt.font = 1;
+        *((float*)&txt.xPosition) = 0.0f; // invalid type in Plugin SDK
+        *((float*)&txt.yPosition) = 0.0f; // invalid type in Plugin SDK
+        std::memset(txt.gxtEntry, '\0', sizeof(txt.gxtEntry));
+        txt.param1 = -1;
+        txt.param2 = -1;
+
+        // copy into others
+        std::fill(
+            CTheScripts::IntroTextLines + 1,
+            CTheScripts::IntroTextLines + NUM_STORED_TEXTS,
+            txt
+        );
     }
 
     void CScriptEngine::DrawScriptStuff(char bBeforeFade)
