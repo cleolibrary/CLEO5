@@ -76,34 +76,3 @@ inline const std::string Filepath_User = GetUserDirectory();
 inline const std::string Filepath_Cleo = Filepath_Game + "\\cleo";
 inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
 inline const std::string Filepath_Log = Filepath_Game + "\\cleo.log";
-
-// stolen from GTASA
-class CTextDrawer
-{
-public:
-    float		m_fScaleX;
-    float		m_fScaleY;
-    CRGBA		m_Colour;
-    BYTE			m_bJustify;
-    BYTE			m_bCenter;
-    BYTE			m_bBackground;
-    BYTE			m_bUnk1;
-    float		m_fLineHeight;
-    float		m_fLineWidth;
-    CRGBA		m_BackgroundColour;
-    BYTE			m_bProportional;
-    CRGBA		m_EffectColour;
-    BYTE			m_ucShadow;
-    BYTE			m_ucOutline;
-    BYTE			m_bDrawBeforeFade;
-    BYTE			m_bAlignRight;
-    int			m_nFont;
-    float		m_fPosX;
-    float		m_fPosY;
-    char			m_szGXT[8];
-    int			m_nParam1;
-    int			m_nParam2;
-};
-
-VALIDATE_SIZE(CTextDrawer, 0x44);
-

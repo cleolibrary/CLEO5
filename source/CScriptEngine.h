@@ -10,36 +10,35 @@ namespace CLEO
     {
         friend class CScriptEngine;
         friend class CCustomOpcodeSystem;
-        friend struct ScmFunction;
         friend struct ThreadSavingInfo;
 
-        DWORD codeSize;
-        DWORD codeChecksum;
+        DWORD m_codeSize;
+        DWORD m_codeChecksum;
 
-        bool bSaveEnabled;
-        bool bOK;
-        eCLEO_Version CompatVer;
-        BYTE UseTextCommands;
-        int NumDraws;
-        int NumTexts;
-		CCustomScript *parentThread;
-		std::list<CCustomScript*> childThreads;
-        std::list<RwTexture*> script_textures;
-        std::vector<BYTE> script_draws;
-        std::vector<BYTE> script_texts;
+        bool m_saveEnabled;
+        bool m_ok;
+        eCLEO_Version m_compatVer;
+        BYTE m_useTextCommands;
+        int m_numDraws;
+        int m_numTexts;
+        CCustomScript* m_parentScript;
+        std::list<CCustomScript*> m_childScripts;
+        std::list<RwTexture*> m_scriptTextures;
+        std::vector<BYTE> m_scriptDraws;
+        std::vector<BYTE> m_scriptTexts;
 
-        bool bDebugMode; // debug mode enabled?
+        bool m_debugMode; // debug opcodes enabled
 
-        std::string scriptFileDir;
-        std::string scriptFileName;
-        std::string workDir;
+        std::string m_scriptFileDir;
+        std::string m_scriptFileName;
+        std::string m_workDir;
 
     public:
 		inline RwTexture* GetScriptTextureById(unsigned int id)
 		{
-			if (script_textures.size() > id)
+			if (m_scriptTextures.size() > id)
 			{
-				auto it = script_textures.begin();
+				auto it = m_scriptTextures.begin();
 				std::advance(it, id);
 				return *it;
 			}
@@ -47,12 +46,12 @@ namespace CLEO
 		}
 
         inline SCRIPT_VAR * GetVarsPtr() { return LocalVar; }
-        inline bool IsOK() const { return bOK; }
-        inline DWORD GetCodeSize() const { return codeSize; }
-        inline DWORD GetCodeChecksum() const { return codeChecksum; }
-        inline void enable_saving(bool en = true) { bSaveEnabled = en; }
-        inline void SetCompatibility(eCLEO_Version ver) { CompatVer = ver; }
-        inline eCLEO_Version GetCompatibility() const { return CompatVer; }
+        inline bool IsOk() const { return m_ok; }
+        inline DWORD GetCodeSize() const { return m_codeSize; }
+        inline DWORD GetCodeChecksum() const { return m_codeChecksum; }
+        inline void EnableSaving(bool en = true) { m_saveEnabled = en; }
+        inline void SetCompatibility(eCLEO_Version ver) { m_compatVer = ver; }
+        inline eCLEO_Version GetCompatibility() const { return m_compatVer; }
 
         CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
         CCustomScript(const CCustomScript&) = delete; // no copying
