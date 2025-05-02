@@ -89,11 +89,13 @@ namespace CLEO
         {
         }
 
-        eGameVersion GetGameVersion()
+        eGameVersion GetGameVersion() const
         {
             return m_eVersion;
         }
 
-        memory_pointer TranslateMemoryAddress(eMemoryAddress addrId);
+        memory_pointer TranslateMemoryAddress(eMemoryAddress addrId) const;
+
+        memory_pointer TranslateMemoryAddress(const char* name) const;
     };
 }

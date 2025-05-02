@@ -14,8 +14,13 @@ namespace CLEO
         inline memory_pointer(size_t a) : address(a) { }
         inline operator void *() { return pointer; }
         inline operator size_t() { return address; }
-        inline memory_pointer& operator=(void *p) { return *this = p; }
-        inline memory_pointer& operator=(size_t p) { return *this = p; }
+        inline memory_pointer& operator=(void* p) { address = (size_t)p; return *this; }
+        inline memory_pointer& operator=(size_t p) { address = (size_t)p; return *this; }
+
+        inline bool operator==(const void* p) const { return address == (size_t)p; }
+        inline bool operator!=(const void* p) const { return address != (size_t)p; }
+        inline bool operator==(const memory_pointer& p) const { return address == p.address; }
+        inline bool operator!=(const memory_pointer& p) const { return address != p.address; }
 
         // conversion to/from any-type pointer
         template<typename T>

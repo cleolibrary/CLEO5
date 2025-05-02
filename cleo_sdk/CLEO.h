@@ -461,6 +461,7 @@ extern "C" {
 DWORD WINAPI CLEO_GetVersion();
 LPCSTR WINAPI CLEO_GetVersionStr(); // for example "5.0.0-alpha.1"
 eGameVersion WINAPI CLEO_GetGameVersion();
+DWORD WINAPI CLEO_TranslateMemoryAddress(const char* name); // get memory address for current game
 
 BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, _pOpcodeHandler callback);
 BOOL WINAPI CLEO_RegisterCommand(const char* commandName, _pOpcodeHandler callback); // uses cleo\.CONFIG\sa.json to obtain opcode number from name

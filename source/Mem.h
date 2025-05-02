@@ -69,7 +69,34 @@ inline void MemCall(U p, const T v, T *r = nullptr)
 template<typename T, typename U>
 T MemReadOffsetPtr(U p)
 {
-    return (T)((size_t)MemRead<T>(p) + p + sizeof(T));
+    return (T)((size_t)MemRead<T>(p) + (size_t)p + sizeof(T));
+}
+
+// Read absolute target address of jump or call instruction
+template<typename T, typename U>
+T MemReadInstrucionDestination(U p)
+{
+    auto ptr = (BYTE*)p;
+    BYTE opcode = *ptr;
+    ptr++;
+
+    T dest = nullptr;
+    switch(opcode)
+    {
+        case OP_CALL:
+            dest = MemReadOffsetPtr<DWORD>(ptr);
+        break;
+
+        case OP_JMP:
+            dest = MemReadOffsetPtr<DWORD>(ptr);
+        break;
+
+        case OP_JMPSHORT:
+            dest = MemReadOffsetPtr<BYTE>(ptr);
+        break;
+    }
+
+    return dest;
 }
 
 inline void MemGrantAccess(size_t address, size_t size)
