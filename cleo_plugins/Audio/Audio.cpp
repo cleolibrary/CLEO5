@@ -69,7 +69,7 @@ public:
 
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
-        CLEO_RegisterCallback(eCallbackId::AfterGameProcess, OnAfterGameProcess);
+        CLEO_RegisterCallback(eCallbackId::GameAfterProcess, OnGameAfterProcess);
         CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
         CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_RegisterCallback(eCallbackId::MainWindowFocus, OnMainWindowFocus);
@@ -78,7 +78,7 @@ public:
     ~Audio()
     {
         CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
-        CLEO_UnregisterCallback(eCallbackId::AfterGameProcess, OnAfterGameProcess);
+        CLEO_UnregisterCallback(eCallbackId::GameAfterProcess, OnGameAfterProcess);
         CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
         CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_UnregisterCallback(eCallbackId::MainWindowFocus, OnMainWindowFocus);
@@ -89,7 +89,7 @@ public:
         soundSystem.Init();
     }
 
-    static void __stdcall OnAfterGameProcess()
+    static void __stdcall OnGameAfterProcess()
     {
         soundSystem.Process();
     }

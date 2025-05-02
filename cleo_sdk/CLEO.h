@@ -288,14 +288,15 @@ const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory
 enum class eCallbackId : DWORD
 {
 	GameBegin = 0, // void WINAPI OnGameBegin(DWORD saveSlot); // game session started. -1 if not started from save
-	BeforeGameProcess = 1, // void WINAPI OnBeforeGameProcess(); // called once every frame before game logic processing
-	AfterGameProcess = 14, // void WINAPI OnAfterGameProcess(); // called once every frame after game logic processing
+	GameBeforeProcess = 1, // void WINAPI OnGameBeforeProcess(); // called once every frame before game logic processing
+	GameAfterProcess = 14, // void WINAPI OnGameAfterProcess(); // called once every frame after game logic processing
 	GameEnd = 2, // void WINAPI OnGameEnd(); // game session ended
 	ScriptsLoaded = 3, // void WINAPI OnScriptsLoaded();
 	ScriptsFinalize = 4, // void WINAPI OnScriptsFinalize();
 	ScriptRegister = 5, // void WINAPI OnScriptRegister(CRunningScript* pScript); // called after script creation
 	ScriptUnregister = 6, // void WINAPI OnScriptUnregister(CRunningScript* pScript); // called before script deletion
-	ScriptProcess = 7, // bool WINAPI OnScriptProcess(CRunningScript* pScript); // return false to skip this script processing
+	ScriptBeforeProcess = 7, // bool WINAPI OnScriptBeforeProcess(CRunningScript* pScript); // return false to skip this script processing
+	ScriptAfterProcess = 15, // void WINAPI OnScriptAfterProcess(CRunningScript* pScript);
 	ScriptOpcodeProcess = 8, // OpcodeResult WINAPI OnScriptOpcodeProcess(CRunningScript* pScript, DWORD opcode); // return other than OR_NONE to signal that opcode was handled in the callback
 	ScriptOpcodeProcessFinished = 9, // OpcodeResult WINAPI OnScriptOpcodeProcessFinished(CRunningScript* pScript, DWORD opcode, OpcodeResult result); // return other than OR_NONE to overwrite original result
 	ScriptDraw = 10, // void WINAPI OnScriptDraw(bool beforeFade);

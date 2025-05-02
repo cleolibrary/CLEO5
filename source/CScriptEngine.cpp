@@ -322,18 +322,23 @@ namespace CLEO
 
         // run registered callbacks
         bool process = true;
-        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcess))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptBeforeProcess))
         {
             typedef bool WINAPI callback(CRunningScript*);
             process = process && ((callback*)func)(pScript);
         }
-        if (!process)
+
+        if (process)
         {
-            return; // skip this script
+            if (pScript->IsCustom()) pScript->Process();
+            else ProcessScript(pScript);
         }
 
-        if (pScript->IsCustom()) pScript->Process();
-        else ProcessScript(pScript);
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptAfterProcess))
+        {
+            typedef void WINAPI callback(CRunningScript*);
+            ((callback*)func)(pScript);
+        }
     }
 
     void HOOK_DrawScriptStuff(char bBeforeFade)

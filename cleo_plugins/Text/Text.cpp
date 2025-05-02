@@ -70,9 +70,9 @@ public:
 
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
-		CLEO_RegisterCallback(eCallbackId::BeforeGameProcess, OnBeforeGameProcess);
 		CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
+		CLEO_RegisterCallback(eCallbackId::GameBeforeProcess, OnGameBeforeProcess);
 		// install hooks
 		patchCTextGet = MemPatchJump(0x006A0050, &HOOK_CTextGet); // FUNC_CText__Get from CText.cpp
 	}

@@ -74,7 +74,7 @@ public:
         CLEO_RegisterCallback(eCallbackId::GameBegin, OnGameBegin);
         CLEO_RegisterCallback(eCallbackId::Log, OnLog);
         CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
-        CLEO_RegisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
+        CLEO_RegisterCallback(eCallbackId::ScriptBeforeProcess, OnScriptProcess);
         CLEO_RegisterCallback(eCallbackId::ScriptOpcodeProcess, OnScriptOpcodeProcess);
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
     }
@@ -84,7 +84,7 @@ public:
         CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
         CLEO_UnregisterCallback(eCallbackId::Log, OnLog);
         CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
-        CLEO_UnregisterCallback(eCallbackId::ScriptProcess, OnScriptProcess);
+        CLEO_UnregisterCallback(eCallbackId::ScriptBeforeProcess, OnScriptProcess);
         CLEO_UnregisterCallback(eCallbackId::ScriptOpcodeProcess, OnScriptOpcodeProcess);
         CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
     }
