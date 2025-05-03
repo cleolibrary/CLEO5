@@ -97,7 +97,7 @@ namespace CLEO
         std::string GetInfoStr(bool currLineInfo = true) const;
     };
 
-    class CScriptEngine : VInjectible
+    class CScriptEngine
     {
     public:
         bool gameInProgress = false;
@@ -124,7 +124,7 @@ namespace CLEO
         CScriptEngine(const CScriptEngine&) = delete; // no copying
         ~CScriptEngine();
         
-        virtual void Inject(CCodeInjector&);
+        void Inject(CCodeInjector&);
 
         void GameBegin(); // call after new game started
         void GameEnd();

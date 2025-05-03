@@ -3,9 +3,9 @@
 
 namespace CLEO
 {
-    class CGameMenu : public VInjectible
+    class CGameMenu
     {
     public:
-        virtual void Inject(CCodeInjector& inj);
+        void Inject(CCodeInjector& inj);
     };
 }

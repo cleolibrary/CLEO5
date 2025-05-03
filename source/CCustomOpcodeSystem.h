@@ -9,7 +9,7 @@ namespace CLEO
 
     void ThreadJump(CRunningScript* thread, int off);
 
-    class CCustomOpcodeSystem : public VInjectible
+    class CCustomOpcodeSystem
     {
     public:
         static const size_t MinValidAddress = 0x10000; // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
@@ -32,7 +32,7 @@ namespace CLEO
 
         CCustomOpcodeSystem() = default;
         CCustomOpcodeSystem(const CCustomOpcodeSystem&) = delete; // no copying
-        virtual void Inject(CCodeInjector& inj);
+        void Inject(CCodeInjector& inj);
         void Init();
         ~CCustomOpcodeSystem();
 

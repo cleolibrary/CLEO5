@@ -124,12 +124,4 @@ namespace CLEO
             //if(force_vp) VirtualProtect(addr, sizeof(T) * n, oldProtect, &oldProtect);
         }
     };
-
-    // determines an object, that should be injected into the game engine
-    // on startup
-    class VInjectible
-    {
-    public:
-        virtual void Inject(CCodeInjector& inj) = 0;
-    };
 }
