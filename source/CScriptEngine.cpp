@@ -213,8 +213,6 @@ namespace CLEO
     }
 
     void(__cdecl * InitScm)();
-    void(__cdecl * DrawScriptStuff)(char bBeforeFade);
-    void(__cdecl * DrawScriptStuff_H)(char bBeforeFade);
 
     BYTE *scmBlock;
     BYTE *missionBlock;
@@ -316,6 +314,23 @@ namespace CLEO
         s.write(reinterpret_cast<const char *>(data), sizeof(T) * size);
     }
 
+    void __cdecl CScriptEngine::HOOK_DrawScriptText(char beforeFade)
+    {
+        CleoInstance.ScriptEngine.DrawScriptStuff(beforeFade);
+
+        if(beforeFade)
+            CleoInstance.ScriptEngine.DrawScriptText_Before_Orig(beforeFade);
+        else
+            CleoInstance.ScriptEngine.DrawScriptText_After_Orig(beforeFade);
+
+        // run registered callbacks
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
+        {
+            typedef void WINAPI callback(bool);
+            ((callback*)func)(beforeFade != 0);
+        }
+    }
+
     void __fastcall HOOK_ProcessScript(CCustomScript * pScript, int)
     {
         CleoInstance.ScriptEngine.GameBegin(); // all initialized and ready to process scripts
@@ -338,23 +353,6 @@ namespace CLEO
         {
             typedef void WINAPI callback(CRunningScript*);
             ((callback*)func)(pScript);
-        }
-    }
-
-    void HOOK_DrawScriptStuff(char bBeforeFade)
-    {
-        CleoInstance.ScriptEngine.DrawScriptStuff(bBeforeFade);
-
-        if(bBeforeFade)
-            DrawScriptStuff_H(bBeforeFade);
-        else
-            DrawScriptStuff(bBeforeFade);
-
-        // run registered callbacks
-        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
-        {
-            typedef void WINAPI callback(bool);
-            ((callback*)func)(bBeforeFade != 0);
         }
     }
 
@@ -450,8 +448,8 @@ namespace CLEO
             last = this;
             RestoreScriptDraws();
             RestoreScriptTextures();
-            if (bBeforeFade) DrawScriptStuff_H(bBeforeFade);
-            else DrawScriptStuff(bBeforeFade);
+            if (bBeforeFade) CleoInstance.ScriptEngine.DrawScriptText_Before_Orig(bBeforeFade);
+            else CleoInstance.ScriptEngine.DrawScriptText_After_Orig(bBeforeFade);
             StoreScriptDraws();
             StoreScriptTextures();
         }
@@ -802,10 +800,8 @@ namespace CLEO
         scriptDraws = gvm.TranslateMemoryAddress(MA_SCRIPT_DRAW_ARRAY);
         scriptTexts = gvm.TranslateMemoryAddress(MA_SCRIPT_TEXT_ARRAY);
 
-        inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE).address + 1, CLEO::DrawScriptStuff);
-        inj.MemoryReadOffset(gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE).address + 1, DrawScriptStuff_H);
-        inj.ReplaceFunction(HOOK_DrawScriptStuff, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE));
-        inj.ReplaceFunction(HOOK_DrawScriptStuff, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE));
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptText_After_Orig);
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptText_Before_Orig);
         inj.MemoryWrite(gvm.TranslateMemoryAddress(MA_CODE_JUMP_FOR_TXD_STORE), OP_RET);
 
         inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);

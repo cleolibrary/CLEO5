@@ -152,6 +152,10 @@ namespace CLEO
 
     private:
         void RemoveCustomScript(CCustomScript*);
+
+        static void __cdecl HOOK_DrawScriptText(char beforeFade);
+        void(__cdecl* DrawScriptText_Before_Orig)(char beforeFade) = nullptr;
+        void(__cdecl* DrawScriptText_After_Orig)(char beforeFade) = nullptr;
     };
 
     extern char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
