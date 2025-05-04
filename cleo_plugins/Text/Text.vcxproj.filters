@@ -3,35 +3,35 @@
   <ItemGroup>
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="CTextManager.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CText.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CText.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CHud.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CHud.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CMessages.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CMessages.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CModelInfo.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CModelInfo.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="crc32.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CGame.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CGame.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\GameVersion.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\GameVersion.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\DynAddress.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\DynAddress.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\Patch.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\Patch.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\game\CRGBA.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\game\CRGBA.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTheScripts.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTheScripts.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
   </ItemGroup>

@@ -36,31 +36,31 @@
     <ClCompile Include="source\stdafx.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CFileMgr.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CFileMgr.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CGame.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CGame.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\DynAddress.cpp">
+    <ClCompile Include="third-party\plugin-sdk\shared\DynAddress.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\GameVersion.cpp">
+    <ClCompile Include="third-party\plugin-sdk\shared\GameVersion.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\Patch.cpp">
+    <ClCompile Include="third-party\plugin-sdk\shared\Patch.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\PluginBase.cpp">
+    <ClCompile Include="third-party\plugin-sdk\shared\PluginBase.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\game\CRGBA.cpp">
+    <ClCompile Include="third-party\plugin-sdk\shared\game\CRGBA.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CFont.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CFont.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\RenderWare.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="source\crc32.cpp">
@@ -102,40 +102,40 @@
     <ClCompile Include="source\ScmFunction.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPools.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CPools.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="source\OpcodeInfoDatabase.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTheScripts.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CTheScripts.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CSprite2d.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CSprite2d.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="source\CPluginSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CModelInfo.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CModelInfo.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CCheat.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CCheat.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
     <ClCompile Include="third-party\simdjson\simdjson.cpp">
       <Filter>third_party\simdjson</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTimer.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CTimer.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CMenuManager.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CMenuManager.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\extensions\Screen.cpp">
+    <ClCompile Include="third-party\plugin-sdk\shared\extensions\Screen.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CRunningScript.cpp">
+    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CRunningScript.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,3 +1,3 @@
 [submodule "plugin-sdk"]
 	path = third-party/plugin-sdk
-	url = https://github.com/DK22Pac/plugin-sdk
+	url = https://github.com/cleolibrary/plugin-sdk

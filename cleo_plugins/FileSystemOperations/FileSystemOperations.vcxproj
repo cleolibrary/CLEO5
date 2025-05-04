@@ -69,7 +69,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>_NDEBUG;_USING_V110_SDK71_;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;GTASA;GTAGAME_NAME="San Andreas";GTAGAME_ABBR="SA";GTAGAME_ABBRLOW="sa";GTAGAME_PROTAGONISTNAME="CJ";GTAGAME_CITYNAME="San Andreas";%(PreprocessorDefinitions);TARGET_NAME=R"($(TargetName))"</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(PLUGIN_SDK_DIR)\plugin_sa\;$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\;$(PLUGIN_SDK_DIR)\shared;$(PLUGIN_SDK_DIR)\shared\game;$(SolutionDir)..\cleo_sdk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\third-party\plugin-sdk\plugin_sa\;..\..\third-party\plugin-sdk\plugin_sa\game_sa\;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;$(SolutionDir)..\cleo_sdk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
@@ -78,7 +78,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib\;$(SolutionDir)..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;$(SolutionDir)..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>cleo.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -100,13 +100,13 @@ if defined GTA_SA_DIR (
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>_DEBUG;_USING_V110_SDK71_;_CRT_SECURE_NO_WARNINGS;_CRT_NON_CONFORMING_SWPRINTFS;GTASA;GTAGAME_NAME="San Andreas";GTAGAME_ABBR="SA";GTAGAME_ABBRLOW="sa";GTAGAME_PROTAGONISTNAME="CJ";GTAGAME_CITYNAME="San Andreas";%(PreprocessorDefinitions);TARGET_NAME=R"($(TargetName))"</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(PLUGIN_SDK_DIR)\plugin_sa\;$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\;$(PLUGIN_SDK_DIR)\shared;$(PLUGIN_SDK_DIR)\shared\game;$(SolutionDir)..\cleo_sdk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\third-party\plugin-sdk\plugin_sa\;..\..\third-party\plugin-sdk\plugin_sa\game_sa\;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;$(SolutionDir)..\cleo_sdk;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib\;$(SolutionDir)..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;$(SolutionDir)..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>cleo.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
