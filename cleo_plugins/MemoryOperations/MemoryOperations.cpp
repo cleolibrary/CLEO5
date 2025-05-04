@@ -839,7 +839,7 @@ public:
             OPCODE_READ_PARAM_STRING(str);
             auto len = (int)strlen(str);
 
-            memcpy(ptr + offset, str, min(size, len));
+            memcpy(ptr + offset, str, std::min(size, len));
             if (size > len) ZeroMemory(ptr + offset + len, size - len); // fill rest with zeros
 
             return OR_CONTINUE;

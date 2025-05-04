@@ -112,7 +112,7 @@ bool CLEO::CAudioStream::GetLooping() const
 
 void CAudioStream::SetVolume(float value, float transitionTime)
 {
-    volume.setValue(max(value, 0.0f), transitionTime);
+    volume.setValue(std::max(value, 0.0f), transitionTime);
 }
 
 float CAudioStream::GetVolume() const
@@ -123,7 +123,7 @@ float CAudioStream::GetVolume() const
 void CAudioStream::SetSpeed(float value, float transitionTime)
 {
     if (value > 0.0f && transitionTime > 0.0f) Resume();
-    speed.setValue(max(value, 0.0f), transitionTime);
+    speed.setValue(std::max(value, 0.0f), transitionTime);
 }
 
 float CAudioStream::GetSpeed() const
@@ -240,7 +240,7 @@ void CAudioStream::Process()
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, volume);
 
     float freq = rate * CalculateSpeed();
-    freq = max(freq, 0.000001f); // 0 results in original speed
+    freq = std::max(freq, 0.000001f); // 0 results in original speed
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_FREQ, freq);
 }
 

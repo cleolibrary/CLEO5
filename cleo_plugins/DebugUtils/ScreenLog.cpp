@@ -86,7 +86,7 @@ void ScreenLog::Draw()
     if (scrollOffset > 0.001f)
     {
         float delta = 0.01f * (currTime - prevTime);
-        scrollOffset *= max(0.9f - delta, 0.0f);
+        scrollOffset *= std::max(0.9f - delta, 0.0f);
     }
     else
         scrollOffset = 0.0f;
@@ -148,7 +148,7 @@ void ScreenLog::Draw()
 
         elapsedAlt *= 0.98f; // keep every next line longer
 
-        rowTime = max(rowTime, entry.timeLeft); // carred on from older entries
+        rowTime = std::max(rowTime, entry.timeLeft); // carred on from older entries
         
         BYTE alpha = 255;
         if (rowTime < 0)
@@ -161,7 +161,7 @@ void ScreenLog::Draw()
         };
 
         auto color = fontColor[(size_t)entry.level];
-        alpha = min(alpha, color.a);
+        alpha = std::min(alpha, color.a);
         color.a = alpha;
 
         CFont::SetColor(color);

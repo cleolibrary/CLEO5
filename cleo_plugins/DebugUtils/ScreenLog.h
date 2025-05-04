@@ -109,8 +109,8 @@ private:
 
         void ResetTime()
         {
-            timeLeft = min(msg.length(), 200) * 0.055f; // 18 letters peer second reading speed
-            timeLeft = max(timeLeft, 0.001f * ScreenLog::timeDisplay); // not shorter than defined in config
+            timeLeft = std::min<size_t>(msg.length(), 200) * 0.055f; // 18 letters peer second reading speed
+            timeLeft = std::max(timeLeft, 0.001f * ScreenLog::timeDisplay); // not shorter than defined in config
         }
 
         const char* GetMsg(bool prefix = true) const

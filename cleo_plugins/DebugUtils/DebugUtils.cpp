@@ -152,7 +152,7 @@ public:
         }
         else // ready for next press
         {
-            const size_t count = min(pausedScripts.size(), KeyCount);
+            const size_t count = std::min(pausedScripts.size(), KeyCount);
             for (size_t i = 0; i < count; i++)
             {
                 auto state = GTA_GetKeyState(KeyFirst + i);

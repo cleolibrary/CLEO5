@@ -200,7 +200,7 @@ extern "C"
         if (!buff)
         {
             buff = internal_buff;
-            buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
+            buffSize = (buffSize > 0) ? std::min<int>(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
         }
 
         auto result = ReadStringParam(thread, buff, buffSize);
@@ -214,7 +214,7 @@ extern "C"
         if (!userBuffer)
         {
             buff = internal_buff;
-            buffSize = (buffSize > 0) ? min(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
+            buffSize = (buffSize > 0) ? std::min<int>(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
         }
 
         return ReadStringParam(thread, buff, buffSize);

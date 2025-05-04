@@ -141,7 +141,7 @@ namespace CLEO
 			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
 			auto res = ((callback*)func)(thread, opcode, result);
 
-			callbackResult = max(res, callbackResult); // store result with highest value from all callbacks
+			callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
 		}
 
 		return (callbackResult != OR_NONE) ? callbackResult : result;
@@ -358,7 +358,7 @@ namespace CLEO
 
 		if (buffLen > length) addTerminator = true; // there is space left for terminator
 
-		length = min(length, buffLen);
+		length = std::min(length, buffLen);
 		if (length > 0) std::memcpy(target.data, str, length);
 		if (addTerminator) target.data[length] = '\0';
 

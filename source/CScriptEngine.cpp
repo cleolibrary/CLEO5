@@ -115,7 +115,7 @@ namespace CLEO
                 return nullptr; // error
             }
 
-            auto len = min((int)strlen(str), buffLen);
+            auto len = std::min((int)strlen(str), buffLen);
             memcpy(buff, str, len);
             if (len < buffLen) buff[len] = '\0'; // add terminator if possible
             return str; // pointer to original data
@@ -131,7 +131,7 @@ namespace CLEO
             char* str = (char*)thread->GetBytePointer();
             thread->IncPtr(length); // text data
 
-            memcpy(buff, str, min(buffLen, (int)length));
+            memcpy(buff, str, std::min(buffLen, (int)length));
             if ((int)length < buffLen) buff[length] = '\0'; // add terminator if possible
             return buff;
         }
@@ -145,7 +145,7 @@ namespace CLEO
                 case DT_TEXTLABEL:
                 {
                     CleoInstance.OpcodeSystem.handledParamCount++;
-                    memcpy(buff, str, min(buffLen, 8));
+                    memcpy(buff, str, std::min(buffLen, 8));
                     thread->IncPtr(8); // text data
                     return buff;
                 }
@@ -153,7 +153,7 @@ namespace CLEO
                 case DT_STRING:
                 {
                     CleoInstance.OpcodeSystem.handledParamCount++;
-                    memcpy(buff, str, min(buffLen, 16));
+                    memcpy(buff, str, std::min(buffLen, 16));
                     thread->IncPtr(16); // ext data
                     return buff;
                 }
@@ -170,7 +170,7 @@ namespace CLEO
                 case DT_LVAR_TEXTLABEL_ARRAY:
                 {
                     auto str = (char*)GetScriptParamPointer(thread);
-                    memcpy(buff, str, min(buffLen, 8));
+                    memcpy(buff, str, std::min(buffLen, 8));
                     if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
                     return buff;
                 }
@@ -182,7 +182,7 @@ namespace CLEO
                 case DT_LVAR_STRING_ARRAY:
                 {
                     auto str = (char*)GetScriptParamPointer(thread);
-                    memcpy(buff, str, min(buffLen, 16));
+                    memcpy(buff, str, std::min(buffLen, 16));
                     if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
                     return buff;
                 }
@@ -1558,7 +1558,7 @@ namespace CLEO
                 memset(Name, '\0', sizeof(Name));
                 if(!fName.empty())
                 {
-                    auto len = min(fName.length(), sizeof(Name) - 1); // and text terminator
+                    auto len = std::min(fName.length(), sizeof(Name) - 1); // and text terminator
                     memcpy(Name, fName.c_str(), len);
                 }
             }
