@@ -187,7 +187,7 @@
     <IntDir>$(SolutionDir).output\.obj\$(Configuration)\</IntDir>
     <TargetName>CLEO</TargetName>
     <TargetExt>.asi</TargetExt>
-    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;$(SolutionDir)third-party\simdjson;$(IncludePath)</IncludePath>
+    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)third-party\simdjson;$(IncludePath)</IncludePath>
     <GenerateManifest>false</GenerateManifest>
     <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
@@ -196,7 +196,7 @@
     <IntDir>$(SolutionDir).output\.obj\$(Configuration)\</IntDir>
     <TargetName>CLEO</TargetName>
     <TargetExt>.asi</TargetExt>
-    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;$(SolutionDir)third-party\simdjson;$(IncludePath)</IncludePath>
+    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)third-party\simdjson;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
@@ -213,7 +213,7 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>third-party\plugin-sdk\plugin_sa\;third-party\plugin-sdk\plugin_sa\game_sa\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;GTASA;_NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -251,7 +251,7 @@ xcopy /Y "$(OutDir)$(TargetName).asi" "$(GTA_SA_DIR)\"
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>third-party\plugin-sdk\plugin_sa\;third-party\plugin-sdk\plugin_sa\game_sa\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;GTASA;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
