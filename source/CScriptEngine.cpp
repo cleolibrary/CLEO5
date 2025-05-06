@@ -371,7 +371,7 @@ namespace CLEO
     CSprite2d storedSprites[NUM_STORED_SPRITES];
     BYTE storedDraws[DRAW_ARRAY_SIZE];
     BYTE storedTexts[TEXT_ARRAY_SIZE];
-    BYTE storedUseTextCommands = 0;
+    eUseTextCommandState storedUseTextCommands = eUseTextCommandState::DISABLED;
     WORD numStoredDraws = 0;
     WORD numStoredTexts = 0;
 
@@ -426,13 +426,17 @@ namespace CLEO
         RestoreScriptSpecifics();
 
         bool bNeedDefaults = false;
-        if (CTheScripts::UseTextCommands)
+        if (CTheScripts::UseTextCommands != eUseTextCommandState::DISABLED)
         {
             RestoreTextDrawDefaults();
             CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
             std::fill(scriptDraws, scriptDraws + DRAW_ARRAY_SIZE, 0);
             CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
-            CTheScripts::UseTextCommands = false;
+
+            if (CTheScripts::UseTextCommands != eUseTextCommandState::DISABLE_NEXT_FRAME)
+            {
+                CTheScripts::UseTextCommands = eUseTextCommandState::DISABLED;
+            }
         }
 		
 		ProcessScript(this);
@@ -1411,7 +1415,7 @@ namespace CLEO
 
         bIsCustom = true;
         bIsMission = bUseMissionCleanup = bIsMiss;
-        m_useTextCommands = 0;
+        m_useTextCommands = eUseTextCommandState::DISABLED;
         m_numDraws = 0;
         m_numTexts = 0;
 

@@ -18,7 +18,7 @@ namespace CLEO
         bool m_saveEnabled;
         bool m_ok;
         eCLEO_Version m_compatVer;
-        BYTE m_useTextCommands;
+        eUseTextCommandState m_useTextCommands;
         int m_numDraws;
         int m_numTexts;
         CCustomScript* m_parentScript;
