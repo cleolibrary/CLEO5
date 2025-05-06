@@ -187,7 +187,7 @@
     <IntDir>$(SolutionDir).output\.obj\$(Configuration)\</IntDir>
     <TargetName>CLEO</TargetName>
     <TargetExt>.asi</TargetExt>
-    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)third-party\simdjson;$(IncludePath)</IncludePath>
+    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;third-party\plugin-sdk\plugin_sa\game_sa\rw;third-party\simdjson;$(IncludePath)</IncludePath>
     <GenerateManifest>false</GenerateManifest>
     <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
@@ -196,7 +196,7 @@
     <IntDir>$(SolutionDir).output\.obj\$(Configuration)\</IntDir>
     <TargetName>CLEO</TargetName>
     <TargetExt>.asi</TargetExt>
-    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)third-party\simdjson;$(IncludePath)</IncludePath>
+    <IncludePath>third-party\plugin-sdk\shared\;third-party\plugin-sdk\shared\game\;third-party\plugin-sdk\plugin_sa\game_sa\rw;third-party\simdjson;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(GTA_SA_DIR)\gta_sa.exe</LocalDebuggerCommand>
