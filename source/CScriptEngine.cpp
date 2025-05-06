@@ -318,10 +318,7 @@ namespace CLEO
     {
         CleoInstance.ScriptEngine.DrawScriptStuff(beforeFade);
 
-        if(beforeFade)
-            CleoInstance.ScriptEngine.DrawScriptTextBeforeFade_Orig(beforeFade);
-        else
-            CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(beforeFade);
+        DrawScriptText_Orig(beforeFade);
 
         // run registered callbacks
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
@@ -329,6 +326,14 @@ namespace CLEO
             typedef void WINAPI callback(bool);
             ((callback*)func)(beforeFade != 0);
         }
+    }
+
+    void CScriptEngine::DrawScriptText_Orig(char beforeFade)
+    {
+        if (beforeFade)
+            CleoInstance.ScriptEngine.DrawScriptTextBeforeFade_Orig(beforeFade);
+        else
+            CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(beforeFade);
     }
 
     void __fastcall HOOK_ProcessScript(CCustomScript * pScript, int)
@@ -448,8 +453,7 @@ namespace CLEO
             last = this;
             RestoreScriptDraws();
             RestoreScriptTextures();
-            if (bBeforeFade) CleoInstance.ScriptEngine.DrawScriptTextBeforeFade_Orig(bBeforeFade);
-            else CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(bBeforeFade);
+            CScriptEngine::DrawScriptText_Orig(bBeforeFade);
             StoreScriptDraws();
             StoreScriptTextures();
         }
