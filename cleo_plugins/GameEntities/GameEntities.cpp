@@ -293,7 +293,7 @@ public:
 
 			if (skipDead)
 			{
-				if (ped->m_nPedState == PEDSTATE_DIE || ped->m_nPedState == PEDSTATE_DEAD)
+				if (ped->m_ePedState == PEDSTATE_DIE || ped->m_ePedState == PEDSTATE_DEAD)
 				{
 					continue; // dead
 				}

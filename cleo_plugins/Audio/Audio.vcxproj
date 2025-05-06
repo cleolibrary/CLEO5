@@ -70,9 +70,9 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;GTASA;_NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(PLUGIN_SDK_DIR)\plugin_sa\;$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\;$(PLUGIN_SDK_DIR)\shared;$(PLUGIN_SDK_DIR)\shared\game;$(SolutionDir)..\cleo_sdk;$(ProjectDir)\bass\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)bass;$(SolutionDir)..\cleo_sdk;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)..\third-party\plugin-sdk\shared;$(SolutionDir)..\third-party\plugin-sdk\shared\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
@@ -81,7 +81,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib\;$(SolutionDir)..\cleo_sdk\;$(ProjectDir)bass\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;$(SolutionDir)..\cleo_sdk\;$(ProjectDir)bass\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>cleo.lib;bass.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -100,15 +100,15 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;GTASA;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(PLUGIN_SDK_DIR)\plugin_sa\;$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\;$(PLUGIN_SDK_DIR)\shared\;$(PLUGIN_SDK_DIR)\shared\game\;$(SolutionDir)..\cleo_sdk\;$(ProjectDir)\bass\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)bass;$(SolutionDir)..\cleo_sdk;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)..\third-party\plugin-sdk\shared;$(SolutionDir)..\third-party\plugin-sdk\shared\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>$(PLUGIN_SDK_DIR)\output\lib\;$(SolutionDir)..\cleo_sdk\;$(ProjectDir)bass\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;$(SolutionDir)..\cleo_sdk\;$(ProjectDir)bass\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>cleo.lib;bass.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -122,34 +122,34 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPools.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CPools.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTheScripts.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTheScripts.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\DynAddress.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\DynAddress.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\GameVersion.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\GameVersion.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\game\CRGBA.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\game\CRGBA.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\Patch.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\Patch.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\shared\PluginBase.cpp">
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\PluginBase.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CCamera.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CTimer.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CVector.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\RenderWare.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CAEAudioHardware.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPad.cpp" />
-    <ClCompile Include="$(PLUGIN_SDK_DIR)\plugin_sa\game_sa\CPlaceable.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CCamera.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTimer.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CVector.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\RenderWare.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CAEAudioHardware.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CPad.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CPlaceable.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="C3DAudioStream.cpp" />
     <ClCompile Include="CAudioStream.cpp" />

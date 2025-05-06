@@ -67,8 +67,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\third-party\plugin-sdk\plugin_sa\;..\..\third-party\plugin-sdk\plugin_sa\game_sa\;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;$(SolutionDir)..\cleo_sdk</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;GTASA;_NDEBUG</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\cleo_sdk;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)..\third-party\plugin-sdk\shared;$(SolutionDir)..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
@@ -100,8 +100,8 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\third-party\plugin-sdk\plugin_sa\;..\..\third-party\plugin-sdk\plugin_sa\game_sa\;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;$(SolutionDir)..\cleo_sdk</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;GTASA;_DEBUG</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\cleo_sdk;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)..\third-party\plugin-sdk\shared;$(SolutionDir)..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -127,9 +127,12 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
   <ItemGroup>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CFont.cpp" />
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\RenderWare.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\DynAddress.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\GameVersion.cpp" />
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\game\CRGBA.cpp" />
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTimer.cpp" />
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CMessages.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\shared\Patch.cpp" />
     <ClCompile Include="DebugUtils.cpp" />
     <ClCompile Include="ScreenLog.cpp" />
   </ItemGroup>
