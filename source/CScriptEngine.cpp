@@ -319,9 +319,9 @@ namespace CLEO
         CleoInstance.ScriptEngine.DrawScriptStuff(beforeFade);
 
         if(beforeFade)
-            CleoInstance.ScriptEngine.DrawScriptText_Before_Orig(beforeFade);
+            CleoInstance.ScriptEngine.DrawScriptTextBeforeFade_Orig(beforeFade);
         else
-            CleoInstance.ScriptEngine.DrawScriptText_After_Orig(beforeFade);
+            CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(beforeFade);
 
         // run registered callbacks
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
@@ -448,8 +448,8 @@ namespace CLEO
             last = this;
             RestoreScriptDraws();
             RestoreScriptTextures();
-            if (bBeforeFade) CleoInstance.ScriptEngine.DrawScriptText_Before_Orig(bBeforeFade);
-            else CleoInstance.ScriptEngine.DrawScriptText_After_Orig(bBeforeFade);
+            if (bBeforeFade) CleoInstance.ScriptEngine.DrawScriptTextBeforeFade_Orig(bBeforeFade);
+            else CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(bBeforeFade);
             StoreScriptDraws();
             StoreScriptTextures();
         }
@@ -800,8 +800,8 @@ namespace CLEO
         scriptDraws = gvm.TranslateMemoryAddress(MA_SCRIPT_DRAW_ARRAY);
         scriptTexts = gvm.TranslateMemoryAddress(MA_SCRIPT_TEXT_ARRAY);
 
-        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptText_After_Orig);
-        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptText_Before_Orig);
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
         inj.MemoryWrite(gvm.TranslateMemoryAddress(MA_CODE_JUMP_FOR_TXD_STORE), OP_RET);
 
         inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);
