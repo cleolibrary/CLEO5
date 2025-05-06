@@ -69,7 +69,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\cleo_sdk;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)..\third-party\plugin-sdk\shared;$(SolutionDir)..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
@@ -78,7 +78,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;$(SolutionDir)..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;..\..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>cleo.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
@@ -100,13 +100,13 @@ if defined GTA_SA_DIR (
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\cleo_sdk;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa;$(SolutionDir)..\third-party\plugin-sdk\plugin_sa\game_sa\rw;$(SolutionDir)..\third-party\plugin-sdk\shared;$(SolutionDir)..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;$(SolutionDir)..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\third-party\plugin-sdk\output\lib\;..\..\cleo_sdk;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>cleo.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
