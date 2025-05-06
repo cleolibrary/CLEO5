@@ -336,7 +336,7 @@ namespace CLEO
             CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(beforeFade);
     }
 
-    void __fastcall HOOK_ProcessScript(CCustomScript * pScript, int)
+    void __fastcall CScriptEngine::HOOK_ProcessScript(CLEO::CRunningScript* pScript)
     {
         CleoInstance.ScriptEngine.GameBegin(); // all initialized and ready to process scripts
 
@@ -350,8 +350,8 @@ namespace CLEO
 
         if (process)
         {
-            if (pScript->IsCustom()) pScript->Process();
-            else ProcessScript(pScript);
+            if (pScript->IsCustom()) reinterpret_cast<CCustomScript*>(pScript)->Process();
+            else CleoInstance.ScriptEngine.ProcessScript_Orig(pScript);
         }
 
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcessAfter))
@@ -435,7 +435,7 @@ namespace CLEO
             CTheScripts::UseTextCommands = false;
         }
 		
-		ProcessScript(this);
+        CleoInstance.ScriptEngine.ProcessScript_Orig(this);
 
         StoreScriptSpecifics();
     }
@@ -797,9 +797,7 @@ namespace CLEO
         onMissionFlag = gvm.TranslateMemoryAddress(MA_ON_MISSION_FLAG);
 
         // Protect script dependencies
-        auto addr = gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT);
-        inj.MemoryReadOffset(addr.address + 1, ProcessScript);
-        inj.ReplaceFunction(HOOK_ProcessScript, addr);
+        inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
         scriptSprites = gvm.TranslateMemoryAddress(MA_SCRIPT_SPRITE_ARRAY);
         scriptDraws = gvm.TranslateMemoryAddress(MA_SCRIPT_DRAW_ARRAY);
         scriptTexts = gvm.TranslateMemoryAddress(MA_SCRIPT_TEXT_ARRAY);

@@ -60,8 +60,6 @@ namespace CLEO
         static CustomOpcodeHandler customOpcodeProc[LastCustomOpcode + 1]; // procedure for each opcode
     };
 
-    extern void(__thiscall * ProcessScript)(CRunningScript*);
-
     // Read null-terminated string into the buffer
     // returns pointer to string or nullptr on fail
     // WARNING: returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source)

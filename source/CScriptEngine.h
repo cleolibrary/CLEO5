@@ -157,6 +157,9 @@ namespace CLEO
         void(__cdecl* DrawScriptTextBeforeFade_Orig)(char beforeFade) = nullptr;
         void(__cdecl* DrawScriptTextAfterFade_Orig)(char beforeFade) = nullptr;
         static void DrawScriptText_Orig(char beforeFade);
+        
+        static void __fastcall HOOK_ProcessScript(CLEO::CRunningScript*);
+        void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
     };
 
     extern char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
