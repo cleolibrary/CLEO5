@@ -152,7 +152,7 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
 		}
 	}
 	else
-		 fopen_s(&file, filename, mode);
+		fopen_s(&file, filename, mode);
 
 	return fileToHandle(file, legacy);
 }
