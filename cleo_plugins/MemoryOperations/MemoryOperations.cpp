@@ -152,7 +152,7 @@ public:
                     }
 
                     OPCODE_READ_PARAM_STRING_LEN(str, MAX_STR_LEN);
-                    strcpy(textParams[currTextParam], str);
+                    strcpy_s(textParams[currTextParam], str);
                     param.pcParam = textParams[currTextParam];
                     currTextParam++;
                 }
@@ -427,7 +427,7 @@ public:
         
         // resolve absolute path and try load
         char buff[MAX_PATH];
-        strncpy(buff, path, sizeof(buff));
+        strncpy_s(buff, path, sizeof(buff));
         CLEO_ResolvePath(thread, buff, sizeof(buff));
         ptr = LoadLibrary(buff);
 

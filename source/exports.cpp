@@ -89,7 +89,7 @@ extern "C"
         if (name != nullptr) msg = StringPrintf("#%d \"%s\"", curr, name);
         else msg = StringPrintf("#%d", curr);
 
-        strncpy(buf, msg.c_str(), bufSize);
+        strncpy_s(buf, bufSize, msg.c_str(), bufSize);
     }
 
     eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread)

@@ -68,10 +68,11 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -99,9 +100,10 @@ if defined GTA_SA_DIR (
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

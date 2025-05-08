@@ -139,12 +139,12 @@ public:
                 char strParam[4];
             } param;
             param.uParam = OPCODE_READ_PARAM_INT();
-            strcpy(mode, param.strParam);
+            strcpy_s(mode, param.strParam);
         }
         else
         {
             OPCODE_READ_PARAM_STRING_LEN(strMode, sizeof(mode) - 1); // leave space for terminator char
-            strcpy(mode, strMode);
+            strcpy_s(mode, strMode);
         }
 
         // either CLEO 3 or CLEO 4 made a big mistake! (they differ in one major unapparent preference)
@@ -515,7 +515,7 @@ public:
 
         memset(&wfd, 0, sizeof(wfd));
         //search mask
-        sprintf(mask, "%s\\*", path);
+        sprintf_s(mask, "%s\\*", path);
 
         //try to delete all inside first
         if ((hSearch = FindFirstFile(mask, &wfd)) != INVALID_HANDLE_VALUE)
@@ -527,7 +527,7 @@ public:
                 {
                     if ((strcmp(wfd.cFileName, "..") != 0) && (strcmp(wfd.cFileName, ".") != 0))
                     {
-                        sprintf(subPath, "%s\\%s", path, wfd.cFileName);
+                        sprintf_s(subPath, "%s\\%s", path, wfd.cFileName);
                         if (!DeleteDir(subPath))
                             return FALSE;
                     }
@@ -535,7 +535,7 @@ public:
                 else
                 {
                     //remove read-only, system, hidden flags
-                    sprintf(subPath, "%s\\%s", path, wfd.cFileName);
+                    sprintf_s(subPath, "%s\\%s", path, wfd.cFileName);
                     SetFileAttributes(subPath, FILE_ATTRIBUTE_NORMAL);
                     //delete file
                     if (!DeleteFile(subPath))

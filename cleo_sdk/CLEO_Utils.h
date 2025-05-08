@@ -385,7 +385,7 @@ namespace CLEO
     static const char* TraceVArg(CLEO::eLogLevel level, const char* format, va_list args)
     {
         static char szBuf[1024];
-        vsprintf(szBuf, format, args); // put params into format
+        vsprintf_s(szBuf, format, args); // put params into format
         CLEO_Log(level, szBuf);
         return szBuf;
     }

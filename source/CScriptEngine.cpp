@@ -1083,7 +1083,7 @@ namespace CLEO
             CleoSafeHeader header = { CleoSafeHeader::sign, savedThreads.size(), InactiveScriptHashes.size() };
 
             char safe_name[MAX_PATH];
-            sprintf(safe_name, "./cleo/cleo_saves/cs%d.sav", FrontEndMenuManager.m_nSelectedSaveGame);
+            sprintf_s(safe_name, "./cleo/cleo_saves/cs%d.sav", FrontEndMenuManager.m_nSelectedSaveGame);
             TRACE("Saving script engine state to the file '%s'", safe_name);
 
             CreateDirectory("cleo", NULL);

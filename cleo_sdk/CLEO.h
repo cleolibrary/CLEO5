@@ -368,7 +368,7 @@ struct CRunningScript
 public:
 	CRunningScript()
 	{
-		strcpy(Name, "noname");
+		strcpy_s(Name, "noname");
 		BaseIP = 0;
 		Previous = 0;
 		Next = 0;

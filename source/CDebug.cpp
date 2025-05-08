@@ -56,7 +56,7 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
         //GTA_GetLocalTime(&t);
 
         char timestampStr[32];
-        sprintf(timestampStr, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
+        sprintf_s(timestampStr, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
         m_hFile << timestampStr;
 
         // add separator line if frame rendered since last log entry

@@ -139,7 +139,7 @@ public:
 		auto style = OPCODE_READ_PARAM_INT();
 
 		auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-		strncpy(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
+		strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
 		CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
 		return OR_CONTINUE;
 	}
@@ -150,7 +150,7 @@ public:
 		OPCODE_READ_PARAM_STRING(text);
 		auto time = OPCODE_READ_PARAM_INT();
 
-		strncpy(msgBuffLow, text, sizeof(msgBuffLow));
+		strncpy_s(msgBuffLow, text, sizeof(msgBuffLow));
 		CMessages::AddMessage(msgBuffLow, time, false, false);
 		return OR_CONTINUE;
 	}
@@ -161,7 +161,7 @@ public:
 		OPCODE_READ_PARAM_STRING(text);
 		auto time = OPCODE_READ_PARAM_INT();
 
-		strncpy(msgBuffHigh, text, sizeof(msgBuffHigh));
+		strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh));
 		CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
 		return OR_CONTINUE;
 	}
@@ -184,7 +184,7 @@ public:
 		OPCODE_READ_PARAMS_FORMATTED(format, text);
 
 		auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-		strncpy(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
+		strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
 		CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
 		return OR_CONTINUE;
 	}
@@ -196,7 +196,7 @@ public:
 		auto time = OPCODE_READ_PARAM_INT();
 		OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-		strncpy(msgBuffLow, text, sizeof(msgBuffLow));
+		strncpy_s(msgBuffLow, text, sizeof(msgBuffLow));
 		CMessages::AddMessage(msgBuffLow, time, false, false);
 		return OR_CONTINUE;
 	}
@@ -208,7 +208,7 @@ public:
 		auto time = OPCODE_READ_PARAM_INT();
 		OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-		strncpy(msgBuffHigh, text, sizeof(msgBuffHigh));
+		strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh));
 		CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
 		return OR_CONTINUE;
 	}
@@ -277,7 +277,7 @@ public:
 		}
 		CLEO_SkipUnusedVarArgs(thread); // and var args terminator
 
-		*readCount = sscanf(src, format,
+		*readCount = sscanf_s(src, format,
 			outputParams[0], outputParams[1], outputParams[2], outputParams[3], outputParams[4], outputParams[5],
 			outputParams[6], outputParams[7], outputParams[8], outputParams[9], outputParams[10], outputParams[11],
 			outputParams[12], outputParams[13], outputParams[14], outputParams[15], outputParams[16], outputParams[17],
@@ -458,7 +458,7 @@ public:
 		// new generic GXT label
 		// includes unprintable character, to ensure there will be no collision with user GXT labels
 		char gxt[9] = { 0x01, 'C', 'L', 'E', 0x00, 0x00, 0x00, 0x00, 0x00 }; // enough space for even worst case scenario
-		_itoa(genericLabelCounter, gxt + 4, 36); // 0xFFFF -> "1ekf"
+		_itoa_s(genericLabelCounter, gxt + 4, sizeof(gxt) - 4, 36); // 0xFFFF -> "1ekf"
 		genericLabelCounter++;
 
 		textManager.AddFxt(gxt, text);
@@ -466,7 +466,7 @@ public:
 		auto& draw = CTheScripts::IntroTextLines[CTheScripts::NumberOfIntroTextLinesThisFrame];
 		memcpy(&draw.xPosition, &posX, sizeof(draw.xPosition)); // invalid type in Plugin SDK. Just copy memory
 		memcpy(&draw.yPosition, &posY, sizeof(draw.yPosition));
-		strcpy(draw.gxtEntry, gxt);
+		strcpy_s(draw.gxtEntry, gxt);
 
 		CTheScripts::NumberOfIntroTextLinesThisFrame++;
 

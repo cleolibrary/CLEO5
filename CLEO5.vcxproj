@@ -13,34 +13,34 @@
   <ItemGroup>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CFont.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\RenderWare.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\shared\game\CRGBA.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="source\CCodeInjector.cpp">
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CGame.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\shared\DynAddress.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\shared\GameVersion.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\shared\Patch.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="source\CCustomOpcodeSystem.cpp">
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -89,31 +89,31 @@
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CCheat.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CTheScripts.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CTimer.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CMenuManager.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CSprite2d.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CRunningScript.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\shared\extensions\Screen.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="third-party\simdjson\simdjson.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -213,7 +213,7 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>third-party\plugin-sdk\plugin_sa;third-party\plugin-sdk\plugin_sa\game_sa;third-party\plugin-sdk\plugin_sa\game_sa\rw;third-party\plugin-sdk\shared;third-party\plugin-sdk\shared\game;third-party\simdjson</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -251,7 +251,7 @@ xcopy /Y "$(OutDir)$(TargetName).asi" "$(GTA_SA_DIR)\"
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>third-party\plugin-sdk\plugin_sa;third-party\plugin-sdk\plugin_sa\game_sa;third-party\plugin-sdk\plugin_sa\game_sa\rw;third-party\plugin-sdk\shared;third-party\plugin-sdk\shared\game;third-party\simdjson</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;_CRT_SECURE_NO_WARNINGS;RW;GTASA;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>

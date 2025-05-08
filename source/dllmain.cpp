@@ -55,7 +55,7 @@ class Starter
             }
 
             char strValue[32];
-            _itoa(gv, strValue, 10);
+            _itoa_s(gv, strValue, 10);
             WritePrivateProfileString("Internal", "ReportedGameVersion", strValue, Filepath_Config.c_str());
         }
 

@@ -11,8 +11,8 @@ static void fixIniFilepath(char* buff)
 	if (!std::filesystem::path(buff).has_parent_path())
 	{
 		std::string filename = buff;
-		strcpy(buff, ".\\");
-		strcat(buff, filename.c_str());
+		strcpy_s(buff, 512, ".\\");
+		strcat_s(buff, 512, filename.c_str());
 	}
 }
 
@@ -51,9 +51,8 @@ public:
 		}
 		else
 		{
-			std::string err(128, '\0');
-			sprintf(err.data(), "This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-			MessageBox(HWND_DESKTOP, err.data(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
+			auto err = StringPrintf("This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
+			MessageBox(HWND_DESKTOP, err.c_str(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
 		}
 	}
 
@@ -121,7 +120,7 @@ public:
 		OPCODE_READ_PARAM_STRING_OR_ZERO(key);	// 0 deletes the whole section
 
 		char strValue[32];
-		_itoa(value, strValue, 10);
+		_itoa_s(value, strValue, 10);
 		auto result = WritePrivateProfileString(section, key, strValue, path);
 		
 		OPCODE_CONDITION_RESULT(result);
@@ -181,7 +180,7 @@ public:
 		OPCODE_READ_PARAM_STRING_OR_ZERO(key); // 0 deletes the whole section
 
 		char strValue[32];
-		sprintf(strValue, "%g", value);
+		sprintf_s(strValue, "%g", value);
 		auto result = WritePrivateProfileString(section, key, strValue, path);
 		
 		OPCODE_CONDITION_RESULT(result);

@@ -477,12 +477,12 @@ namespace CLEO
 					{
 						if (*iter == '*')
 						{
-							char *buffiter = bufa;
-
 							//get width
 							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 							GetScriptParams(thread, 1);
-							_itoa(opcodeParams[0].dwParam, buffiter, 10);
+							_itoa_s(opcodeParams[0].dwParam, bufa, 10);
+
+							char* buffiter = bufa;
 							while (*buffiter)
 								*fmta++ = *buffiter++;
 						}
@@ -501,10 +501,11 @@ namespace CLEO
 						*fmta++ = *iter++;
 						if (*iter == '*')
 						{
-							char *buffiter = bufa;
 							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 							GetScriptParams(thread, 1);
-							_itoa(opcodeParams[0].dwParam, buffiter, 10);
+							_itoa_s(opcodeParams[0].dwParam, bufa, 10);
+
+							char* buffiter = bufa;
 							while (*buffiter)
 								*fmta++ = *buffiter++;
 						}
@@ -550,12 +551,11 @@ namespace CLEO
 					{
 						/* For non wc types, use system sprintf and append to wide char output */
 						/* FIXME: for unrecognised types, should ignore % when printing */
-						char *bufaiter = bufa;
 						if (*iter == 'p' || *iter == 'P')
 						{
 							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 							GetScriptParams(thread, 1);
-							sprintf(bufaiter, "%08X", opcodeParams[0].dwParam);
+							sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
 						}
 						else
 						{
@@ -568,15 +568,16 @@ namespace CLEO
 							{
 								if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 								GetScriptParams(thread, 1);
-								sprintf(bufaiter, fmtbufa, opcodeParams[0].fParam);
+								sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
 							}
 							else
 							{
 								if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
 								GetScriptParams(thread, 1);
-								sprintf(bufaiter, fmtbufa, opcodeParams[0].pParam);
+								sprintf_s(bufa, fmtbufa, opcodeParams[0].pParam);
 							}
 						}
+						char* bufaiter = bufa;
 						while (*bufaiter)
 						{
 							if (written++ >= len) goto _ReadFormattedString_OutOfMemory;

@@ -126,8 +126,8 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
 			// Generally text mode is not well documented in C and many file related functions has undefined behavior. For example 'ftell' returns invalid values.
 			if (valid && (!binary && !text))
 			{
-				strcpy(modeUpdated, mode);
-				strcat(modeUpdated, "b");
+				strcpy_s(modeUpdated, mode);
+				strcat_s(modeUpdated, "b");
 				mode = modeUpdated;
 			}
 		}
@@ -152,7 +152,7 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
 		}
 	}
 	else
-		file = fopen(filename, mode);
+		 fopen_s(&file, filename, mode);
 
 	return fileToHandle(file, legacy);
 }
@@ -441,7 +441,7 @@ DWORD File::scan(DWORD handle, const char* format, void** outputParams)
 
 			prevCharRead = charRead;
 			auto p = outputParams;
-			read = sscanf(readText.c_str(), newFormat.c_str(),
+			read = sscanf_s(readText.c_str(), newFormat.c_str(),
 				p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], // 10
 				p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19], // 20
 				p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29], // 30
@@ -467,7 +467,7 @@ DWORD File::scan(DWORD handle, const char* format, void** outputParams)
 	else
 	{
 		auto p = outputParams;
-		read = 	fscanf(file, format, 
+		read = 	fscanf_s(file, format, 
 			p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], // 10
 			p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19], // 20
 			p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29], // 30
