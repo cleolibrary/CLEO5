@@ -126,31 +126,31 @@ if defined GTA_SA_DIR (
   <ItemGroup>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CPools.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTheScripts.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\DynAddress.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\GameVersion.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\game\CRGBA.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\Patch.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\PluginBase.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="MemoryOperations.cpp" />
   </ItemGroup>
