@@ -73,8 +73,32 @@ namespace CLEO
     }
 
     // converts memory address' identifier to actual memory pointer
-    memory_pointer CGameVersionManager::TranslateMemoryAddress(eMemoryAddress addrId)
+    memory_pointer CGameVersionManager::TranslateMemoryAddress(eMemoryAddress addrId) const
     {
         return MemoryAddresses[addrId][GetGameVersion()];
+    }
+
+    memory_pointer CGameVersionManager::TranslateMemoryAddress(const char* name) const
+    {
+        memory_pointer result = memory_und;
+
+        if(name == "CHud::DrawScriptText afterFade")
+        {
+            // read function address from code in case somebody hooked it
+            result = MemReadInstrucionDestination<memory_pointer>(TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE));
+        }
+        else if (name == "CHud::DrawScriptText beforeFade")
+        {
+            // read function address from code in case somebody hooked it
+            result = MemReadInstrucionDestination<memory_pointer>(TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE));
+        }
+
+        if (result == memory_und)
+        {
+            LOG_WARNING(0, "Failed to translate memory address of '%s' for current game version!", name);
+            return nullptr;
+        }
+
+        return result;
     }
 }
