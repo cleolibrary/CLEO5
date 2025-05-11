@@ -29,20 +29,7 @@ inline void MemJump(U p, const T v, T *r = nullptr)
 {
     if (r != nullptr)
     {
-        switch (MemRead<BYTE>(p))
-        {
-            case OP_JMP:
-                *r = (T)(DWORD(p) + 5 + MemRead<signed int>(p + 1));
-                break;
-
-            case OP_JMPSHORT:
-                *r = (T)(DWORD(p) + 2 + MemRead<signed char>(p + 1));
-                break;
-
-            default:
-                *r = (T)nullptr;
-                break;
-        }
+        *r = MemReadInstrucionDestination<std::remove_pointer<T>::type>(p);
     }
 
     MemWrite<BYTE>(p++, OP_JMP);
@@ -55,21 +42,45 @@ inline void MemCall(U p, const T v, T *r = nullptr)
 {
     if (r != nullptr)
     {
-        if (MemRead<BYTE>(p) == OP_CALL)
-            *r = (T)(DWORD(p) + 5 + MemRead<signed int>(p + 1));
-        else
-            *r = (T)nullptr;
+        *r = MemReadInstrucionDestination<std::remove_pointer<T>::type>(p);
     }
 
     MemWrite<BYTE>(p++, OP_CALL);
     MemWrite<DWORD>(p, (DWORD)v - (DWORD)p - 4);
 }
 
-// Read and convert a relative offset to full
+// Read and convert a relative offset to absolute address
 template<typename T, typename U>
 T MemReadOffsetPtr(U p)
 {
-    return (T)((size_t)MemRead<T>(p) + p + sizeof(T));
+    return (T)((size_t)MemRead<T>(p) + (size_t)p + sizeof(T));
+}
+
+// Read absolute target address of jump or call instruction
+template<typename T, typename U>
+T MemReadInstrucionDestination(U p)
+{
+    auto ptr = (BYTE*)p;
+    BYTE opcode = *ptr;
+    ptr++;
+
+    T dest = (T)nullptr;
+    switch (opcode)
+    {
+    case OP_CALL:
+        dest = MemReadOffsetPtr<DWORD>(ptr);
+        break;
+
+    case OP_JMP:
+        dest = MemReadOffsetPtr<DWORD>(ptr);
+        break;
+
+    case OP_JMPSHORT:
+        dest = MemReadOffsetPtr<BYTE>(ptr);
+        break;
+    }
+
+    return dest;
 }
 
 inline void MemGrantAccess(size_t address, size_t size)
