@@ -73,7 +73,7 @@ namespace CLEO
     }
 
     // converts memory address' identifier to actual memory pointer
-    memory_pointer CGameVersionManager::TranslateMemoryAddress(eMemoryAddress addrId)
+    memory_pointer CGameVersionManager::TranslateMemoryAddress(eMemoryAddress addrId) const
     {
         return MemoryAddresses[addrId][GetGameVersion()];
     }
