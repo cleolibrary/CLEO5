@@ -5,23 +5,17 @@
 
 namespace CLEO
 {
-    DWORD CTexture__DrawInRect_Orig; // original address
-    void CTexture_DrawInRect(void* pTexture, CRect* rect, RwRGBA* colour)
+    void CGameMenu::Inject(CCodeInjector& inj)
     {
-        _asm
-        {
-            push colour
-            push rect
-            mov ecx, pTexture
-            call CTexture__DrawInRect_Orig
-        }
+        TRACE("Injecting MenuStatusNotifier...");
+        inj.ReplaceFunction(HOOK_DrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT), &DrawMenuBackground_Orig);
     }
 
-    void __fastcall OnDrawMenuBackground(void *texture, int dummy, CRect* rect, RwRGBA *color)
+    void __fastcall CGameMenu::HOOK_DrawMenuBackground(CSprite2d* texture, int dummy, CRect* rect, RwRGBA *color)
     {
         CleoInstance.Start(CCleoInstance::InitStage::OnDraw); // late initialization
 
-        CTexture_DrawInRect(texture, rect, color); // call original
+        CleoInstance.GameMenu.DrawMenuBackground_Orig(texture, dummy, rect, color);
 
         CFont::SetBackground(false, false);
         CFont::SetWrapx(640.0f);
@@ -72,12 +66,5 @@ namespace CLEO
             CFont::SetScale(sizeX, sizeY);
             CFont::PrintString(posX, posY - 15.0f * sizeY, text.str().c_str());
         }
-    }
-
-    void CGameMenu::Inject(CCodeInjector& inj)
-    {
-        TRACE("Injecting MenuStatusNotifier...");
-        inj.MemoryReadOffset(CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT).address + 1, CTexture__DrawInRect_Orig, true);
-        inj.ReplaceFunction(OnDrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT));
     }
 }
