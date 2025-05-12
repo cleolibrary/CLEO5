@@ -60,16 +60,7 @@ namespace CLEO
         void AddScriptToList(CRunningScript** queuelist);
         void RemoveScriptFromList(CRunningScript** queuelist);
 
-        void Process();
-        void Draw(char bBeforeFade);
         void ShutdownThisScript();
-
-        void StoreScriptSpecifics();
-        void RestoreScriptSpecifics();
-        void StoreScriptTextures();
-        void RestoreScriptTextures();
-        void StoreScriptDraws();
-        void RestoreScriptDraws();
 
         // debug related utils enabled?
         bool GetDebugMode() const;
@@ -144,8 +135,6 @@ namespace CLEO
         void RemoveAllCustomScripts();
         void UnregisterAllScripts();
         void ReregisterAllScripts();
-
-        void DrawScriptStuff(char bBeforeFade);
 
         inline CCustomScript* GetCustomMission() { return CustomMission; }
         inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
