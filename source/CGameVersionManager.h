@@ -90,6 +90,7 @@ namespace CLEO
             return m_eVersion;
         }
 
+        memory_pointer GetMemoryAddress(const char* name) const;
         memory_pointer TranslateMemoryAddress(eMemoryAddress addrId) const;
     };
 }

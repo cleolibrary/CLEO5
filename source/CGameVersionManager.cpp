@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CGameVersionManager.h"
+#include "CScriptEngine.h"
 
 namespace CLEO
 {
@@ -72,5 +73,23 @@ namespace CLEO
     memory_pointer CGameVersionManager::TranslateMemoryAddress(eMemoryAddress addrId) const
     {
         return MemoryAddresses[addrId][GetGameVersion()];
+    }
+
+    memory_pointer CGameVersionManager::GetMemoryAddress(const char* name) const
+    {
+        memory_pointer result = memory_und;
+
+        if(name == "CHud::DrawScriptText original")
+        {
+            result = CScriptEngine::DrawScriptText_Orig;
+        }
+
+        if (result == memory_und)
+        {
+            LOG_WARNING(0, "Failed to get memory address of '%s' for current game version!", name);
+            return nullptr;
+        }
+
+        return result;
     }
 }

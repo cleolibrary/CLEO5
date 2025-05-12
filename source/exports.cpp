@@ -21,6 +21,11 @@ extern "C"
         return DetermineGameVersion();
     }
 
+    DWORD WINAPI CLEO_GetMemoryAddress(const char* name)
+    {
+        return CleoInstance.VersionManager.GetMemoryAddress(name).address;
+    }
+
     BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, CustomOpcodeHandler callback)
     {
         return CCustomOpcodeSystem::RegisterOpcode(opcode, callback);
