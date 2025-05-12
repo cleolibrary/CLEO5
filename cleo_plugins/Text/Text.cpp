@@ -1,13 +1,12 @@
 ﻿#include "plugin.h"
 #include "CLEO.h"
 #include "CLEO_Utils.h"
-#include "CHud.h"
-#include "CGame.h"
-#include "CMessages.h"
-#include "CModelInfo.h"
-#include "CText.h"
 #include "CTextManager.h"
-#include "CTheScripts.h"
+#include <CGame.h>
+#include <CHud.h>
+#include <CMessages.h>
+#include <CModelInfo.h>
+#include <CTheScripts.h>
 #include <shlwapi.h>
 
 using namespace CLEO;
