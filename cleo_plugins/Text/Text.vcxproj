@@ -167,6 +167,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     </ClCompile>
     <ClCompile Include="crc32.cpp" />
     <ClCompile Include="CTextManager.cpp" />
+    <ClCompile Include="ScriptDrawing.cpp" />
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +175,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="CTextManager.h" />
+    <ClInclude Include="ScriptDrawing.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />
