@@ -1,6 +1,7 @@
 ﻿#include "plugin.h"
 #include "CLEO.h"
 #include "CLEO_Utils.h"
+#include "ScriptDrawing.h"
 #include "CTextManager.h"
 #include <CGame.h>
 #include <CHud.h>
@@ -15,6 +16,7 @@ using namespace plugin;
 class Text
 {
 public:
+	static ScriptDrawing scriptDrawing;
 	static CTextManager textManager;
 	
 	static char msgBuffLow[MAX_STR_LEN + 1];
@@ -72,6 +74,12 @@ public:
 		CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
 		CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
+		CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
+
+		CLEO_RegisterCallback(eCallbackId::ScriptProcessBefore, OnScriptBeforeProcess);
+		CLEO_RegisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
+		CLEO_RegisterCallback(eCallbackId::ScriptDraw, OnScriptDraw);
+		
 		// install hooks
 		patchCTextGet = MemPatchJump(0x006A0050, &HOOK_CTextGet); // FUNC_CText__Get from CText.cpp
 	}
@@ -82,6 +90,12 @@ public:
 		CLEO_UnregisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
 		CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
+		CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
+
+		CLEO_UnregisterCallback(eCallbackId::ScriptProcessBefore, OnScriptBeforeProcess);
+		CLEO_UnregisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
+		CLEO_UnregisterCallback(eCallbackId::ScriptDraw, OnScriptDraw);
+		
 		patchCTextGet.Apply(); // undo hook
 	}
 
@@ -98,6 +112,28 @@ public:
 	static void __stdcall OnGameEnd()
 	{
 		textManager.Clear();
+	}
+
+	static void __stdcall OnDrawingFinished()
+	{
+		// late initialization
+		scriptDrawing.Initialize();
+	}
+
+	static bool __stdcall OnScriptBeforeProcess(CLEO::CRunningScript* pScript)
+	{
+		scriptDrawing.BeginScriptProcessing(pScript);
+		return true;
+	}
+
+	static void __stdcall OnScriptAfterProcess(CLEO::CRunningScript* pScript)
+	{
+		scriptDrawing.EndScriptProcessing(pScript);
+	}
+
+	static void __stdcall OnScriptDraw(bool beforeFade)
+	{
+		scriptDrawing.Draw(beforeFade);
 	}
 
 	// hook of game's CText::Get
@@ -535,6 +571,7 @@ public:
 	}
 } textInstance;
 
+ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
 char Text::msgBuffLow[MAX_STR_LEN + 1];
 char Text::msgBuffHigh[MAX_STR_LEN + 1];
