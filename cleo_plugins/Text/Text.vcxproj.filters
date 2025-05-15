@@ -46,6 +46,7 @@
     </ClInclude>
     <ClInclude Include="crc32.h" />
     <ClInclude Include="ScriptDrawing.h" />
+    <ClInclude Include="ScriptDrawsState.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cleo_sdk">

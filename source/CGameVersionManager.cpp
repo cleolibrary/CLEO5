@@ -79,7 +79,7 @@ namespace CLEO
     {
         memory_pointer result = memory_und;
 
-        if(name == "CHud::DrawScriptText original")
+        if(_stricmp(name,"CHud::DrawScriptText original") == 0)
         {
             result = CScriptEngine::DrawScriptText_Orig;
         }

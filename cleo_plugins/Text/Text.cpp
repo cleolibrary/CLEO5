@@ -101,6 +101,7 @@ public:
 
 	static void __stdcall OnGameBegin(DWORD saveSlot)
 	{
+		scriptDrawing.BeginGame();
 		textManager.LoadFxts();
 	}
 
