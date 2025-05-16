@@ -60,16 +60,7 @@ namespace CLEO
         void AddScriptToList(CRunningScript** queuelist);
         void RemoveScriptFromList(CRunningScript** queuelist);
 
-        void Process();
-        void Draw(char bBeforeFade);
         void ShutdownThisScript();
-
-        void StoreScriptSpecifics();
-        void RestoreScriptSpecifics();
-        void StoreScriptTextures();
-        void RestoreScriptTextures();
-        void StoreScriptDraws();
-        void RestoreScriptDraws();
 
         // debug related utils enabled?
         bool GetDebugMode() const;
@@ -145,10 +136,10 @@ namespace CLEO
         void UnregisterAllScripts();
         void ReregisterAllScripts();
 
-        void DrawScriptStuff(char bBeforeFade);
-
         inline CCustomScript* GetCustomMission() { return CustomMission; }
         inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
+
+        static void DrawScriptText_Orig(char beforeFade);
 
     private:
         void RemoveCustomScript(CCustomScript*);
@@ -156,7 +147,6 @@ namespace CLEO
         static void __cdecl HOOK_DrawScriptText(char beforeFade);
         void(__cdecl* DrawScriptTextBeforeFade_Orig)(char beforeFade) = nullptr;
         void(__cdecl* DrawScriptTextAfterFade_Orig)(char beforeFade) = nullptr;
-        static void DrawScriptText_Orig(char beforeFade);
         
         static void __fastcall HOOK_ProcessScript(CLEO::CRunningScript*);
         void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
