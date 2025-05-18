@@ -1289,17 +1289,17 @@ namespace CLEO
         }
     }
 
-    void CScriptEngine::RemoveScript(CRunningScript* thread)
+    void CScriptEngine::RemoveScript(CRunningScript* script)
     {
-        if (thread->IsMission()) CTheScripts::bAlreadyRunningAMissionScript = false;
+        if (script->IsMission()) CTheScripts::bAlreadyRunningAMissionScript = false;
 
-        if (thread->IsCustom())
+        if (script->IsCustom())
         {
-            RemoveCustomScript((CCustomScript*)thread);
+            RemoveCustomScript((CCustomScript*)script);
         }
         else // native script
         {
-            auto cs = (CCustomScript*)thread;
+            auto cs = (CCustomScript*)script;
             cs->RemoveScriptFromList(activeThreadQueue);
             cs->AddScriptToList(inactiveThreadQueue);
             cs->ShutdownThisScript();
@@ -1315,44 +1315,35 @@ namespace CLEO
             ((callback*)func)(cs);
         }
 
-		if (cs->m_parentScript)
-		{
-			cs->BaseIP = 0; // don't delete BaseIP if child thread
-		}
-		for (auto childThread : cs->m_childScripts)
-		{
-			CScriptEngine::RemoveScript(childThread);
-		}
         if (cs == CustomMission)
         {
-            TRACE("Unregistering custom mission named '%s'", cs->GetName().c_str());
-            CustomMission->RemoveScriptFromList(activeThreadQueue);
-            ScriptsWaitingForDelete.push_back(cs);
-            CustomMission->SetActive(false);
             CustomMission = nullptr;
-            CTheScripts::bAlreadyRunningAMissionScript = false;
+            CTheScripts::bAlreadyRunningAMissionScript = false; // on_mission
+        }
+
+        if (cs->m_parentScript)
+        {
+            cs->BaseIP = 0; // don't delete BaseIP if child thread
+        }
+
+        for (auto childThread : cs->m_childScripts)
+        {
+            RemoveScript(childThread);
+        }
+
+        cs->SetActive(false);
+        cs->RemoveScriptFromList(activeThreadQueue);
+        CustomScripts.remove(cs);
+
+        if (cs->m_saveEnabled && !cs->IsMission())
+        {
+            TRACE("Stopping custom script named '%s'", cs->GetName().c_str());
+            InactiveScriptHashes.insert(cs->GetCodeChecksum());
         }
         else
         {
-            if (cs->m_saveEnabled)
-            {
-                InactiveScriptHashes.insert(cs->GetCodeChecksum());
-                TRACE("Stopping custom script named '%s'", cs->GetName().c_str());
-            }
-            else
-            {
-                TRACE("Unregistering custom script named '%s'", cs->GetName().c_str());
-                ScriptsWaitingForDelete.push_back(cs);
-            }
-
-            CustomScripts.remove(cs);
-            cs->RemoveScriptFromList(activeThreadQueue);
-            cs->SetActive(false);
-
-            /*if(!pScript->IsMission()) *MissionLoaded = false;
-            RemoveScriptFromQueue(pScript, activeThreadQueue);
-            AddScriptToQueue(pScript, inactiveThreadQueue);
-            StopScript(pScript);*/
+            TRACE("Unregistering custom %s named '%s'", cs->IsMission() ? "mission" : "script", cs->GetName().c_str());
+            ScriptsWaitingForDelete.push_back(cs);
         }
     }
 
@@ -1360,27 +1351,22 @@ namespace CLEO
     {
         TRACE("Unloading scripts...");
 
-        InactiveScriptHashes.clear();
-
-        UnregisterAllScripts();
-        CustomScripts.clear();
-
-        std::for_each(ScriptsWaitingForDelete.begin(), ScriptsWaitingForDelete.end(), [this](CCustomScript *cs) 
-        {
-            TRACE(" Deleting inactive script named '%s'", cs->GetName().c_str());
-            delete cs;
-        });
-        ScriptsWaitingForDelete.clear();
-
         if (CustomMission)
         {
-            TRACE(" Unregistering custom mission named '%s'", CustomMission->GetName().c_str());
-            CustomMission->RemoveScriptFromList(activeThreadQueue);
-            CustomMission->SetActive(false);
-            delete CustomMission;
-            CustomMission = nullptr;
-            CTheScripts::bAlreadyRunningAMissionScript = false;
+            RemoveCustomScript(CustomMission);
         }
+
+        while (!CustomScripts.empty())
+        {
+            RemoveCustomScript(CustomScripts.back());
+        }
+
+        for (auto& script : ScriptsWaitingForDelete)
+        {
+            TRACE(" Deleting inactive script named '%s'", script->GetName().c_str());
+            delete script;
+        }
+        ScriptsWaitingForDelete.clear();
     }
 
     void CScriptEngine::UnregisterAllCustomScripts()
