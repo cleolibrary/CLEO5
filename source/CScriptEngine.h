@@ -142,8 +142,10 @@ namespace CLEO
         void AddCustomScript(CCustomScript*);
         void RemoveScript(CRunningScript*); // native or custom
         void RemoveAllCustomScripts();
-        void UnregisterAllScripts();
-        void ReregisterAllScripts();
+
+        // remove/re-add to active scripts queue
+        void UnregisterAllCustomScripts();
+        void ReregisterAllCustomScripts();
 
         void DrawScriptStuff(char bBeforeFade);
 

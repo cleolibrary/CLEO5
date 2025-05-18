@@ -234,9 +234,9 @@ namespace CLEO
     {
         TRACE("Saving scripts save data...");
         CleoInstance.ScriptEngine.SaveState();
-        CleoInstance.ScriptEngine.UnregisterAllScripts();
+        CleoInstance.ScriptEngine.UnregisterAllCustomScripts();
         CTheScripts::Save();
-        CleoInstance.ScriptEngine.ReregisterAllScripts();
+        CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
     }
 
     struct CleoSafeHeader
@@ -1383,7 +1383,7 @@ namespace CLEO
         }
     }
 
-    void CScriptEngine::UnregisterAllScripts()
+    void CScriptEngine::UnregisterAllCustomScripts()
     {
         TRACE("Unregistering all custom scripts");
         std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
@@ -1393,7 +1393,7 @@ namespace CLEO
         });
     }
 
-    void CScriptEngine::ReregisterAllScripts()
+    void CScriptEngine::ReregisterAllCustomScripts()
     {
         TRACE("Reregistering all custom scripts");
         std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
