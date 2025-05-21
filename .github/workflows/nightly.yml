@@ -161,7 +161,7 @@ jobs:
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: test-${{ env.GITHUB_SHA }}
+          name: test-${{ github.ref_name }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
