@@ -154,15 +154,18 @@ jobs:
       #     filename: SA.CLEO_SDK-nightly.zip
       #     exclusions: "*.pdb *.exp"
 
-      - name: Store date
-        id: current_date
-        run: echo "a=123" >> "$GITHUB_OUTPUT"
+      - id: current_date
+        name: Store date
+        run: | 
+          echo "a=123" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
 
       - name: Upload Release
+        needs: current_date
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: test-${{ steps.current_date.outputs.a }}
+          name: test-${{ needs.current_date.outputs.a }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
