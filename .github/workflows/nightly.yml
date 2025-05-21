@@ -158,7 +158,6 @@ jobs:
         name: Store date
         run: | 
           echo "should_run=false" >> $GITHUB_OUTPUT
-          cat $GITHUB_OUTPUT
 
       - name: Upload Release
         uses: ncipollo/release-action@main
