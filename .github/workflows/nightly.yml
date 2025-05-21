@@ -3,6 +3,8 @@ name: Nightly Build
 on:
   schedule:
     - cron: "34 1 * * *" # Every day at 01:34 UTC
+  push:
+  workflow_dispatch:
 
 jobs:
   check_date:
@@ -152,11 +154,15 @@ jobs:
           filename: SA.CLEO_SDK-nightly.zip
           exclusions: "*.pdb *.exp"
 
+      - name: Store date
+        run: |
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: "Nightly Build"
+          name: Nightly Build - ${{ env.DATE }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
