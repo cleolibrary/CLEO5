@@ -154,16 +154,14 @@ jobs:
       #     filename: SA.CLEO_SDK-nightly.zip
       #     exclusions: "*.pdb *.exp"
 
-      - id: current_date
-        name: Store date
-        run: | 
-          echo "should_run=false" >> $GITHUB_OUTPUT
+      - id: step1
+        run: echo "test=hello" >> "$GITHUB_OUTPUT"
 
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: test-${{ steps.current_date.outputs.should_run }}
+          name: test-${{ steps.step1.outputs.test }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
