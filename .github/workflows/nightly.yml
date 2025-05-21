@@ -155,14 +155,14 @@ jobs:
           exclusions: "*.pdb *.exp"
 
       - name: Store date
-        run: |
-          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+        id: current-date
+        run: echo "DATE=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
 
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Nightly Build - "$DATE"
+          name: "Nightly Build - ${{ steps.current-date.outputs.DATE }}"
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
