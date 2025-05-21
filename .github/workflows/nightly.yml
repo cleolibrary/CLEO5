@@ -155,13 +155,13 @@ jobs:
       #     exclusions: "*.pdb *.exp"
 
       - id: step1
-        run: echo "test=hello" >> "$GITHUB_OUTPUT"
+        run: echo "DYNAMIC_VAR=dynamic" >> $GITHUB_ENV
 
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: test-${{ github.ref_name }}
+          name: test-${{ env.DYNAMIC_VAR }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
