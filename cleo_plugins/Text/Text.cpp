@@ -13,6 +13,7 @@
 using namespace CLEO;
 using namespace plugin;
 
+
 class Text
 {
 public:
@@ -78,6 +79,7 @@ public:
 
 		CLEO_RegisterCallback(eCallbackId::ScriptProcessBefore, OnScriptBeforeProcess);
 		CLEO_RegisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
+		CLEO_RegisterCallback(eCallbackId::ScriptUnregister, OnScriptUnregister);
 		CLEO_RegisterCallback(eCallbackId::ScriptDraw, OnScriptDraw);
 		
 		// install hooks
@@ -94,6 +96,7 @@ public:
 
 		CLEO_UnregisterCallback(eCallbackId::ScriptProcessBefore, OnScriptBeforeProcess);
 		CLEO_UnregisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
+		CLEO_UnregisterCallback(eCallbackId::ScriptUnregister, OnScriptUnregister);
 		CLEO_UnregisterCallback(eCallbackId::ScriptDraw, OnScriptDraw);
 		
 		patchCTextGet.Apply(); // undo hook
@@ -122,13 +125,18 @@ public:
 
 	static bool __stdcall OnScriptBeforeProcess(CLEO::CRunningScript* pScript)
 	{
-		scriptDrawing.BeginScriptProcessing(pScript);
+		scriptDrawing.ScriptProcessingBegin(pScript);
 		return true;
 	}
 
 	static void __stdcall OnScriptAfterProcess(CLEO::CRunningScript* pScript)
 	{
-		scriptDrawing.EndScriptProcessing(pScript);
+		scriptDrawing.ScriptProcessingEnd(pScript);
+	}
+
+	static void __stdcall OnScriptUnregister(CLEO::CRunningScript* pScript)
+	{
+		scriptDrawing.ScriptUnregister(pScript);
 	}
 
 	static void __stdcall OnScriptDraw(bool beforeFade)
@@ -501,7 +509,7 @@ public:
 		auto& draw = CTheScripts::IntroTextLines[CTheScripts::NumberOfIntroTextLinesThisFrame];
 		memcpy(&draw.xPosition, &posX, sizeof(draw.xPosition)); // invalid type in Plugin SDK. Just copy memory
 		memcpy(&draw.yPosition, &posY, sizeof(draw.yPosition));
-		strcpy_s(draw.gxtEntry, gxt);
+		strcpy_s(draw.text, gxt);
 
 		CTheScripts::NumberOfIntroTextLinesThisFrame++;
 
