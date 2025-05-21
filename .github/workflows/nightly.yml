@@ -157,14 +157,14 @@ jobs:
       - id: current_date
         name: Store date
         run: | 
-          echo "a=123" >> "$GITHUB_OUTPUT"
-          cat "$GITHUB_OUTPUT"
+          echo "should_run=false" >> $GITHUB_OUTPUT
+          cat $GITHUB_OUTPUT
 
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: test-${{ steps.current_date.outputs.a }}
+          name: test-${{ steps.current_date.outputs.should_run }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
