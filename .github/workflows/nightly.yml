@@ -156,7 +156,7 @@ jobs:
 
       - name: Store date
         id: current_date
-        run: echo 'a=123' >> $GITHUB_OUTPUT
+        run: echo "a=123" >> "$GITHUB_OUTPUT"
 
       - name: Upload Release
         uses: ncipollo/release-action@main
