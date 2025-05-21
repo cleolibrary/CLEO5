@@ -156,13 +156,13 @@ jobs:
 
       - name: Store date
         id: current-date
-        run: echo "SELECTED=1" >> "$GITHUB_OUTPUT"
+        run: echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ steps.current-date.outputs.SELECTED }}
+          name: ${{ steps.current-date.outputs.DATE }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
