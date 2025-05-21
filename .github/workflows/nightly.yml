@@ -158,6 +158,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: "Nightly Build"
           tag: "nightly"
+          body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
           artifacts: "SA.CLEO*.zip"
           allowUpdates: true
