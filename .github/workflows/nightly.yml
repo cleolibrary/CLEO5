@@ -161,11 +161,10 @@ jobs:
           cat "$GITHUB_OUTPUT"
 
       - name: Upload Release
-        needs: current_date
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: test-${{ needs.current_date.outputs.a }}
+          name: test-${{ steps.current_date.outputs.a }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
