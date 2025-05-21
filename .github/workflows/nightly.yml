@@ -162,7 +162,7 @@ jobs:
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: Nightly Build - ${{ env.DATE }}
+          name: Nightly Build - "$DATE"
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
