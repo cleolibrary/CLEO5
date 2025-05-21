@@ -3,8 +3,6 @@ name: Nightly Build
 on:
   schedule:
     - cron: "34 1 * * *" # Every day at 01:34 UTC
-  push:
-  workflow_dispatch:
 
 jobs:
   check_date:
