@@ -154,14 +154,17 @@ jobs:
       #     filename: SA.CLEO_SDK-nightly.zip
       #     exclusions: "*.pdb *.exp"
 
-      - id: step1
-        run: echo "DYNAMIC_VAR=dynamic" >> $GITHUB_ENV
+      - name: Test1
+        id: t1
+        uses: Kaven-Universe/github-action-current-date-time@v1
+        with:
+          format: "YYYY-MM-DD"
 
       - name: Upload Release
         uses: ncipollo/release-action@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: test-${{ env.DYNAMIC_VAR }}
+          name: test-${{ steps.t1.outputs.time }}
           tag: "nightly"
           body: "[CHANGELOG](https://github.com/cleolibrary/CLEO5/compare/nightly...master)"
           prerelease: true
