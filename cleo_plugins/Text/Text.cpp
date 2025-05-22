@@ -577,7 +577,7 @@ public:
 
 		return OR_CONTINUE;
 	}
-} textInstance;
+} instance;
 
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
@@ -585,3 +585,10 @@ char Text::msgBuffLow[MAX_STR_LEN + 1];
 char Text::msgBuffHigh[MAX_STR_LEN + 1];
 char Text::msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
 WORD Text::genericLabelCounter;
+
+// exports
+
+extern "C" __declspec(dllexport) RwTexture * GetScriptTexture(CLEO::CRunningScript* script, DWORD slot)
+{
+	return instance.scriptDrawing.GetScriptTexture(script, slot);
+}

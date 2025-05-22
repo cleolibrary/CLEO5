@@ -63,3 +63,28 @@ void ScriptDrawing::Draw(bool beforeFade)
 
     m_globalDrawingState.Apply();
 }
+
+RwTexture* ScriptDrawing::GetScriptTexture(CLEO::CRunningScript* script, DWORD slot)
+{
+    if (script == nullptr || slot == 0 || slot > _countof(CTheScripts::ScriptSprites))
+    {
+        return nullptr; // invalid param
+    }
+    slot -= 1; // to 0-based index
+
+    if (script->IsCustom())
+    {
+        if (script == m_currCustomScript)
+        {
+            return CTheScripts::ScriptSprites[slot].m_pTexture;
+        }
+        else
+        {
+            return (m_scriptDrawingStates.find(script) != m_scriptDrawingStates.end()) ? CTheScripts::ScriptSprites[slot].m_pTexture : nullptr;
+        }
+    }
+    else
+    {
+        return (m_currCustomScript == nullptr) ? CTheScripts::ScriptSprites[slot].m_pTexture : m_globalDrawingState.sprites[slot].m_pTexture;
+    }
+}

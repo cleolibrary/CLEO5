@@ -3,7 +3,7 @@
 #include <array>
 
 
-class ScriptDrawsState
+struct ScriptDrawsState
 {
     eUseTextCommandState useTextCommands = eUseTextCommandState::DISABLED;
 
@@ -15,7 +15,6 @@ class ScriptDrawsState
 
     std::array<CSprite2d, _countof(CTheScripts::ScriptSprites)> sprites;
 
-public:
     ScriptDrawsState() = default;
     ScriptDrawsState(const ScriptDrawsState&) = delete; // no copying!
     ~ScriptDrawsState() = default;
@@ -74,4 +73,4 @@ public:
     {
         return useTextCommands == eUseTextCommandState::DISABLED || (!rectanglesCount && !textsCount);
     }
-}; 
+};

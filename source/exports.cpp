@@ -418,7 +418,19 @@ extern "C"
 
     DWORD WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
     {
-        return (DWORD)nullptr; // TODO: ask Text plugin for the texture
+        HMODULE textPlugin = GetModuleHandleA("SA.Text.cleo");
+        if (textPlugin == nullptr)
+        {
+            return (DWORD)nullptr;
+        }
+
+        auto GetScriptTexture = (RwTexture* (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
+        if (GetScriptTexture == nullptr)
+        {
+            return (DWORD)nullptr;
+        }
+
+        return (DWORD)GetScriptTexture(thread, id);
     }
 
     DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)

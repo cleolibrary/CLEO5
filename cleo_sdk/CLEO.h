@@ -534,7 +534,7 @@ CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript();
 CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex = 0); // can be called multiple times to find more scripts named threadName. resultIndex should be incremented until the method returns nullptr
 CRunningScript* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex = 0); // can be absolute, partial path or just filename
 
-DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // returns CSprite2d*
+DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // returns RwTexture*
 
 DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* unused, DWORD scriptAudioStreamHandle); // returns BASS' HSTREAM
 
