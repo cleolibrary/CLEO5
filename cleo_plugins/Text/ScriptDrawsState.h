@@ -71,6 +71,6 @@ struct ScriptDrawsState
 
     bool IsEmpty() const
     {
-        return useTextCommands == eUseTextCommandState::DISABLED || (!rectanglesCount && !textsCount);
+        return !rectanglesCount && !textsCount;
     }
 };
