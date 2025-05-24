@@ -125,6 +125,10 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CRect.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+    </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CGame.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
@@ -138,6 +142,14 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CModelInfo.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CSprite2d.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\RenderWare.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
@@ -167,6 +179,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     </ClCompile>
     <ClCompile Include="crc32.cpp" />
     <ClCompile Include="CTextManager.cpp" />
+    <ClCompile Include="ScriptDrawing.cpp" />
     <ClCompile Include="Text.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -174,6 +187,8 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="CTextManager.h" />
+    <ClInclude Include="ScriptDrawing.h" />
+    <ClInclude Include="ScriptDrawsState.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />

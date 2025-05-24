@@ -21,6 +21,11 @@ extern "C"
         return DetermineGameVersion();
     }
 
+    DWORD WINAPI CLEO_GetMemoryAddress(const char* name)
+    {
+        return CleoInstance.VersionManager.GetMemoryAddress(name).address;
+    }
+
     BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, CustomOpcodeHandler callback)
     {
         return CCustomOpcodeSystem::RegisterOpcode(opcode, callback);
@@ -413,12 +418,19 @@ extern "C"
 
     DWORD WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
     {
-        CCustomScript* customScript = reinterpret_cast<CCustomScript*>(thread);
-        // We need to store-restore to update the texture list, not optimized, but this will not be used every frame anyway
-        customScript->StoreScriptTextures();
-        RwTexture* texture = customScript->GetScriptTextureById(id - 1);
-        customScript->RestoreScriptTextures();
-        return (DWORD)texture;
+        HMODULE textPlugin = GetModuleHandleA("SA.Text.cleo");
+        if (textPlugin == nullptr)
+        {
+            return (DWORD)nullptr;
+        }
+
+        auto GetScriptTexture = (RwTexture* (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
+        if (GetScriptTexture == nullptr)
+        {
+            return (DWORD)nullptr;
+        }
+
+        return (DWORD)GetScriptTexture(thread, id);
     }
 
     DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)

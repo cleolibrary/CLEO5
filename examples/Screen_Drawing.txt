@@ -9,6 +9,11 @@ float screenPos[2]
 screenPos[0] = 320.0 // screen width is 640.0
 screenPos[1] = 224.0 // screen height is 448.0
 
+use_text_commands {state} true // enable drawing for this script
+
+load_texture_dictionary {name} "LD_DRV" // models\txd\LD_DRV.txd
+load_sprite {memorySlot} 1 {spriteName} "silver"
+
 while true
     wait {time} 0
     
@@ -70,7 +75,9 @@ while true
     int score = TimerA / 300
     
     // draw on screen
-    use_text_commands {state} true
+    
+    // sprite
+    draw_sprite {memorySlot} 1 {offset} 320.0 50.0 {width} 100.0 {height} 100.0 {rgb} 255 128 255 {alpha} 255
     
     // rectangle background
     draw_rect {pos} screenPos[0] screenPos[1] {size} 20.0 20.0 {rgb} 0x00 0x00 0x00 {alpha} 200
@@ -91,7 +98,7 @@ while true
     set_text_edge {size} 2 {rgb} 0 0 0 {alpha} 200
     set_text_centre {state} true
     set_text_centre_size {width} 640.0
-    display_text_formatted {pos} 320.0 20.0 {format} "Points: %d" {args} score    
+    display_text_formatted {pos} 320.0 20.0 {format} "Points: %d" {args} score
 end
 
-terminate_this_custom_script
+terminate_this_script
