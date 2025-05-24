@@ -277,7 +277,8 @@ public:
 		}
 		CLEO_SkipUnusedVarArgs(thread); // and var args terminator
 
-		*readCount = sscanf_s(src, format,
+		#pragma warning(suppress: 4996) // sscanf_s would expect additional arg after each %s arg
+		*readCount = sscanf(src, format,
 			outputParams[0], outputParams[1], outputParams[2], outputParams[3], outputParams[4], outputParams[5],
 			outputParams[6], outputParams[7], outputParams[8], outputParams[9], outputParams[10], outputParams[11],
 			outputParams[12], outputParams[13], outputParams[14], outputParams[15], outputParams[16], outputParams[17],
