@@ -75,8 +75,6 @@ public:
 		CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
 		CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
 
-		CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
-
 		CLEO_RegisterCallback(eCallbackId::ScriptProcessBefore, OnScriptBeforeProcess);
 		CLEO_RegisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
 		CLEO_RegisterCallback(eCallbackId::ScriptUnregister, OnScriptUnregister);
@@ -91,8 +89,6 @@ public:
 		CLEO_UnregisterCallback(eCallbackId::GameBegin, OnGameBegin);
 		CLEO_UnregisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
 		CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
-
-		CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
 
 		CLEO_UnregisterCallback(eCallbackId::ScriptProcessBefore, OnScriptBeforeProcess);
 		CLEO_UnregisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
@@ -115,12 +111,6 @@ public:
 	static void __stdcall OnGameEnd()
 	{
 		textManager.Clear();
-	}
-
-	static void __stdcall OnDrawingFinished()
-	{
-		// late initialization
-		scriptDrawing.Initialize();
 	}
 
 	static bool __stdcall OnScriptBeforeProcess(CLEO::CRunningScript* pScript)

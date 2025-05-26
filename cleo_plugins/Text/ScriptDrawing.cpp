@@ -1,19 +1,11 @@
 
 #include "ScriptDrawing.h"
 #include "CLEO_Utils.h"
+#include <CHud.h>
 #include <CTheScripts.h>
 
 using namespace CLEO;
 
-
-void ScriptDrawing::Initialize()
-{
-    if (m_initialized) return;
-
-    CHud__DrawScriptText_Orig = (void(__cdecl*)(bool))CLEO_GetMemoryAddress("CHud::DrawScriptText original");
-
-    m_initialized = true;
-}
 
 void ScriptDrawing::ScriptProcessingBegin(CLEO::CRunningScript* script)
 {
@@ -44,8 +36,6 @@ void ScriptDrawing::ScriptUnregister(CLEO::CRunningScript* script)
 
 void ScriptDrawing::Draw(bool beforeFade)
 {
-    if (!m_initialized) return;
-
     if (std::all_of(m_scriptDrawingStates.cbegin(), m_scriptDrawingStates.cend(), [](auto& p) { return p.second.IsEmpty(); }))
     {
         return; // no custom scripts with draws
@@ -58,7 +48,7 @@ void ScriptDrawing::Draw(bool beforeFade)
         if (state.IsEmpty()) continue;
 
         state.Apply();
-        CHud__DrawScriptText_Orig(beforeFade);
+        CHud::DrawScriptText(beforeFade);
     }
 
     m_globalDrawingState.Apply();

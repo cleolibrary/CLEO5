@@ -74,22 +74,4 @@ namespace CLEO
     {
         return MemoryAddresses[addrId][GetGameVersion()];
     }
-
-    memory_pointer CGameVersionManager::GetMemoryAddress(const char* name) const
-    {
-        memory_pointer result = memory_und;
-
-        if(_stricmp(name,"CHud::DrawScriptText original") == 0)
-        {
-            result = CScriptEngine::DrawScriptText_Orig;
-        }
-
-        if (result == memory_und)
-        {
-            LOG_WARNING(0, "Failed to get memory address of '%s' for current game version!", name);
-            return nullptr;
-        }
-
-        return result;
-    }
 }
