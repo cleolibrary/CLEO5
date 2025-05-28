@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\CCustomScript.cpp">
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CFont.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
@@ -124,6 +127,7 @@
     <ClInclude Include="cleo_sdk\CLEO_Utils.h" />
     <ClInclude Include="source\CCodeInjector.h" />
     <ClInclude Include="source\CCustomOpcodeSystem.h" />
+    <ClInclude Include="source\CCustomScript.h" />
     <ClInclude Include="source\CDebug.h" />
     <ClInclude Include="source\CDmaFix.h" />
     <ClInclude Include="source\CGameMenu.h" />
