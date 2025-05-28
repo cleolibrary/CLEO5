@@ -1194,9 +1194,6 @@ namespace CLEO
 
         bIsCustom = true;
         bIsMission = bUseMissionCleanup = bIsMiss;
-        m_useTextCommands = eUseTextCommandState::DISABLED;
-        m_numDraws = 0;
-        m_numTexts = 0;
 
         try
         {

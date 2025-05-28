@@ -18,14 +18,8 @@ namespace CLEO
         bool m_saveEnabled;
         bool m_ok;
         eCLEO_Version m_compatVer;
-        eUseTextCommandState m_useTextCommands;
-        int m_numDraws;
-        int m_numTexts;
         CCustomScript* m_parentScript;
         std::list<CCustomScript*> m_childScripts;
-        std::list<RwTexture*> m_scriptTextures;
-        std::vector<BYTE> m_scriptDraws;
-        std::vector<BYTE> m_scriptTexts;
 
         bool m_debugMode; // debug opcodes enabled
 
@@ -34,17 +28,6 @@ namespace CLEO
         std::string m_workDir;
 
     public:
-		inline RwTexture* GetScriptTextureById(unsigned int id)
-		{
-			if (m_scriptTextures.size() > id)
-			{
-				auto it = m_scriptTextures.begin();
-				std::advance(it, id);
-				return *it;
-			}
-			return nullptr;
-		}
-
         inline SCRIPT_VAR * GetVarsPtr() { return LocalVar; }
         inline bool IsOk() const { return m_ok; }
         inline DWORD GetCodeSize() const { return m_codeSize; }
