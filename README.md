@@ -27,6 +27,10 @@ CLEO itself does not replace any game file, however the following files and fold
 
 All plugins are optional, however they may be required by various CLEO scripts.
 
+Proper CLEO installation can be verified by existence of new text displayed in the bottom-left corner of game's main menu.
+CLEO library itself does not extend/modify gameplay from end user perspective, there is no such thing as "CLEO menu".
+New features are provided by user made scripts (called CLEO mods).
+
 ## CLEO Scripts
 
 CLEO allows the installation of 'CLEO scripts', which often use the extension '.cs'. These third-party scripts are entirely user-made and are in no way supported by the developers of this library. While CLEO itself should work in a wide range of game installations, individual scripts are known to have their own compatibility restrictions and can not be guaranteed to work.
@@ -41,6 +45,11 @@ CLEO scripts can be found on Grand Theft Auto fansites and modding sites such as
 CLEO is continually being improved and extended over time. In very rare circumstances, new major releases may break some older scripts. To fix this, CLEO provides a 'compatibility mode' to closely emulate behavior of previous versions and improve stability of old scripts. 
 - To run a script with maximum compatibility with 'CLEO 4', change the script extension from `.cs` to `.cs4`.
 - To run a script with maximum compatibility with 'CLEO 3', change the script extension from `.cs` to `.cs3`. 
+
+## Creating CLEO scripts
+
+- [CLEO scripting introduction](https://tutorial.sannybuilder.com/)
+- [Example CLEO5 scripts](https://github.com/cleolibrary/CLEO5/tree/master/examples)
 
 ## Credits
 

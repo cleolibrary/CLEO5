@@ -5,13 +5,13 @@
 
 script_name {name} 'colgrad'
 
-const Panel_Count = 120 // limit is 128 per script
-const Panel_Width = 5.2
+const Panel_Count = 48 // limit is 128 per script
+const Panel_Width = 13.0
 
 int lastPanelIdx = Panel_Count - 1
 int middleKeyIdx
 int colorStart[3] // red, green, blue
-int colormiddle[3] // red, green, blue
+int colorMiddle[3] // red, green, blue
 int colorEnd[3] // red, green, blue
 
 int iTmp
@@ -29,9 +29,9 @@ while true
         colorStart[1] = generate_random_int_in_range {min} 0x00 {max} 0xFF
         colorStart[2] = generate_random_int_in_range {min} 0x00 {max} 0xFF
         
-        colormiddle[0] = generate_random_int_in_range {min} 0x00 {max} 0xFF
-        colormiddle[1] = generate_random_int_in_range {min} 0x00 {max} 0xFF
-        colormiddle[2] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colorMiddle[0] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colorMiddle[1] = generate_random_int_in_range {min} 0x00 {max} 0xFF
+        colorMiddle[2] = generate_random_int_in_range {min} 0x00 {max} 0xFF
         
         colorEnd[0] = generate_random_int_in_range {min} 0x00 {max} 0xFF
         colorEnd[1] = generate_random_int_in_range {min} 0x00 {max} 0xFF
@@ -45,7 +45,7 @@ while true
     // draw on screen
     use_text_commands {state} true
         
-    float posX = 10.0 // start pos
+    float posX = 15.0 // start pos
     int i = 0
     while i < Panel_Count
         // select color
@@ -57,9 +57,9 @@ while true
                 color[2] = colorStart[2]
                 
             case middleKeyIdx // middle color
-                color[0] = colormiddle[0]
-                color[1] = colormiddle[1]
-                color[2] = colormiddle[2]
+                color[0] = colorMiddle[0]
+                color[1] = colorMiddle[1]
+                color[2] = colorMiddle[2]
                 
             case lastPanelIdx
                 color[0] = colorEnd[0]
@@ -76,9 +76,9 @@ while true
                     fTmp =# middleKeyIdx // total
                     progress /= fTmp // 0.0 - 1.0 range
                     
-                    color[0] = LERP_INT(colorStart[0], colormiddle[0], progress) // red
-                    color[1] = LERP_INT(colorStart[1], colormiddle[1], progress) // green
-                    color[2] = LERP_INT(colorStart[2], colormiddle[2], progress) // blue
+                    color[0] = LERP_INT(colorStart[0], colorMiddle[0], progress) // red
+                    color[1] = LERP_INT(colorStart[1], colorMiddle[1], progress) // green
+                    color[2] = LERP_INT(colorStart[2], colorMiddle[2], progress) // blue
                 else
                     // blending middle to end
                     iTmp = i - middleKeyIdx
@@ -89,9 +89,9 @@ while true
                     
                     progress /= fTmp // 0.0 - 1.0 range
                     
-                    color[0] = LERP_INT(colormiddle[0], colorEnd[0], progress) // red
-                    color[1] = LERP_INT(colormiddle[1], colorEnd[1], progress) // green
-                    color[2] = LERP_INT(colormiddle[2], colorEnd[2], progress) // blue
+                    color[0] = LERP_INT(colorMiddle[0], colorEnd[0], progress) // red
+                    color[1] = LERP_INT(colorMiddle[1], colorEnd[1], progress) // green
+                    color[2] = LERP_INT(colorMiddle[2], colorEnd[2], progress) // blue
                 end
         end
     
