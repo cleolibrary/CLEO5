@@ -202,8 +202,8 @@ namespace CLEO
             // update globals
             timeStep = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped); // delta in seconds
             masterSpeed = CTimer::ms_fTimeScale;
-            masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * AEAudioHardware.m_fEffectsFaderScalingFactor * 0.5f; // fit to game's sfx volume
-            masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * AEAudioHardware.m_fMusicFaderScalingFactor * 0.5f;
+            masterVolumeSfx = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
+            masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
 
             // prevent camera jump-cut glitches
             int skipFramePrev = skipFrame;
