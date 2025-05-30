@@ -29,7 +29,7 @@ All plugins are optional, however they may be required by various CLEO scripts.
 
 Proper CLEO installation can be verified by existence of new text displayed in the bottom-left corner of game's main menu.
 CLEO library itself does not extend/modify gameplay from end user perspective, there is no such thing as "CLEO menu".
-New features are provided by user made scripts (called CLEO mods).
+New features are provided by user made scripts (see CLEO Scripts).
 
 ## CLEO Scripts
 
@@ -46,7 +46,7 @@ CLEO is continually being improved and extended over time. In very rare circumst
 - To run a script with maximum compatibility with 'CLEO 4', change the script extension from `.cs` to `.cs4`.
 - To run a script with maximum compatibility with 'CLEO 3', change the script extension from `.cs` to `.cs3`. 
 
-## Creating CLEO scripts
+## Creating CLEO Scripts
 
 - [CLEO scripting introduction](https://tutorial.sannybuilder.com/)
 - [Example CLEO5 scripts](https://github.com/cleolibrary/CLEO5/tree/master/examples)
