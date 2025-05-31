@@ -1,7 +1,8 @@
 #include "CAudioStream.h"
 #include "CSoundSystem.h"
 #include "CLEO_Utils.h"
-#include "CCamera.h"
+#include <CAEAudioHardware.h>
+#include <CCamera.h>
 
 using namespace CLEO;
 
@@ -160,13 +161,13 @@ float CAudioStream::CalculateVolume()
         case SoundEffect: vol *= CSoundSystem::masterVolumeSfx; break;
         case Music: vol *= CSoundSystem::masterVolumeMusic; break;
         case UserInterface: vol *= CSoundSystem::masterVolumeSfx; break;
-        default: vol *= 1.0f; break;
     }
 
     // screen black fade
-    if (type != UserInterface && !TheCamera.m_bIgnoreFadingStuffForMusic)
+    switch (type)
     {
-        vol *= 1.0f - TheCamera.m_fFadeAlpha / 255.0f;
+        case SoundEffect: vol *= AEAudioHardware.m_fEffectsFaderScalingFactor; break;
+        case Music: vol *= AEAudioHardware.m_fMusicFaderScalingFactor; break;
     }
 
     // music volume lowering in cutscenes, when characters talk, mission sounds are played etc.
