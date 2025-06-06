@@ -62,6 +62,8 @@ namespace CLEO
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
 		handledParamCount = 0;
 
+		OpcodeResult result = OR_NONE;
+
 		// prevent past code execution
 		if (thread->IsCustom() && !IsLegacyScript(thread))
 		{
@@ -70,12 +72,12 @@ namespace CLEO
 			if ((BYTE*)lastOpcodePtr == endPos || (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
 			{
 				SHOW_ERROR_COMPAT("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				result = thread->Suspend();
+				goto customOpcodeHandler_executed;
 			}
 		}
 
 		// execute registered callbacks
-		OpcodeResult result = OR_NONE;
 		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcess))
 		{
 			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
@@ -90,14 +92,16 @@ namespace CLEO
 			if(opcode > LastCustomOpcode)
 			{
 				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				result = thread->Suspend();
+				goto customOpcodeHandler_executed;
 			}
 
 			CustomOpcodeHandler handler = customOpcodeProc[opcode];
 			if(handler != nullptr)
 			{
 				lastCustomOpcode = opcode;
-				return handler(thread);
+				result = handler(thread);
+				goto customOpcodeHandler_executed;
 			}
 
 			// Not registered as custom opcode. Call game's original handler
@@ -113,7 +117,8 @@ namespace CLEO
 					((CCustomScript*)thread)->GetInfoStr().c_str(), 
 					prevOpcode);
 
-				return thread->Suspend();
+				result = thread->Suspend();
+				goto customOpcodeHandler_executed;
 			}
 
 			size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
@@ -130,9 +135,12 @@ namespace CLEO
 					((CCustomScript*)thread)->GetInfoStr().c_str(), 
 					prevOpcode);
 
-				return thread->Suspend();
+				result = thread->Suspend();
+				goto customOpcodeHandler_executed;
 			}
 		}
+
+		customOpcodeHandler_executed:
 
 		// execute registered callbacks
 		OpcodeResult callbackResult = OR_NONE;
