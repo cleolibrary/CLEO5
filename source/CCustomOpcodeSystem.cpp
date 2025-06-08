@@ -79,6 +79,8 @@ namespace CLEO
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
 		handledParamCount = 0;
 
+		OpcodeResult result = OR_NONE;
+
 		// prevent past code execution
 		if (thread->IsCustom() && !IsLegacyScript(thread))
 		{
@@ -154,6 +156,8 @@ namespace CLEO
 				return AfterOpcodeExecuted();
 			}
 		}
+
+		customOpcodeHandler_executed:
 
 		return AfterOpcodeExecuted();
 	}
