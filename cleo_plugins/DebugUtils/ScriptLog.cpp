@@ -296,7 +296,11 @@ ScriptLog::ScriptLog()
 
     std::string path = CLEO_GetGameDirectory();
     path += "\\cleo\\.config\\sa.json";
-    m_opcodeDatabase.Load(path.c_str());
+    m_opcodeDatabase.LoadCommands(path.c_str());
+
+    path = CLEO_GetGameDirectory();
+    path += "\\cleo\\.config\\enums.txt";
+    m_opcodeDatabase.LoadEnums(path.c_str());
 
     // TODO: start file writer thread
 }
@@ -529,8 +533,10 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
         bool isGlobalVar = false;
         switch(paramInfo.type)
         {
-            case DT_END: dest += "ArgsEnd";
+            case DT_END:
                 hasVariable = true;
+                if (hasName) dest += ' ';
+                dest += "ArgsEnd";
                 break;
 
             case DT_VAR:
@@ -575,7 +581,44 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
         // pick presentation style according to param type declared in the mode
         switch (command->arguments[paramIdx].type)
         {
-            //case OpcodeInfoDatabase::CommandArgumentType::Other: // enum or class
+            case OpcodeInfoDatabase::CommandArgumentType::Other: // enum or class
+            {
+                auto e = m_opcodeDatabase.GetEnum(command->arguments[paramIdx].typeNameLower.c_str());
+                if (e)
+                {
+                    if (e->IsNumeric())
+                    {
+                        if (!IsImmString(paramInfo.type) && !IsVarString(paramInfo.type))
+                        {
+                            auto entry = e->GetEntryName(paramInfo.value.nParam);
+                            if (entry)
+                            {
+                                dest += e->name;
+                                dest += '.';
+                                dest += entry;
+                            }
+                            else
+                                paramInfo.ValueToString(dest); // print according to param type in script
+                        }
+                        else
+                            paramInfo.ValueToString(dest); // print according to param type in script
+                    }
+                    else // text enums
+                    {
+                        auto entry = e->GetEntryName(std::string(paramInfo.GetText()).c_str());
+                        if (entry)
+                        {
+                            dest += e->name;
+                            dest += '.';
+                            dest += entry;
+                        }
+                        else
+                            paramInfo.ValueToString(dest); // print according to param type in script
+                    }
+                }
+                break;
+            }
+
             //case OpcodeInfoDatabase::CommandArgumentType::Any:
             //case OpcodeInfoDatabase::CommandArgumentType::Arguments:
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -32,6 +33,7 @@ public:
 		std::string name = "?";
 		CommandArgumentType type = CommandArgumentType::Any;
 		std::string typeName = "any";
+		std::string typeNameLower = "any"; // same but lower case
 		std::string source = "any"; // any, any_var, etc.
 	};
 
@@ -54,9 +56,22 @@ public:
 		bool NameEqual(const char* name) const { return _strcmpi(name, this->name.c_str()) == 0; }
 	};
 
+	struct Enum
+	{
+		std::string name = "?";
+		std::map<int, std::string> valuesNum; // num value - name
+		std::map<std::string, std::string> valuesTxt; // txt value - name
+
+		bool IsNumeric() const { return valuesTxt.empty(); }
+		bool IsEmpty() const { return valuesNum.empty() && valuesTxt.empty(); }
+		const char* GetEntryName(int key) const { return valuesNum.count(key) ? valuesNum.at(key).c_str() : nullptr; }
+		const char* GetEntryName(const char* key) const { return valuesTxt.count(key) ? valuesTxt.at(key).c_str() : nullptr; }
+	};
+
 	OpcodeInfoDatabase() = default;
 
-	bool Load(const char* filepath);
+	bool LoadCommands(const char* filepath); // mode json file
+	bool LoadEnums(const char* filepath); // enums.txt file
 
 	bool HasCommand(uint16_t opcode) const;
 	bool HasCommand(const char* name) const;
@@ -74,8 +89,12 @@ public:
 
 	std::string GetExtensionMissingMessage(uint16_t opcode) const; // extension "x" missing message if known, empty text otherwise
 
+	bool HasEnum(const char* name) const; // lower case enum name
+	const Enum* GetEnum(const char* name) const; // lower case enum name
+
 private:
 	std::unordered_map<uint16_t, Command> m_commands;
+	std::unordered_map<std::string, Enum> m_enums;
 
 	static CommandArgumentType TypeFromName(const std::string_view& name);
 };

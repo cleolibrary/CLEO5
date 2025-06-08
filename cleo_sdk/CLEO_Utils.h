@@ -220,6 +220,33 @@ namespace CLEO
         std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
     }
 
+    // remove whitespaces prefixing the string
+    static void StringTrimLeft(std::string& str)
+    {
+        auto it = std::find_if(str.begin(), str.end(), [](char c) 
+        {
+            return !std::isspace<char>(c, std::locale::classic());
+        });
+        str.erase(str.begin(), it);
+    }
+
+    // remove whitespaces after the string
+    static void StringTrimRight(std::string& str)
+    {
+        auto it = std::find_if(str.rbegin(), str.rend(), [](char c) 
+        {
+            return !std::isspace<char>(c, std::locale::classic());
+        });
+        str.erase(it.base(), str.end());
+    }
+
+    // remove whitespaces before and after the string
+    static void StringTrim(std::string& str)
+    {
+        StringTrimRight(str);
+        StringTrimLeft(str);
+    }
+
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
     {
         std::string info(1024, '\0');

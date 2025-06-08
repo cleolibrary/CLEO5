@@ -1,12 +1,13 @@
 #include "stdafx.h"
 #include "OpcodeInfoDatabase.h"
 #include <algorithm>
+#include <fstream>
 
 
 using namespace std;
 using namespace simdjson;
 
-bool OpcodeInfoDatabase::Load(const char* filepath)
+bool OpcodeInfoDatabase::LoadCommands(const char* filepath)
 {
 	m_commands.clear();
 
@@ -130,6 +131,8 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 							if (!p["type"].get_c_str().get(argType))
 							{
 								arg.typeName = argType;
+								arg.typeNameLower = argType;
+								CLEO::StringToLower(arg.typeNameLower);
 								arg.type = TypeFromName(arg.typeName);
 							}
 
@@ -137,7 +140,7 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 							if (!p["source"].get_c_str().get(argSource))
 							{
 								arg.source = argSource;
-								std::transform(arg.source.begin(), arg.source.end(), arg.source.begin(), [](unsigned char c) { return tolower(c); });
+								CLEO::StringToLower(arg.source);
 							}
 						}
 					}
@@ -148,7 +151,137 @@ bool OpcodeInfoDatabase::Load(const char* filepath)
 		}
 	}
 
-	TRACE("Opcodes database version %s loaded from '%s'", version, filepath);
+	TRACE("Commands database version %s loaded from '%s'", version, filepath);
+	return true;
+}
+
+bool OpcodeInfoDatabase::LoadEnums(const char* filepath)
+{
+	m_enums.clear();
+
+	std::ifstream file(filepath, std::ios::in);
+	if (!file.is_open())
+	{
+		TRACE("Failed to open enums database '%s' file", filepath);
+		return false;
+	}
+
+	bool inEnum = false;
+	Enum currEnum;
+	std::string line;
+	size_t lineCount = 0;
+	while (std::getline(file, line))
+	{
+		lineCount++;
+
+		CLEO::StringTrim(line);
+
+		if (line.empty()) continue;
+
+		if (!inEnum)
+		{
+			if (CLEO::StringStartsWith(line, "enum ", false))
+			{
+				currEnum = Enum();
+				currEnum.name = line.c_str() + 5; // + strlen("enum ")
+
+				inEnum = true;
+				continue;
+			}
+			else
+			{
+				TRACE("Failed to parse enums database '%s' file. Unexpected keyword in line %d", filepath, lineCount);
+				return false;
+			}
+		}
+		else
+		{
+			if (CLEO::StringStartsWith(line, "enum ", false))
+			{
+				TRACE("Failed to parse enums database '%s' file. Unexpected 'enum' keyword in line %d", filepath, lineCount);
+				return false;
+			}
+
+			if (_stricmp(line.c_str(), "end") == 0)
+			{
+				if (!currEnum.valuesNum.empty() && !currEnum.valuesTxt.empty())
+				{
+					TRACE("Failed to parse enums database '%s' file. Enum with mixed data type in line %d", filepath, lineCount);
+					return false;
+				}
+
+				if (!currEnum.IsEmpty())
+				{
+					auto name = currEnum.name;
+					CLEO::StringToLower(name);
+					m_enums.emplace(std::move(name), std::move(currEnum));
+				}
+
+				inEnum = false;
+				continue;
+			}
+
+			std::vector<std::string> elements;
+			CLEO::StringSplit(line, "=", elements);
+			if (elements.size() > 2)
+			{
+				TRACE("Failed to parse enums database '%s' file. Too many '=' characters in line %d", filepath, lineCount);
+				return false;
+			}
+
+			std::string& name = elements[0];
+			std::string value = elements.size() > 1 ? elements[1] : "";
+
+			if (value.find_first_not_of("-0123456789") != std::string::npos)
+			{
+				if (value.front() != '"' || value.back() != '"')
+				{
+					TRACE("Failed to parse enums database '%s' file. Invalid format of value in line %d", filepath, lineCount);
+					return false;
+				}
+				value.pop_back();
+				value.erase(0, 1);
+				currEnum.valuesTxt.emplace(std::move(value), std::move(name));
+			}
+			else // numeric or empty
+			{
+				int numValue;
+				if (value.empty())
+				{
+					if (currEnum.valuesNum.empty()) numValue = 0;
+					else numValue = std::prev(currEnum.valuesNum.end())->first + 1; // value of last entry + 1
+				}
+				else
+				{
+					char* end;
+					long i = strtol(value.c_str(), &end, 10);
+
+					if (i > std::numeric_limits<int>::max() || i < std::numeric_limits<int>::min())
+					{
+						TRACE("Failed to parse enums database '%s' file. Numeric value out of range in line %d", filepath, lineCount);
+						return false;
+					}
+
+					if (end != value.c_str() + value.length())
+					{
+						TRACE("Failed to parse enums database '%s' file. Unexpected character in numeric value in line %d", filepath, lineCount);
+						return false;
+					}
+
+					numValue = (int)i;
+				}
+
+				if (currEnum.valuesNum.count(numValue) != 0)
+				{
+					continue; // do not store duplicates
+				}
+
+				currEnum.valuesNum.emplace(numValue, std::move(name));
+			}
+		}
+	}
+
+	TRACE("Enums database loaded from '%s'", filepath);
 	return true;
 }
 
@@ -225,6 +358,16 @@ std::string OpcodeInfoDatabase::GetExtensionMissingMessage(uint16_t opcode) cons
 	}
 
 	return CLEO::StringPrintf("CLEO extension plugin \"%s\" is missing!", extensionName);
+}
+
+bool OpcodeInfoDatabase::HasEnum(const char* name) const
+{
+	return m_enums.count(name);
+}
+
+const OpcodeInfoDatabase::Enum* OpcodeInfoDatabase::GetEnum(const char* name) const
+{
+	return HasEnum(name) ? &m_enums.at(name) : nullptr;
 }
 
 OpcodeInfoDatabase::CommandArgumentType OpcodeInfoDatabase::TypeFromName(const std::string_view& name)
