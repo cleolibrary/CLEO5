@@ -431,10 +431,10 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         auto cleoStack = CLEO_GetScriptCleoStackSize(script);
         if (cleoStack || script->SP)
         {
-            LogFormattedLine("%s\tCall Stacks depth - gosub: %d, cleo_call: %d",
+            LogFormattedLine("%s\tCall Stacks depth - cleo_call: %d, gosub: %d",
                 m_processingGame ? "\t" : "", // block indentation
-                cleoStack, 
-                script->SP);
+                script->SP,
+                cleoStack);
         }
 
         // 'wait' in progress?
