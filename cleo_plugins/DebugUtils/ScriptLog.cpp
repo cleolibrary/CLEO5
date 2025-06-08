@@ -910,7 +910,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result)
 {
     if (state == LoggingState::Disabled) return result;
-    if (logCustomScriptsOnly || !script->IsCustom()) return result;
+    if (logCustomScriptsOnly && !script->IsCustom()) return result;
     
     auto command = m_opcodeDatabase.GetCommand((uint16_t)opcode);
     if (!command) return result;
