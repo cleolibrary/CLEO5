@@ -55,14 +55,29 @@ namespace CLEO
 	// opcode handler for custom opcodes
 	OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript *thread, int dummy, WORD opcode)
 	{
+		OpcodeResult result = OR_NONE;
+
+		auto AfterOpcodeExecuted = [&]()
+		{
+			// execute registered callbacks
+			OpcodeResult callbackResult = OR_NONE;
+			for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessFinished))
+			{
+				typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
+				auto res = ((callback*)func)(thread, opcode, result);
+
+				callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
+			}
+
+			return (callbackResult != OR_NONE) ? callbackResult : result;
+		};
+
 		prevOpcode = lastOpcode;
 
 		lastScript = thread;
 		lastOpcode = opcode;
 		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
 		handledParamCount = 0;
-
-		OpcodeResult result = OR_NONE;
 
 		// prevent past code execution
 		if (thread->IsCustom() && !IsLegacyScript(thread))
@@ -73,7 +88,7 @@ namespace CLEO
 			{
 				SHOW_ERROR_COMPAT("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
 				result = thread->Suspend();
-				goto customOpcodeHandler_executed;
+				return AfterOpcodeExecuted();
 			}
 		}
 
@@ -93,7 +108,7 @@ namespace CLEO
 			{
 				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
 				result = thread->Suspend();
-				goto customOpcodeHandler_executed;
+				return AfterOpcodeExecuted();
 			}
 
 			CustomOpcodeHandler handler = customOpcodeProc[opcode];
@@ -101,7 +116,7 @@ namespace CLEO
 			{
 				lastCustomOpcode = opcode;
 				result = handler(thread);
-				goto customOpcodeHandler_executed;
+				return AfterOpcodeExecuted();
 			}
 
 			// Not registered as custom opcode. Call game's original handler
@@ -118,7 +133,7 @@ namespace CLEO
 					prevOpcode);
 
 				result = thread->Suspend();
-				goto customOpcodeHandler_executed;
+				return AfterOpcodeExecuted();
 			}
 
 			size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
@@ -136,23 +151,11 @@ namespace CLEO
 					prevOpcode);
 
 				result = thread->Suspend();
-				goto customOpcodeHandler_executed;
+				return AfterOpcodeExecuted();
 			}
 		}
 
-		customOpcodeHandler_executed:
-
-		// execute registered callbacks
-		OpcodeResult callbackResult = OR_NONE;
-		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessFinished))
-		{
-			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
-			auto res = ((callback*)func)(thread, opcode, result);
-
-			callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
-		}
-
-		return (callbackResult != OR_NONE) ? callbackResult : result;
+		return AfterOpcodeExecuted();
 	}
 
 	void CCustomOpcodeSystem::FinalizeScriptObjects()
