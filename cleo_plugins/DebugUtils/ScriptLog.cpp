@@ -427,6 +427,17 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             script->IsCustom() ? "yes" : "no",
             script->IsMission() ? "yes" : "no");
 
+        // call stack info
+        auto cleoStack = CLEO_GetScriptCleoStackSize(script);
+        if (cleoStack || script->SP)
+        {
+            LogFormattedLine("%s\tCall Stacks depth - gosub: %d, cleo_call: %d",
+                m_processingGame ? "\t" : "", // block indentation
+                cleoStack, 
+                script->SP);
+        }
+
+        // 'wait' in progress?
         if (CTimer::m_snTimeInMilliseconds < script->WakeTime)
         {
             auto pause = script->WakeTime - CTimer::m_snTimeInMilliseconds;
@@ -815,15 +826,9 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
         }
         auto offset = currPos - sizeof(WORD) - base; // command opcode was already consumed
 
-        auto len = line.length();
-        StringAppendPrintf(line, "{%d}", offset);
-
-        // pad to constant width
-        len = line.length() - len;
-        if (len < 4) line += '\t';
-        if (len < 8) line += '\t';
-        if (len < 12) line += '\t';
-        if (len >= 12) line += ' ';
+        auto digits = offset <= 0 ? 1 : (int)(log10(offset) + 1);
+        for (int i = 7 - digits; i > 0; i--) line += ' '; // pad to constant width
+        StringAppendPrintf(line, "{%d}   ", offset);
     }
 
     // command opcode
