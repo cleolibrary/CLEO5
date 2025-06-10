@@ -123,6 +123,9 @@
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CRunningScript.cpp">
       <Filter>third_party\plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="source\CCustomScript.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -190,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="third-party\simdjson\simdjson.h">
       <Filter>third_party\simdjson</Filter>
+    </ClInclude>
+    <ClInclude Include="source\CCustomScript.h">
+      <Filter>source\core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
