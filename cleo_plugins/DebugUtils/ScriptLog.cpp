@@ -15,7 +15,7 @@ using namespace CLEO;
 
 ScriptLog* ScriptLog::g_Instance = nullptr;
 
-CLEO::SCRIPT_VAR& GetScriptVar(CLEO::CRunningScript* script, bool global, size_t index)
+CLEO::SCRIPT_VAR* GetScriptVar(CLEO::CRunningScript* script, bool global, size_t index)
 {
     SCRIPT_VAR* vars;
     if (global)
@@ -23,7 +23,7 @@ CLEO::SCRIPT_VAR& GetScriptVar(CLEO::CRunningScript* script, bool global, size_t
     else
         vars = script->IsMission() ? (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission : script->LocalVar;
 
-    return vars[index];
+    return &vars[index];
 }
 
 struct ScriptParamInfo
@@ -58,7 +58,7 @@ struct ScriptParamInfo
             arraySize = script->ReadDataArraySize();
             arrayFlags = script->ReadDataArrayFlags();
 
-            if (arrayFlags * ADTF_INDEX_GLOBAL) arrayIndexVar /= 4; // stored as byte offset
+            if (arrayFlags & ADTF_INDEX_GLOBAL) arrayIndexVar /= 4; // stored as byte offset
         }
         else if (IsVariable(type) || IsVarString(type))
         {
@@ -136,14 +136,24 @@ struct ScriptParamInfo
             case DT_LVAR_STRING:
             case DT_LVAR_STRING_ARRAY:
             {
-                auto& var = GetScriptVar(script, isGlobalVar, varIndex + arrayIndexVar * varStride);
+                SCRIPT_VAR* var;
+                if (arrayType == ADT_NONE)
+                {
+                    var = GetScriptVar(script, isGlobalVar, varIndex);
+                }
+                else
+                {
+                    auto idxVar = GetScriptVar(script, arrayFlags & ADTF_INDEX_GLOBAL, arrayIndexVar);
+                    var = GetScriptVar(script, isGlobalVar, varIndex + idxVar->nParam * varStride);
+                }
+
                 if (IsVarString(type))
                 {
-                    value.pParam = &var; // store pointer to variable contents
+                    value.pParam = var; // store pointer to variable contents
                     stringLen = strnlen(value.pcParam, varStride * sizeof(SCRIPT_VAR));
                 }
                 else
-                    value = var;
+                    value = *var;
             }
             break;
         }
@@ -232,7 +242,7 @@ struct ScriptParamInfo
 
             // float
             case DT_FLOAT:
-                StringAppendPrintf(dest, "%f", value.fParam);
+                StringAppendPrintf(dest, "%g", value.fParam);
                 break;
 
             // short string
@@ -565,12 +575,21 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                         paramInfo.arrayIndexVar);
 
                     StringAppendPrintf(dest,
-                        paramInfo.arrayFlags & ADTF_INDEX_GLOBAL ? "[ $%d(%d) ]" : "[ %d@(%d) ]",
-                        paramInfo.arrayIndexVar,
-                        idxVar.dwParam);
+                        abs(idxVar->nParam) >= MinValidAddress ? "[ %s%d%s(0x%X) ]" : "[ %s%d%s(%d) ]",
+                        paramInfo.arrayFlags & ADTF_INDEX_GLOBAL ? "$" : "", // global var prefix
+                        paramInfo.arrayIndexVar, // index variable
+                        paramInfo.arrayFlags & ADTF_INDEX_GLOBAL ? "" : "@", // local var suffix
+                        idxVar->nParam); // index value
                 }
                 break;
         }
+    }
+
+    // no value to print
+    switch (paramInfo.type)
+    {
+        case DT_END:
+            logValue = false;
     }
 
     if (logValue)
@@ -616,6 +635,10 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                             paramInfo.ValueToString(dest); // print according to param type in script
                     }
                 }
+                else // class or unknown enum
+                {
+                    paramInfo.ValueToString(dest); // print according to param type in script
+                }
                 break;
             }
 
@@ -632,7 +655,7 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::Float:
-                StringAppendPrintf(dest, "%f", paramInfo.value.fParam);
+                StringAppendPrintf(dest, "%g", paramInfo.value.fParam);
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::GxtKey:
@@ -971,6 +994,7 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
     // print return values
     if (command->arguments.size() > command->inputArguments || command->isCondition)
     {
+        if (line.rfind(" // ") == std::string::npos) line += " //";
         line += " --> ";
 
         if (command->isCondition)
