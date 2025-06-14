@@ -89,16 +89,37 @@ namespace CLEO
         va_list args;
 
         va_start(args, format);
-        auto len = std::vsnprintf(nullptr, 0, format, args) + 1;
+        auto len = std::vsnprintf(nullptr, 0, format, args);
         va_end(args);
 
-        std::string result(len, '\0');
+        if (len <= 0) return {}; // empty or encoding error
+
+        std::string result;
+        result.resize(len);
 
         va_start(args, format);
-        std::vsnprintf(result.data(), result.length(), format, args);
+        std::vsnprintf(result.data(), result.length() + 1, format, args);
         va_end(args);
 
         return result;
+    }
+
+    static void StringAppendPrintf(std::string& dest, const char* format, ...)
+    {
+        va_list args;
+
+        va_start(args, format);
+        auto len = std::vsnprintf(nullptr, 0, format, args);
+        va_end(args);
+
+        if (len <= 0) return; // empty or encoding error
+
+        size_t oriSize = dest.size();
+        dest.resize(dest.size() + len);
+
+        va_start(args, format);
+        std::vsnprintf(dest.data() + oriSize, len + 1, format, args);
+        va_end(args);
     }
 
     static bool StringStartsWith(const std::string_view str, const std::string_view prefix, bool caseSensitive = true)
@@ -197,6 +218,33 @@ namespace CLEO
     static void StringToLower(std::string& str)
     {
         std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
+    }
+
+    // remove whitespaces prefixing the string
+    static void StringTrimLeft(std::string& str)
+    {
+        auto it = std::find_if(str.begin(), str.end(), [](char c) 
+        {
+            return !std::isspace<char>(c, std::locale::classic());
+        });
+        str.erase(str.begin(), it);
+    }
+
+    // remove whitespaces after the string
+    static void StringTrimRight(std::string& str)
+    {
+        auto it = std::find_if(str.rbegin(), str.rend(), [](char c) 
+        {
+            return !std::isspace<char>(c, std::locale::classic());
+        });
+        str.erase(it.base(), str.end());
+    }
+
+    // remove whitespaces before and after the string
+    static void StringTrim(std::string& str)
+    {
+        StringTrimRight(str);
+        StringTrimLeft(str);
     }
 
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
