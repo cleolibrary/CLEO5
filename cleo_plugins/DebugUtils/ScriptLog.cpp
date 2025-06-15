@@ -8,6 +8,7 @@
 #include <CTheScripts.h>
 #include <CTimer.h>
 #include <memory>
+#include <sstream>
 #include <string>
 
 using namespace CLEO;
@@ -294,8 +295,8 @@ ScriptLog::ScriptLog()
     assert(g_Instance == nullptr);
     g_Instance = this;
 
-    m_logBuffer = new std::deque<std::string>();
-    m_logFileBuffer = new std::deque<std::string>();
+    m_logBuffer = new std::ostringstream();
+    m_logFileBuffer = new std::ostringstream();
 
     m_logFilePath = CLEO_GetGameDirectory();
     m_logFilePath += "\\cleo\\.cleo_script_log.xml";
@@ -483,27 +484,29 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
 void ScriptLog::LogLine(const char* line)
 {
     // TODO: thread lock
-    m_logBuffer->push_back(line);
+    *m_logBuffer << std::endl << line;
     // TODO: thread unlock
 }
 
-void ScriptLog::LogLine(std::string&& line)
+void ScriptLog::LogLine(const std::string& line)
 {
     // TODO: thread lock
-    m_logBuffer->push_back(std::move(line));
+    *m_logBuffer << std::endl << line;
     // TODO: thread unlock
 }
 
 void ScriptLog::LogLineAppend(const char* line)
 {
     // TODO: thread lock
-    if (m_logBuffer->empty()) m_logBuffer->push_back({});
-    m_logBuffer->back().append(line);
+    *m_logBuffer << line;
     // TODO: thread unlock
 }
 
 void ScriptLog::LogFormattedLine(const char* format, ...)
 {
+    static std::string line; // keep for performance
+    line.clear();
+
     va_list args;
 
     va_start(args, format);
@@ -512,14 +515,13 @@ void ScriptLog::LogFormattedLine(const char* format, ...)
 
     if (len <= 0) return; // empty or encoding error
 
-    std::string line;
     line.resize(len);
 
     va_start(args, format);
     std::vsnprintf(line.data(), len + 1, format, args);
     va_end(args);
 
-    LogLine(std::move(line));
+    LogLine(line);
 }
 
 void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue) const
@@ -720,7 +722,7 @@ void ScriptLog::LogWriteFile()
     std::swap(m_logBuffer, m_logFileBuffer);
     // unlock
 
-    if (m_logFileBuffer->empty())
+    if (m_logFileBuffer->tellp() == 0) // empty
     {
         return;
     }
@@ -738,11 +740,8 @@ void ScriptLog::LogWriteFile()
 
     if (m_logFile.is_open())
     {
-        for (auto& line : *m_logFileBuffer)
-        {
-            m_logFile << line << std::endl;
-        }
-
+        m_logFile << m_logFileBuffer << std::endl;
+        m_logFileBuffer->clear();
         fileSize = (size_t)m_logFile.tellp();
         m_logFile.close();
         m_logFile.clear(); // clear flags
@@ -810,7 +809,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
         }
     }
 
-    LogFormattedLine(""); // separator
+    LogLine(""); // separator
 }
 
 void ScriptLog::OnGameProcessBefore()
@@ -882,6 +881,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     auto oriIP = script->CurrentIP;
 
     static std::string line; // keep for performance
+    line.clear();
     //line.reserve(128);
 
     if (m_processingGame) line += '\t'; // game processing block indentation
@@ -941,7 +941,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     {
         line += "command_";
         StringAppendHex(line, opcode, 4);
-        LogLine(std::move(line));
+        LogLine(line);
         return OR_NONE;
     }
 
@@ -992,7 +992,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
         }
     }
 
-    LogLine(std::move(line));
+    LogLine(line);
 
     script->CurrentIP = oriIP; // restore original position
     m_prevCommand = (WORD)opcode;

@@ -39,13 +39,13 @@ private:
     size_t m_currScriptCommandCount = 0;
     void SetCurrScript(CLEO::CRunningScript* script);
     
-    std::deque<std::string>* m_logBuffer;
-    std::deque<std::string>* m_logFileBuffer;
+    std::ostringstream* m_logBuffer;
+    std::ostringstream* m_logFileBuffer;
     std::string m_logFilePath;
     std::ofstream m_logFile;
 
     void LogLine(const char* line);
-    void LogLine(std::string&& line);
+    void LogLine(const std::string& line);
     void LogFormattedLine(const char* format, ...); // slow
     void LogLineAppend(const char* line); // extend last log line
     void LogLineAppendNum(DWORD number, int padLen = 0); // extend last log line
