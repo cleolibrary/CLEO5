@@ -122,6 +122,59 @@ namespace CLEO
         va_end(args);
     }
 
+    static void StringAppendNum(std::string& dest, int number, int padLen = 0)
+    {
+        static const char digits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+        char buff[16];
+
+        if (number < 0)
+        {
+            dest.push_back('-');
+            padLen--;
+            number = -number;
+        }
+
+        int i = 0;
+        do
+        {
+            buff[i] = digits[number % 10];
+            number /= 10;
+            i++;
+            padLen--;
+        } while (number != 0 || padLen > 0);
+
+        dest.reserve(dest.length() + i);
+        while (i > 0)
+        {
+            i--;
+            dest.push_back(buff[i]);
+        }
+    }
+
+    static void StringAppendHex(std::string& dest, DWORD number, int padLen = 0)
+    {
+        static const char digits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        char buff[16];
+
+        int i = 0;
+        do
+        {
+            buff[i] = digits[number & 0xF];
+            number >>= 4; // 4 bits peer hex digit
+            i++;
+            padLen--;
+        } while (number != 0 || padLen > 0);
+
+        // TODO: thread lock
+
+        dest.reserve(dest.length() + i);
+        while (i > 0)
+        {
+            i--;
+            dest.push_back(buff[i]);
+        }
+    }
+
     static bool StringStartsWith(const std::string_view str, const std::string_view prefix, bool caseSensitive = true)
     {
         if (str.length() < prefix.length())

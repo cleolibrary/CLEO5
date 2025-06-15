@@ -3,7 +3,7 @@
 #include "OpcodeInfoDatabase.h" // from CLEO core
 #include <ctime>
 #include <fstream>
-#include <list>
+#include <deque>
 #include <string>
 
 
@@ -39,14 +39,17 @@ private:
     size_t m_currScriptCommandCount = 0;
     void SetCurrScript(CLEO::CRunningScript* script);
     
-    std::list<std::string>* m_logBuffer;
-    std::list<std::string>* m_logFileBuffer;
+    std::deque<std::string>* m_logBuffer;
+    std::deque<std::string>* m_logFileBuffer;
     std::string m_logFilePath;
     std::ofstream m_logFile;
 
     void LogLine(const char* line);
-    void LogFormattedLine(const char* format, ...);
+    void LogLine(std::string&& line);
+    void LogFormattedLine(const char* format, ...); // slow
     void LogLineAppend(const char* line); // extend last log line
+    void LogLineAppendNum(DWORD number, int padLen = 0); // extend last log line
+    void LogLineAppendHex(DWORD number, int padLen = 0); // extend last log line
     void LogScriptParam(std::string& dest, CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue) const;
     void LogWriteFile();
 

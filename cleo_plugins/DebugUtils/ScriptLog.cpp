@@ -235,9 +235,13 @@ struct ScriptParamInfo
             case DT_BYTE:
             case DT_WORD:
             case DT_DWORD:
-                StringAppendPrintf(dest,
-                    abs(value.nParam) >= MinValidAddress ? "0x%X" : "%d",
-                        value.nParam);
+                if (abs(value.nParam) >= MinValidAddress)
+                {
+                    dest += "0x";
+                    StringAppendHex(dest, value.nParam);
+                }
+                else
+                    StringAppendNum(dest, value.nParam);
                 break;
 
             // float
@@ -273,9 +277,13 @@ struct ScriptParamInfo
             case DT_LVAR:
             case DT_VAR_ARRAY:
             case DT_LVAR_ARRAY:
-                StringAppendPrintf(dest,
-                    abs(value.nParam) >= MinValidAddress ? "0x%X" : "%d",
-                    value.nParam);
+                if (abs(value.nParam) >= MinValidAddress)
+                {
+                    dest += "0x";
+                    StringAppendHex(dest, value.nParam);
+                }
+                else
+                    StringAppendNum(dest, value.nParam);
                 break;
         }
     }
@@ -286,8 +294,8 @@ ScriptLog::ScriptLog()
     assert(g_Instance == nullptr);
     g_Instance = this;
 
-    m_logBuffer = new std::list<std::string>();
-    m_logFileBuffer = new std::list<std::string>();
+    m_logBuffer = new std::deque<std::string>();
+    m_logFileBuffer = new std::deque<std::string>();
 
     m_logFilePath = CLEO_GetGameDirectory();
     m_logFilePath += "\\cleo\\.cleo_script_log.xml";
@@ -475,13 +483,22 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
 void ScriptLog::LogLine(const char* line)
 {
     // TODO: thread lock
-    auto& str = m_logBuffer->emplace_back(line);
+    m_logBuffer->push_back(line);
+    // TODO: thread unlock
+}
 
-    // strip tailling whitechars
-    while (!str.empty() && (str.back() == ' ' || str.back() == '\t'))
-    {
-        str.pop_back();
-    }
+void ScriptLog::LogLine(std::string&& line)
+{
+    // TODO: thread lock
+    m_logBuffer->push_back(std::move(line));
+    // TODO: thread unlock
+}
+
+void ScriptLog::LogLineAppend(const char* line)
+{
+    // TODO: thread lock
+    if (m_logBuffer->empty()) m_logBuffer->push_back({});
+    m_logBuffer->back().append(line);
     // TODO: thread unlock
 }
 
@@ -499,26 +516,10 @@ void ScriptLog::LogFormattedLine(const char* format, ...)
     line.resize(len);
 
     va_start(args, format);
-    std::vsnprintf(line.data(), line.length() + 1, format, args);
+    std::vsnprintf(line.data(), len + 1, format, args);
     va_end(args);
 
-    // strip tailling whitechars
-    while (!line.empty() && (line.back() == ' ' || line.back() == '\t'))
-    {
-        line.pop_back();
-    }
-
-    // TODO: thread lock
-    m_logBuffer->push_back(std::move(line));
-    // TODO: thread unlock
-}
-
-void ScriptLog::LogLineAppend(const char* line)
-{
-    // TODO: thread lock
-    if (m_logBuffer->empty()) m_logBuffer->emplace_back();
-    m_logBuffer->back().append(line);
-    // TODO: thread unlock
+    LogLine(std::move(line));
 }
 
 void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue) const
@@ -566,7 +567,9 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
             case DT_LVAR_STRING_ARRAY:
                 hasVariable = true;
                 if (hasName) dest += ' ';
-                StringAppendPrintf(dest, isGlobalVar ? "$%d" : "%d@", paramInfo.varIndex);
+                if (isGlobalVar) dest += '$';
+                StringAppendNum(dest, paramInfo.varIndex);
+                if (!isGlobalVar) dest += '@';
 
                 if (paramInfo.arrayType != eArrayDataType::ADT_NONE)
                 {
@@ -574,12 +577,19 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                         paramInfo.arrayFlags & ADTF_INDEX_GLOBAL,
                         paramInfo.arrayIndexVar);
 
-                    StringAppendPrintf(dest,
-                        abs(idxVar->nParam) >= MinValidAddress ? "[ %s%d%s(0x%X) ]" : "[ %s%d%s(%d) ]",
-                        paramInfo.arrayFlags & ADTF_INDEX_GLOBAL ? "$" : "", // global var prefix
-                        paramInfo.arrayIndexVar, // index variable
-                        paramInfo.arrayFlags & ADTF_INDEX_GLOBAL ? "" : "@", // local var suffix
-                        idxVar->nParam); // index value
+                    dest += "[ ";
+                    if (paramInfo.arrayFlags & ADTF_INDEX_GLOBAL) dest += '$';
+                    StringAppendNum(dest, paramInfo.arrayIndexVar);
+                    if ((paramInfo.arrayFlags & ADTF_INDEX_GLOBAL) == 0) dest += '@';
+                    dest += '(';
+                    if (abs(idxVar->nParam) >= MinValidAddress)
+                    {
+                        dest += "0x";
+                        StringAppendHex(dest, idxVar->dwParam);
+                    }
+                    else
+                        StringAppendNum(dest, idxVar->nParam);
+                    dest += ") ]";
                 }
                 break;
         }
@@ -650,7 +660,7 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                 {
                     case 0: dest += "false"; break;
                     case 1: dest += "true"; break;
-                    default: StringAppendPrintf(dest, "%d", paramInfo.value.nParam); break;
+                    default: StringAppendNum(dest, paramInfo.value.nParam); break;
                 }
                 break;
 
@@ -668,24 +678,30 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                 break;
             
             case OpcodeInfoDatabase::CommandArgumentType::Int:
-                StringAppendPrintf(dest,
-                    abs(paramInfo.value.nParam) >= MinValidAddress ? "0x%X" : "%d",
-                    paramInfo.value.nParam);
+                if (abs(paramInfo.value.nParam) >= MinValidAddress)
+                {
+                    dest += "0x";
+                    StringAppendHex(dest, paramInfo.value.nParam);
+                }
+                else
+                    StringAppendNum(dest, paramInfo.value.nParam);
                 break;
             
             case OpcodeInfoDatabase::CommandArgumentType::Label:
-                StringAppendPrintf(dest, "@LABEL_%d", abs(paramInfo.value.nParam));
+                dest += "@LABEL_";
+                StringAppendNum(dest, abs(paramInfo.value.nParam));
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::ModelAny:
             case OpcodeInfoDatabase::CommandArgumentType::ModelChar:
             case OpcodeInfoDatabase::CommandArgumentType::ModelObject:
             case OpcodeInfoDatabase::CommandArgumentType::ModelVehicle:
-                StringAppendPrintf(dest, "%d", paramInfo.value.nParam);
+                StringAppendNum(dest, abs(paramInfo.value.nParam));
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::ScriptId:
-                StringAppendPrintf(dest, "0x%X", paramInfo.value.dwParam);
+                dest += "0x";
+                StringAppendHex(dest, paramInfo.value.nParam);
                 break;
 
             default:
@@ -866,7 +882,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     auto oriIP = script->CurrentIP;
 
     static std::string line; // keep for performance
-    line.clear();
+    //line.reserve(128);
 
     if (m_processingGame) line += '\t'; // game processing block indentation
     if (m_currScript) line += '\t'; // script processing block indentation
@@ -894,13 +910,17 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
         auto digits = offset <= 0 ? 1 : (int)(log10(offset) + 1);
         for (int i = 7 - digits; i > 0; i--) line += ' '; // pad to constant width
-        StringAppendPrintf(line, "{%d}   ", offset);
+        line += '{';
+        StringAppendNum(line, offset);
+        line += "}   ";
     }
 
     // command opcode
     if (logOpcodes)
     {
-        StringAppendPrintf(line, "{%04X:} ", opcode | (script->NotFlag ? 0x8000 : 0));
+        line += '{';
+        StringAppendHex(line, opcode | (script->NotFlag ? 0x8000 : 0), 4);
+        line += ":} ";
     }
 
     // if block conditions indentation
@@ -919,8 +939,9 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
     if (command == nullptr) // not documented in database?
     {
-        StringAppendPrintf(line, "command_%04X", opcode);
-        LogLine(line.c_str());
+        line += "command_";
+        StringAppendHex(line, opcode, 4);
+        LogLine(std::move(line));
         return OR_NONE;
     }
 
@@ -955,10 +976,10 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     }
 
     // comments
-    std::list<std::string> comments;
+    std::deque<std::string> comments;
 
-    if (command->isNop) comments.emplace_back("NOP command");
-    if ((m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE) && !command->isCondition) comments.emplace_back("BUG: non-logical command!");
+    if (command->isNop) comments.push_back("NOP command");
+    if ((m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE) && !command->isCondition) comments.push_back("BUG: non-logical command!");
 
     if (!comments.empty())
     {
@@ -971,7 +992,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
         }
     }
 
-    LogLine(line.c_str());
+    LogLine(std::move(line));
 
     script->CurrentIP = oriIP; // restore original position
     m_prevCommand = (WORD)opcode;
@@ -994,7 +1015,6 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
     // print return values
     if (command->arguments.size() > command->inputArguments || command->isCondition)
     {
-        if (line.rfind(" // ") == std::string::npos) line += " //";
         line += " --> ";
 
         if (command->isCondition)
