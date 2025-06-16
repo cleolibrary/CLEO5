@@ -159,7 +159,7 @@ public:
 		// call original function
 		instance.m_patchCTextGet.Apply(); // restore original function code
 		result = text->Get(gxt);
-		instance.m_patchCTextGet = MemPatchJump(FUNC_CText__Get, &HOOK_CTextGet); // reinstall our hook
+		MemPatchJump(FUNC_CText__Get, &HOOK_CTextGet); // reinstall our hook
 
 		return result;
 	}
