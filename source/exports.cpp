@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CleoBase.h"
+#include "ScmFunction.h"
 
 
 namespace CLEO
@@ -139,6 +140,12 @@ extern "C"
     void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)
     {
         ThreadJump(thread, labelPtr);
+    }
+
+    DWORD WINAPI CLEO_GetScriptCleoStackSize(CRunningScript* thread)
+    {
+        ScmFunction* scmFunc = ScmFunction::Get(thread->GetScmFunction());
+        return scmFunc ? scmFunc->GetCallStackSize() : 0;
     }
 
     void WINAPI CLEO_TerminateScript(CLEO::CRunningScript* thread)

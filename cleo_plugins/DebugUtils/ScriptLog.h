@@ -1,37 +1,84 @@
 #pragma once
 #include "CLEO.h"
+#include "OpcodeInfoDatabase.h" // from CLEO core
 #include <ctime>
+#include <fstream>
+#include <deque>
+#include <string>
 
-struct ScriptLog
+
+class ScriptLog
 {
-    CRunningScript* thread = nullptr;
-    clock_t startTime = 0;
-    size_t commandCounter = 0;
+public:
+    ScriptLog();
+    ScriptLog(const ScriptLog&) = delete; // no copying!
+    ~ScriptLog();
 
-    void Begin(CRunningScript* thread)
-    {
-        this->thread = thread;
-        startTime = clock();
-        commandCounter = 0;
-    }
+    // stats
+    size_t CurrScriptCommandCount() const;
+    size_t CurrScriptElapsedSeconds() const;
 
-    void Clear()
-    {
-        thread = nullptr;
-        startTime = 0;
-        commandCounter = 0;
-    }
+    // config
+    void LoadConfig(bool reload = false);
 
-    void ProcessCommand(CRunningScript* thread)
-    {
-        if (this->thread != thread) Begin(thread);
+    enum LoggingState { Disabled, OnCrash, Full } state = OnCrash;
+    size_t maxFileSize = 100 * 1024 * 1024; // 100 MB
+    int logCustomScriptsOnly = false;
+    bool logOffsets = true;
+    bool logOpcodes = false;
 
-        commandCounter++;
-    }
+private:
+    const char* Script_Indent = "\t";
 
-    inline size_t GetElapsedSeconds() const
-    {
-        return (clock() - startTime) / CLOCKS_PER_SEC;
-    }
+    static ScriptLog* g_Instance;
+
+    OpcodeInfoDatabase m_opcodeDatabase;
+
+    CLEO::CRunningScript* m_currScript = nullptr;
+    clock_t m_currScriptStartTime = 0;
+    size_t m_currScriptCommandCount = 0;
+    void SetCurrScript(CLEO::CRunningScript* script);
+    
+    std::ostringstream* m_logBuffer;
+    std::ostringstream* m_logFileBuffer;
+    std::string m_logFilePath;
+    std::ofstream m_logFile;
+
+    void LogLine(const char* line);
+    void LogLine(const std::string& line);
+    void LogFormattedLine(const char* format, ...); // slow
+    void LogLineAppend(const char* line); // extend last log line
+    void LogLineAppendNum(DWORD number, int padLen = 0); // extend last log line
+    void LogLineAppendHex(DWORD number, int padLen = 0); // extend last log line
+    void LogScriptParam(std::string& dest, CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue) const;
+    void LogWriteFile();
+
+    bool m_processingGame = false;
+    WORD m_prevCommand = 0xFFFF;
+    
+    // event handlers
+    void OnGameBegin(DWORD saveSlot);
+    static void __stdcall callbackGameBegin(DWORD saveSlot) { g_Instance->OnGameBegin(saveSlot); };
+
+    void OnGameProcessBefore();
+    static void __stdcall callbackGameProcessBefore() { g_Instance->OnGameProcessBefore(); };
+
+    void OnGameProcessAfter();
+    static void __stdcall callbackGameProcessAfter() { g_Instance->OnGameProcessAfter(); };
+
+    bool OnScriptProcessBefore(CLEO::CRunningScript* script);
+    static bool __stdcall callbackScriptProcessBefore(CLEO::CRunningScript* script) { return g_Instance->OnScriptProcessBefore(script); };
+
+    void OnScriptProcessAfter(CLEO::CRunningScript* script);
+    static void __stdcall callbackScriptProcessAfter(CLEO::CRunningScript* script) { g_Instance->OnScriptProcessAfter(script); };
+
+    CLEO::OpcodeResult OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script, DWORD opcode);
+    static CLEO::OpcodeResult __stdcall callbackScriptOpcodeProcessBefore(CLEO::CRunningScript* script, DWORD opcode) { return g_Instance->OnScriptOpcodeProcessBefore(script, opcode); };
+
+    CLEO::OpcodeResult OnScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result);
+    static CLEO::OpcodeResult __stdcall callbackScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result) { return g_Instance->OnScriptOpcodeProcessAfter(script, opcode, result); };
+
+    void OnDrawingFinished();
+    static void __stdcall callbackDrawingFinished() { g_Instance->OnDrawingFinished(); };
 };
 
