@@ -474,7 +474,7 @@ namespace CLEO
             {
                 DWORD oldProtect;
                 VirtualProtect(address, buffer.size(), PAGE_EXECUTE_READWRITE, &oldProtect);
-                memcpy(buffer.data(), address, buffer.size());
+                memcpy(address, buffer.data(), buffer.size());
             }
         }
     };

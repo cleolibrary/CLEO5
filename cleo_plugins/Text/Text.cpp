@@ -16,6 +16,8 @@ using namespace plugin;
 
 class Text
 {
+	static constexpr size_t FUNC_CText__Get = 0x006A0050; // FUNC_CText__Get from CText.cpp
+
 public:
 	static ScriptDrawing scriptDrawing;
 	static CTextManager textManager;
@@ -27,7 +29,8 @@ public:
 
 	static WORD genericLabelCounter;
 
-	MemPatch patchCTextGet;
+	bool m_initialized = false;
+	MemPatch m_patchCTextGet;
 
     Text()
     {
@@ -79,9 +82,7 @@ public:
 		CLEO_RegisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
 		CLEO_RegisterCallback(eCallbackId::ScriptUnregister, OnScriptUnregister);
 		CLEO_RegisterCallback(eCallbackId::ScriptDraw, OnScriptDraw);
-		
-		// install hooks
-		patchCTextGet = MemPatchJump(0x006A0050, &HOOK_CTextGet); // FUNC_CText__Get from CText.cpp
+		CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
 	}
 
 	~Text()
@@ -94,8 +95,9 @@ public:
 		CLEO_UnregisterCallback(eCallbackId::ScriptProcessAfter, OnScriptAfterProcess);
 		CLEO_UnregisterCallback(eCallbackId::ScriptUnregister, OnScriptUnregister);
 		CLEO_UnregisterCallback(eCallbackId::ScriptDraw, OnScriptDraw);
+		CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
 		
-		patchCTextGet.Apply(); // undo hook
+		m_patchCTextGet.Apply(); // undo hook
 	}
 
 	static void __stdcall OnGameBegin(DWORD saveSlot)
@@ -134,25 +136,32 @@ public:
 		scriptDrawing.Draw(beforeFade);
 	}
 
+	static void WINAPI OnDrawingFinished()
+	{
+		// late initialization
+		if (!instance.m_initialized)
+		{
+			instance.m_patchCTextGet = MemPatchJump(FUNC_CText__Get, &HOOK_CTextGet); // CText.Get(key)
+
+			instance.m_initialized = true;
+		}
+	}
+
 	// hook of game's CText::Get
 	static const char* __fastcall HOOK_CTextGet(CText* text, int dummy, const char* gxt)
 	{
 		if ((gxt[0] == '\0') || (gxt[0] == ' ')) return "";
 
+		// check CLEO's texts
 		auto result = Text::textManager.LocateFxt(gxt);
 		if (result != nullptr) return result;
 
-		bool found;
-		result = text->tkeyMain.GetTextByLabel(gxt, &found);
-		if (found) return result;
+		// call original function
+		instance.m_patchCTextGet.Apply(); // restore original function code
+		result = text->Get(gxt);
+		MemPatchJump(FUNC_CText__Get, &HOOK_CTextGet); // reinstall our hook
 
-		if (text->missionTableLoaded || CGame::bMissionPackGame || text->haveTabl)
-		{
-			result = text->tkeyMission.GetTextByLabel(gxt, &found);
-			if (found) return result;
-		}
-
-		return "";
+		return result;
 	}
 
 	//0ACA=1,show_text_box %1d%
