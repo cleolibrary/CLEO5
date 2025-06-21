@@ -1,0 +1,133 @@
+name: Release Preview
+
+on:
+  workflow_dispatch:
+  
+  push:
+    branches:
+      - master
+
+  create:
+    tags-ignore:
+      - preview
+    branches:
+      - master
+      
+  delete:
+    tags-ignore:
+      - preview
+    branches:
+      - master
+
+jobs:
+  Release_Preview:
+    runs-on: windows-2022
+    steps:
+      - name: Delete 'preview' release
+        uses: ClementTsang/delete-tag-and-release@v0.4.0
+        with:
+          tag_name: 'preview'
+          delete_release: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: "recursive"
+          
+      - name: Tag Custom build with current commit SHA
+        id: custom_build
+        run: node.exe .github/workflows/tag-custom-build.js
+
+      - name: Detect updates
+        shell: cmd
+        run: |
+          rem Find last tag
+          for /F %%i in ('git describe --tags --abbrev^=0') do (set tag=%%i)
+          if "%tag%"=="" (echo ::error::Last tag not found!& exit 1)
+          if "%tag%"=="preview" (for /F %%i in ('git describe --tags --abbrev^=0 preview^^^^') do set tag=%%i)
+          
+          rem Check for commits since the tag
+          for /F %%i in ('git rev-list %tag%..HEAD') do (set commit=%%i)
+          
+          if "%commit%"=="" (
+            echo ::notice::No changes since last release found.
+          ) else (
+            echo Preview build including new features waiting for release.  >>preview_changes.md
+            git show -s --date=format:^"Date: ```%%Y-%%m-%%d```  ^" --format=%%cd>>preview_changes.md
+            git show -s --format=^"Hash: ```%%h```  ^">>preview_changes.md
+            echo [**Download**]^(${{github.server_url}}/${{github.repository}}/releases/download/preview/SA.CLEO-v${{steps.custom_build.outputs.version}}-${{steps.custom_build.outputs.sha}}.zip^)  >>preview_changes.md
+            echo;>>preview_changes.md
+            echo ^<details^>>>preview_changes.md
+            echo   ^<summary^>Changes since %tag%^</summary^>>>preview_changes.md
+            echo;>>preview_changes.md
+            git show -s --format="  * %%s" %tag%..HEAD>>preview_changes.md
+            echo   [View commits]^(${{ github.server_url }}/${{ github.repository }}/compare/%tag%...preview^)>>preview_changes.md
+            echo;>>preview_changes.md
+            echo ^</details^>>>preview_changes.md
+          )
+          
+      - uses: actions/setup-node@v4
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        with:
+          node-version: lts/*
+        
+      - name: Configure msbuild
+        uses: microsoft/setup-msbuild@v2
+        
+      - name: Build CLEO Core
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        shell: cmd
+        run: |
+          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
+          msbuild -m CLEO5.sln /property:Configuration=Release /property:Platform=GTASA
+          
+      - name: Build CLEO Plugins
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        shell: cmd
+        run: |
+          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
+          msbuild -m cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86
+          
+      - name: Gather output files
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        id: prepare_archive
+        shell: cmd
+        run: |
+          @echo Create directories
+          mkdir .output\Release\cleo
+          mkdir .output\Release\cleo\.config
+          mkdir .output\Release\cleo\cleo_plugins
+
+          @echo Copy files
+          copy preview_changes.md .output\Release\CLEO5_Preview.md
+          copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
+          copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
+          copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
+          copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
+
+          @echo Download Sanny Builder Library json
+          curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
+          
+      - name: Pack archive
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: 'zip'
+          filename: 'SA.CLEO-v${{steps.custom_build.outputs.version}}-${{steps.custom_build.outputs.sha}}.zip'
+          directory: '.output/Release'
+          exclusions: '*.pdb *.exp *.lib'
+          custom: '-mm=Deflate -mfb=258 -mpass=15'
+          
+      - name: Create 'preview' release
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        uses: ncipollo/release-action@main
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: 'Next version preview'
+          tag: 'preview'
+          prerelease: true
+          bodyFile: 'preview_changes.md'
+          artifacts: '.output/Release/*.zip'
