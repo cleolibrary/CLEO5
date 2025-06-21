@@ -77,7 +77,6 @@ namespace CLEO
     extern void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     extern void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
     extern void(__thiscall * SetScriptParams)(CRunningScript *, int count);
-    extern void(__thiscall * SetScriptCondResult)(CRunningScript *, bool);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer1)(CRunningScript *);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
 

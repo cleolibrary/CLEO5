@@ -8,7 +8,6 @@ namespace CLEO
     DWORD FUNC_GetScriptParams;
     DWORD FUNC_TransmitScriptParams;
     DWORD FUNC_SetScriptParams;
-    DWORD FUNC_SetScriptCondResult;
     DWORD FUNC_GetScriptParamPointer1;
     DWORD FUNC_GetScriptParamPointer2;
 
@@ -16,7 +15,6 @@ namespace CLEO
     void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
     void(__thiscall * SetScriptParams)(CRunningScript *, int count);
-    void(__thiscall * SetScriptCondResult)(CRunningScript *, bool);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
 
@@ -65,16 +63,6 @@ namespace CLEO
         }
 
         CleoInstance.OpcodeSystem.handledParamCount += count;
-    }
-
-    void __fastcall _SetScriptCondResult(CRunningScript *pScript, int dummy, int val)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push val
-            call FUNC_SetScriptCondResult
-        }
     }
 
     SCRIPT_VAR * __fastcall _GetScriptParamPointer1(CRunningScript *pScript)
@@ -368,7 +356,6 @@ namespace CLEO
         FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
         FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
         FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
-        FUNC_SetScriptCondResult = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_COND_RESULT_FUNCTION);
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
@@ -376,7 +363,6 @@ namespace CLEO
         GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
         TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
         SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);
-        SetScriptCondResult = reinterpret_cast<void(__thiscall*)(CRunningScript*, bool)>(_SetScriptCondResult);
         GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR * (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR * (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
@@ -587,7 +573,7 @@ namespace CLEO
 
         // if "label == 0" then "script_name" need to be the file name
         auto cs = new CCustomScript(filename.c_str(), false, fromThread, label);
-        if (fromThread) SetScriptCondResult(fromThread, cs && cs->IsOk());
+        if (fromThread) fromThread->SetConditionResult(cs && cs->IsOk());
         if (cs && cs->IsOk())
         {
             AddCustomScript(cs);

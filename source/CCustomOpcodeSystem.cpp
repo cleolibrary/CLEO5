@@ -783,7 +783,7 @@ namespace CLEO
 	{
 		if (thread->SP == 0 && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
 		{
-			SetScriptCondResult(thread, false);
+			thread->SetConditionResult(false);
 			return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0051, thread, false); // try CLEO's function return
 		}
 
@@ -813,7 +813,7 @@ namespace CLEO
 		TRACE("[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), false, thread);
-		SetScriptCondResult(thread, cs && cs->IsOk());
+		thread->SetConditionResult(cs && cs->IsOk());
 		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
@@ -853,7 +853,7 @@ namespace CLEO
 		TRACE("[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
 		auto cs = new CCustomScript(filename.c_str(), true, thread);
-		SetScriptCondResult(thread, cs && cs->IsOk());
+		thread->SetConditionResult(cs && cs->IsOk());
 		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
@@ -921,7 +921,7 @@ namespace CLEO
 		SHORT(__stdcall * GTA_GetKeyState)(int nVirtKey) = memory_pointer(0x0081E64C); // use ingame function as GetKeyState might look like keylogger to some AV software
 		bool isDown = (GTA_GetKeyState(key) & 0x8000) != 0;
 
-		SetScriptCondResult(thread, isDown);
+		thread->SetConditionResult(isDown);
 		return OR_CONTINUE;
 	}
 
@@ -1158,11 +1158,11 @@ namespace CLEO
 		if (_strnicmp(_buff_text, CCheat::m_CheatString, len) == 0)
 		{
 			CCheat::m_CheatString[0] = '\0'; // consume the cheat
-			SetScriptCondResult(thread, true);
+			thread->SetConditionResult(true);
 			return OR_CONTINUE;
 		}
 
-		SetScriptCondResult(thread, false);
+		thread->SetConditionResult(false);
 		return OR_CONTINUE;
 	}
 
@@ -1201,7 +1201,7 @@ namespace CLEO
 
 		DWORD result; *thread >> result;
 		argCount--;
-		SetScriptCondResult(thread, result != 0);
+		thread->SetConditionResult(result != 0);
 
 		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2002, thread, true, argCount);
 	}
@@ -1216,7 +1216,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		SetScriptCondResult(thread, false);
+		thread->SetConditionResult(false);
 		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2003, thread);
 	}
 }

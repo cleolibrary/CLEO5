@@ -133,7 +133,7 @@ extern "C"
 
     void WINAPI CLEO_SetThreadCondResult(CLEO::CRunningScript* thread, BOOL result)
     {
-        SetScriptCondResult(thread, result != FALSE);
+        ((::CRunningScript*)thread)->UpdateCompareFlag(result != FALSE); // CRunningScript from Plugin SDK
     }
 
     void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)

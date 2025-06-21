@@ -326,131 +326,13 @@ typedef int SCRIPT_HANDLE;
 typedef SCRIPT_HANDLE HANDLE_ACTOR, ACTOR, HACTOR, PED, HPED, HANDLE_PED;
 typedef SCRIPT_HANDLE HANDLE_CAR, CAR, HCAR, VEHICLE, HVEHICLE, HANDLE_VEHICLE;
 typedef SCRIPT_HANDLE HANDLE_OBJECT, OBJECT, HOBJECT;
- 
-#pragma pack(push,1)
+
 #ifdef __cplusplus
-class CRunningScript
-{
-public:
+	class CRunningScript;
+	typedef class CRunningScript CScriptThread; // legacy alias
 #else
-struct CRunningScript
-{
-#endif
- 	CRunningScript* Next;		// 0x00 next script in queue
- 	CRunningScript* Previous;	// 0x04 previous script in queue
- 	char Name[8];				// 0x08 name of script, given by 03A4 opcode
- 	void* BaseIP;				// 0x10 pointer to begin of script in memory
- 	BYTE* CurrentIP;			// 0x14 current instruction pointer
- 	BYTE* Stack[8];				// 0x18 return stack for 0050, 0051
- 	WORD SP;					// 0x38 current item in stack
-	BYTE _pad3A[2];				// 0x3A padding
- 	SCRIPT_VAR LocalVar[32];	// 0x3C script's local variables
- 	DWORD Timers[2];			// 0xBC script's timers
- 	bool bIsActive;				// 0xC4 is script active
- 	bool bCondResult;			// 0xC5 condition result
- 	bool bUseMissionCleanup;	// 0xC6 clean mission
- 	bool bIsExternal;			// 0xC7 is thread external (from script.img)
- 	bool bTextBlockOverride;	// 0xC8
-	BYTE bExternalType;			// 0xC9
-	BYTE _padCA[2];				// 0xCA padding
- 	DWORD WakeTime;				// 0xCC time, when script starts again after 0001 opcode
- 	eLogicalOperation LogicalOp;// 0xD0 opcode 00D6 parameter
- 	bool NotFlag;				// 0xD2 opcode & 0x8000 != 0
- 	bool bWastedBustedCheck;	// 0xD3 wasted_or_busted check flag
- 	bool bWastedOrBusted;		// 0xD4 is player wasted or busted
-	char _padD5[3];				// 0xD5 padding
- 	void* SceneSkipIP;			// 0xD8 scene skip label ptr
- 	bool bIsMission;			// 0xDC is this script mission
-	WORD ScmFunction;			// 0xDD CLEO's previous scmFunction id
-	bool bIsCustom;				// 0xDF is this CLEO script
-
-#ifdef __cplusplus
-public:
-	CRunningScript()
-	{
-		strcpy_s(Name, "noname");
-		BaseIP = 0;
-		Previous = 0;
-		Next = 0;
-		CurrentIP = 0;
-		memset(Stack, 0, sizeof(Stack));
-		SP = 0;
-		WakeTime = 0;
-		bIsActive = 0;
-		bCondResult = 0;
-		bUseMissionCleanup = 0;
-		bIsExternal = 0;
-		bTextBlockOverride = 0;
-		bExternalType = -1;
-		memset(LocalVar, 0, sizeof(LocalVar));
-		LogicalOp = eLogicalOperation::NONE;
-		NotFlag = 0;
-		bWastedBustedCheck = 1;
-		bWastedOrBusted = 0;
-		SceneSkipIP = 0;
-		bIsMission = 0;
-		ScmFunction = 0;
-		bIsCustom = 0;
-	}
-
-	bool IsActive() const { return bIsActive; }
-	bool IsExternal() const { return bIsExternal; }
-	bool IsMission() const { return bIsMission; }
-	bool IsCustom() const { return bIsCustom; } // is this CLEO Script?
-	std::string GetName() const { auto str = std::string(Name, Name + 8); str.resize(strlen(str.c_str())); return str; } // make sure it is always null terminated
-	BYTE* GetBasePointer() const { return (BYTE*)BaseIP; }
-	BYTE* GetBytePointer() const { return CurrentIP; }
-	void SetIp(void* ip) { CurrentIP = (BYTE*)ip; }
-	void SetBaseIp(void* ip) { BaseIP = ip; }
-	CRunningScript* GetNext() const { return Next; }
-	CRunningScript* GetPrev() const { return Previous; }
-	void SetIsExternal(bool b) { bIsExternal = b; }
-	void SetActive(bool b) { bIsActive = b; }
-	OpcodeResult Suspend() { WakeTime = 0xFFFFFFFF; return OpcodeResult::OR_INTERRUPT; } // suspend script execution forever
-	void SetNext(CRunningScript* v) { Next = v; }
-	void SetPrev(CRunningScript* v) { Previous = v; }
-	SCRIPT_VAR* GetVarPtr() { return LocalVar; }
-	SCRIPT_VAR* GetVarPtr(int i) { return &LocalVar[i]; }
-	int* GetIntVarPtr(int i) { return (int*)&LocalVar[i].dwParam; }
-	int GetIntVar(int i) const { return LocalVar[i].dwParam; }
-	void SetIntVar(int i, int v) { LocalVar[i].dwParam = v; }
-	void SetFloatVar(int i, float v) { LocalVar[i].fParam = v; }
-	char GetByteVar(int i) const { return LocalVar[i].bParam; }
-	bool GetConditionResult() const { return bCondResult != 0; }
-	bool GetNotFlag() const { return NotFlag; }
-	void SetNotFlag(bool state) { NotFlag = state; }
-
-	eDataType PeekDataType() const { return *(eDataType*)CurrentIP; }
-	eArrayDataType PeekArrayDataType() const { BYTE t = *(CurrentIP + 1 + 2 + 2 + 1); t &= ArrayDataTypeMask; return (eArrayDataType) t; } // result valid only for array type params
-
-	eDataType ReadDataType() { return (eDataType)ReadDataByte(); }
-	short ReadDataVarIndex() { return ReadDataWord(); }
-	short ReadDataArrayOffset() { return ReadDataWord(); }
-	short ReadDataArrayIndex() { return ReadDataWord(); }
-	short ReadDataArraySize() { return ReadDataByte(); }
-	short ReadDataArrayFlags() { return ReadDataByte(); }
- 
-	void IncPtr(int n = 1) { CurrentIP += n; }
-	int ReadDataByte() { char b = *CurrentIP; ++CurrentIP; return b; }
-	short ReadDataWord() { short v = *(short*)CurrentIP; CurrentIP += 2; return v; }
-	int ReadDataInt() { int i = *(int*)CurrentIP; CurrentIP += 4; return i; }
-
-	void PushStack(BYTE* ptr) { Stack[SP++] = ptr; }
-	BYTE* PopStack() { return Stack[--SP]; }
-
-	WORD GetScmFunction() const { return ScmFunction; }
-	void SetScmFunction(WORD id) { ScmFunction = id; }
-
-#endif // __cplusplus
-};
-#pragma pack(pop)
-static_assert(sizeof(CRunningScript) == 0xE0, "Invalid size of CRunningScript!");
-
-// alias for legacy use
-#ifdef __cplusplus
-	typedef class CRunningScript CScriptThread;
-#else
-	typedef struct CRunningScript CScriptThread;
+	struct CRunningScript;
+	typedef struct CRunningScript CScriptThread; // legacy alias
 #endif
 
 typedef OpcodeResult (CALLBACK* _pOpcodeHandler)(CRunningScript*);
@@ -551,5 +433,125 @@ void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
 #ifdef __cplusplus
 }
 #endif	//__cplusplus
+
+#pragma pack(push,1)
+#ifdef __cplusplus
+class CRunningScript
+{
+public:
+#else
+struct CRunningScript
+{
+#endif
+	CRunningScript* Next;		// 0x00 next script in queue
+	CRunningScript* Previous;	// 0x04 previous script in queue
+	char Name[8];				// 0x08 name of script, given by 03A4 opcode
+	void* BaseIP;				// 0x10 pointer to begin of script in memory
+	BYTE* CurrentIP;			// 0x14 current instruction pointer
+	BYTE* Stack[8];				// 0x18 return stack for 0050, 0051
+	WORD SP;					// 0x38 current item in stack
+	BYTE _pad3A[2];				// 0x3A padding
+	SCRIPT_VAR LocalVar[32];	// 0x3C script's local variables
+	DWORD Timers[2];			// 0xBC script's timers
+	bool bIsActive;				// 0xC4 is script active
+	bool bCondResult;			// 0xC5 condition result. Use SetConditionResult to modify!
+	bool bUseMissionCleanup;	// 0xC6 clean mission
+	bool bIsExternal;			// 0xC7 is thread external (from script.img)
+	bool bTextBlockOverride;	// 0xC8
+	BYTE bExternalType;			// 0xC9
+	BYTE _padCA[2];				// 0xCA padding
+	DWORD WakeTime;				// 0xCC time, when script starts again after 0001 opcode
+	eLogicalOperation LogicalOp;// 0xD0 opcode 00D6 parameter
+	bool NotFlag;				// 0xD2 opcode & 0x8000 != 0
+	bool bWastedBustedCheck;	// 0xD3 wasted_or_busted check flag
+	bool bWastedOrBusted;		// 0xD4 is player wasted or busted
+	char _padD5[3];				// 0xD5 padding
+	void* SceneSkipIP;			// 0xD8 scene skip label ptr
+	bool bIsMission;			// 0xDC is this script mission
+	WORD ScmFunction;			// 0xDD CLEO's previous scmFunction id
+	bool bIsCustom;				// 0xDF is this CLEO script
+
+#ifdef __cplusplus
+public:
+	CRunningScript()
+	{
+		strcpy_s(Name, "noname");
+		BaseIP = 0;
+		Previous = 0;
+		Next = 0;
+		CurrentIP = 0;
+		memset(Stack, 0, sizeof(Stack));
+		SP = 0;
+		WakeTime = 0;
+		bIsActive = false;
+		bCondResult = false;
+		bUseMissionCleanup = false;
+		bIsExternal = false;
+		bTextBlockOverride = false;
+		bExternalType = -1;
+		memset(LocalVar, 0, sizeof(LocalVar));
+		LogicalOp = eLogicalOperation::NONE;
+		NotFlag = false;
+		bWastedBustedCheck = true;
+		bWastedOrBusted = false;
+		SceneSkipIP = 0;
+		bIsMission = false;
+		ScmFunction = 0;
+		bIsCustom = false;
+	}
+
+	bool IsActive() const { return bIsActive; }
+	bool IsExternal() const { return bIsExternal; }
+	bool IsMission() const { return bIsMission; }
+	bool IsCustom() const { return bIsCustom; } // is this CLEO Script?
+	std::string GetName() const { auto str = std::string(Name, Name + 8); str.resize(strlen(str.c_str())); return str; } // make sure it is always null terminated
+	BYTE* GetBasePointer() const { return (BYTE*)BaseIP; }
+	BYTE* GetBytePointer() const { return CurrentIP; }
+	void SetIp(void* ip) { CurrentIP = (BYTE*)ip; }
+	void SetBaseIp(void* ip) { BaseIP = ip; }
+	CRunningScript* GetNext() const { return Next; }
+	CRunningScript* GetPrev() const { return Previous; }
+	void SetIsExternal(bool b) { bIsExternal = b; }
+	void SetActive(bool b) { bIsActive = b; }
+	OpcodeResult Suspend() { WakeTime = 0xFFFFFFFF; return OpcodeResult::OR_INTERRUPT; } // suspend script execution forever
+	void SetNext(CRunningScript* v) { Next = v; }
+	void SetPrev(CRunningScript* v) { Previous = v; }
+	SCRIPT_VAR* GetVarPtr() { return LocalVar; }
+	SCRIPT_VAR* GetVarPtr(int i) { return &LocalVar[i]; }
+	int* GetIntVarPtr(int i) { return (int*)&LocalVar[i].dwParam; }
+	int GetIntVar(int i) const { return LocalVar[i].dwParam; }
+	void SetIntVar(int i, int v) { LocalVar[i].dwParam = v; }
+	void SetFloatVar(int i, float v) { LocalVar[i].fParam = v; }
+	char GetByteVar(int i) const { return LocalVar[i].bParam; }
+	bool GetConditionResult() const { return bCondResult != false; }
+	void SetConditionResult(bool result) { CLEO_SetThreadCondResult(this, result); }
+	bool GetNotFlag() const { return NotFlag; }
+	void SetNotFlag(bool state) { NotFlag = state; }
+
+	eDataType PeekDataType() const { return *(eDataType*)CurrentIP; }
+	eArrayDataType PeekArrayDataType() const { BYTE t = *(CurrentIP + 1 + 2 + 2 + 1); t &= ArrayDataTypeMask; return (eArrayDataType)t; } // result valid only for array type params
+
+	eDataType ReadDataType() { return (eDataType)ReadDataByte(); }
+	short ReadDataVarIndex() { return ReadDataWord(); }
+	short ReadDataArrayOffset() { return ReadDataWord(); }
+	short ReadDataArrayIndex() { return ReadDataWord(); }
+	short ReadDataArraySize() { return ReadDataByte(); }
+	short ReadDataArrayFlags() { return ReadDataByte(); }
+
+	void IncPtr(int n = 1) { CurrentIP += n; }
+	int ReadDataByte() { char b = *CurrentIP; ++CurrentIP; return b; }
+	short ReadDataWord() { short v = *(short*)CurrentIP; CurrentIP += 2; return v; }
+	int ReadDataInt() { int i = *(int*)CurrentIP; CurrentIP += 4; return i; }
+
+	void PushStack(BYTE* ptr) { Stack[SP++] = ptr; }
+	BYTE* PopStack() { return Stack[--SP]; }
+
+	WORD GetScmFunction() const { return ScmFunction; }
+	void SetScmFunction(WORD id) { ScmFunction = id; }
+
+#endif // __cplusplus
+};
+#pragma pack(pop)
+static_assert(sizeof(CRunningScript) == 0xE0, "Invalid size of CRunningScript!");
 
 } // CLEO namespace
