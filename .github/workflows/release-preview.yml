@@ -8,10 +8,14 @@ on:
       - master
 
   create:
+    tags-ignore:
+      - preview
     branches:
       - master
       
   delete:
+    tags-ignore:
+      - preview
     branches:
       - master
 
