@@ -327,13 +327,12 @@ typedef SCRIPT_HANDLE HANDLE_ACTOR, ACTOR, HACTOR, PED, HPED, HANDLE_PED;
 typedef SCRIPT_HANDLE HANDLE_CAR, CAR, HCAR, VEHICLE, HVEHICLE, HANDLE_VEHICLE;
 typedef SCRIPT_HANDLE HANDLE_OBJECT, OBJECT, HOBJECT;
 
-// alias for legacy use
 #ifdef __cplusplus
 	class CRunningScript;
-	typedef class CRunningScript CScriptThread;
+	typedef class CRunningScript CScriptThread; // legacy alias
 #else
 	struct CRunningScript;
-	typedef struct CRunningScript CScriptThread;
+	typedef struct CRunningScript CScriptThread; // legacy alias
 #endif
 
 typedef OpcodeResult (CALLBACK* _pOpcodeHandler)(CRunningScript*);
