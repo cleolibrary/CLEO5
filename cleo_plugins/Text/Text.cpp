@@ -8,6 +8,7 @@
 #include <CMessages.h>
 #include <CModelInfo.h>
 #include <CTheScripts.h>
+#include <CText.h>
 #include <shlwapi.h>
 
 using namespace CLEO;
@@ -16,8 +17,6 @@ using namespace plugin;
 
 class Text
 {
-	static constexpr size_t FUNC_CText__Get = 0x006A0050; // FUNC_CText__Get from CText.cpp
-
 public:
 	static ScriptDrawing scriptDrawing;
 	static CTextManager textManager;
@@ -141,7 +140,7 @@ public:
 		// late initialization
 		if (!instance.m_initialized)
 		{
-			instance.m_patchCTextGet = MemPatchJump(FUNC_CText__Get, &HOOK_CTextGet); // CText.Get(key)
+			instance.m_patchCTextGet = MemPatchJump(gaddrof(CText::Get), &HOOK_CTextGet);
 
 			instance.m_initialized = true;
 		}
@@ -159,7 +158,7 @@ public:
 		// call original function
 		instance.m_patchCTextGet.Apply(); // restore original function code
 		result = text->Get(gxt);
-		MemPatchJump(FUNC_CText__Get, &HOOK_CTextGet); // reinstall our hook
+		MemPatchJump(gaddrof(CText::Get), &HOOK_CTextGet); // reinstall our hook
 
 		return result;
 	}
