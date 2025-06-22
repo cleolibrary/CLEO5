@@ -10,20 +10,22 @@ Follow the instructions on the [release page](https://github.com/cleolibrary/CLE
 
 The ASI Loader replaces one original game file: `vorbisFile.dll` - be sure to make a backup of this file.
 CLEO itself does not replace any game file, however the following files and folders are added:
-- cleo.asi (core library)
-- cleo.log (main log file)
-- bass.dll (audio engine library)
-- cleo\\ (CLEO script directory)
-- cleo\\.config\\sa.json (opcodes info file)
-- cleo\\cleo_plugins\\SA.Audio.cleo (audio playback utilities powered by BASS.dll library)
-- cleo\\cleo_plugins\\SA.DebugUtils.cleo (script debugging utilities plugin)
-- cleo\\cleo_plugins\\SA.FileSystemOperations.cleo (disk drive files related operations plugin)
-- cleo\\cleo_plugins\\SA.IniFiles.cleo (.ini config files handling plugin)
-- cleo\\cleo_plugins\\SA.Math.cleo (additional math operations plugin)
-- cleo\\cleo_plugins\\SA.MemoryOperations.cleo (memory and .dll libraries utilities plugin)
-- cleo\\cleo_plugins\\SA.Text.cleo (text processing plugin)
-- cleo\\cleo_saves\\ (CLEO save directory)
-- cleo\\cleo_text\\ (CLEO text directory)
+- **cleo.asi** - core library
+- **cleo.log** - main log file
+- **bass.dll** - audio engine library
+- **cleo\\** - CLEO script `.cs` files directory
+- **cleo\\.cleo_config.ini** - CLEO configuration file
+- **cleo\\.config\\sa.json** - opcodes info file
+- **cleo\\cleo_plugins\\SA.Audio.cleo** - audio playback utilities powered by BASS.dll library
+- **cleo\\cleo_plugins\\SA.DebugUtils.cleo** - script debugging utilities plugin
+- **cleo\\cleo_plugins\\SA.FileSystemOperations.cleo** - disk drive files related operations plugin
+- **cleo\\cleo_plugins\\SA.GameEntities.cleo** - cars/peds/objects/pickups related utilities plugin
+- **cleo\\cleo_plugins\\SA.IniFiles.cleo** - .ini config files handling plugin
+- **cleo\\cleo_plugins\\SA.Math.cleo** - additional math operations plugin
+- **cleo\\cleo_plugins\\SA.MemoryOperations.cleo** - memory and .dll libraries utilities plugin
+- **cleo\\cleo_plugins\\SA.Text.cleo** - text processing and screen drawing plugin
+- **cleo\\cleo_saves\\** - CLEO save files directory
+- **cleo\\cleo_text\\** - CLEO text `.fxt` files directory
 
 All plugins are optional, however they may be required by various CLEO scripts.
 
@@ -33,7 +35,7 @@ New features are provided by user made scripts (see CLEO Scripts).
 
 ## CLEO Scripts
 
-CLEO allows the installation of 'CLEO scripts', which often use the extension '.cs'. These third-party scripts are entirely user-made and are in no way supported by the developers of this library. While CLEO itself should work in a wide range of game installations, individual scripts are known to have their own compatibility restrictions and can not be guaranteed to work.
+CLEO allows the installation of 'CLEO scripts', which often use the extension `.cs`. These third-party scripts are entirely user-made and are in no way supported by the developers of this library. While CLEO itself should work in a wide range of game installations, individual scripts are known to have their own compatibility restrictions and can not be guaranteed to work.
 CLEO scripts can be found on Grand Theft Auto fansites and modding sites such as:
 - https://libertycity.net/files/gta-san-andreas/mods/cleo-scripts/
 - https://www.gtainside.com/en/sanandreas/mods-322/

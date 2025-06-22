@@ -1,9 +1,14 @@
+## 5.0.4
+- fixed collision of GXT texts hook with SAMP and other mods
+- rewritten script drawing handling code. Logic moved from CLEO.asi to Text.cleo plugin
+- new CLEO plugin: GameEntities.cleo
+- fixed **0ADD ([spawn_vehicle_by_cheating](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ADD))** crashing when invalid model id was used
+
 ## 5.0.3
 - added GxtHook.cleo plugin to ignored list
 - fixed audio streams stopping when volume was set to 0.0
 - fixed audio streams potentially not starting to play if still decoding or downloading
 - volume of audio streams with type None and UserInterface no longer affected by screen fades
-- rewritten script drawing handling code. Logic moved from CLEO.asi to Text.cleo plugin
 
 ## 5.0.2
 - updated BASS library
