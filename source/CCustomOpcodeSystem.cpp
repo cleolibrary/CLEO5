@@ -61,7 +61,7 @@ namespace CLEO
 		{
 			// execute registered callbacks
 			OpcodeResult callbackResult = OR_NONE;
-			for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessFinished))
+			for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessAfter))
 			{
 				typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
 				auto res = ((callback*)func)(thread, opcode, result);
@@ -93,7 +93,7 @@ namespace CLEO
 		}
 
 		// execute registered callbacks
-		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcess))
+		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessBefore))
 		{
 			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
 			result = ((callback*)func)(thread, opcode);
