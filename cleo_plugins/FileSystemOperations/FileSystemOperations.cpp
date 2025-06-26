@@ -496,7 +496,7 @@ public:
     }
 
     // 0B00=1,  delete_file %1s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_DeleteFile(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_DeleteFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -552,7 +552,7 @@ public:
     }
 
     // 0B01=1, delete_directory %1s% with_all_files_and_subdirectories %2d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_DeleteDirectory(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_DeleteDirectory(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
         auto deleteContents = OPCODE_READ_PARAM_BOOL();
@@ -574,7 +574,7 @@ public:
     }
 
     // 0B02=2, move_file %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_MoveFile(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_MoveFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -594,7 +594,7 @@ public:
     }
 
     // 0B03=2, move_directory %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_MoveDir(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_MoveDir(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -614,7 +614,7 @@ public:
     }
 
     // 0B04=2, copy_file %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CopyFile(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_CopyFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -632,7 +632,7 @@ public:
     }
 
     // 0B05=2,  copy_directory %1d% to %2d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CopyDir(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_FS_CopyDir(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);

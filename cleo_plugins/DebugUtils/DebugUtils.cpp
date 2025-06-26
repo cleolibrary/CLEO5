@@ -22,9 +22,9 @@ public:
 
     struct PausedScriptInfo 
     { 
-        CScriptThread* ptr;
+        CRunningScript* ptr;
         std::string msg;
-        PausedScriptInfo(CScriptThread* ptr, const char* msg) : ptr(ptr), msg(msg) {}
+        PausedScriptInfo(CRunningScript* ptr, const char* msg) : ptr(ptr), msg(msg) {}
     };
     static std::deque<PausedScriptInfo> pausedScripts;
 
@@ -75,7 +75,7 @@ public:
         CLEO_RegisterCallback(eCallbackId::Log, OnLog);
         CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_RegisterCallback(eCallbackId::ScriptProcessBefore, OnScriptProcess);
-        CLEO_RegisterCallback(eCallbackId::ScriptOpcodeProcess, OnScriptOpcodeProcess);
+        CLEO_RegisterCallback(eCallbackId::ScriptOpcodeProcessBefore, OnScriptOpcodeProcessBefore);
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
     }
 
@@ -85,7 +85,7 @@ public:
         CLEO_UnregisterCallback(eCallbackId::Log, OnLog);
         CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
         CLEO_UnregisterCallback(eCallbackId::ScriptProcessBefore, OnScriptProcess);
-        CLEO_UnregisterCallback(eCallbackId::ScriptOpcodeProcess, OnScriptOpcodeProcess);
+        CLEO_UnregisterCallback(eCallbackId::ScriptOpcodeProcessBefore, OnScriptOpcodeProcessBefore);
         CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
     }
 
@@ -187,7 +187,7 @@ public:
         currScript.Clear(); // make sure current script log does not persists to next render frame
     }
 
-    static bool WINAPI OnScriptProcess(CScriptThread* thread)
+    static bool WINAPI OnScriptProcess(CRunningScript* thread)
     {
         currScript.Begin(thread);
 
@@ -202,7 +202,7 @@ public:
         return true;
     }
 
-    static OpcodeResult WINAPI OnScriptOpcodeProcess(CRunningScript* thread, DWORD opcode)
+    static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* thread, DWORD opcode)
     {
         currScript.ProcessCommand(thread);
 
@@ -244,7 +244,7 @@ public:
     // ---------------------------------------------- opcodes -------------------------------------------------
 
     // 00C3=0, debug_on
-    static OpcodeResult __stdcall Opcode_DebugOn(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_DebugOn(CRunningScript* thread)
     {
         CLEO_SetScriptDebugMode(thread, true);
 
@@ -252,7 +252,7 @@ public:
     }
 
     // 00C4=0, debug_off
-    static OpcodeResult __stdcall Opcode_DebugOff(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_DebugOff(CRunningScript* thread)
     {
         CLEO_SetScriptDebugMode(thread, false);
 
@@ -260,7 +260,7 @@ public:
     }
 
     // 2100=-1, breakpoint ...
-    static OpcodeResult __stdcall Opcode_Breakpoint(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_Breakpoint(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -308,7 +308,7 @@ public:
     }
 
     // 2101=-1, trace %1s% ...
-    static OpcodeResult __stdcall Opcode_Trace(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_Trace(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -324,7 +324,7 @@ public:
     }
 
     // 2102=-1, log_to_file %1s% timestamp %2d% text %3s% ...
-    static OpcodeResult __stdcall Opcode_LogToFile(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_LogToFile(CRunningScript* thread)
     {
         auto filestr = CLEO_ReadStringOpcodeParam(thread);
 
@@ -377,7 +377,7 @@ public:
     }
 
     // 0662=1, printstring %1s%
-    static OpcodeResult __stdcall Opcode_PrintString(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_PrintString(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -393,7 +393,7 @@ public:
     }
 
     // 0663=1, printint %1s% %2d%
-    static OpcodeResult __stdcall Opcode_PrintInt(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_PrintInt(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -412,7 +412,7 @@ public:
     }
 
     // 0664=1, printfloat %1s% %2f%
-    static OpcodeResult __stdcall Opcode_PrintFloat(CScriptThread* thread)
+    static OpcodeResult __stdcall Opcode_PrintFloat(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {

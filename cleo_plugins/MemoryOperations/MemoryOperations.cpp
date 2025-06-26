@@ -867,7 +867,7 @@ public:
     }
 
     //2404=1,get_script_struct_just_created %1d%
-    static OpcodeResult __stdcall opcode_2404(CLEO::CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2404(CLEO::CRunningScript* thread)
     {
         auto head = thread;
         while(head->Previous)
@@ -880,9 +880,9 @@ public:
     }
 
     //2405=1,  is_script_running %1d%
-    static OpcodeResult __stdcall opcode_2405(CLEO::CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2405(CLEO::CRunningScript* thread)
     {
-        auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_INT(); // allow invalid pointers too
+        auto address = (CLEO::CRunningScript*)OPCODE_READ_PARAM_INT(); // allow invalid pointers too
 
         auto running = CLEO_IsScriptRunning(address);
 
@@ -891,7 +891,7 @@ public:
     }
 
     //2406=1,  get_script_struct_from_filename %1s%
-    static OpcodeResult __stdcall opcode_2406(CLEO::CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2406(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(filename);
 
@@ -903,7 +903,7 @@ public:
     }
 
     //2407=3,  is_memory_equal address_a %1d% address_b %2d% size %d3%
-    static OpcodeResult __stdcall opcode_2407(CLEO::CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2407(CLEO::CRunningScript* thread)
     {
         auto addressA = OPCODE_READ_PARAM_PTR();
         auto addressB = OPCODE_READ_PARAM_PTR();
@@ -927,9 +927,9 @@ public:
     }
 
     //2408=1,terminate_script %1d%
-    static OpcodeResult __stdcall opcode_2408(CLEO::CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2408(CLEO::CRunningScript* thread)
     {
-        auto address = (CLEO::CScriptThread*)OPCODE_READ_PARAM_PTR();
+        auto address = (CLEO::CRunningScript*)OPCODE_READ_PARAM_PTR();
 
         CLEO_TerminateScript(address);
 
