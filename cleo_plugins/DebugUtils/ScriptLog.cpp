@@ -363,11 +363,11 @@ size_t ScriptLog::CurrScriptElapsedSeconds() const
     return (clock() - m_currScriptStartTime) / CLOCKS_PER_SEC;
 }
 
-void ScriptLog::LoadConfig(bool reload)
+void ScriptLog::LoadConfig(bool keepState)
 {
     auto config = GetConfigFilename();
 
-    if (!reload)
+    if (!keepState)
     {
         switch (GetPrivateProfileInt("ScriptLog", "Enabled", 0, config.c_str()))
         {
@@ -756,7 +756,7 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
 {
     static size_t fileSize = 0;
 
-    // close stream so system and applications can notice it was updated
+    // close stream so system and applications notice it was updated
     if (forceUpdate)
     {
         m_logFile.flush();
@@ -952,6 +952,8 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 {
     SetCurrScript(script);
     m_currScriptCommandCount++;
+    m_currCommandHasComment = false;
+    m_currCommandReturnParams = nullptr;
     m_conditionResultUpdated = false;
 
     if (state == LoggingState::Disabled) return OR_NONE;
@@ -1046,10 +1048,6 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
         line += " = ";
     }
-    else
-    {
-        m_currCommandReturnParams = nullptr;
-    }
 
     // command name
     if (command->oper.empty())
@@ -1071,14 +1069,23 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     {
         for (size_t i = 0; i < command->inputArguments; i++)
         {
-            // operator before second param
-            if (i == 1 && !command->oper.empty())
+            if (!line.empty() && line.back() != ' ') line += ' '; // separator
+
+            // operator
+            if (!command->oper.empty())
             {
-                if (!line.empty() && line.back() != ' ') line += ' '; // separator
-                line += command->oper;
+                if (command->inputArguments == 1 && i == 0) // %param
+                {
+                    line += command->oper;
+                }
+                else if (command->inputArguments == 2 && i == 1) // param %= param
+                {
+                    line += command->oper;
+                    if (command->oper.find('=') == std::string::npos) line += '=';
+                    line += " ";
+                }
             }
 
-            if (!line.empty() && line.back() != ' ') line += ' '; // separator
             LogScriptParam(line, script, command, i, true, true, true);
         }
     }
@@ -1087,16 +1094,23 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     std::deque<std::string> comments;
 
     if (command->isNop) comments.push_back("NOP command");
-    if ((m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE) && !command->isCondition) comments.push_back("BUG: non-logical command!");
+    
+    if (!command->isCondition &&
+        (script->NotFlag ||
+        m_prevCommand == COMMAND_ANDOR ||
+        script->LogicalOp != eLogicalOperation::NONE)
+    )
+    {
+        comments.push_back("BUG: non-logical command!");
+    }
 
     if (!comments.empty())
     {
-        bool first = true;
-        for (auto& comment : comments)
+        m_currCommandHasComment = true;
+        for (auto it = comments.begin(); it != comments.end(); it++)
         {
-            if (first) { line += " // "; first = false; }
-            else line += ", ";
-            line += comment;
+            line += (it == comments.begin()) ? " // " : ", ";
+            line += *it;
         }
     }
 
@@ -1115,9 +1129,9 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
     auto command = m_opcodeDatabase.GetCommand((uint16_t)opcode);
     if (!command) return result;
 
-    static std::string line = " --> "; // keep for performance
-    static auto lineEmptyLen = line.length();
-    line.resize(lineEmptyLen);
+    static std::string line; // keep for performance
+    line = m_currCommandHasComment ? " -> " : " // -> ";
+    auto lineEmptyLen = line.length();
 
     // print values of return arguments
     if (m_currCommandReturnParams != nullptr)
