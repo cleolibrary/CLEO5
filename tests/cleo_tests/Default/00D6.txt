@@ -1,0 +1,484 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '00D6'
+test("00D6 (if)", tests)
+terminate_this_custom_script
+
+Alloc($testValue, 100) // $f1_alleyoop_best_score
+Alloc($resultBits, 101) // $f1_wheelieweave_best_score
+
+
+function tests
+    it("should set condition result", test1)
+    
+    // multiple expresions with AND logical operation
+    
+    $testValue  = 0x00 // 00000000
+    $resultBits = 0x00 // 00000000
+    it("should handle AND operation #1", test_operation_and)
+    
+    $testValue  = 0x01 // 00000001
+    $resultBits = 0x01 // 00000001
+    it("should handle AND operation #2", test_operation_and)
+    
+    $testValue  = 0x03 // 00000011
+    $resultBits = 0x03 // 00000011
+    it("should handle AND operation #3", test_operation_and)
+    
+    $testValue  = 0x07 // 00000111
+    $resultBits = 0x07 // 00000111
+    it("should handle AND operation #4", test_operation_and)
+    
+    $testValue  = 0x0F // 00001111
+    $resultBits = 0x0F // 00001111
+    it("should handle AND operation #5", test_operation_and)
+    
+    $testValue  = 0x1F // 00011111
+    $resultBits = 0x1F // 00011111
+    it("should handle AND operation #6", test_operation_and)
+    
+    $testValue  = 0x3F // 00111111
+    $resultBits = 0x3F // 00111111
+    it("should handle AND operation #7", test_operation_and)
+    
+    $testValue  = 0x7F // 01111111
+    $resultBits = 0x7F // 01111111
+    it("should handle AND operation #8", test_operation_and)
+    
+    $testValue  = 0xFF // 11111111
+    $resultBits = 0xFF // 11111111
+    it("should handle AND operation #9", test_operation_and)
+    
+    $testValue  = 0xFE // 11111110
+    $resultBits = 0x00 // 00000000
+    it("should handle AND operation #10", test_operation_and)
+    
+    
+    // multiple expresions with OR logical operation
+    
+    $testValue  = 0x00 // 00000000
+    $resultBits = 0x00 // 00000000
+    it("should handle OR operation #1", test_operation_or)
+    
+    $testValue  = 0x01 // 00000001
+    $resultBits = 0xFF // 11111111
+    it("should handle OR operation #2", test_operation_or)
+    
+    $testValue  = 0x02 // 00000010
+    $resultBits = 0xFE // 11111110
+    it("should handle OR operation #3", test_operation_or)
+    
+    $testValue  = 0x04 // 00000100
+    $resultBits = 0xFC // 11111100
+    it("should handle OR operation #4", test_operation_or)
+    
+    $testValue  = 0x08 // 00001000
+    $resultBits = 0xF8 // 11111000
+    it("should handle OR operation #5", test_operation_or)
+    
+    $testValue  = 0x10 // 00010000
+    $resultBits = 0xF0 // 11110000
+    it("should handle OR operation #6", test_operation_or)
+    
+    $testValue  = 0x20 // 00100000
+    $resultBits = 0xE0 // 11100000
+    it("should handle OR operation #7", test_operation_or)
+    
+    $testValue  = 0x40 // 01000000
+    $resultBits = 0xC0 // 11000000
+    it("should handle OR operation #8", test_operation_or)
+    
+    $testValue  = 0x80 // 10000000
+    $resultBits = 0x80 // 10000000
+    it("should handle OR operation #9", test_operation_or)
+    
+    $testValue  = 0xFE // 11111110
+    $resultBits = 0xFE // 11111110
+    it("should handle OR operation #10", test_operation_or)
+    
+    return
+
+
+    function test1()
+        is_australian_game // set false
+        assert_result_false()
+        is_bit_set {number} 1 {bitIndex} 0
+        assert_result_true()
+        
+        is_pc_version // set true
+        assert_result_true()
+        is_bit_set {number} 0 {bitIndex} 0
+        assert_result_false()
+    end
+
+
+    function test_operation_and()
+        int result
+        
+        trace "AND of 1"
+        result = -1
+        is_australian_game // set false
+        if
+            is_bit_set {number} $testValue {bitIndex} 0
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 0
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "AND of 2"
+        result = -1
+        is_australian_game // set false
+        if and // AND_1
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 1
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "AND of 3"
+        result = -1
+        is_australian_game // set false
+        if and // AND_2
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 2
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "AND of 4"
+        result = -1
+        is_australian_game // set false
+        if and // AND_3
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 3
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "AND of 5"
+        result = -1
+        is_australian_game // set false
+        if and // AND_4
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 4
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "AND of 6"
+        result = -1
+        is_australian_game // set false
+        if and // AND_5
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 5
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "AND of 7"
+        result = -1
+        is_australian_game // set false
+        if and // AND_6
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+            is_bit_set {number} $testValue {bitIndex} 6
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 6
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "AND of 8"
+        result = -1
+        is_australian_game // set false
+        if and // AND_7
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+            is_bit_set {number} $testValue {bitIndex} 6
+            is_bit_set {number} $testValue {bitIndex} 7
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 7
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        /*trace "AND of 9"
+        result = -1
+        is_australian_game // set false
+        if and // AND_8
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+            is_bit_set {number} $testValue {bitIndex} 6
+            is_bit_set {number} $testValue {bitIndex} 7
+            is_bit_set {number} $testValue {bitIndex} 8
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 8
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end*/
+    end
+
+
+    function test_operation_or()
+        int result
+        
+        trace "OR of 1"
+        result = -1
+        is_australian_game // set false
+        if
+            is_bit_set {number} $testValue {bitIndex} 0
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 0
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "OR of 2"
+        result = -1
+        is_australian_game // set false
+        if or // OR_1
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 1
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "OR of 3"
+        result = -1
+        is_australian_game // set false
+        if or // OR_2
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 2
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "OR of 4"
+        result = -1
+        is_australian_game // set false
+        if or // OR_3
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 3
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "OR of 5"
+        result = -1
+        is_australian_game // set false
+        if or // OR_4
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 4
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "OR of 6"
+        result = -1
+        is_australian_game // set false
+        if or // OR_5
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 5
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "OR of 7"
+        result = -1
+        is_australian_game // set false
+        if or // OR_6
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+            is_bit_set {number} $testValue {bitIndex} 6
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 6
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        trace "OR of 8"
+        result = -1
+        is_australian_game // set false
+        if or // OR_7
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+            is_bit_set {number} $testValue {bitIndex} 6
+            is_bit_set {number} $testValue {bitIndex} 7
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 7
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end
+        
+        /*trace "OR of 9"
+        result = -1
+        is_australian_game // set false
+        if or // OR_8
+            is_bit_set {number} $testValue {bitIndex} 0
+            is_bit_set {number} $testValue {bitIndex} 1
+            is_bit_set {number} $testValue {bitIndex} 2
+            is_bit_set {number} $testValue {bitIndex} 3
+            is_bit_set {number} $testValue {bitIndex} 4
+            is_bit_set {number} $testValue {bitIndex} 5
+            is_bit_set {number} $testValue {bitIndex} 6
+            is_bit_set {number} $testValue {bitIndex} 7
+            is_bit_set {number} $testValue {bitIndex} 8
+        then
+            result = 2
+        end
+        if
+            is_bit_set {number} $resultBits {bitIndex} 8
+        then
+            assert_eq(result, 2)
+        else
+            assert_eq(result, -1)
+        end*/
+    end
+end

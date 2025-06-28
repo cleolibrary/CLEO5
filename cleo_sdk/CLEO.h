@@ -257,6 +257,8 @@ enum eLogicalOperation : WORD
 	AND_5,
 	AND_6,
 	AND_7,
+	AND_8,
+	AND_9,
 	AND_END,
 	
 	OR_2 = 21, // OR operation on results of next two conditional opcodes
@@ -265,6 +267,8 @@ enum eLogicalOperation : WORD
 	OR_5,
 	OR_6,
 	OR_7,
+	OR_8,
+	OR_9,
 	OR_END,
 };
 static eLogicalOperation& operator--(eLogicalOperation& o)
