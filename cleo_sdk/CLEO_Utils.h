@@ -462,9 +462,7 @@ namespace CLEO
         std::vector<char> buffer;
 
     public:
-        MemPatch()
-        {
-        }
+        MemPatch() = default;
 
         MemPatch(void* src, size_t size) : address(src), buffer(size)
         {
