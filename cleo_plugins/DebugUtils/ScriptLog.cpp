@@ -303,11 +303,6 @@ ScriptLog::ScriptLog()
     m_logFilePath += "\\cleo\\.cleo_script_log.xml";
     std::remove(m_logFilePath.c_str());
 
-    void HOOK_SetConditionResult(CLEO::CRunningScript script, bool state);
-    MemPatch m_patchSetConditionResult;
-    bool m_conditionResultUpdated = false;
-    bool m_conditionResultValue = false;
-
     CLEO_RegisterCallback(eCallbackId::GameBegin, callbackGameBegin);
     CLEO_RegisterCallback(eCallbackId::GameProcessBefore, callbackGameProcessBefore);
     CLEO_RegisterCallback(eCallbackId::GameProcessAfter, callbackGameProcessAfter);
@@ -515,14 +510,14 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
 void ScriptLog::LogLine(const char* line)
 {
     // TODO: thread lock
-    *m_logBuffer << std::endl << line;
+    *m_logBuffer << "\n" << line;
     // TODO: thread unlock
 }
 
 void ScriptLog::LogLine(const std::string& line)
 {
     // TODO: thread lock
-    *m_logBuffer << std::endl << line;
+    *m_logBuffer << "\n" << line;
     // TODO: thread unlock
 }
 
