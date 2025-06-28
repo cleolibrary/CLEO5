@@ -808,9 +808,14 @@ void __fastcall ScriptLog::HOOK_SetConditionResult(CLEO::CRunningScript* script,
     g_Instance->m_conditionResultValue = state;
 
     // call original function
+    auto funcAddress = (size_t)g_Instance->m_patchSetConditionResult.GetAddress();
+
     g_Instance->m_patchSetConditionResult.Apply(); // restore original function code
-    ((::CRunningScript*)script)->UpdateCompareFlag(state);
-    MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult); // reinstall our hook
+
+    //((::CRunningScript*)script)->UpdateCompareFlag(state);
+    plugin::CallMethodDynGlobal<CLEO::CRunningScript*, bool>(funcAddress, script, state); // faster
+
+    MemPatchJump(funcAddress, &HOOK_SetConditionResult); // reinstall our hook
 }
 
 void ScriptLog::OnGameBegin(DWORD saveSlot)
