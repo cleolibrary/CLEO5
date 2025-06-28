@@ -20,7 +20,7 @@ public:
     size_t CurrScriptElapsedSeconds() const;
 
     // config
-    void LoadConfig(bool reload = false);
+    void LoadConfig(bool keepState = false);
 
     enum LoggingState { Disabled, OnCrash, Full } state = OnCrash;
     size_t maxFileSize = 100 * 1024 * 1024; // 100 MB
@@ -41,7 +41,8 @@ private:
     CLEO::CRunningScript* m_currScript = nullptr;
     clock_t m_currScriptStartTime = 0;
     size_t m_currScriptCommandCount = 0;
-    BYTE* m_currCommandReturnParams = 0;
+    bool m_currCommandHasComment = false;
+    BYTE* m_currCommandReturnParams = nullptr;
     void SetCurrScript(CLEO::CRunningScript* script);
     
     std::stringstream* m_logBuffer;
