@@ -95,12 +95,12 @@ namespace CLEO
 		bool condResult = cs->bCondResult;
 		if (savedNotFlag) condResult = !condResult;
 
-		if (savedLogicalOp >= eLogicalOperation::AND_2 && savedLogicalOp <= eLogicalOperation::AND_END)
+		if (savedLogicalOp >= eLogicalOperation::ANDS_1 && savedLogicalOp < eLogicalOperation::AND_END)
 		{
 			cs->bCondResult = savedCondResult && condResult;
 			cs->LogicalOp = --savedLogicalOp;
 		}
-		else if (savedLogicalOp >= eLogicalOperation::OR_2 && savedLogicalOp <= eLogicalOperation::OR_END)
+		else if (savedLogicalOp >= eLogicalOperation::ORS_1 && savedLogicalOp < eLogicalOperation::OR_END)
 		{
 			cs->bCondResult = savedCondResult || condResult;
 			cs->LogicalOp = --savedLogicalOp;

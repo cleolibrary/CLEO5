@@ -251,28 +251,30 @@ enum eLogicalOperation : WORD
 {
 	NONE = 0, // just replace
 
-	AND_2 = 1, // AND operation on results of next two conditional opcodes
-	AND_3,
-	AND_4,
-	AND_5,
-	AND_6,
-	AND_7,
-	AND_8,
+	ANDS_1 = 1, // count of 'and' keywords in the expression
+	ANDS_2,
+	ANDS_3,
+	ANDS_4,
+	ANDS_5,
+	ANDS_6,
+	ANDS_7,
+	ANDS_8,
 	AND_END,
 	
-	OR_2 = 21, // OR operation on results of next two conditional opcodes
-	OR_3,
-	OR_4,
-	OR_5,
-	OR_6,
-	OR_7,
-	OR_8,
+	ORS_1 = 21, // count of 'or' keywords in the expression
+	ORS_2,
+	ORS_3,
+	ORS_4,
+	ORS_5,
+	ORS_6,
+	ORS_7,
+	ORS_8,
 	OR_END,
 };
 static eLogicalOperation& operator--(eLogicalOperation& o)
 {
 	if (o == eLogicalOperation::NONE) return o; // can not be decremented anymore
-	if (o == eLogicalOperation::OR_2) return o = eLogicalOperation::NONE;
+	if (o == eLogicalOperation::ORS_1) return o = eLogicalOperation::NONE;
 	
 	auto val = static_cast<WORD>(o); // to number
 	val--;
