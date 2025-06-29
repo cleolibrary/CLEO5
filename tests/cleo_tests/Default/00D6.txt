@@ -271,30 +271,6 @@ function tests
         else
             assert_eq(result, -1)
         end
-        
-        /*trace "AND of 9"
-        result = -1
-        is_australian_game // set false
-        if and // AND_8
-            is_bit_set {number} $testValue {bitIndex} 0
-            is_bit_set {number} $testValue {bitIndex} 1
-            is_bit_set {number} $testValue {bitIndex} 2
-            is_bit_set {number} $testValue {bitIndex} 3
-            is_bit_set {number} $testValue {bitIndex} 4
-            is_bit_set {number} $testValue {bitIndex} 5
-            is_bit_set {number} $testValue {bitIndex} 6
-            is_bit_set {number} $testValue {bitIndex} 7
-            is_bit_set {number} $testValue {bitIndex} 8
-        then
-            result = 2
-        end
-        if
-            is_bit_set {number} $resultBits {bitIndex} 8
-        then
-            assert_eq(result, 2)
-        else
-            assert_eq(result, -1)
-        end*/
     end
 
 
@@ -456,29 +432,5 @@ function tests
         else
             assert_eq(result, -1)
         end
-        
-        /*trace "OR of 9"
-        result = -1
-        is_australian_game // set false
-        if or // OR_8
-            is_bit_set {number} $testValue {bitIndex} 0
-            is_bit_set {number} $testValue {bitIndex} 1
-            is_bit_set {number} $testValue {bitIndex} 2
-            is_bit_set {number} $testValue {bitIndex} 3
-            is_bit_set {number} $testValue {bitIndex} 4
-            is_bit_set {number} $testValue {bitIndex} 5
-            is_bit_set {number} $testValue {bitIndex} 6
-            is_bit_set {number} $testValue {bitIndex} 7
-            is_bit_set {number} $testValue {bitIndex} 8
-        then
-            result = 2
-        end
-        if
-            is_bit_set {number} $resultBits {bitIndex} 8
-        then
-            assert_eq(result, 2)
-        else
-            assert_eq(result, -1)
-        end*/
     end
 end

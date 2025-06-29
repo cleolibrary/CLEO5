@@ -271,30 +271,6 @@ function tests
         else
             assert_eq(result, -1)
         end
-        
-        /*trace "AND of 9"
-        result = -1
-        is_australian_game // set false
-        if and // AND_8
-            CHECK_BIT($testValue, 0)
-            CHECK_BIT($testValue, 1)
-            CHECK_BIT($testValue, 2)
-            CHECK_BIT($testValue, 3)
-            CHECK_BIT($testValue, 4)
-            CHECK_BIT($testValue, 5)
-            CHECK_BIT($testValue, 6)
-            CHECK_BIT($testValue, 7)
-            CHECK_BIT($testValue, 8)
-        then
-            result = 2
-        end
-        if
-            is_bit_set {number} $resultBits {bitIndex} 8
-        then
-            assert_eq(result, 2)
-        else
-            assert_eq(result, -1)
-        end*/
     end
 
 
@@ -456,30 +432,6 @@ function tests
         else
             assert_eq(result, -1)
         end
-        
-        /*trace "OR of 9"
-        result = -1
-        is_australian_game // set false
-        if or // OR_8
-            CHECK_BIT($testValue, 0)
-            CHECK_BIT($testValue, 1)
-            CHECK_BIT($testValue, 2)
-            CHECK_BIT($testValue, 3)
-            CHECK_BIT($testValue, 4)
-            CHECK_BIT($testValue, 5)
-            CHECK_BIT($testValue, 6)
-            CHECK_BIT($testValue, 7)
-            CHECK_BIT($testValue, 8)
-        then
-            result = 2
-        end
-        if
-            is_bit_set {number} $resultBits {bitIndex} 8
-        then
-            assert_eq(result, 2)
-        else
-            assert_eq(result, -1)
-        end*/
     end
 end
 
