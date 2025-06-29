@@ -134,7 +134,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_IntOp_AND(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_IntOp_AND(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B10=3,%3d% = %1d% AND %2d%
@@ -149,7 +149,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_IntOp_OR(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_IntOp_OR(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B11=3,%3d% = %1d% OR %2d%
@@ -164,7 +164,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_IntOp_XOR(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_IntOp_XOR(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B12=3,%3d% = %1d% XOR %2d%
@@ -179,7 +179,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_IntOp_NOT(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_IntOp_NOT(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B13=2,%2d% = NOT %1d%
@@ -191,7 +191,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_IntOp_MOD(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_IntOp_MOD(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B14=3,%3d% = %1d% MOD %2d%
@@ -206,7 +206,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static  OpcodeResult __stdcall Script_IntOp_SHR(CScriptThread* thread)
+    static  OpcodeResult __stdcall Script_IntOp_SHR(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B15=3,%3d% = %1d% SHR %2d%
@@ -221,7 +221,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_IntOp_SHL(CScriptThread* thread)
+    static OpcodeResult __stdcall Script_IntOp_SHL(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B16=3,%3d% = %1d% SHL %2d%
@@ -240,7 +240,7 @@ public:
     Now do them as real operators...
     *****************************************************************/
 
-    static OpcodeResult __stdcall Scr_IntOp_AND(CScriptThread* thread)
+    static OpcodeResult __stdcall Scr_IntOp_AND(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B17=2,%1d% &= %2d%
@@ -253,7 +253,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Scr_IntOp_OR(CScriptThread* thread)
+    static OpcodeResult __stdcall Scr_IntOp_OR(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B18=2,%1d% |= %2d%
@@ -266,7 +266,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Scr_IntOp_XOR(CScriptThread* thread)
+    static OpcodeResult __stdcall Scr_IntOp_XOR(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B19=2,%1d% ^= %2d%
@@ -279,7 +279,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Scr_IntOp_NOT(CScriptThread* thread)
+    static OpcodeResult __stdcall Scr_IntOp_NOT(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B1A=1,~%1d%
@@ -291,7 +291,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Scr_IntOp_MOD(CScriptThread* thread)
+    static OpcodeResult __stdcall Scr_IntOp_MOD(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B1B=2,%1d% %= %2d%
@@ -304,7 +304,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Scr_IntOp_SHR(CScriptThread* thread)
+    static OpcodeResult __stdcall Scr_IntOp_SHR(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B1C=2,%1d% >>= %2d%
@@ -317,7 +317,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Scr_IntOp_SHL(CScriptThread* thread)
+    static OpcodeResult __stdcall Scr_IntOp_SHL(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B1D=2,%1d% <<= %2d%
@@ -330,7 +330,7 @@ public:
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Sign_Extend(CScriptThread* thread)
+    static OpcodeResult __stdcall Sign_Extend(CRunningScript* thread)
         /****************************************************************
         Opcode Format
         0B1E=2,sign_extend %1d% size %2d%
@@ -357,7 +357,7 @@ public:
     }
 
     //2700=2,  is_bit_set value %1d% bit_index %2d%
-    static OpcodeResult __stdcall opcode_2700(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2700(CRunningScript* thread)
     {
         auto value = OPCODE_READ_PARAM_UINT();
         auto bitIndex = OPCODE_READ_PARAM_INT();
@@ -375,7 +375,7 @@ public:
     }
 
     //2701=2,set_bit value %1d% bit_index %2d%
-    static OpcodeResult __stdcall opcode_2701(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2701(CRunningScript* thread)
     {
         auto value = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto bitIndex = OPCODE_READ_PARAM_INT();
@@ -392,7 +392,7 @@ public:
     }
 
     //2702=2,clear_bit value %1d% bit_index %2d%
-    static OpcodeResult __stdcall opcode_2702(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2702(CRunningScript* thread)
     {
         auto value = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto bitIndex = OPCODE_READ_PARAM_INT();
@@ -409,7 +409,7 @@ public:
     }
 
     //2703=3,toggle_bit value %1d% bit_index %2d% state %3d%
-    static OpcodeResult __stdcall opcode_2703(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2703(CRunningScript* thread)
     {
         auto value = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto bitIndex = OPCODE_READ_PARAM_INT();
@@ -431,7 +431,7 @@ public:
     }
 
     //2704=1,  is_truthy value %1d%
-    static OpcodeResult __stdcall opcode_2704(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2704(CRunningScript* thread)
     {
         auto paramType = OPCODE_PEEK_PARAM_TYPE();
 
@@ -448,7 +448,7 @@ public:
     }
 
     //2705=-1,pick_random_int values %d% store_to %d%
-    static OpcodeResult __stdcall opcode_2705(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2705(CRunningScript* thread)
     {
         auto valueCount = CLEO_GetVarArgCount(thread);
 
@@ -474,7 +474,7 @@ public:
     }
 
     //2706=-1,pick_random_float values %d% store_to %d%
-    static OpcodeResult __stdcall opcode_2706(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2706(CRunningScript* thread)
     {
         auto valueCount = CLEO_GetVarArgCount(thread);
 
@@ -500,7 +500,7 @@ public:
     }
 
     //2707=-1,pick_random_text values %d% store_to %d%
-    static OpcodeResult __stdcall opcode_2707(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2707(CRunningScript* thread)
     {
         auto valueCount = CLEO_GetVarArgCount(thread);
 

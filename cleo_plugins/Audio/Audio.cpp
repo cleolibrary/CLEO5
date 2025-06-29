@@ -115,7 +115,7 @@ public:
 
  
     //0AAC=2,  %2d% = load_audiostream %1d%  // IF and SET
-    static OpcodeResult __stdcall opcode_0AAC(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AAC(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(path, 511);
 
@@ -135,7 +135,7 @@ public:
     }
 
     //0AAD=2,set_audiostream %1d% perform_action %2d%
-    static OpcodeResult __stdcall opcode_0AAD(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AAD(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM()
         auto action = OPCODE_READ_PARAM_INT();
@@ -157,7 +157,7 @@ public:
     }
 
     //0AAE=1,release_audiostream %1d%
-    static OpcodeResult __stdcall opcode_0AAE(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AAE(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -167,7 +167,7 @@ public:
     }
 
     //0AAF=2,%2d% = get_audiostream_length %1d%
-    static OpcodeResult __stdcall opcode_0AAF(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AAF(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -179,7 +179,7 @@ public:
     }
 
     //0AB9=2,get_audio_stream_state %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AB9(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AB9(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -191,7 +191,7 @@ public:
     }
 
     //0ABB=2,%2d% = get_audio_stream_volume %1d%
-    static OpcodeResult __stdcall opcode_0ABB(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0ABB(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -203,7 +203,7 @@ public:
     }
 
     //0ABC=2,set_audiostream %1d% volume %2d%
-    static OpcodeResult __stdcall opcode_0ABC(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0ABC(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto volume = OPCODE_READ_PARAM_FLOAT();
@@ -214,7 +214,7 @@ public:
     }
 
     //0AC0=2,loop_audiostream %1d% flag %2d%
-    static OpcodeResult __stdcall opcode_0AC0(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AC0(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto loop = OPCODE_READ_PARAM_BOOL();
@@ -225,7 +225,7 @@ public:
     }
 
     //0AC1=2,%2d% = load_audiostream_with_3d_support %1d% //IF and SET
-    static OpcodeResult __stdcall opcode_0AC1(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AC1(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(path, 511);
 
@@ -245,7 +245,7 @@ public:
     }
 
     //0AC2=4,set_3d_audiostream %1d% position %2d% %3d% %4d%
-    static OpcodeResult __stdcall opcode_0AC2(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AC2(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         CVector pos;
@@ -259,7 +259,7 @@ public:
     }
 
     //0AC3=2,link_3d_audiostream %1d% to_object %2d%
-    static OpcodeResult __stdcall opcode_0AC3(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AC3(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto handle = OPCODE_READ_PARAM_OBJECT_HANDLE();
@@ -274,7 +274,7 @@ public:
     }
 
     //0AC4=2,link_3d_audiostream %1d% to_actor %2d%
-    static OpcodeResult __stdcall opcode_0AC4(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AC4(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto handle = OPCODE_READ_PARAM_PED_HANDLE();
@@ -289,7 +289,7 @@ public:
     }
 
     //0AC5=2,link_3d_audiostream %1d% to_vehicle %2d%
-    static OpcodeResult __stdcall opcode_0AC5(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_0AC5(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
@@ -304,7 +304,7 @@ public:
     }
 
     //2500=1,  is_audio_stream_playing %1d%
-    static OpcodeResult __stdcall opcode_2500(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2500(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -316,7 +316,7 @@ public:
     }
 
     //2501=2,%2d% = get_audiostream_duration %1d%
-    static OpcodeResult __stdcall opcode_2501(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2501(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -337,7 +337,7 @@ public:
     }
 
     //2502=2,get_audio_stream_speed %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_2502(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2502(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -349,7 +349,7 @@ public:
     }
 
     //2503=2,set_audio_stream_speed %1d% speed %2d%
-    static OpcodeResult __stdcall opcode_2503(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2503(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto speed = OPCODE_READ_PARAM_FLOAT();
@@ -360,7 +360,7 @@ public:
     }
 
     //2504=3,set_audio_stream_volume_with_transition %1d% volume %2d% time_ms %2d%
-    static OpcodeResult __stdcall opcode_2504(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2504(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto volume = OPCODE_READ_PARAM_FLOAT();
@@ -372,7 +372,7 @@ public:
     }
 
     //2505=3,set_audio_stream_speed_with_transition %1d% speed %2d% time_ms %2d%
-    static OpcodeResult __stdcall opcode_2505(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2505(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto speed = OPCODE_READ_PARAM_FLOAT();
@@ -384,7 +384,7 @@ public:
     }
 
     //2506=2,set_audio_stream_source_size %1d% radius %2d%
-    static OpcodeResult __stdcall opcode_2506(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2506(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto radius = OPCODE_READ_PARAM_FLOAT();
@@ -395,7 +395,7 @@ public:
     }
 
     //2507=2,get_audio_stream_progress %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_2507(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2507(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -407,7 +407,7 @@ public:
     }
 
     //2508=2,set_audio_stream_progress %1d% speed %2d%
-    static OpcodeResult __stdcall opcode_2508(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2508(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto speed = OPCODE_READ_PARAM_FLOAT();
@@ -418,7 +418,7 @@ public:
     }
 
     //2509=2,get_audio_stream_type %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_2509(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_2509(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -430,7 +430,7 @@ public:
     }
 
     //250A=2,set_audio_stream_type %1d% type %2d%
-    static OpcodeResult __stdcall opcode_250A(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_250A(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto type = OPCODE_READ_PARAM_INT();
@@ -441,7 +441,7 @@ public:
     }
 
     //250B=2,get_audio_stream_progress_seconds %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_250B(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_250B(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
 
@@ -457,7 +457,7 @@ public:
     }
 
     //250C=2,set_audio_stream_progress_seconds %1d% value %2d%
-    static OpcodeResult __stdcall opcode_250C(CScriptThread* thread)
+    static OpcodeResult __stdcall opcode_250C(CLEO::CRunningScript* thread)
     {
         auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
         auto progress = OPCODE_READ_PARAM_FLOAT();
