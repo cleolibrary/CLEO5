@@ -599,22 +599,19 @@ namespace CLEO
             memcpy(buffer.data(), src, size);
         }
 
-        void Apply()
+        inline void Apply() const
         {
             if (!buffer.empty())
             {
-                DWORD oldProtect;
-                VirtualProtect(address, buffer.size(), PAGE_EXECUTE_READWRITE, &oldProtect);
                 memcpy(address, buffer.data(), buffer.size());
             }
         }
+
+        inline void* GetAddress() const { return address; }
     };
 
     static MemPatch MemPatchJump(size_t position, void* jumpTarget)
     {
-        DWORD oldProtect;
-        VirtualProtect((LPVOID)position, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
-
         MemPatch original((void*)position, 5);
 
         *(BYTE*)position = 0xE9; // asm: jmp
@@ -627,9 +624,6 @@ namespace CLEO
 
     static void* MemPatchCall(size_t position, void* newFunction)
     {
-        DWORD oldProtect;
-        VirtualProtect((LPVOID)position, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
-
         *(BYTE*)position = 0xE8; // asm: call
         position += sizeof(BYTE);
 

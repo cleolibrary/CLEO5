@@ -807,10 +807,58 @@ void __fastcall ScriptLog::HOOK_SetConditionResult(CLEO::CRunningScript* script,
     g_Instance->m_conditionResultUpdated = true;
     g_Instance->m_conditionResultValue = state;
 
-    // call original function
-    g_Instance->m_patchSetConditionResult.Apply(); // restore original function code
-    ((::CRunningScript*)script)->UpdateCompareFlag(state);
-    MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult); // reinstall our hook
+    if (script->NotFlag) state = !state;
+
+    switch(script->LogicalOp)
+    {
+        default:
+        case eLogicalOperation::NONE:
+            script->bCondResult = state;
+            return;
+
+        case eLogicalOperation::ANDS_1:
+        case eLogicalOperation::ANDS_2:
+        case eLogicalOperation::ANDS_3:
+        case eLogicalOperation::ANDS_4:
+        case eLogicalOperation::ANDS_5:
+        case eLogicalOperation::ANDS_6:
+        case eLogicalOperation::ANDS_7:
+        case eLogicalOperation::ANDS_8:
+            script->bCondResult &= state;
+            *((WORD*)&script->LogicalOp) -= 1;
+            return;
+
+        case eLogicalOperation::ORS_1:
+            script->bCondResult |= state;
+            script->LogicalOp = eLogicalOperation::NONE;
+            return;
+
+        case eLogicalOperation::ORS_2:
+        case eLogicalOperation::ORS_3:
+        case eLogicalOperation::ORS_4:
+        case eLogicalOperation::ORS_5:
+        case eLogicalOperation::ORS_6:
+        case eLogicalOperation::ORS_7:
+        case eLogicalOperation::ORS_8:
+            script->bCondResult |= state;
+            *((WORD*)&script->LogicalOp) -= 1;
+            return;
+    }
+
+    /*if (script->LogicalOp == eLogicalOperation::NONE)
+    {
+        script->bCondResult = state;
+    }
+    else if (script->LogicalOp >= eLogicalOperation::ANDS_1 && script->LogicalOp < eLogicalOperation::AND_END)
+    {
+        script->bCondResult &= state;
+        --script->LogicalOp;
+    }
+    else if (script->LogicalOp >= eLogicalOperation::ORS_1 && script->LogicalOp < eLogicalOperation::OR_END)
+    {
+        script->bCondResult |= state;
+        --script->LogicalOp;
+    }*/
 }
 
 void ScriptLog::OnGameBegin(DWORD saveSlot)
