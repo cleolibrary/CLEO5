@@ -21,5 +21,5 @@ for (let line of lines) {
   }
 }
 
-// Step 4: exit with error if there was anything in log (error or warning)
+// Step 4: Exit with error if there was anything in log (error or warning)
 if (hadOutput) process.exit(1);
