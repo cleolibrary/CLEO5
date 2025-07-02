@@ -72,10 +72,7 @@ jobs:
           @echo off
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild CLEO5.sln /property:Configuration=Release /property:Platform=GTASA /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
-          powershell -Command "(gc output.log) | sort | get-unique > output.log"
-          powershell -Command "(gc output.log) -replace '     \d>','' -replace '.:\\a\\plugin-sdk\\plugin-sdk\\','' | Out-File -encoding ASCII output.log"
-          powershell -Command "foreach($line in Get-Content 'output.log') { $m = $line -match '^(.*)\((\d+),(\d+)\): (\w+) (.*) \[.*\]$'; if ($m) {$m = $Matches; echo ('::'+$m[4]+' file='+$m[1]+',line='+$m[2]+',title=Core compilation::'+$m[5])} else {echo ('::error title=Core compilation::' + $line)} }"
-          for %%R in (output.log) do if not %%~zR lss 1 (exit 1)
+          node .github/workflows/analyze-build-log.js "Core compilation"
 
       - name: Build CLEO Plugins
         if: ${{ hashFiles('preview_changes.md') != '' }}
@@ -84,10 +81,7 @@ jobs:
           @echo off
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
-          powershell -Command "(gc output.log) | sort | get-unique > output.log"
-          powershell -Command "(gc output.log) -replace '     \d>','' -replace '.:\\a\\plugin-sdk\\plugin-sdk\\','' | Out-File -encoding ASCII output.log"
-          powershell -Command "foreach($line in Get-Content 'output.log') { $m = $line -match '^(.*)\((\d+),(\d+)\): (\w+) (.*) \[.*\]$'; if ($m) {$m = $Matches; echo ('::'+$m[4]+' file='+$m[1]+',line='+$m[2]+',title=Plugins compilation::'+$m[5])} else {echo ('::error title=Plugins compilation::' + $line)} }"
-          for %%R in (output.log) do if not %%~zR lss 1 (exit 1)
+          node .github/workflows/analyze-build-log.js "Plugins compilation"
 
       - name: Gather output files
         if: ${{ hashFiles('preview_changes.md') != '' }}
