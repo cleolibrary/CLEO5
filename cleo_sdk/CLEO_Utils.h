@@ -89,13 +89,16 @@ namespace CLEO
         va_list args;
 
         va_start(args, format);
-        auto len = std::vsnprintf(nullptr, 0, format, args) + 1;
+        auto len = std::vsnprintf(nullptr, 0, format, args);
         va_end(args);
 
-        std::string result(len, '\0');
+        if (len <= 0) return {}; // empty or encoding error
+
+        std::string result;
+        result.resize(len);
 
         va_start(args, format);
-        std::vsnprintf(result.data(), result.length(), format, args);
+        std::vsnprintf(result.data(), result.length() + 1, format, args);
         va_end(args);
 
         return result;
@@ -459,9 +462,7 @@ namespace CLEO
         std::vector<char> buffer;
 
     public:
-        MemPatch()
-        {
-        }
+        MemPatch() = default;
 
         MemPatch(void* src, size_t size) : address(src), buffer(size)
         {
@@ -472,8 +473,6 @@ namespace CLEO
         {
             if (!buffer.empty())
             {
-                DWORD oldProtect;
-                VirtualProtect(address, buffer.size(), PAGE_EXECUTE_READWRITE, &oldProtect);
                 memcpy(address, buffer.data(), buffer.size());
             }
         }
@@ -481,9 +480,6 @@ namespace CLEO
 
     static MemPatch MemPatchJump(size_t position, void* jumpTarget)
     {
-        DWORD oldProtect;
-        VirtualProtect((LPVOID)position, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
-
         MemPatch original((void*)position, 5);
 
         *(BYTE*)position = 0xE9; // asm: jmp
@@ -496,9 +492,6 @@ namespace CLEO
 
     static void* MemPatchCall(size_t position, void* newFunction)
     {
-        DWORD oldProtect;
-        VirtualProtect((LPVOID)position, 5, PAGE_EXECUTE_READWRITE, &oldProtect);
-
         *(BYTE*)position = 0xE8; // asm: call
         position += sizeof(BYTE);
 
