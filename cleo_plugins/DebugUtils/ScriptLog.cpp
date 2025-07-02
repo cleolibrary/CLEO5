@@ -1102,10 +1102,10 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     if (opcode == COMMAND_ANDOR)
     {
         ScriptParamInfo paramInfo(script);
-        if (paramInfo.value.nParam >= eLogicalOperation::OR_2)
+        if (paramInfo.value.nParam >= eLogicalOperation::ORS_1)
             line += " or";
         else
-        if (paramInfo.value.nParam >= eLogicalOperation::AND_2)
+        if (paramInfo.value.nParam >= eLogicalOperation::ANDS_1)
             line += " and";
     }
     else
