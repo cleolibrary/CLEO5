@@ -24,9 +24,9 @@ public:
 			// register opcodes
 			CLEO_RegisterOpcode(0x0AB0, opcode_0AB0); // is_key_pressed
 			CLEO_RegisterOpcode(0x0ADC, opcode_0ADC); // test_cheat
-			CLEO_RegisterOpcode(0x2880, opcode_2880); // is_key_just_pressed
-			CLEO_RegisterOpcode(0x2881, opcode_2881); // get_key_pressed_in_range
-			CLEO_RegisterOpcode(0x2882, opcode_2882); // get_key_just_pressed_in_range
+			CLEO_RegisterOpcode(0x2080, opcode_2080); // is_key_just_pressed
+			CLEO_RegisterOpcode(0x2081, opcode_2081); // get_key_pressed_in_range
+			CLEO_RegisterOpcode(0x2082, opcode_2082); // get_key_just_pressed_in_range
 
 			// register event callbacks
 			CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
@@ -93,7 +93,7 @@ public:
 
 	// is_key_just_pressed
 	// is_key_just_pressed {keyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_2880(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2080(CRunningScript* thread)
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
@@ -113,7 +113,7 @@ public:
 
 	// get_key_pressed_in_range
 	// [var keyCode: KeyCode] = get_key_pressed_in_range {minKeyCode} [KeyCode] {maxKeyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_2881(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2081(CRunningScript* thread)
 	{
 		auto keyMin = OPCODE_READ_PARAM_INT();
 		auto keyMax = OPCODE_READ_PARAM_INT();
@@ -152,7 +152,7 @@ public:
 
 	// get_key_just_pressed_in_range
 	// [var keyCode: KeyCode] = get_key_just_pressed_in_range {minKeyCode} [KeyCode] {maxKeyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_2882(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2082(CRunningScript* thread)
 	{
 		auto keyMin = OPCODE_READ_PARAM_INT();
 		auto keyMax = OPCODE_READ_PARAM_INT();
