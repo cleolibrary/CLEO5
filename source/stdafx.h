@@ -32,7 +32,6 @@
 #include "simdjson.h"
 
 #include <plugin.h>
-#include <CCheat.h>
 #include <CFont.h>
 #include <CGame.h>
 #include <CMenuManager.h>

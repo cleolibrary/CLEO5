@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CCheat.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="plugin_sdk">
+      <UniqueIdentifier>{1fde55a7-7849-4e41-a39b-c811e109587d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

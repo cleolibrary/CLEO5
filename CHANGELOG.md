@@ -1,8 +1,12 @@
 ## 5.0.4
 - fixed collision of GXT texts hook with SAMP and other mods
 - rewritten script drawing handling code. Logic moved from CLEO.asi to Text.cleo plugin
-- new CLEO plugin: GameEntities.cleo
+- new CLEO plugin: **GameEntities.cleo**
 - fixed **0ADD ([spawn_vehicle_by_cheating](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ADD))** crashing when invalid model id was used
+- new CLEO plugin: **Input.cleo**
+- new opcode **2880 ([is_key_just_pressed](https://library.sannybuilder.com/#/sa/script/extensions/input/2880))**
+- new opcode **2881 ([get_key_pressed_in_range](https://library.sannybuilder.com/#/sa/script/extensions/input/2881))**
+- new opcode **2882 ([get_key_just_pressed_in_range](https://library.sannybuilder.com/#/sa/script/extensions/input/2882))**
 
 ## 5.0.3
 - added GxtHook.cleo plugin to ignored list
