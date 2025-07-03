@@ -14,6 +14,9 @@
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\Patch.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTimer.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />

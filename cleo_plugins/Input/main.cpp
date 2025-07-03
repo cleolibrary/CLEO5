@@ -1,6 +1,7 @@
 #include "CLEO.h"
 #include "CLEO_Utils.h"
 #include <CCheat.h>
+#include <CTimer.h>
 
 using namespace CLEO;
 
@@ -30,6 +31,7 @@ public:
 
 			// register event callbacks
 			CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
+			CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
 		}
 		else
 		{
@@ -44,13 +46,27 @@ public:
 		delete keyStatesPrev;
 
 		CLEO_UnregisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
+		CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
+	}
+
+	// refresh keys info
+	void CheckKeyboard()
+	{
+		std::swap(keyStatesCurr, keyStatesPrev);
+		GetKeyboardState(keyStatesCurr->data());
 	}
 
 	static void __stdcall OnGameProcessBefore()
 	{
-		// refresh keys info
-		std::swap(g_instance.keyStatesCurr, g_instance.keyStatesPrev);
-		GetKeyboardState(g_instance.keyStatesCurr->data());
+		g_instance.CheckKeyboard();
+	}
+
+	static void __stdcall OnDrawingFinished()
+	{
+		if (CTimer::m_UserPause) // main menu visible
+		{
+			g_instance.CheckKeyboard(); // update for ambient scripts running in menu
+		}
 	}
 
 	// is_key_pressed
