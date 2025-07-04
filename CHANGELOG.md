@@ -7,6 +7,9 @@
 - new opcode **2080 ([is_key_just_pressed](https://library.sannybuilder.com/#/sa/script/extensions/input/2080))**
 - new opcode **2081 ([get_key_pressed_in_range](https://library.sannybuilder.com/#/sa/script/extensions/input/2081))**
 - new opcode **2082 ([get_key_just_pressed_in_range](https://library.sannybuilder.com/#/sa/script/extensions/input/2082))**
+- new opcode **2083 ([emulate_key_press](https://library.sannybuilder.com/#/sa/script/extensions/input/2083))**
+- new opcode **2084 ([emulate_key_release](https://library.sannybuilder.com/#/sa/script/extensions/input/2084))**
+- new opcode **2085 ([get_controller_key](https://library.sannybuilder.com/#/sa/script/extensions/input/2085))**
 
 ## 5.0.3
 - added **GxtHook.cleo** plugin to ignored list
