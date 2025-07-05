@@ -15,10 +15,10 @@ function tests
     
     
     :cleanup
-        SetKeyState(0x54, false) // release T
-        SetKeyState(0x35, false) // release 5
-        SetKeyState(0x36, false) // release 6
-        SetKeyState(0x45, false) // release E
+        emulate_key_release {keyCode} KeyCode.Num5
+        emulate_key_release {keyCode} KeyCode.Num6
+        emulate_key_release {keyCode} KeyCode.E
+        emulate_key_release {keyCode} KeyCode.T
         wait {time} 0
     return
     
@@ -51,45 +51,8 @@ end
 
 
 function StrokeKey(keyCode: int)
-    SetKeyState(keyCode, true)
+    emulate_key_press {keyCode} keyCode
     wait {time} 0
-    SetKeyState(keyCode, false)
+    emulate_key_release {keyCode} keyCode
     wait {time} 0
-end
-
-
-function SetKeyState(keyCode: int, down: int)
-    int libUser32 = load_dynamic_library "user32.dll"
-    assert_result_true()
-        
-    int procSendInput = get_dynamic_library_procedure "SendInput" {library} libUser32
-    assert_result_true()
-    
-    int data = get_label_pointer @INPUT_KEY_DATA
-    
-    write_memory_with_offset {address} data {offset} 4 {size} 1 {value} keyCode
-    
-    if
-        down == true
-    then
-        write_memory_with_offset {address} data {offset} 8 {size} 4 {value} 0
-    else
-        write_memory_with_offset {address} data {offset} 8 {size} 4 {value} 2 // KEYEVENTF_KEYUP
-    end
-    
-    call_function {address} procSendInput {numParams} 3 {pop} 0 {funcParams} 28 data 1
-    
-    free_dynamic_library libUser32
-    
-    return
-    
-    :INPUT_KEY_DATA
-    hex
-        01 00 00 00 // INPUT_KEYBOARD
-        00 00 // virtual key code
-        00 00 // scan
-        00 00 00 00 // flags
-        00 00 00 00 // time
-        00 00 00 00 00 00 00 00 00 00 00 00 // padding
-    end
 end
