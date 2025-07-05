@@ -1,0 +1,38 @@
+{$CLEO .s}
+{$USE input}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2085'
+test("2085 (get_controller_key)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should return controller keys bindings", test1) // assumes default game key bindings!
+    return
+    
+    
+    function test1()
+        int key
+        
+        key = -1
+        key = get_controller_key {action} ControllerAction.CameraChange {altKey} ControllerAltKey.Primary
+        assert_result_true()
+        assert_eq(key, 0x56) // V key
+        
+        key = -1
+        key = get_controller_key {action} ControllerAction.CameraChange {altKey} ControllerAltKey.Secondary
+        assert_result_true()
+        assert_eq(key, 0x24) // Home key
+        
+        key = -1
+        key = get_controller_key {action} ControllerAction.CameraChange {altKey} ControllerAltKey.Tertiary
+        assert_result_false() // unbound
+        assert_eq(key, -1) // unchanged
+        
+        key = -1
+        key = get_controller_key {action} ControllerAction.CameraChange {altKey} ControllerAltKey.Quaternary
+        assert_result_false() // unbound
+        assert_eq(key, -1) // unchanged
+    end
+end
