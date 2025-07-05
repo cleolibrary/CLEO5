@@ -1,0 +1,58 @@
+{$CLEO .s}
+{$USE input}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0ADC'
+test("0ADC (test_cheat)", tests)
+terminate_this_custom_script
+
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+    it("should detect cheat code input", test1)
+    return
+    
+    
+    :cleanup
+        emulate_key_release {keyCode} KeyCode.Num5
+        emulate_key_release {keyCode} KeyCode.Num6
+        emulate_key_release {keyCode} KeyCode.E
+        emulate_key_release {keyCode} KeyCode.T
+        wait {time} 0
+    return
+    
+    
+    function test1()    
+        test_cheat {input} "T56E"
+        assert_result_false()
+        
+        StrokeKey(0x54) // T
+        test_cheat {input} "T56E"
+        assert_result_false()
+        
+        StrokeKey(0x35) // 5
+        test_cheat {input} "T56E"
+        assert_result_false()
+        
+        StrokeKey(0x36) // 6
+        test_cheat {input} "T56E"
+        assert_result_false()
+        
+        StrokeKey(0x45) // E
+        test_cheat {input} "T56E"
+        assert_result_true()
+        
+        // cheat should be consumed
+        test_cheat {input} "T56E"
+        assert_result_false()
+    end
+end
+
+
+function StrokeKey(keyCode: int)
+    emulate_key_press {keyCode} keyCode
+    wait {time} 0
+    emulate_key_release {keyCode} keyCode
+    wait {time} 0
+end

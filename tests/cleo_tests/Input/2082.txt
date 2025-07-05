@@ -1,0 +1,94 @@
+{$CLEO .s}
+{$USE input}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+const Key_5 = 0x35
+const Key_6 = 0x36
+
+
+script_name '2082'
+test("2082 (get_key_just_pressed_in_range)", tests)
+terminate_this_custom_script
+
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+    it("should return just pressed key code", test1)
+    return
+    
+    
+    :cleanup
+        emulate_key_release {keyCode} Key_5
+        emulate_key_release {keyCode} Key_6
+        wait {time} 0
+    return
+    
+    
+    function test1()
+        int key
+    
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+                
+        emulate_key_press {keyCode} Key_6
+        wait {time} 0
+        
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_true()
+        assert_eq(key, Key_6)
+        
+        wait {time} 0
+        
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        emulate_key_release {keyCode} Key_6
+        wait {time} 0
+        
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        emulate_key_press {keyCode} Key_5
+        emulate_key_press {keyCode} Key_6
+        wait {time} 0
+        
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_true()
+        assert_eq(key, Key_5)
+        
+        wait {time} 0
+        
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        // 5 is still down
+        emulate_key_release {keyCode} Key_6
+        wait {time} 0
+        
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        emulate_key_release {keyCode} Key_6
+        wait {time} 0
+        emulate_key_press {keyCode} Key_6
+        wait {time} 0
+        
+        key = -1
+        key = get_key_just_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_true()
+        assert_eq(key, Key_6)
+    end
+end

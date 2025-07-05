@@ -1,11 +1,18 @@
-## 5.0.4
+## 5.1.0
 - fixed collision of GXT texts hook with SAMP and other mods
-- rewritten script drawing handling code. Logic moved from CLEO.asi to Text.cleo plugin
-- new CLEO plugin: GameEntities.cleo
+- rewritten script drawing handling code. Logic moved from **CLEO.asi** to **Text.cleo** plugin
+- relocated several opcodes from CLEO core into new **GameEntities.cleo** plugin
 - fixed **0ADD ([spawn_vehicle_by_cheating](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ADD))** crashing when invalid model id was used
+- new CLEO plugin: **Input.cleo**
+- new opcode **2080 ([is_key_just_pressed](https://library.sannybuilder.com/#/sa/script/extensions/input/2080))**
+- new opcode **2081 ([get_key_pressed_in_range](https://library.sannybuilder.com/#/sa/script/extensions/input/2081))**
+- new opcode **2082 ([get_key_just_pressed_in_range](https://library.sannybuilder.com/#/sa/script/extensions/input/2082))**
+- new opcode **2083 ([emulate_key_press](https://library.sannybuilder.com/#/sa/script/extensions/input/2083))**
+- new opcode **2084 ([emulate_key_release](https://library.sannybuilder.com/#/sa/script/extensions/input/2084))**
+- new opcode **2085 ([get_controller_key](https://library.sannybuilder.com/#/sa/script/extensions/input/2085))**
 
 ## 5.0.3
-- added GxtHook.cleo plugin to ignored list
+- added **GxtHook.cleo** plugin to ignored list
 - fixed audio streams stopping when volume was set to 0.0
 - fixed audio streams potentially not starting to play if still decoding or downloading
 - volume of audio streams with type None and UserInterface no longer affected by screen fades

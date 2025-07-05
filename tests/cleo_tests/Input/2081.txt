@@ -1,0 +1,122 @@
+{$CLEO .s}
+{$USE input}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+const Key_5 = 0x35
+const Key_6 = 0x36
+const Key_E = 0x45
+const Key_T = 0x54
+
+
+script_name '2081'
+test("2081 (get_key_pressed_in_range)", tests)
+terminate_this_custom_script
+
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+    it("should return pressed key code", test1)
+    return
+    
+    
+    :cleanup
+        emulate_key_release {keyCode} Key_5
+        emulate_key_release {keyCode} Key_6
+        emulate_key_release {keyCode} Key_E
+        emulate_key_release {keyCode} Key_T
+        wait {time} 0
+    return
+    
+    
+    function test1()
+        int key
+    
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.A {maxKeyCode} KeyCode.Z
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        emulate_key_press {keyCode} Key_T
+        wait {time} 0
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.A {maxKeyCode} KeyCode.Z
+        assert_result_true()
+        assert_eq(key, Key_T) // T
+        
+        emulate_key_press {keyCode} Key_5
+        wait {time} 0
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_true()
+        assert_eq(key, Key_5) // 5
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.A {maxKeyCode} KeyCode.Z
+        assert_result_true()
+        assert_eq(key, Key_T) // T
+        
+        emulate_key_press {keyCode} Key_6
+        emulate_key_press {keyCode} Key_E
+        wait {time} 0
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_true()
+        assert_eq(key, Key_5) // 5
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.A {maxKeyCode} KeyCode.Z
+        assert_result_true()
+        assert_eq(key, Key_E) // E
+        
+        emulate_key_release {keyCode} Key_T
+        emulate_key_release {keyCode} Key_5
+        wait {time} 0
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.A {maxKeyCode} KeyCode.Z
+        assert_result_true()
+        assert_eq(key, Key_E) // E
+        
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_true()
+        assert_eq(key, Key_6) // 6
+        
+        emulate_key_release {keyCode} Key_E
+        wait {time} 0
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.A {maxKeyCode} KeyCode.Z
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_true()
+        assert_eq(key, Key_6) // 6
+        
+        emulate_key_release {keyCode} Key_6
+        wait {time} 0
+        
+        key = -1
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.A {maxKeyCode} KeyCode.Z
+        assert_result_false()
+        assert_eq(key, -1)
+        
+        key = get_key_pressed_in_range {minKeyCode} KeyCode.Num0 {maxKeyCode} KeyCode.Num9
+        assert_result_false()
+        assert_eq(key, -1)
+    end
+end

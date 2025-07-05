@@ -1,0 +1,49 @@
+{$CLEO .s}
+{$USE input}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AB0'
+test("0AB0 (is_key_pressed)", tests)
+terminate_this_custom_script
+
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+    it("should detect key state", test1)
+    return
+    
+    
+    :cleanup
+        emulate_key_release {keyCode} KeyCode.Num5
+        wait {time} 0
+    return
+    
+    
+    function test1()    
+        is_key_pressed {keyCode} KeyCode.Num5
+        assert_result_false()
+        
+        // press key
+        emulate_key_press {keyCode} KeyCode.Num5
+        wait {time} 0
+        
+        is_key_pressed {keyCode} KeyCode.Num5
+        assert_result_true()
+        
+        wait {time} 0
+        is_key_pressed {keyCode} KeyCode.Num5
+        assert_result_true()
+        
+        wait {time} 0
+        is_key_pressed {keyCode} KeyCode.Num5
+        assert_result_true()
+        
+        // release key
+        emulate_key_release {keyCode} KeyCode.Num5
+        wait {time} 0
+        
+        is_key_pressed {keyCode} KeyCode.Num5
+        assert_result_false()
+    end
+end

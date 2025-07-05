@@ -27,13 +27,10 @@ namespace CLEO
 	OpcodeResult __stdcall opcode_0AA0(CRunningScript* thread); // gosub_if_false
 	OpcodeResult __stdcall opcode_0AA1(CRunningScript* thread); // return_if_false
 	OpcodeResult __stdcall opcode_0AA9(CRunningScript* thread); // is_game_version_original
-	OpcodeResult __stdcall opcode_0AB0(CRunningScript* thread); // is_key_pressed
 	OpcodeResult __stdcall opcode_0AB1(CRunningScript* thread); // cleo_call
 	OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
 	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
 	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
-
-	OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread); // test_cheat
 
 	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
 
@@ -208,12 +205,10 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x0AA0, opcode_0AA0);
 		CLEO_RegisterOpcode(0x0AA1, opcode_0AA1);
 		CLEO_RegisterOpcode(0x0AA9, opcode_0AA9);
-		CLEO_RegisterOpcode(0x0AB0, opcode_0AB0);
 		CLEO_RegisterOpcode(0x0AB1, opcode_0AB1);
 		CLEO_RegisterOpcode(0x0AB2, opcode_0AB2);
 		CLEO_RegisterOpcode(0x0AB3, opcode_0AB3);
 		CLEO_RegisterOpcode(0x0AB4, opcode_0AB4);
-		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC);
 
 		CLEO_RegisterOpcode(0x0DD5, opcode_0DD5); // get_platform
 
@@ -912,19 +907,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB0=1,  key_pressed %1d%
-	OpcodeResult __stdcall opcode_0AB0(CRunningScript *thread)
-	{
-		DWORD key;
-		*thread >> key;
-
-		SHORT(__stdcall * GTA_GetKeyState)(int nVirtKey) = memory_pointer(0x0081E64C); // use ingame function as GetKeyState might look like keylogger to some AV software
-		bool isDown = (GTA_GetKeyState(key) & 0x8000) != 0;
-
-		thread->SetConditionResult(isDown);
-		return OR_CONTINUE;
-	}
-
 	//0AB1=-1,call_scm_func %1p%
 	OpcodeResult __stdcall opcode_0AB1(CRunningScript *thread)
 	{
@@ -1145,24 +1127,6 @@ namespace CLEO
 
 		opcodeParams[0].dwParam = CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam;
 		CLEO_RecordOpcodeParams(thread, 1);
-		return OR_CONTINUE;
-	}
-
-	//0ADC=1,  test_cheat %1d%
-	OpcodeResult __stdcall opcode_0ADC(CRunningScript *thread)
-	{
-		OPCODE_READ_PARAM_STRING_LEN(text, sizeof(CCheat::m_CheatString));
-		
-		_strrev(_buff_text); // reverse
-		auto len = strlen(_buff_text);
-		if (_strnicmp(_buff_text, CCheat::m_CheatString, len) == 0)
-		{
-			CCheat::m_CheatString[0] = '\0'; // consume the cheat
-			thread->SetConditionResult(true);
-			return OR_CONTINUE;
-		}
-
-		thread->SetConditionResult(false);
 		return OR_CONTINUE;
 	}
 

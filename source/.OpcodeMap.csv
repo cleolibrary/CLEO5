@@ -1,0 +1,12 @@
+First opcode, CLEO plugin
+2000, CLEO core
+2080, Input
+2100, DebugUtils
+2200, ImGUI
+2300, FileOperations
+2400, MemoryOperations
+2500, Audio
+2600, Text
+2700, Math
+2800, IniFiles
+2880, Sphere

@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "Math\Math.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GameEntities", "GameEntities\GameEntities.vcxproj", "{028FA524-5840-4948-98A0-8D7B6C873948}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Input", "Input\Input.vcxproj", "{5D335FF7-AFCF-42F4-A8AD-B2AB230168AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -57,6 +59,10 @@ Global
 		{028FA524-5840-4948-98A0-8D7B6C873948}.Debug|x86.Build.0 = Debug|Win32
 		{028FA524-5840-4948-98A0-8D7B6C873948}.Release|x86.ActiveCfg = Release|Win32
 		{028FA524-5840-4948-98A0-8D7B6C873948}.Release|x86.Build.0 = Release|Win32
+		{5D335FF7-AFCF-42F4-A8AD-B2AB230168AD}.Debug|x86.ActiveCfg = Debug|Win32
+		{5D335FF7-AFCF-42F4-A8AD-B2AB230168AD}.Debug|x86.Build.0 = Debug|Win32
+		{5D335FF7-AFCF-42F4-A8AD-B2AB230168AD}.Release|x86.ActiveCfg = Release|Win32
+		{5D335FF7-AFCF-42F4-A8AD-B2AB230168AD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

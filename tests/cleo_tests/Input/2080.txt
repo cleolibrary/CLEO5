@@ -1,0 +1,51 @@
+{$CLEO .s}
+{$USE input}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2080'
+test("2080 (is_key_just_pressed)", tests)
+terminate_this_custom_script
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+    it("should detect key press event", test1)
+    return
+    
+    
+    :cleanup
+        emulate_key_release {keyCode} KeyCode.Num5
+        wait {time} 0
+    return
+    
+    
+    function test1()
+        is_key_just_pressed {keyCode} KeyCode.Num5
+        assert_result_false()
+        
+        emulate_key_press {keyCode} KeyCode.Num5
+        wait {time} 0
+        
+        is_key_just_pressed {keyCode} KeyCode.Num5
+        assert_result_true()
+        
+        wait {time} 0
+        
+        is_key_just_pressed {keyCode} KeyCode.Num5
+        assert_result_false()
+        
+        wait {time} 0
+        
+        is_key_just_pressed {keyCode} KeyCode.Num5
+        assert_result_false()
+        
+        emulate_key_release {keyCode} KeyCode.Num5
+        is_key_just_pressed {keyCode} KeyCode.Num5
+        assert_result_false()
+        
+        wait {time} 0
+        
+        is_key_just_pressed {keyCode} KeyCode.Num5
+        assert_result_false()
+    end
+end
