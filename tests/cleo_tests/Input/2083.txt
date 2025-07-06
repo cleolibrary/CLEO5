@@ -1,0 +1,54 @@
+{$CLEO .s}
+{$USE input}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2083'
+test("2083 (emulate_key_press)", tests)
+terminate_this_custom_script
+
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+    it("should simulate key press", test1)
+    return
+    
+    
+    :cleanup
+        emulate_key_release {keyCode} KeyCode.H
+        emulate_key_release {keyCode} KeyCode.E
+        emulate_key_release {keyCode} KeyCode.S
+        emulate_key_release {keyCode} KeyCode.O
+        emulate_key_release {keyCode} KeyCode.Y
+        emulate_key_release {keyCode} KeyCode.A
+        emulate_key_release {keyCode} KeyCode.M
+        wait {time} 0
+    return
+    
+    
+    function test1()
+        set_char_health $scplayer {health} 50
+        is_char_health_greater $scplayer {health} 50
+        assert_result_false()
+        
+        // type in health cheat code
+        StrokeKey(72) // KeyCode.H
+        StrokeKey(69) // KeyCode.E
+        StrokeKey(83) // KeyCode.S
+        StrokeKey(79) // KeyCode.O
+        StrokeKey(89) // KeyCode.Y
+        StrokeKey(65) // KeyCode.A
+        StrokeKey(77) // KeyCode.M
+        
+        is_char_health_greater $scplayer {health} 99
+        assert_result_true()
+    end
+end
+
+
+function StrokeKey(keyCode: int)
+    emulate_key_press {keyCode} keyCode
+    wait {time} 0
+    emulate_key_release {keyCode} keyCode
+    wait {time} 0
+end

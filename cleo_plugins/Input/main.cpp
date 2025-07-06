@@ -2,6 +2,8 @@
 #include "CLEO_Utils.h"
 #include <CCheat.h>
 #include <CControllerConfigManager.h>
+#include <CMessages.h>
+#include <CText.h>
 #include <CTimer.h>
 #include <map>
 
@@ -10,6 +12,7 @@ using namespace CLEO;
 
 class Input
 {
+	static constexpr int Key_Code_None = -1;
 	static constexpr size_t Key_Code_Max = 0xFF;
 	static constexpr BYTE Key_Down_Flag = 0x80; // top bit
 
@@ -33,6 +36,7 @@ public:
 			CLEO_RegisterOpcode(0x2083, opcode_2083); // emulate_key_press
 			CLEO_RegisterOpcode(0x2084, opcode_2084); // emulate_key_release
 			CLEO_RegisterOpcode(0x2085, opcode_2085); // get_controller_key
+			CLEO_RegisterOpcode(0x2086, opcode_2086); // get_key_name
 
 			// register event callbacks
 			CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
@@ -126,7 +130,7 @@ public:
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
-		if (key == -1) // KeyCode::None
+		if (key == Key_Code_None)
 		{
 			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
@@ -169,7 +173,7 @@ public:
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
-		if (key == -1) // KeyCode::None
+		if (key == Key_Code_None)
 		{
 			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
@@ -265,7 +269,7 @@ public:
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
-		if (key == -1) // KeyCode::None
+		if (key == Key_Code_None)
 		{
 			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
@@ -287,7 +291,7 @@ public:
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
-		if (key == -1) // KeyCode::None
+		if (key == Key_Code_None)
 		{
 			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
@@ -304,7 +308,7 @@ public:
 	}
 
 	// get_controller_key
-	// [var keyCode: KeyCode] = get_controller_key {action} [ControllerAction] {altKeyIdx} [int]
+	// [var keyCode: KeyCode] = get_controller_key {action} [ControllerAction] {altKeyIdx} [int] (logical)
 	static OpcodeResult __stdcall opcode_2085(CRunningScript* thread)
 	{
 		auto actionId = OPCODE_READ_PARAM_INT();
@@ -427,6 +431,227 @@ public:
 		OPCODE_WRITE_PARAM_INT(keyCode);
 		OPCODE_CONDITION_RESULT(true);
 		return OR_CONTINUE;
+	}
+
+	// get_key_name
+	// [var name: String] = get_key_name {keyCode} [KeyCode] (logical)
+	static OpcodeResult __stdcall opcode_2086(CRunningScript* thread)
+	{
+		auto key = OPCODE_READ_PARAM_INT();
+		
+		static char buff[32];
+		const char* name = nullptr;
+
+		if ((key >= '0' && key <= '9') ||
+			(key >= 'A' && key <= 'Z'))
+		{
+			// direct ASCII equivalent
+			buff[0] = (char)key;
+			buff[1] = '\0';
+			name = buff;
+		}
+		else if (key >= VK_F1 && key <= VK_F24)
+		{
+			CMessages::InsertNumberInString(TheText.Get("FEC_FNC"), key - VK_F1 + 1, 0, 0, 0, 0, 0, buff);
+			name = buff;
+		}
+		else if (key >= VK_NUMPAD0 && key <= VK_NUMPAD9)
+		{
+			CMessages::InsertNumberInString(TheText.Get("FEC_NMN"), key - VK_NUMPAD0, 0, 0, 0, 0, 0, buff);
+			name = buff;
+		}
+		else
+		{
+			// based on CInputEvents::getEventKeyName
+			switch(key)
+			{
+				case Key_Code_None: name = TheText.Get("FEC_UNB"); break;
+
+				case VK_LBUTTON: name = TheText.Get("FEC_MSL"); break;
+				case VK_RBUTTON: name = TheText.Get("FEC_MSR"); break; 
+				//case VK_CANCEL
+				case VK_MBUTTON: name = TheText.Get("FEC_MSM"); break;
+				case VK_XBUTTON1: name = TheText.Get("FEC_MXO"); break;
+				case VK_XBUTTON2: name = TheText.Get("FEC_MXT"); break;
+
+				case VK_BACK: name = TheText.Get("FEC_BSP"); break;
+				case VK_TAB: name = TheText.Get("FEC_TAB"); break;
+				case VK_CLEAR: name = "CLEAR"; break;
+				case VK_RETURN: name = TheText.Get("FEC_RTN"); break;
+				case VK_SHIFT: name = TheText.Get("FEC_SFT"); break;
+				case VK_CONTROL: name = "CTRL"; break;
+				case VK_MENU: name = "ALT"; break;
+				case VK_PAUSE: name = TheText.Get("FEC_PSB"); break; // FEC_PAS
+				case VK_CAPITAL: name = TheText.Get("FEC_CLK"); break;
+				//case VK_KANA
+				//case VK_IME_ON
+				//case VK_JUNJA
+				//case VK_FINAL
+				//case VK_HANJA
+				//case VK_IME_OFF
+				case VK_ESCAPE: name = "ESC"; break;
+				//case VK_CONVERT
+				//case VK_NONCONVERT
+				//case VK_ACCEPT
+				//case VK_MODECHANGE
+				case VK_SPACE: name = TheText.Get("FEC_SPC"); break;
+				case VK_PRIOR: name = TheText.Get("FEC_PGU"); break;
+				case VK_NEXT: name = TheText.Get("FEC_PGD"); break;
+				case VK_END: name = TheText.Get("FEC_END"); break;
+				case VK_HOME: name = TheText.Get("FEC_HME"); break;
+				case VK_LEFT: name = TheText.Get("FEC_LFA"); break;
+				case VK_UP: name = TheText.Get("FEC_UPA"); break;
+				case VK_RIGHT: name = TheText.Get("FEC_RFA"); break;
+				case VK_DOWN: name = TheText.Get("FEC_DWA"); break;
+				case VK_SELECT: name = "SELECT"; break;
+				case VK_PRINT: name = "PRINT"; break;
+				case VK_EXECUTE: name = "EXECUTE"; break;
+				case VK_SNAPSHOT: name = "PRTSCR"; break;
+				case VK_INSERT: name = TheText.Get("FEC_IRT"); break;
+				case VK_DELETE: name = TheText.Get("FEC_DLL"); break;
+				case VK_HELP: name = "HELP"; break;
+				case VK_LWIN: name = TheText.Get("FEC_LWD"); break;
+				case VK_RWIN: name = TheText.Get("FEC_RWD"); break;
+				case VK_APPS: name = TheText.Get("FEC_WRC"); break;
+
+				case '^': // German "double s" letter
+					buff[0] = '|';
+					buff[1] = '\0';
+					name = buff;
+				break;
+
+				case VK_SLEEP: name = TheText.Get("SLEEP"); break;
+				case VK_MULTIPLY: name = TheText.Get("FECSTAR"); break;
+				case VK_ADD: name = TheText.Get("FEC_PLS"); break;
+				//case VK_SEPARATOR ???
+				case VK_SUBTRACT: name = TheText.Get("FEC_MIN"); break;
+				case VK_DECIMAL: name = TheText.Get("FEC_DOT"); break;
+				case VK_DIVIDE: name = TheText.Get("FEC_FWS"); break;
+				//case VK_NAVIGATION_VIEW
+				//case VK_NAVIGATION_MENU
+				//case VK_NAVIGATION_UP
+				//case VK_NAVIGATION_DOWN
+				//case VK_NAVIGATION_LEFT
+				//case VK_NAVIGATION_RIGHT
+				//case VK_NAVIGATION_ACCEPT
+				//case VK_NAVIGATION_CANCEL
+				case VK_NUMLOCK: name = TheText.Get("FEC_NLK"); break;
+				case VK_SCROLL: name = TheText.Get("FEC_SLK"); break;
+				case VK_OEM_NEC_EQUAL: name = TheText.Get("FEC_ETR"); break;
+				//case VK_OEM_FJ_JISHO
+				//case VK_OEM_FJ_MASSHOU
+				//case VK_OEM_FJ_TOUROKU
+				//case VK_OEM_FJ_LOYA
+				//case VK_OEM_FJ_ROYA
+				case VK_LSHIFT: name = TheText.Get("FEC_LSF"); break;
+				case VK_RSHIFT: name = TheText.Get("FEC_RSF"); break;
+				case VK_LCONTROL: name = TheText.Get("FEC_LCT"); break;
+				case VK_RCONTROL: name = TheText.Get("FEC_RCT"); break;
+				case VK_LMENU:name = TheText.Get("FEC_LAL"); break;
+				case VK_RMENU:name = TheText.Get("FEC_RAL"); break;
+				//case VK_BROWSER_BACK
+				//case VK_BROWSER_FORWARD
+				//case VK_BROWSER_REFRESH
+				//case VK_BROWSER_STOP
+				//case VK_BROWSER_SEARCH
+				//case VK_BROWSER_FAVORITES
+				//case VK_BROWSER_HOME
+				//case VK_VOLUME_MUTE
+				//case VK_VOLUME_DOWN
+				//case VK_VOLUME_UP
+				//case VK_MEDIA_NEXT_TRACK
+				//case VK_MEDIA_PREV_TRACK
+				//case VK_MEDIA_STOP: in GTA some French letter?
+				//case VK_MEDIA_PLAY_PAUSE
+				//case VK_LAUNCH_MAIL
+				//case VK_LAUNCH_MEDIA_SELECT
+				//case VK_LAUNCH_APP1
+				//case VK_LAUNCH_APP2
+				case VK_OEM_1: name = ","; break;
+				case VK_OEM_PLUS: name = "="; break;
+				case VK_OEM_COMMA: name = ","; break;
+				case VK_OEM_MINUS: name = "-"; break;
+				case VK_OEM_PERIOD: name = "."; break;
+				case VK_OEM_2: name = "/"; break;
+				case VK_OEM_3: name = "`"; break;
+				//case VK_GAMEPAD_A
+				//case VK_GAMEPAD_B
+				//case VK_GAMEPAD_X
+				//case VK_GAMEPAD_Y
+				//case VK_GAMEPAD_RIGHT_SHOULDER
+				//case VK_GAMEPAD_LEFT_SHOULDER
+				//case VK_GAMEPAD_LEFT_TRIGGER
+				//case VK_GAMEPAD_RIGHT_TRIGGER
+				//case VK_GAMEPAD_DPAD_UP
+				//case VK_GAMEPAD_DPAD_DOWN
+				//case VK_GAMEPAD_DPAD_LEFT
+				//case VK_GAMEPAD_DPAD_RIGHT
+				//case VK_GAMEPAD_MENU
+				//case VK_GAMEPAD_VIEW
+				//case VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON
+				//case VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON
+				//case VK_GAMEPAD_LEFT_THUMBSTICK_UP
+				//case VK_GAMEPAD_LEFT_THUMBSTICK_DOWN
+				//case VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT
+				//case VK_GAMEPAD_LEFT_THUMBSTICK_LEFT
+				//case VK_GAMEPAD_RIGHT_THUMBSTICK_UP
+				//case VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN
+				//case VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT
+				//case VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT
+				case VK_OEM_4: name = "["; break;
+				case VK_OEM_5: name = "\\"; break;
+				case VK_OEM_6: name = "]"; break;
+				case VK_OEM_7: name = "'"; break;
+				//case VK_OEM_8
+				//case VK_OEM_AX
+				//case VK_OEM_102
+				//case VK_ICO_HELP
+				//case VK_ICO_00
+				//case VK_ICO_CLEAR
+				//case VK_PACKET
+				//case VK_OEM_RESET
+				//case VK_OEM_JUMP
+				//case VK_OEM_PA1
+				//case VK_OEM_PA2
+				//case VK_OEM_PA3
+				//case VK_OEM_WSCTRL
+				//case VK_OEM_CUSEL
+				//case VK_OEM_ATTN
+				//case VK_OEM_FINISH
+				//case VK_OEM_COPY
+				//case VK_OEM_AUTO
+				//case VK_OEM_ENLW
+				//case VK_OEM_BACKTAB
+				//case VK_OEM_BACKTAB
+				//case VK_ATTN
+				//case VK_CRSEL
+				//case VK_EXSEL
+				//case VK_EREOF
+				//case VK_PLAY
+				//case VK_ZOOM
+				//case VK_NONAME
+				//case VK_PA1
+				//case VK_OEM_CLEAR
+
+				/*
+				
+				FEC_RAL
+				FEC_AST*/
+			}
+		}
+
+		if (name != nullptr)
+		{
+			OPCODE_WRITE_PARAM_STRING(name);
+			OPCODE_CONDITION_RESULT(true);
+			return OR_CONTINUE;
+		}
+		else
+		{
+			OPCODE_SKIP_PARAMS(1);
+			OPCODE_CONDITION_RESULT(false);
+			return OR_CONTINUE;
+		}
 	}
 
 } g_instance;
