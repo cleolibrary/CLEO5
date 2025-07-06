@@ -15,17 +15,17 @@ function tests
         longString nameVar
         
         nameVar = "-oriVal-"
-        nameVar = get_key_name {keyCode} 0x41 // 'A'
+        nameVar = get_key_name {keyCode} KeyCode.A
         assert_result_true()
         assert_eqs(nameVar, "A")
         
         nameVar = "-oriVal-"
-        nameVar = get_key_name {keyCode} 0x70 // VK_F1
+        nameVar = get_key_name {keyCode} KeyCode.F1
         assert_result_true()
         assert_eqs(nameVar, "F1")
         
         nameVar = "-oriVal-"
-        nameVar = get_key_name {keyCode} 0x7D // VK_RETURN
+        nameVar = get_key_name {keyCode} KeyCode.Return
         assert_result_true()
         assert_eqs(nameVar, "RETURN")
         
@@ -36,7 +36,7 @@ function tests
         
         int nameBuff = allocate_memory {size} 32
         string_format {result} nameBuff {format} "-oriVal-"
-        nameVar = get_key_name {keyCode} 0x61 // VK_NUMPAD1
+        nameVar = get_key_name {keyCode} KeyCode.NumPad1
         assert_result_true()
         assert_eqs(nameVar, "NUM1") // unmodified
         free_memory {address} nameBuff
