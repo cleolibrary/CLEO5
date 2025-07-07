@@ -180,9 +180,8 @@ public:
 		}
 		if (key < 0 || key > Key_Code_Max)
 		{
-			LOG_WARNING(thread, "Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str());
-			OPCODE_CONDITION_RESULT(false);
-			return OR_CONTINUE;
+			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str());
+			return thread->Suspend();
 		}
 
 		bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Down_Flag;
@@ -271,12 +270,11 @@ public:
 
 		if (key == Key_Code_None)
 		{
-			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
 		}
 		if (key < 0 || key > Key_Code_Max)
 		{
-			SHOW_ERROR("Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str());
+			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
 
@@ -293,12 +291,11 @@ public:
 
 		if (key == Key_Code_None)
 		{
-			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
 		}
 		if (key < 0 || key > Key_Code_Max)
 		{
-			SHOW_ERROR("Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str());
+			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
 
