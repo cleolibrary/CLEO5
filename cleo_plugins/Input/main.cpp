@@ -154,16 +154,22 @@ public:
 	{
 		OPCODE_READ_PARAM_STRING_LEN(text, sizeof(CCheat::m_CheatString));
 
-		_strrev(_buff_text); // reverse
 		auto len = strlen(_buff_text);
-		if (_strnicmp(_buff_text, CCheat::m_CheatString, len) == 0)
+		if (len == 0)
 		{
-			CCheat::m_CheatString[0] = '\0'; // consume the cheat
-			OPCODE_CONDITION_RESULT(true);
+			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
 		}
 
-		OPCODE_CONDITION_RESULT(false);
+		_strrev(_buff_text); // reverse
+		if (_strnicmp(_buff_text, CCheat::m_CheatString, len) != 0)
+		{
+			OPCODE_CONDITION_RESULT(false);
+			return OR_CONTINUE;
+		}
+
+		CCheat::m_CheatString[0] = '\0'; // consume the cheat
+		OPCODE_CONDITION_RESULT(true);
 		return OR_CONTINUE;
 	}
 

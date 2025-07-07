@@ -12,37 +12,40 @@ function tests
     after_each(@cleanup)
     it("should detect cheat code input", test1)
     return
-    
-    
+
+
     :cleanup
-        emulate_key_release {keyCode} KeyCode.Num5
-        emulate_key_release {keyCode} KeyCode.Num6
-        emulate_key_release {keyCode} KeyCode.E
-        emulate_key_release {keyCode} KeyCode.T
-        wait {time} 0
+    emulate_key_release {keyCode} KeyCode.Num5
+    emulate_key_release {keyCode} KeyCode.Num6
+    emulate_key_release {keyCode} KeyCode.E
+    emulate_key_release {keyCode} KeyCode.T
+    wait {time} 0
     return
-    
-    
-    function test1()    
+
+
+    function test1()
+        test_cheat {input} ""
+        assert_result_false()
+
         test_cheat {input} "T56E"
         assert_result_false()
-        
+
         StrokeKey(0x54) // T
         test_cheat {input} "T56E"
         assert_result_false()
-        
+
         StrokeKey(0x35) // 5
         test_cheat {input} "T56E"
         assert_result_false()
-        
+
         StrokeKey(0x36) // 6
         test_cheat {input} "T56E"
         assert_result_false()
-        
+
         StrokeKey(0x45) // E
         test_cheat {input} "T56E"
         assert_result_true()
-        
+
         // cheat should be consumed
         test_cheat {input} "T56E"
         assert_result_false()
