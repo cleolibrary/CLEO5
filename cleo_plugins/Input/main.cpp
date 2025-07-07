@@ -14,7 +14,7 @@ class Input
 {
 	static constexpr int Key_Code_None = -1;
 	static constexpr size_t Key_Code_Max = 0xFF;
-	static constexpr BYTE Key_Down_Flag = 0x80; // top bit
+	static constexpr BYTE Key_Flag_Down = 0x80; // top bit
 
 public:
 	std::array<BYTE, Key_Code_Max + 1>* keyStatesCurr, *keyStatesPrev;
@@ -142,7 +142,7 @@ public:
 			return OR_CONTINUE;
 		}
 
-		bool isDown = g_instance.keyStatesCurr->at(key) & Key_Down_Flag;
+		bool isDown = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
 
 		thread->SetConditionResult(isDown);
 		return OR_CONTINUE;
@@ -190,8 +190,8 @@ public:
 			return thread->Suspend();
 		}
 
-		bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Down_Flag;
-		bool isDown = g_instance.keyStatesCurr->at(key) & Key_Down_Flag;
+		bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Flag_Down;
+		bool isDown = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
 
 		OPCODE_CONDITION_RESULT(!wasDown && isDown);
 		return OR_CONTINUE;
@@ -217,7 +217,7 @@ public:
 
 		for (auto key = keyMin; key <= keyMax; key++)
 		{
-			bool isDown = g_instance.keyStatesCurr->at(key) & Key_Down_Flag;
+			bool isDown = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
 
 			if (isDown)
 			{
@@ -252,8 +252,8 @@ public:
 
 		for (auto key = keyMin; key <= keyMax; key++)
 		{
-			bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Down_Flag;
-			bool isDown = g_instance.keyStatesCurr->at(key) & Key_Down_Flag;
+			bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Flag_Down;
+			bool isDown = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
 
 			if (!wasDown && isDown)
 			{
