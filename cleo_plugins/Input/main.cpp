@@ -322,7 +322,7 @@ public:
 			SHOW_ERROR("Invalid value (%d) of 'action' argument in script %s\nScript suspended.", actionId, ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
-		if (altKeyIdx < 0 || altKeyIdx > _countof(CControllerAction::keys))
+		if (altKeyIdx < 0 || altKeyIdx >= _countof(CControllerAction::keys))
 		{
 			SHOW_ERROR("Invalid value (%d) of 'altKeyIdx' argument in script %s\nScript suspended.", actionId, ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
@@ -437,7 +437,7 @@ public:
 	}
 
 	// get_key_name
-	// [var name: String] = get_key_name {keyCode} [KeyCode] (logical)
+	// [var name: string] = get_key_name {keyCode} [KeyCode] (logical)
 	static OpcodeResult __stdcall opcode_2086(CRunningScript* thread)
 	{
 		auto key = OPCODE_READ_PARAM_INT();
@@ -523,7 +523,7 @@ public:
 					name = buff;
 				break;
 
-				case VK_SLEEP: name = TheText.Get("SLEEP"); break;
+				case VK_SLEEP: name = "SLEEP"; break;
 				case VK_MULTIPLY: name = TheText.Get("FECSTAR"); break;
 				case VK_ADD: name = TheText.Get("FEC_PLS"); break;
 				//case VK_SEPARATOR ???
@@ -635,26 +635,19 @@ public:
 				//case VK_NONAME
 				//case VK_PA1
 				//case VK_OEM_CLEAR
-
-				/*
-				
-				FEC_RAL
-				FEC_AST*/
 			}
 		}
 
-		if (name != nullptr)
-		{
-			OPCODE_WRITE_PARAM_STRING(name);
-			OPCODE_CONDITION_RESULT(true);
-			return OR_CONTINUE;
-		}
-		else
+		if (name == nullptr)
 		{
 			OPCODE_SKIP_PARAMS(1);
 			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
 		}
+
+		OPCODE_WRITE_PARAM_STRING(name);
+		OPCODE_CONDITION_RESULT(true);
+		return OR_CONTINUE;
 	}
 
 } g_instance;
