@@ -92,7 +92,7 @@ extern "C"
         strncpy_s(buf, bufSize, msg.c_str(), bufSize);
     }
 
-    DWORD WINAPI CLEO_GetScriptSourceOffset(const CRunningScript* script, const BYTE* codePos)
+    DWORD WINAPI CLEO_GetScriptBaseRelativeOffset(const CRunningScript* script, const BYTE* codePos)
     {
         auto base = (BYTE*)script->BaseIP;
         if (base == 0) base = CleoInstance.ScriptEngine.scmBlock;

@@ -357,7 +357,7 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
         }
         else
         {
-            auto offset = CLEO_GetScriptSourceOffset((CLEO::CRunningScript*)this, (BYTE*)CCustomOpcodeSystem::lastOpcodePtr);
+            auto offset = CLEO_GetScriptBaseRelativeOffset((CLEO::CRunningScript*)this, (BYTE*)CCustomOpcodeSystem::lastOpcodePtr);
             ss << "offset {" << offset << "}"; // Sanny offsets style
             ss << " - ";
             ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
