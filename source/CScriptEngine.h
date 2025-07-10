@@ -12,6 +12,12 @@ namespace CLEO
     public:
         bool gameInProgress = false;
 
+        BYTE* scmBlock = nullptr;
+        BYTE* missionBlock = nullptr;
+        int missionIndex = -1;
+        CRunningScript** inactiveThreadQueue = nullptr;
+        CRunningScript** activeThreadQueue = nullptr;
+
         friend class CCustomScript;
         std::list<CCustomScript *> CustomScripts;
         std::list<CCustomScript *> ScriptsWaitingForDelete;
@@ -86,8 +92,5 @@ namespace CLEO
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
 
     inline SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread);
-
-    extern BYTE *scmBlock, *missionBlock;
-    extern int missionIndex;
 }
 

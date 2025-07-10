@@ -138,8 +138,8 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
                     throw std::logic_error("Starting of custom mission when other mission loaded");
 
                 CTheScripts::bAlreadyRunningAMissionScript = 1;
-                missionIndex = -1;
-                BaseIP = CurrentIP = missionBlock; // TODO: there should be check length <= missionBlock size
+                CleoInstance.ScriptEngine.missionIndex = -1;
+                BaseIP = CurrentIP = CleoInstance.ScriptEngine.missionBlock; // TODO: there should be check length <= missionBlock size
             }
             else
             {

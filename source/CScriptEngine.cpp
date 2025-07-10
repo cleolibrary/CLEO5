@@ -201,12 +201,6 @@ namespace CLEO
 
     void(__cdecl * InitScm)();
 
-    BYTE* scmBlock = nullptr;
-    BYTE* missionBlock = nullptr;
-    int missionIndex = -1;
-    CRunningScript** inactiveThreadQueue = nullptr;
-    CRunningScript** activeThreadQueue = nullptr;
-
     void OnLoadScmData(void)
     {
         TRACE("Loading scripts save data...");

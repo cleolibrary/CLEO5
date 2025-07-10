@@ -350,6 +350,7 @@ extern "C"
 	BOOL WINAPI CLEO_IsScriptRunning(const CRunningScript* thread); // check if script is active
 	void WINAPI CLEO_GetScriptInfoStr(CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize); // short text for displaying in error\log messages
 	void WINAPI CLEO_GetScriptParamInfoStr(int idexOffset, char* buf, DWORD bufSize); // short text with last processed + idexOffset opcode's parameter info (index and name if available)
+	DWORD WINAPI CLEO_GetSourceOffset(CRunningScript* thread, DWORD instructionPointer); // get offset within script file
 	eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread); // get compatible version
 	void WINAPI CLEO_SetScriptVersion(CRunningScript* thread, eCLEO_Version version); // set compatible version
 	LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread); // returns nullptr if provided script ptr is not valid
@@ -358,7 +359,6 @@ extern "C"
 	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
 	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
-	DWORD WINAPI CLEO_GetSourceOffset(CRunningScript* thread, DWORD instructionPointer); // get offset within script file
 	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);
 	void WINAPI CLEO_TerminateScript(CRunningScript* thread);
 
@@ -369,6 +369,7 @@ extern "C"
 	extern SCRIPT_VAR* missionLocals;
 	extern CRunningScript* staticThreads;
 
+	BYTE* WINAPI CLEO_GetScmMainData(); // get pointer to main script block. Supports limit adjusters
 	SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray(); // get pointer to 'SCRIPT_VAR[32] opcodeParams'. Used by Retrieve/Record opcode params functions
 	BYTE WINAPI CLEO_GetParamsHandledCount(); // number of already read/written opcode parameters since current opcode handler was called
 

@@ -92,6 +92,28 @@ extern "C"
         strncpy_s(buf, bufSize, msg.c_str(), bufSize);
     }
 
+    DWORD WINAPI CLEO_GetSourceOffset(CRunningScript* thread, DWORD instructionPointer)
+    {
+        auto base = (DWORD)thread->BaseIP;
+        if (base == 0) base = (DWORD)CleoInstance.ScriptEngine.scmBlock;
+
+        if (thread->IsMission() && !thread->IsCustom())
+        {
+            if (instructionPointer >= (DWORD)CleoInstance.ScriptEngine.missionBlock)
+            {
+                // we are in mission code buffer
+                // native missions are loaded from script file into mission block area
+                instructionPointer += ((DWORD*)CTheScripts::MultiScriptArray)[CleoInstance.ScriptEngine.missionIndex]; // start offset of this mission within source script file
+            }
+            else
+            {
+                base = (DWORD)CleoInstance.ScriptEngine.scmBlock; // seems that mission uses main scm code
+            }
+        }
+
+        return instructionPointer - base;
+    }
+
     eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread)
     {
         if (thread->IsCustom())
@@ -136,28 +158,6 @@ extern "C"
         ((::CRunningScript*)thread)->UpdateCompareFlag(result != FALSE); // CRunningScript from Plugin SDK
     }
 
-    DWORD WINAPI CLEO_GetSourceOffset(CRunningScript* thread, DWORD instructionPointer)
-    {
-        auto base = (DWORD)thread->BaseIP;
-        if (base == 0) base = (DWORD)scmBlock;
-
-        if (thread->IsMission() && !thread->IsCustom())
-        {
-            if (instructionPointer >= (DWORD)missionBlock)
-            {
-                // we are in mission code buffer
-                // native missions are loaded from script file into mission block area
-                instructionPointer += ((DWORD*)CTheScripts::MultiScriptArray)[missionIndex]; // start offset of this mission within source script file
-            }
-            else
-            {
-                base = (DWORD)scmBlock; // seems that mission uses main scm code
-            }
-        }
-
-        return instructionPointer - base;
-    }
-
     void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)
     {
         ThreadJump(thread, labelPtr);
@@ -181,6 +181,11 @@ extern "C"
     SCRIPT_VAR* opcodeParams;
     SCRIPT_VAR* missionLocals;
     CRunningScript* staticThreads;
+
+    BYTE* WINAPI CLEO_GetScmMainData()
+    {
+        return CleoInstance.ScriptEngine.scmBlock;
+    }
 
     SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray()
     {

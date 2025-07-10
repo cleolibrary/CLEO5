@@ -738,7 +738,7 @@ namespace CLEO
 
 	inline void ThreadJump(CRunningScript *thread, int off)
 	{
-		thread->SetIp(off < 0 ? thread->GetBasePointer() - off : scmBlock + off);
+		thread->SetIp(off < 0 ? thread->GetBasePointer() - off : CleoInstance.ScriptEngine.scmBlock + off);
 	}
 
 	void SkipUnusedVarArgs(CRunningScript *thread)
@@ -794,7 +794,7 @@ namespace CLEO
 
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread) // load_and_launch_mission_internal
 	{
-		missionIndex = CLEO_PeekIntOpcodeParam(thread);
+		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
 		size_t tableIdx = 0x0417 / 100; // 100 opcodes peer handler table
 		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
 	}
