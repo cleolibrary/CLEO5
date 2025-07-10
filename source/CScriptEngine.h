@@ -34,7 +34,7 @@ namespace CLEO
         CScriptEngine(const CScriptEngine&) = delete; // no copying
         ~CScriptEngine();
         
-        void Inject(CCodeInjector&);
+        void Inject(CCodeInjector&, bool lateInit);
 
         void GameBegin(); // call after new game started
         void GameEnd();
@@ -88,6 +88,6 @@ namespace CLEO
     inline SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread);
 
     extern BYTE *scmBlock, *missionBlock;
-    extern int MissionIndex;
+    extern int missionIndex;
 }
 

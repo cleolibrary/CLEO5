@@ -136,6 +136,28 @@ extern "C"
         ((::CRunningScript*)thread)->UpdateCompareFlag(result != FALSE); // CRunningScript from Plugin SDK
     }
 
+    DWORD WINAPI CLEO_GetSourceOffset(CRunningScript* thread, DWORD instructionPointer)
+    {
+        auto base = (DWORD)thread->BaseIP;
+        if (base == 0) base = (DWORD)scmBlock;
+
+        if (thread->IsMission() && !thread->IsCustom())
+        {
+            if (instructionPointer >= (DWORD)missionBlock)
+            {
+                // we are in mission code buffer
+                // native missions are loaded from script file into mission block area
+                instructionPointer += ((DWORD*)CTheScripts::MultiScriptArray)[missionIndex]; // start offset of this mission within source script file
+            }
+            else
+            {
+                base = (DWORD)scmBlock; // seems that mission uses main scm code
+            }
+        }
+
+        return instructionPointer - base;
+    }
+
     void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)
     {
         ThreadJump(thread, labelPtr);

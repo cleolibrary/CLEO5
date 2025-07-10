@@ -23,10 +23,9 @@ namespace CLEO
 
         // GV_US10,		GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x00A43C78,	memory_und, 0x00A43C78, 0x00A462F8, 0x00AB8DD0 },		// MA_OPCODE_PARAMS,
-        { 0x00A49960,	memory_und, 0x00A49960, 0x00A4BFE0, 0x00ABEA90 },		// MA_SCM_BLOCK,
+        { 0x0044CA44,	memory_und, memory_und, memory_und, memory_und },		// MA_SCM_BLOCK_REF,
         { 0x00A48960,	memory_und, 0x00A48960, 0x00A4AFE0, 0x00ABDA90 },		// MA_MISSION_LOCALS,
-        { 0x00A7A6A0,	memory_und, 0x00A7A6A0, 0x00A7CD20, 0x00AEF7D0 },		// MA_MISSION_BLOCK,
-        { 0x00A476AC,	memory_und, 0x00A476AC, 0x00A49D2C, 0x00ABC7DC },		// MA_ON_MISSION_FLAG,
+        { 0x004899D7,	memory_und, memory_und, memory_und, memory_und },		// MA_MISSION_BLOCK_REF,
         { 0x00A8B42C,	memory_und, 0x00A8B42C, 0x00A8DAAC, 0x00B00558 },		// MA_ACTIVE_THREAD_QUEUE,
         { 0x00A8B428,	memory_und, 0x00A8B428, 0x00A8DAA8, 0x00ABDA8C },		// MA_INACTIVE_THREAD_QUEUE,
         { 0x00A8B430,	memory_und, 0x00A8B430, 0x00A8DAB0, 0x00B00560 },		// MA_STATIC_THREADS,

@@ -794,7 +794,7 @@ namespace CLEO
 
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread) // load_and_launch_mission_internal
 	{
-		MissionIndex = CLEO_PeekIntOpcodeParam(thread);
+		missionIndex = CLEO_PeekIntOpcodeParam(thread);
 		size_t tableIdx = 0x0417 / 100; // 100 opcodes peer handler table
 		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
 	}

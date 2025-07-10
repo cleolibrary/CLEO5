@@ -358,6 +358,7 @@ extern "C"
 	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
 	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
+	DWORD WINAPI CLEO_GetSourceOffset(CRunningScript* thread, DWORD instructionPointer); // get offset within script file
 	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);
 	void WINAPI CLEO_TerminateScript(CRunningScript* thread);
 

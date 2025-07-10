@@ -138,7 +138,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
                     throw std::logic_error("Starting of custom mission when other mission loaded");
 
                 CTheScripts::bAlreadyRunningAMissionScript = 1;
-                MissionIndex = -1;
+                missionIndex = -1;
                 BaseIP = CurrentIP = missionBlock; // TODO: there should be check length <= missionBlock size
             }
             else
@@ -357,26 +357,7 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
         }
         else
         {
-            auto base = (DWORD)BaseIP;
-            if (base == 0) base = (DWORD)scmBlock;
-            auto currPos = (DWORD)CCustomOpcodeSystem::lastOpcodePtr;
-
-            if (IsMission() && !IsCustom())
-            {
-                if (currPos >= (DWORD)missionBlock)
-                {
-                    // we are in mission code buffer
-                    // native missions are loaded from script file into mission block area
-                    currPos += ((DWORD*)CTheScripts::MultiScriptArray)[MissionIndex]; // start offset of this mission within source script file
-                }
-                else
-                {
-                    base = (DWORD)scmBlock; // seems that mission uses main scm code
-                }
-            }
-
-            auto offset = currPos - base;
-
+            auto offset = CLEO_GetSourceOffset((CLEO::CRunningScript*)this, (DWORD)CCustomOpcodeSystem::lastOpcodePtr);
             ss << "offset {" << offset << "}"; // Sanny offsets style
             ss << " - ";
             ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
