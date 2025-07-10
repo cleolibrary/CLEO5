@@ -336,56 +336,54 @@ namespace CLEO
         }
     }
 
-    void CScriptEngine::Inject(CCodeInjector& inj, bool lateInit)
+    void CScriptEngine::Inject(CCodeInjector& inj)
     {
+        TRACE("Injecting ScriptEngine: Phase 1");
+        CGameVersionManager& gvm = CleoInstance.VersionManager;
+            
+        // Global Events crashfix
+        //inj.MemoryWrite(0xA9AF6C, 0, 4);
+
+        // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
+        FUNC_ScriptOpcodeHandler00 = gvm.TranslateMemoryAddress(MA_SCRIPT_OPCODE_HANDLER0_FUNCTION);
+        FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
+        FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
+        FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
+        FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
+        FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
+
+        ScriptOpcodeHandler00 = reinterpret_cast<char(__thiscall*)(CRunningScript*, WORD)>(_ScriptOpcodeHandler00);
+        GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
+        TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
+        SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);
+        GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
+        GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
+
+        opcodeParams = gvm.TranslateMemoryAddress(MA_OPCODE_PARAMS);
+        missionLocals = gvm.TranslateMemoryAddress(MA_MISSION_LOCALS);
+
+        // Protect script dependencies
+        inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
+
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
+
+        inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);
+        activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
+        staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
+
+        inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
+        inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
+    }
+
+    void CScriptEngine::InjectLate(CCodeInjector& inj)
+    {
+        TRACE("Injecting ScriptEngine: Phase 2");
         CGameVersionManager& gvm = CleoInstance.VersionManager;
 
-        if (!lateInit)
-        {
-            TRACE("Injecting ScriptEngine: Phase 1");
-            
-            // Global Events crashfix
-            //inj.MemoryWrite(0xA9AF6C, 0, 4);
-
-            // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-            FUNC_ScriptOpcodeHandler00 = gvm.TranslateMemoryAddress(MA_SCRIPT_OPCODE_HANDLER0_FUNCTION);
-            FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
-            FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
-            FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
-            FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
-            FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
-
-            ScriptOpcodeHandler00 = reinterpret_cast<char(__thiscall*)(CRunningScript*, WORD)>(_ScriptOpcodeHandler00);
-            GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
-            TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
-            SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);
-            GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
-            GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
-
-            opcodeParams = gvm.TranslateMemoryAddress(MA_OPCODE_PARAMS);
-            missionLocals = gvm.TranslateMemoryAddress(MA_MISSION_LOCALS);
-
-            // Protect script dependencies
-            inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
-
-            inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
-            inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
-
-            inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);
-            activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
-            staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
-
-            inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
-            inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
-        }
-        else // late initialization
-        {
-            TRACE("Injecting ScriptEngine: Phase 2");
-
-            // limit adjusters support: get adresses from (possibly) patched references
-            scmBlock = MemRead<BYTE*>(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF)); 
-            missionBlock = MemRead<BYTE*>(gvm.TranslateMemoryAddress(MA_MISSION_BLOCK_REF));
-        }
+        // limit adjusters support: get adresses from (possibly) patched references
+        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), scmBlock);
+        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_MISSION_BLOCK_REF), missionBlock);
     }
 
     CScriptEngine::~CScriptEngine()

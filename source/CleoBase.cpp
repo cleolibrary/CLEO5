@@ -134,7 +134,7 @@ namespace CLEO
             GameMenu.Inject(CodeInjector);
             DmaFix.Inject(CodeInjector);
             OpcodeSystem.Inject(CodeInjector);
-            ScriptEngine.Inject(CodeInjector, false);
+            ScriptEngine.Inject(CodeInjector);
 
             CodeInjector.ReplaceFunction(OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig);
 
@@ -159,7 +159,7 @@ namespace CLEO
 
             const_cast<std::string&>(Filepath_User) = GetUserDirectory(); // force update now, as it could be modifed by PortableGTA.asi
 
-            ScriptEngine.Inject(CodeInjector, true);
+            ScriptEngine.InjectLate(CodeInjector);
 
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Idle, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE), &GameRestartDebugDisplayTextBuffer_IdleOrig);
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Frontend, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND), &GameRestartDebugDisplayTextBuffer_FrontendOrig);
