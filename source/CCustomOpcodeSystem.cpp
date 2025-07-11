@@ -404,7 +404,7 @@ namespace CLEO
 				case DT_LVAR_TEXTLABEL:
 				case DT_VAR_TEXTLABEL_ARRAY:
 				case DT_LVAR_TEXTLABEL_ARRAY:
-					result.data = (char*)GetScriptParamPointer(thread);
+					result.data = (char*)CScriptEngine::GetScriptParamPointer(thread);
 					result.size = 8;
 					result.needTerminator = false;
 					return result;
@@ -414,7 +414,7 @@ namespace CLEO
 				case DT_LVAR_STRING:
 				case DT_VAR_STRING_ARRAY:
 				case DT_LVAR_STRING_ARRAY:
-					result.data = (char*)GetScriptParamPointer(thread);
+					result.data = (char*)CScriptEngine::GetScriptParamPointer(thread);
 					result.size = 16;
 					result.needTerminator = false;
 					return result;
