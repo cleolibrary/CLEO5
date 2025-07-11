@@ -12,9 +12,6 @@ namespace CLEO
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x0057B9FD,	memory_und, 0x0057B9FD, 0x0057BF71, 0x00591379 },		// MA_CALL_CTEXTURE_DRAW_BG_RECT,
 
-        // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
-        { 0x00463D50,	memory_und, 0x00463D50, 0x00463DD0, 0x00469420 },		// MA_GET_SCRIPT_STRING_PARAM_FUNCTION,
-
         // GV_US10,		GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x0044CA44,	memory_und, memory_und, memory_und, memory_und },		// MA_SCM_BLOCK_REF,
         { 0x004899D7,	memory_und, memory_und, memory_und, memory_und },		// MA_MISSION_BLOCK_REF,

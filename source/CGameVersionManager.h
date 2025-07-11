@@ -29,7 +29,6 @@ namespace CLEO
         MA_CALL_CTEXTURE_DRAW_BG_RECT,
 
         // ScriptEngine
-        MA_GET_SCRIPT_STRING_PARAM_FUNCTION,
         MA_SCM_BLOCK_REF,
         MA_MISSION_BLOCK_REF,
         MA_CALL_INIT_SCM1,
