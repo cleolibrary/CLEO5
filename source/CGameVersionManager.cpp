@@ -13,7 +13,6 @@ namespace CLEO
         { 0x0057B9FD,	memory_und, 0x0057B9FD, 0x0057BF71, 0x00591379 },		// MA_CALL_CTEXTURE_DRAW_BG_RECT,
 
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
-        { 0x00465E60,	memory_und, 0x00465E60, 0x00465EE0, 0x0046B640 },		// MA_SCRIPT_OPCODE_HANDLER0_FUNCTION,
         { 0x00464080,	memory_und, 0x00464080, 0x00464100, 0x00469790 },		// MA_GET_SCRIPT_PARAMS_FUNCTION,
         { 0x00464500,	memory_und, 0x00464500, 0x00464580, 0x00469BF0 },		// MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION,
         { 0x00464370,	memory_und, 0x00464370, 0x004643F0, 0x00469A70 },		// MA_SET_SCRIPT_PARAMS_FUNCTION,
@@ -22,12 +21,9 @@ namespace CLEO
         { 0x00464790,	memory_und, 0x00464790, 0x00464810, 0x00469E80 },		// MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION,
 
         // GV_US10,		GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
-        { 0x00A43C78,	memory_und, 0x00A43C78, 0x00A462F8, 0x00AB8DD0 },		// MA_OPCODE_PARAMS,
         { 0x0044CA44,	memory_und, memory_und, memory_und, memory_und },		// MA_SCM_BLOCK_REF,
-        { 0x00A48960,	memory_und, 0x00A48960, 0x00A4AFE0, 0x00ABDA90 },		// MA_MISSION_LOCALS,
         { 0x004899D7,	memory_und, memory_und, memory_und, memory_und },		// MA_MISSION_BLOCK_REF,
         { 0x00A8B42C,	memory_und, 0x00A8B42C, 0x00A8DAAC, 0x00B00558 },		// MA_ACTIVE_THREAD_QUEUE,
-        { 0x00A8B428,	memory_und, 0x00A8B428, 0x00A8DAA8, 0x00ABDA8C },		// MA_INACTIVE_THREAD_QUEUE,
         { 0x00A8B430,	memory_und, 0x00A8B430, 0x00A8DAB0, 0x00B00560 },		// MA_STATIC_THREADS,
         { 0x0053BDD7,	memory_und, 0x0053BDD7, memory_und, 0x0054DD49 },		// MA_CALL_INIT_SCM1,
         { 0x005BA340,	memory_und, 0x005BA340, memory_und, 0x005D8EE9 },		// MA_CALL_INIT_SCM2,

@@ -4,32 +4,17 @@
 
 namespace CLEO
 {
-    DWORD FUNC_ScriptOpcodeHandler00;
     DWORD FUNC_GetScriptParams;
     DWORD FUNC_TransmitScriptParams;
     DWORD FUNC_SetScriptParams;
     DWORD FUNC_GetScriptParamPointer1;
     DWORD FUNC_GetScriptParamPointer2;
 
-    char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
     void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
     void(__thiscall * SetScriptParams)(CRunningScript *, int count);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
-    char __fastcall _ScriptOpcodeHandler00(CRunningScript *pScript, int dummy, WORD opcode)
-    {
-        int result;
-        _asm
-        {
-            push opcode
-            mov ecx, pScript
-            call FUNC_ScriptOpcodeHandler00
-            mov result, eax
-        }
-        return result;
-    }
 
     void __fastcall _GetScriptParams(CRunningScript *pScript, int dummy, int count)
     {
@@ -345,22 +330,20 @@ namespace CLEO
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
 
         // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-        FUNC_ScriptOpcodeHandler00 = gvm.TranslateMemoryAddress(MA_SCRIPT_OPCODE_HANDLER0_FUNCTION);
         FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
         FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
         FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
-        ScriptOpcodeHandler00 = reinterpret_cast<char(__thiscall*)(CRunningScript*, WORD)>(_ScriptOpcodeHandler00);
         GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
         TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
         SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);
         GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
-        opcodeParams = gvm.TranslateMemoryAddress(MA_OPCODE_PARAMS);
-        missionLocals = gvm.TranslateMemoryAddress(MA_MISSION_LOCALS);
+        opcodeParams = (SCRIPT_VAR*)ScriptParams; // from TheScripts.cpp
+        missionLocals = (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission;
 
         // Protect script dependencies
         inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
@@ -368,7 +351,6 @@ namespace CLEO
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
 
-        inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);
         activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
         staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
 
@@ -812,7 +794,7 @@ namespace CLEO
                 return true;
         }
 
-        for (auto script = *inactiveThreadQueue; script != nullptr; script = script->GetNext())
+        for (auto script = (CLEO::CRunningScript*)CTheScripts::pIdleScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr)
                 return true;
@@ -869,7 +851,7 @@ namespace CLEO
         {
             auto cs = (CCustomScript*)script;
             cs->RemoveScriptFromList(activeThreadQueue);
-            cs->AddScriptToList(inactiveThreadQueue);
+            cs->AddScriptToList((CRunningScript**)&CTheScripts::pIdleScripts);
             cs->ShutdownThisScript();
         }
     }
