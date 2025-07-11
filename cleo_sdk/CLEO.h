@@ -79,6 +79,10 @@ enum eArrayDataType : BYTE
 	ADT_NONE = 0xFF // CLEO internal
 };
 static const BYTE ArrayDataTypeMask = ADT_INT | ADT_FLOAT | ADT_TEXTLABEL | ADT_STRING; // array flags byte contains other info too. Type needs to be masked when read
+enum eArrayDataTypeFlags : BYTE
+{
+	ADTF_INDEX_GLOBAL = 0x80
+};
 
 static const char* ToStr(eDataType type)
 {
@@ -358,7 +362,9 @@ extern "C"
 	LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread);
 	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
+	DWORD WINAPI CLEO_GetScriptCleoStackSize(CRunningScript* thread); // get length of current cleo_call chain
 	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
+	DWORD WINAPI CLEO_GetSourceOffset(CRunningScript* thread, DWORD instructionPointer); // get offset within script file
 	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);
 	void WINAPI CLEO_TerminateScript(CRunningScript* thread);
 
@@ -514,16 +520,16 @@ public:
 	eArrayDataType PeekArrayDataType() const { BYTE t = *(CurrentIP + 1 + 2 + 2 + 1); t &= ArrayDataTypeMask; return (eArrayDataType)t; } // result valid only for array type params
 
 	eDataType ReadDataType() { return (eDataType)ReadDataByte(); }
-	short ReadDataVarIndex() { return ReadDataWord(); }
-	short ReadDataArrayOffset() { return ReadDataWord(); }
-	short ReadDataArrayIndex() { return ReadDataWord(); }
-	short ReadDataArraySize() { return ReadDataByte(); }
-	short ReadDataArrayFlags() { return ReadDataByte(); }
+	WORD ReadDataVarIndex() { return ReadDataWord(); }
+	WORD ReadDataArrayOffset() { return ReadDataWord(); }
+	WORD ReadDataArrayIndexVar() { return ReadDataWord(); }
+	BYTE ReadDataArraySize() { return ReadDataByte(); }
+	BYTE ReadDataArrayFlags() { return ReadDataByte(); }
 
 	void IncPtr(int n = 1) { CurrentIP += n; }
-	int ReadDataByte() { char b = *CurrentIP; ++CurrentIP; return b; }
-	short ReadDataWord() { short v = *(short*)CurrentIP; CurrentIP += 2; return v; }
-	int ReadDataInt() { int i = *(int*)CurrentIP; CurrentIP += 4; return i; }
+	BYTE ReadDataByte() { BYTE b = *CurrentIP; CurrentIP += sizeof(BYTE); return b; }
+	WORD ReadDataWord() { WORD v = *(WORD*)CurrentIP; CurrentIP += sizeof(WORD); return v; }
+	DWORD ReadDataDword() { DWORD i = *(DWORD*)CurrentIP; CurrentIP += sizeof(DWORD); return i; }
 
 	void PushStack(BYTE* ptr) { Stack[SP++] = ptr; }
 	BYTE* PopStack() { return Stack[--SP]; }
