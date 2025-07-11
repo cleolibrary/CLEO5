@@ -351,7 +351,6 @@ namespace CLEO
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
 
-        activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
         staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
 
         inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
@@ -381,6 +380,8 @@ namespace CLEO
 
     void CScriptEngine::GameBegin()
     {
+        auto activeThreadQueue = (CRunningScript**)&CTheScripts::pActiveScripts;
+
         if(gameInProgress) return; // already started
         if(activeThreadQueue == nullptr || activeThreadQueue[0] == nullptr) return; // main gamescript not loaded yet 
         gameInProgress = true;
@@ -674,7 +675,7 @@ namespace CLEO
     {
         if (standardScripts)
         {
-            for (auto script = *activeThreadQueue; script; script = script->GetNext())
+            for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script; script = script->GetNext())
             {
                 if (script->IsCustom()) 
                 {
@@ -740,7 +741,7 @@ namespace CLEO
         };
 
         // standard scripts
-        for (auto script = *activeThreadQueue; script; script = script->GetNext())
+        for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script; script = script->GetNext())
         {
             if (CheckScript(script))
             {
@@ -771,7 +772,7 @@ namespace CLEO
 
     bool CScriptEngine::IsActiveScriptPtr(const CRunningScript* ptr) const
     {
-        for (auto script = *activeThreadQueue; script != nullptr; script = script->GetNext())
+        for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr)
                 return ptr->IsActive();
@@ -788,7 +789,7 @@ namespace CLEO
 
     bool CScriptEngine::IsValidScriptPtr(const CRunningScript* ptr) const
     {
-        for (auto script = *activeThreadQueue; script != nullptr; script = script->GetNext())
+        for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr)
                 return true;
@@ -828,7 +829,7 @@ namespace CLEO
             CustomScripts.push_back(cs);
         }
 
-        cs->AddScriptToList(activeThreadQueue);
+        cs->AddScriptToList((CRunningScript**)&CTheScripts::pActiveScripts);
         cs->SetActive(true);
 
         // run registered callbacks
@@ -850,7 +851,7 @@ namespace CLEO
         else // native script
         {
             auto cs = (CCustomScript*)script;
-            cs->RemoveScriptFromList(activeThreadQueue);
+            cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
             cs->AddScriptToList((CRunningScript**)&CTheScripts::pIdleScripts);
             cs->ShutdownThisScript();
         }
@@ -882,7 +883,7 @@ namespace CLEO
         }
 
         cs->SetActive(false);
-        cs->RemoveScriptFromList(activeThreadQueue);
+        cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
         CustomScripts.remove(cs);
 
         if (cs->m_saveEnabled && !cs->IsMission())
@@ -924,7 +925,7 @@ namespace CLEO
         TRACE("Unregistering all custom scripts");
         std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
         {
-            cs->RemoveScriptFromList(activeThreadQueue);
+            cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
             cs->SetActive(false);
         });
     }
@@ -934,7 +935,7 @@ namespace CLEO
         TRACE("Reregistering all custom scripts");
         std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
         {
-            cs->AddScriptToList(activeThreadQueue);
+            cs->AddScriptToList((CRunningScript**)&CTheScripts::pActiveScripts);
             cs->SetActive(true);
         });
     }
