@@ -82,7 +82,6 @@ namespace CLEO
         void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
     };
 
-    extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer1)(CRunningScript *);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
 
     // reimplemented hook of original game's procedure

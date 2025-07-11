@@ -4,23 +4,9 @@
 
 namespace CLEO
 {
-    DWORD FUNC_GetScriptParamPointer1;
     DWORD FUNC_GetScriptParamPointer2;
 
-    SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
-    SCRIPT_VAR * __fastcall _GetScriptParamPointer1(CRunningScript *pScript)
-    {
-        SCRIPT_VAR *result;
-        _asm
-        {
-            mov ecx, pScript
-            call FUNC_GetScriptParamPointer1
-            mov result, eax
-        }
-        return (SCRIPT_VAR*)((size_t)result + pScript->GetBasePointer());
-    }
 
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
     {
@@ -302,10 +288,8 @@ namespace CLEO
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
 
         // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-        FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
-        GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
         opcodeParams = (SCRIPT_VAR*)ScriptParams; // from TheScripts.h
