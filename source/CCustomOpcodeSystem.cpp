@@ -172,7 +172,7 @@ namespace CLEO
 
 		// replace all handlers in original table
 		// store original opcode handlers for later use
-		_OpcodeHandler* handlersTable = gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER);
+		auto handlersTable = (_OpcodeHandler*)(::CRunningScript::CommandHandlerTable);
 		for(size_t i = 0; i < OriginalOpcodeHandlersCount; i++)
 		{
 			originalOpcodeHandlers[i] = handlersTable[i];
