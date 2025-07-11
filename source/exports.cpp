@@ -204,7 +204,7 @@ extern "C"
 
     void WINAPI CLEO_RetrieveOpcodeParams(CLEO::CRunningScript* thread, int count)
     {
-        GetScriptParams(thread, count);
+        CScriptEngine::GetScriptParams(thread, count);
     }
 
     DWORD WINAPI CLEO_GetIntOpcodeParam(CLEO::CRunningScript* thread)
@@ -285,7 +285,7 @@ extern "C"
         auto ip = thread->CurrentIP;
         auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
-        GetScriptParams(thread, 1);
+        CScriptEngine::GetScriptParams(thread, 1);
         DWORD result = CLEO::opcodeParams[0].dwParam;
 
         // restore state
@@ -303,7 +303,7 @@ extern "C"
         auto ip = thread->CurrentIP;
         auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
-        GetScriptParams(thread, 1);
+        CScriptEngine::GetScriptParams(thread, 1);
         float result = CLEO::opcodeParams[0].fParam;
 
         // restore state
@@ -387,19 +387,19 @@ extern "C"
 
     void WINAPI CLEO_RecordOpcodeParams(CLEO::CRunningScript* thread, int count)
     {
-        SetScriptParams(thread, count);
+        CScriptEngine::SetScriptParams(thread, count);
     }
 
     void WINAPI CLEO_SetIntOpcodeParam(CLEO::CRunningScript* thread, DWORD value)
     {
         CLEO::opcodeParams[0].dwParam = value;
-        SetScriptParams(thread, 1);
+        CScriptEngine::SetScriptParams(thread, 1);
     }
 
     void WINAPI CLEO_SetFloatOpcodeParam(CLEO::CRunningScript* thread, float value)
     {
         CLEO::opcodeParams[0].fParam = value;
-        SetScriptParams(thread, 1);
+        CScriptEngine::SetScriptParams(thread, 1);
     }
 
     void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
