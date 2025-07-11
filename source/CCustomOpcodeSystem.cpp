@@ -812,7 +812,7 @@ namespace CLEO
 		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
-			TransmitScriptParams(thread, cs);
+			((::CRunningScript*)thread)->ReadParametersForNewlyStartedScript((::CRunningScript*)cs);
 		}
 		else
 		{
@@ -852,8 +852,9 @@ namespace CLEO
 		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
-			memset(missionLocals, 0, 1024 * sizeof(SCRIPT_VAR)); // same as CTheScripts::WipeLocalVariableMemoryForMissionScript
-			TransmitScriptParams(thread, (CRunningScript*)((BYTE*)missionLocals - 0x3C));
+			CTheScripts::WipeLocalVariableMemoryForMissionScript();
+			auto fakeScriptAddress = (BYTE*)missionLocals - offsetof(CRunningScript, LocalVar); // TODO: maybe copy params ourself instead?
+			((::CRunningScript*)thread)->ReadParametersForNewlyStartedScript((::CRunningScript*)fakeScriptAddress);
 		}
 		else
 		{
