@@ -103,7 +103,7 @@ extern "C"
             {
                 // we are in mission code buffer
                 // native missions are loaded from script file into mission block area
-                codePos += ((DWORD*)CTheScripts::MultiScriptArray)[CleoInstance.ScriptEngine.missionIndex]; // start offset of this mission within source script file
+                codePos += CTheScripts::MultiScriptArray[CleoInstance.ScriptEngine.missionIndex]; // start offset of this mission within source script file
             }
             else
             {
@@ -209,16 +209,14 @@ extern "C"
 
     DWORD WINAPI CLEO_GetIntOpcodeParam(CLEO::CRunningScript* thread)
     {
-        DWORD result;
-        *thread >> result;
-        return result;
+        CScriptEngine::GetScriptParams(thread, 1);
+        return opcodeParams[0].dwParam;
     }
 
     float WINAPI CLEO_GetFloatOpcodeParam(CLEO::CRunningScript* thread)
     {
-        float result;
-        *thread >> result;
-        return result;
+        CScriptEngine::GetScriptParams(thread, 1);
+        return opcodeParams[0].fParam;
     }
 
     LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
