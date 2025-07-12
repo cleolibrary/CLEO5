@@ -12,22 +12,13 @@ namespace CLEO
         static constexpr size_t Last_Original_Opcode = 0x0A4E; // GTA SA
         static constexpr size_t Last_Custom_Opcode = 0x7FFF;
 
-        // most recently processed
-        static CRunningScript* lastScript;
-        static WORD lastOpcode;
-        static WORD* lastOpcodePtr;
-        static WORD lastCustomOpcode;
-        static std::string lastErrorMsg;
-        static WORD prevOpcode; // previous
-        static BYTE handledParamCount; // read/writen since current opcode handling started
-
         ScriptDeleteDelegate scriptDeleteDelegate; // script deletion callbacks
 
         CCustomOpcodeSystem() = default;
         CCustomOpcodeSystem(const CCustomOpcodeSystem&) = delete; // no copying
         void Inject(CCodeInjector& inj);
         void Init();
-        ~CCustomOpcodeSystem();
+        ~CCustomOpcodeSystem() = default;
 
         void GameEnd(); // cleanup current game session stuff
 

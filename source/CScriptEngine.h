@@ -17,8 +17,8 @@ namespace CLEO
         int missionIndex = -1;
 
         friend class CCustomScript;
-        std::list<CCustomScript *> CustomScripts;
-        std::list<CCustomScript *> ScriptsWaitingForDelete;
+        std::list<CCustomScript*> CustomScripts;
+        std::list<CCustomScript*> ScriptsWaitingForDelete;
         std::set<unsigned long> InactiveScriptHashes;
         CCustomScript *CustomMission = nullptr;
         CCustomScript *LastScriptCreated = nullptr;
@@ -31,6 +31,14 @@ namespace CLEO
         std::string MainScriptFileDir;
         std::string MainScriptFileName;
         std::string MainScriptCurWorkDir;
+
+        // most recently processed
+        static CRunningScript* lastScript;
+        static WORD lastOpcode;
+        static BYTE* lastOpcodePtr; // start of the command
+        static std::string lastErrorMsg;
+        static WORD prevOpcode; // previous
+        static BYTE handledParamCount; // read/writen since current opcode handling started
 
         static SCRIPT_VAR CleoVariables[0x400];
 
@@ -93,6 +101,9 @@ namespace CLEO
         static void __cdecl HOOK_DrawScriptText(char beforeFade);
         void(__cdecl* DrawScriptTextBeforeFade_Orig)(char beforeFade) = nullptr;
         void(__cdecl* DrawScriptTextAfterFade_Orig)(char beforeFade) = nullptr;
+
+        static void HOOK_LoadScmData(void);
+        static void HOOK_SaveScmData(void);
         
         // returns buff or pointer provided by script, nullptr on fail
         // WARNING: Null terminator ommited if not enought space in the target buffer!
