@@ -31,7 +31,8 @@ namespace CLEO
         { 0x0053E86C,	memory_und, memory_und, memory_und, memory_und },		// MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND TODO: find for other versions
 
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
-        { 0x00469FEE,	memory_und, 0x00469FEE, 0x0046A06E, 0x0046F75C },		// MA_OPCODE_HANDLER_REF,
+        { 0x00469FEE,	memory_und, 0x00469FEE, 0x0046A06E, 0x0046F75C },		// MA_OPCODE_HANDLER_REF_1,
+        { 0x00469EF0,	memory_und, memory_und, memory_und, memory_und },		// MA_OPCODE_HANDLER_REF_2,
 
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x007487A8,	memory_und, 0x007487F8, 0x0074907C, 0x0078276D },		// MA_CALL_CREATE_MAIN_WINDOW,

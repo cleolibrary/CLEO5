@@ -155,8 +155,9 @@ namespace CLEO
 		{
 			customOpcodeHandlers[i] = (_OpcodeHandler)customOpcodeHandler;
 		}
-		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
-		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
+
+		inj.MemoryWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF_1), &customOpcodeHandlers);
+		inj.MemoryWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF_2), &customOpcodeHandlers);
 	}
 
 	void CCustomOpcodeSystem::Init()
