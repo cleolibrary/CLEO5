@@ -158,9 +158,9 @@ extern "C"
         ((::CRunningScript*)thread)->UpdateCompareFlag(result != FALSE); // CRunningScript from Plugin SDK
     }
 
-    void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)
+    void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int offset)
     {
-        ThreadJump(thread, labelPtr);
+        CleoInstance.ScriptEngine.ThreadJump(thread, offset);
     }
 
     void WINAPI CLEO_TerminateScript(CLEO::CRunningScript* thread)
@@ -175,7 +175,7 @@ extern "C"
 
     DWORD WINAPI CLEO_GetVarArgCount(CLEO::CRunningScript* thread)
     {
-        return GetVarArgCount(thread);
+        return CScriptEngine::GetVarArgCount(thread);
     }
 
     SCRIPT_VAR* opcodeParams;
@@ -204,18 +204,18 @@ extern "C"
 
     void WINAPI CLEO_RetrieveOpcodeParams(CLEO::CRunningScript* thread, int count)
     {
-        CScriptEngine::GetScriptParams(thread, count);
+        CScriptEngine::ReadScriptParams(thread, count);
     }
 
     DWORD WINAPI CLEO_GetIntOpcodeParam(CLEO::CRunningScript* thread)
     {
-        CScriptEngine::GetScriptParams(thread, 1);
+        CScriptEngine::ReadScriptParams(thread, 1);
         return opcodeParams[0].dwParam;
     }
 
     float WINAPI CLEO_GetFloatOpcodeParam(CLEO::CRunningScript* thread)
     {
-        CScriptEngine::GetScriptParams(thread, 1);
+        CScriptEngine::ReadScriptParams(thread, 1);
         return opcodeParams[0].fParam;
     }
 
@@ -228,7 +228,7 @@ extern "C"
             buffSize = (buffSize > 0) ? std::min<int>(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
         }
 
-        auto result = ReadStringParam(thread, buff, buffSize);
+        auto result = CScriptEngine::ReadStringParam(thread, buff, buffSize);
         return (result != nullptr) ? buff : nullptr;
     }
 
@@ -242,7 +242,7 @@ extern "C"
             buffSize = (buffSize > 0) ? std::min<int>(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
         }
 
-        return ReadStringParam(thread, buff, buffSize);
+        return CScriptEngine::ReadStringParam(thread, buff, buffSize);
     }
 
     void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator)
@@ -256,7 +256,7 @@ extern "C"
             return;
         }
 
-        auto target = GetStringParamWriteBuffer(thread);
+        auto target = CScriptEngine::ReadStringParamWriteBuffer(thread);
         *outBuf = target.data;
         *outBufSize = target.size;
         *outNeedsTerminator = target.needTerminator;
@@ -268,7 +268,7 @@ extern "C"
         if (!buf) { buf = internal_buf; bufSize = sizeof(internal_buf); }
         if (!bufSize) bufSize = MAX_STR_LEN;
 
-        if (ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
+        if (CScriptEngine::ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
         {
             return nullptr; // error
         }
@@ -283,7 +283,7 @@ extern "C"
         auto ip = thread->CurrentIP;
         auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
-        CScriptEngine::GetScriptParams(thread, 1);
+        CScriptEngine::ReadScriptParams(thread, 1);
         DWORD result = CLEO::opcodeParams[0].dwParam;
 
         // restore state
@@ -301,7 +301,7 @@ extern "C"
         auto ip = thread->CurrentIP;
         auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
-        CScriptEngine::GetScriptParams(thread, 1);
+        CScriptEngine::ReadScriptParams(thread, 1);
         float result = CLEO::opcodeParams[0].fParam;
 
         // restore state
@@ -380,29 +380,29 @@ extern "C"
 
     void WINAPI CLEO_SkipUnusedVarArgs(CLEO::CRunningScript* thread)
     {
-        SkipUnusedVarArgs(thread);
+        CScriptEngine::SkipUnusedVarArgs(thread);
     }
 
     void WINAPI CLEO_RecordOpcodeParams(CLEO::CRunningScript* thread, int count)
     {
-        CScriptEngine::SetScriptParams(thread, count);
+        CScriptEngine::WriteScriptParams(thread, count);
     }
 
     void WINAPI CLEO_SetIntOpcodeParam(CLEO::CRunningScript* thread, DWORD value)
     {
         CLEO::opcodeParams[0].dwParam = value;
-        CScriptEngine::SetScriptParams(thread, 1);
+        CScriptEngine::WriteScriptParams(thread, 1);
     }
 
     void WINAPI CLEO_SetFloatOpcodeParam(CLEO::CRunningScript* thread, float value)
     {
         CLEO::opcodeParams[0].fParam = value;
-        CScriptEngine::SetScriptParams(thread, 1);
+        CScriptEngine::WriteScriptParams(thread, 1);
     }
 
     void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
     {
-        if (!WriteStringParam(thread, str))
+        if (!CScriptEngine::WriteStringParam(thread, str))
             LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
     }
 

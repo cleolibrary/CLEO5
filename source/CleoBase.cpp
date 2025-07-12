@@ -161,7 +161,6 @@ namespace CLEO
 
             ScriptEngine.InjectLate(CodeInjector);
 
-            CodeInjector.InjectFunction(GetScriptStringParam, gaddrof(::CRunningScript::ReadTextLabelFromScript));
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Idle, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE), &GameRestartDebugDisplayTextBuffer_IdleOrig);
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Frontend, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND), &GameRestartDebugDisplayTextBuffer_FrontendOrig);
             CodeInjector.ReplaceFunction(OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS), &UpdateGameLogics_Orig);
@@ -207,7 +206,7 @@ namespace CLEO
         TRACE("Ending current game");
         CleoInstance.CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
         ScriptEngine.GameEnd();
-        OpcodeSystem.FinalizeScriptObjects();
+        OpcodeSystem.GameEnd();
 
         saveSlot = -1;
     }
