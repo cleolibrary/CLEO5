@@ -10,14 +10,6 @@
 
 namespace CLEO 
 {
-	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
-	WORD CCustomOpcodeSystem::lastOpcode = 0xFFFF;
-	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
-	WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
-	std::string CCustomOpcodeSystem::lastErrorMsg = {};
-	WORD CCustomOpcodeSystem::prevOpcode = 0xFFFF;
-	BYTE CCustomOpcodeSystem::handledParamCount = 0;
-
 	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::originalOpcodeHandlers[Original_Opcode_Handlers_Count];
 	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::customOpcodeHandlers[Custom_Opcode_Handlers_Count];
 	CustomOpcodeHandler CCustomOpcodeSystem::customOpcodeProc[Last_Custom_Opcode + 1];
@@ -76,14 +68,6 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
 
 		initialized = true;
-	}
-
-	CCustomOpcodeSystem::~CCustomOpcodeSystem()
-	{
-		TRACE(""); // separator
-		TRACE("Custom Opcode System finalized:");
-		TRACE(" Last opcode executed: %04X", lastOpcode);
-		TRACE(" Previous opcode executed: %04X", prevOpcode);
 	}
 
 	void CCustomOpcodeSystem::GameEnd()
@@ -688,19 +672,18 @@ namespace CLEO
 			return (callbackResult != OR_NONE) ? callbackResult : result;
 		};
 
-		prevOpcode = lastOpcode;
-
-		lastScript = thread;
-		lastOpcode = opcode;
-		lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
-		handledParamCount = 0;
+		CScriptEngine::prevOpcode = (thread == CScriptEngine::lastScript) ? CScriptEngine::lastOpcode : 0xFFFF;
+		CScriptEngine::lastScript = thread;
+		CScriptEngine::lastOpcode = opcode;
+		CScriptEngine::lastOpcodePtr = thread->GetBytePointer() - sizeof(WORD); // rewind to the command start
+		CScriptEngine::handledParamCount = 0;
 
 		// prevent past code execution
 		if (thread->IsCustom() && !IsLegacyScript(thread))
 		{
 			auto cs = (CCustomScript*)thread;
 			auto endPos = cs->GetBasePointer() + cs->GetCodeSize();
-			if ((BYTE*)lastOpcodePtr == endPos || (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
+			if (CScriptEngine::lastOpcodePtr == endPos || CScriptEngine::lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
 			{
 				SHOW_ERROR_COMPAT("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
 				result = thread->Suspend();
@@ -730,7 +713,6 @@ namespace CLEO
 			CustomOpcodeHandler handler = customOpcodeProc[opcode];
 			if (handler != nullptr)
 			{
-				lastCustomOpcode = opcode;
 				result = handler(thread);
 				return AfterOpcodeExecuted();
 			}
@@ -746,7 +728,7 @@ namespace CLEO
 					opcode,
 					extensionMsg.c_str(),
 					((CCustomScript*)thread)->GetInfoStr().c_str(),
-					prevOpcode);
+					CScriptEngine::prevOpcode);
 
 				result = thread->Suspend();
 				return AfterOpcodeExecuted();
@@ -764,7 +746,7 @@ namespace CLEO
 					opcode,
 					extensionMsg.c_str(),
 					((CCustomScript*)thread)->GetInfoStr().c_str(),
-					prevOpcode);
+					CScriptEngine::prevOpcode);
 
 				result = thread->Suspend();
 				return AfterOpcodeExecuted();

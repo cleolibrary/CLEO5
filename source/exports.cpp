@@ -80,8 +80,8 @@ extern "C"
 
     void WINAPI CLEO_GetScriptParamInfoStr(int idexOffset, char* buf, DWORD bufSize)
     {
-        auto curr = idexOffset - 1 + CleoInstance.OpcodeSystem.handledParamCount;
-        auto name = CleoInstance.OpcodeInfoDb.GetArgumentName(CleoInstance.OpcodeSystem.lastOpcode, curr);
+        auto curr = idexOffset - 1 + CScriptEngine::handledParamCount;
+        auto name = CleoInstance.OpcodeInfoDb.GetArgumentName(CScriptEngine::lastOpcode, curr);
 
         curr++; // 1-based argument index display
 
@@ -194,7 +194,7 @@ extern "C"
 
     BYTE WINAPI CLEO_GetParamsHandledCount()
     {
-        return CleoInstance.OpcodeSystem.handledParamCount;
+        return CScriptEngine::handledParamCount;
     }
 
     SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CLEO::CRunningScript* thread)
@@ -281,14 +281,14 @@ extern "C"
         // store state
         auto param = CLEO::opcodeParams[0];
         auto ip = thread->CurrentIP;
-        auto count = CleoInstance.OpcodeSystem.handledParamCount;
+        auto count = CScriptEngine::handledParamCount;
 
         CScriptEngine::ReadScriptParams(thread, 1);
         DWORD result = CLEO::opcodeParams[0].dwParam;
 
         // restore state
         thread->CurrentIP = ip;
-        CleoInstance.OpcodeSystem.handledParamCount = count;
+        CScriptEngine::handledParamCount = count;
         CLEO::opcodeParams[0] = param;
 
         return result;
@@ -299,14 +299,14 @@ extern "C"
         // store state
         auto param = CLEO::opcodeParams[0];
         auto ip = thread->CurrentIP;
-        auto count = CleoInstance.OpcodeSystem.handledParamCount;
+        auto count = CScriptEngine::handledParamCount;
 
         CScriptEngine::ReadScriptParams(thread, 1);
         float result = CLEO::opcodeParams[0].fParam;
 
         // restore state
         thread->CurrentIP = ip;
-        CleoInstance.OpcodeSystem.handledParamCount = count;
+        CScriptEngine::handledParamCount = count;
         CLEO::opcodeParams[0] = param;
 
         return result;
@@ -316,13 +316,13 @@ extern "C"
     {
         // store state
         auto ip = thread->CurrentIP;
-        auto count = CleoInstance.OpcodeSystem.handledParamCount;
+        auto count = CScriptEngine::handledParamCount;
 
         auto result = CScriptEngine::GetScriptParamPointer(thread);
 
         // restore state
         thread->CurrentIP = ip;
-        CleoInstance.OpcodeSystem.handledParamCount = count;
+        CScriptEngine::handledParamCount = count;
 
         return result;
     }
@@ -375,7 +375,7 @@ extern "C"
             }
         }
 
-        CleoInstance.OpcodeSystem.handledParamCount += count;
+        CScriptEngine::handledParamCount += count;
     }
 
     void WINAPI CLEO_SkipUnusedVarArgs(CLEO::CRunningScript* thread)
@@ -403,7 +403,7 @@ extern "C"
     void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
     {
         if (!CScriptEngine::WriteStringParam(thread, str))
-            LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+            LOG_WARNING(thread, "%s in script %s", CScriptEngine::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
     }
 
     BOOL WINAPI CLEO_GetScriptDebugMode(const CLEO::CRunningScript* thread)
