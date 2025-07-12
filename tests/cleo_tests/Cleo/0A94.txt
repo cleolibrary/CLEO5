@@ -1,0 +1,26 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0A94'
+test("0A94 (load_and_launch_custom_mission)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should start custom mission from file", test1)
+    return
+    
+    function test1
+        $100 = -1
+        $101 = -1
+        $102 = -1
+        
+        load_and_launch_custom_mission {scriptFileName} "./testMission" {args} 3.1415 42
+        wait {time} 0
+        wait {time} 0
+        
+        assert_eqf($100, 3.1415)
+        assert_eq($101, 42)
+        assert_eq($102, 0)
+    end
+end

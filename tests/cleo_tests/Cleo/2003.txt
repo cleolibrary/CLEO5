@@ -1,0 +1,31 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2003'
+test("2003 (cleo_return_fail)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should fail-return from CLEO function", test1)
+    return
+    
+    function test1    
+        float fVal = -1.0
+        int iVal = -1
+        is_pc_version // set condition result true
+        fVal, iVal = funcFail()
+        assert_result_false()
+        assert_eqf(fVal, -1.0)
+        assert_eq(iVal, -1)
+    end
+end
+
+
+function funcFail(): float, int
+    is_pc_version // set condition result true
+
+    cleo_return_fail
+    
+    cleo_return_with {conditionResult} true {retArgs} 3.1415 42
+end

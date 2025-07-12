@@ -6,9 +6,21 @@
 script_name 'CleoTest'
 debug_on
 
-print_big_string {text} "CLEO TESTING" {time} 4000 {style} TextStyle.MiddleSmaller
+TimerA = 0
+repeat
+    draw_subtitles_before_fade {state} false    
+    print_big_string {text} "CLEO TESTING" {time} 100 {style} TextStyle.MiddleSmaller
+    print_string_now {text} "~y~CLEO TESTING~s~~n~Press ~y~~h~SPACE~s~ to skip unit tests" {time} 100
+    wait {time} 0
+    
+    if
+        is_key_pressed {keyCode} KeyCode.Space
+    then
+        clear_prints
+        terminate_this_script
+    end
+until TimerA > 3500
 
-wait 3500 // wait for game to fade in
 clear_prints
 
 RUN_TESTS_DIR("cleo:", "cleo_tests")
