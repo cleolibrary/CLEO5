@@ -4,217 +4,14 @@
 
 namespace CLEO
 {
-    DWORD FUNC_ScriptOpcodeHandler00;
-    DWORD FUNC_GetScriptParams;
-    DWORD FUNC_TransmitScriptParams;
-    DWORD FUNC_SetScriptParams;
-    DWORD FUNC_GetScriptParamPointer1;
-    DWORD FUNC_GetScriptParamPointer2;
+    CRunningScript* CScriptEngine::lastScript = nullptr;
+    WORD CScriptEngine::lastOpcode = 0xFFFF;
+    BYTE* CScriptEngine::lastOpcodePtr = nullptr;
+    std::string CScriptEngine::lastErrorMsg = {};
+    WORD CScriptEngine::prevOpcode = 0xFFFF;
+    BYTE CScriptEngine::handledParamCount = 0;
 
-    char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
-    void(__thiscall * GetScriptParams)(CRunningScript *, int count);
-    void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
-    void(__thiscall * SetScriptParams)(CRunningScript *, int count);
-    SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
-    SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
-    char __fastcall _ScriptOpcodeHandler00(CRunningScript *pScript, int dummy, WORD opcode)
-    {
-        int result;
-        _asm
-        {
-            push opcode
-            mov ecx, pScript
-            call FUNC_ScriptOpcodeHandler00
-            mov result, eax
-        }
-        return result;
-    }
-
-    void __fastcall _GetScriptParams(CRunningScript *pScript, int dummy, int count)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push count
-            call FUNC_GetScriptParams
-        }
-
-        CleoInstance.OpcodeSystem.handledParamCount += count;
-    }
-
-    void __fastcall _TransmitScriptParams(CRunningScript *pScript, int dummy, CRunningScript *pScriptB)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push pScriptB
-            call FUNC_TransmitScriptParams
-        }
-    }
-
-    void __fastcall _SetScriptParams(CRunningScript *pScript, int dummy, int count)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push count
-            call FUNC_SetScriptParams
-        }
-
-        CleoInstance.OpcodeSystem.handledParamCount += count;
-    }
-
-    SCRIPT_VAR * __fastcall _GetScriptParamPointer1(CRunningScript *pScript)
-    {
-        SCRIPT_VAR *result;
-        _asm
-        {
-            mov ecx, pScript
-            call FUNC_GetScriptParamPointer1
-            mov result, eax
-        }
-        return (SCRIPT_VAR*)((size_t)result + pScript->GetBasePointer());
-    }
-
-    const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
-    {
-        if (buff == nullptr || buffLen < 0)
-        {
-            LOG_WARNING(0, "Invalid ReadStringParam input argument! Ptr: 0x%08X, Size: %d", buff, buffLen);
-            CLEO_SkipOpcodeParams(thread, 1);
-            return nullptr;
-        }
-
-        auto paramType = thread->PeekDataType();
-        auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
-        auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
-
-        // integer address to text buffer
-        if (IsImmInteger(paramType) || isVariableInt)
-        {
-            auto str = (char*)CLEO_PeekIntOpcodeParam(thread);
-            CLEO_SkipOpcodeParams(thread, 1);
-
-            if ((size_t)str <= CCustomOpcodeSystem::MinValidAddress)
-            {
-                LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
-                return nullptr; // error
-            }
-
-            auto len = std::min((int)strlen(str), buffLen);
-            memcpy(buff, str, len);
-            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
-            return str; // pointer to original data
-        }
-        else if (paramType == DT_VARLEN_STRING)
-        {
-            CleoInstance.OpcodeSystem.handledParamCount++;
-            thread->IncPtr(1); // already processed paramType
-
-            DWORD length = *thread->GetBytePointer(); // as unsigned byte!
-            thread->IncPtr(1); // length info
-
-            char* str = (char*)thread->GetBytePointer();
-            thread->IncPtr(length); // text data
-
-            memcpy(buff, str, std::min(buffLen, (int)length));
-            if ((int)length < buffLen) buff[length] = '\0'; // add terminator if possible
-            return buff;
-        }
-        else if (IsImmString(paramType))
-        {
-            thread->IncPtr(1); // already processed paramType
-            auto str = (char*)thread->GetBytePointer();
-
-            switch (paramType)
-            {
-                case DT_TEXTLABEL:
-                {
-                    CleoInstance.OpcodeSystem.handledParamCount++;
-                    memcpy(buff, str, std::min(buffLen, 8));
-                    thread->IncPtr(8); // text data
-                    return buff;
-                }
-
-                case DT_STRING:
-                {
-                    CleoInstance.OpcodeSystem.handledParamCount++;
-                    memcpy(buff, str, std::min(buffLen, 16));
-                    thread->IncPtr(16); // ext data
-                    return buff;
-                }
-            }
-        }
-        else if (IsVarString(paramType))
-        {
-            switch (paramType)
-            {
-                // short string variable
-                case DT_VAR_TEXTLABEL:
-                case DT_LVAR_TEXTLABEL:
-                case DT_VAR_TEXTLABEL_ARRAY:
-                case DT_LVAR_TEXTLABEL_ARRAY:
-                {
-                    auto str = (char*)GetScriptParamPointer(thread);
-                    memcpy(buff, str, std::min(buffLen, 8));
-                    if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
-                    return buff;
-                }
-
-                // long string variable
-                case DT_VAR_STRING:
-                case DT_LVAR_STRING:
-                case DT_VAR_STRING_ARRAY:
-                case DT_LVAR_STRING_ARRAY:
-                {
-                    auto str = (char*)GetScriptParamPointer(thread);
-                    memcpy(buff, str, std::min(buffLen, 16));
-                    if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
-                    return buff;
-                }
-            }
-        }
-
-        // unsupported param type
-        LOG_WARNING(thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
-        CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
-        return nullptr; // error
-    }
-
-    SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread)
-    {
-        SCRIPT_VAR* ptr = GetScriptParamPointer2(thread, 0);
-        CleoInstance.OpcodeSystem.handledParamCount++; // TODO: hook game's GetScriptParamPointer1 and GetScriptParamPointer2 procedures so this is always incremented
-        return ptr;
-    }
-
-    SCRIPT_VAR * __fastcall _GetScriptParamPointer2(CRunningScript *pScript, int dummy, int unused)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push unused
-            call FUNC_GetScriptParamPointer2
-        }
-    }
-
-    void(__cdecl * InitScm)();
-
-    void OnLoadScmData(void)
-    {
-        TRACE("Loading scripts save data...");
-        CTheScripts::Load();
-    }
-
-    void OnSaveScmData(void)
-    {
-        TRACE("Saving scripts save data...");
-        CleoInstance.ScriptEngine.SaveState();
-        CleoInstance.ScriptEngine.UnregisterAllCustomScripts();
-        CTheScripts::Save();
-        CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
-    }
+    SCRIPT_VAR CScriptEngine::CleoVariables[0x400] = { 0 };
 
     struct CleoSafeHeader
     {
@@ -265,8 +62,6 @@ namespace CLEO
         ThreadSavingInfo() { }
     };
 
-    SCRIPT_VAR CScriptEngine::CleoVariables[0x400];
-
     template<typename T>
     void inline ReadBinary(std::istream& s, T& buf)
     {
@@ -301,6 +96,478 @@ namespace CLEO
             typedef void WINAPI callback(bool);
             ((callback*)func)(beforeFade != 0);
         }
+    }
+
+    void CScriptEngine::HOOK_LoadScmData(void)
+    {
+        TRACE("Loading scripts save data...");
+        CTheScripts::Load();
+    }
+
+    void CScriptEngine::HOOK_SaveScmData(void)
+    {
+        TRACE("Saving scripts save data...");
+        CleoInstance.ScriptEngine.SaveState();
+        CleoInstance.ScriptEngine.UnregisterAllCustomScripts();
+        CTheScripts::Save();
+        CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
+    }
+
+    const char* __fastcall CScriptEngine::HOOK_GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
+    {
+        if (buff == nullptr || buffLen < 0)
+        {
+            LOG_WARNING(0, "Invalid ReadStringParam input argument! Ptr: 0x%08X, Size: %d", buff, buffLen);
+            CLEO_SkipOpcodeParams(thread, 1);
+            return nullptr;
+        }
+
+        auto paramType = thread->PeekDataType();
+        auto arrayType = IsArray(paramType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayDataType::ADT_NONE || arrayType == eArrayDataType::ADT_INT);
+
+        // integer address to text buffer
+        if (IsImmInteger(paramType) || isVariableInt)
+        {
+            auto str = (char*)CLEO_PeekIntOpcodeParam(thread);
+            CLEO_SkipOpcodeParams(thread, 1);
+
+            if ((size_t)str <= MinValidAddress)
+            {
+                LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
+                return nullptr; // error
+            }
+
+            auto len = std::min((int)strlen(str), buffLen);
+            memcpy(buff, str, len);
+            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
+            return str; // pointer to original data
+        }
+        else if (paramType == DT_VARLEN_STRING)
+        {
+            handledParamCount++;
+            thread->IncPtr(1); // already processed paramType
+
+            DWORD length = *thread->GetBytePointer(); // as unsigned byte!
+            thread->IncPtr(1); // length info
+
+            char* str = (char*)thread->GetBytePointer();
+            thread->IncPtr(length); // text data
+
+            memcpy(buff, str, std::min(buffLen, (int)length));
+            if ((int)length < buffLen) buff[length] = '\0'; // add terminator if possible
+            return buff;
+        }
+        else if (IsImmString(paramType))
+        {
+            thread->IncPtr(1); // already processed paramType
+            auto str = (char*)thread->GetBytePointer();
+
+            switch (paramType)
+            {
+            case DT_TEXTLABEL:
+            {
+                handledParamCount++;
+                memcpy(buff, str, std::min(buffLen, 8));
+                thread->IncPtr(8); // text data
+                return buff;
+            }
+
+            case DT_STRING:
+            {
+                handledParamCount++;
+                memcpy(buff, str, std::min(buffLen, 16));
+                thread->IncPtr(16); // ext data
+                return buff;
+            }
+            }
+        }
+        else if (IsVarString(paramType))
+        {
+            switch (paramType)
+            {
+                // short string variable
+            case DT_VAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            {
+                auto str = (char*)GetScriptParamPointer(thread);
+                memcpy(buff, str, std::min(buffLen, 8));
+                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
+                return buff;
+            }
+
+            // long string variable
+            case DT_VAR_STRING:
+            case DT_LVAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+            case DT_LVAR_STRING_ARRAY:
+            {
+                auto str = (char*)GetScriptParamPointer(thread);
+                memcpy(buff, str, std::min(buffLen, 16));
+                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
+                return buff;
+            }
+            }
+        }
+
+        // unsupported param type
+        LOG_WARNING(thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
+        CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
+        return nullptr; // error
+    }
+
+    void CScriptEngine::ReadScriptParams(CRunningScript* script, BYTE count)
+    {
+        ((::CRunningScript*)script)->CollectParameters(count);
+        handledParamCount += count;
+    }
+
+    void CScriptEngine::WriteScriptParams(CRunningScript* script, BYTE count)
+    {
+        ((::CRunningScript*)script)->StoreParameters(count);
+        handledParamCount += count;
+    }
+
+    SCRIPT_VAR* CScriptEngine::GetScriptParamPointer(CRunningScript* thread)
+    {
+        auto type = DT_DWORD; //thread->PeekDataType(); // ignored in GetPointerToScriptVariable anyway
+        auto ptr = ((::CRunningScript*)thread)->GetPointerToScriptVariable(type);
+        handledParamCount++; // TODO: hook game's GetPointerToScriptVariable so this is always incremented?
+        return (SCRIPT_VAR*)ptr;
+    }
+
+    StringParamBufferInfo CScriptEngine::ReadStringParamWriteBuffer(CRunningScript* thread)
+    {
+        StringParamBufferInfo result;
+        lastErrorMsg.clear();
+
+        auto paramType = thread->PeekDataType();
+        if (IsImmInteger(paramType) || IsVariable(paramType))
+        {
+            // address to output buffer
+            ReadScriptParams(thread, 1);
+
+            if (opcodeParams[0].dwParam <= MinValidAddress)
+            {
+                lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
+                return result; // error
+            }
+
+            result.data = opcodeParams[0].pcParam;
+            result.size = 0x7FFFFFFF; // user allocated memory block can be any size
+            result.needTerminator = true;
+
+            return result;
+        }
+        else
+            if (IsVarString(paramType))
+            {
+                switch (paramType)
+                {
+                    // short string variable
+                    case DT_VAR_TEXTLABEL:
+                    case DT_LVAR_TEXTLABEL:
+                    case DT_VAR_TEXTLABEL_ARRAY:
+                    case DT_LVAR_TEXTLABEL_ARRAY:
+                        result.data = (char*)GetScriptParamPointer(thread);
+                        result.size = 8;
+                        result.needTerminator = false;
+                        return result;
+
+                    // long string variable
+                    case DT_VAR_STRING:
+                    case DT_LVAR_STRING:
+                    case DT_VAR_STRING_ARRAY:
+                    case DT_LVAR_STRING_ARRAY:
+                        result.data = (char*)GetScriptParamPointer(thread);
+                        result.size = 16;
+                        result.needTerminator = false;
+                        return result;
+                }
+            }
+
+        lastErrorMsg = StringPrintf("Writing string, got argument %s", ToKindStr(paramType));
+        CLEO_SkipOpcodeParams(thread, 1); // skip unhandled param
+        return result; // error
+    }
+
+    const char* CScriptEngine::ReadStringParam(CRunningScript* thread, char* buff, int buffSize)
+    {
+        if (buffSize > 0) buff[buffSize - 1] = '\0'; // buffer always terminated
+        return HOOK_GetScriptStringParam(thread, 0, buff, buffSize - 1); // minus terminator
+    }
+
+    // perform sprintf-operation for parameters passed through SCM
+    int CScriptEngine::ReadFormattedString(CRunningScript* thread, char* outputStr, DWORD len, const char* format)
+    {
+        unsigned int written = 0;
+        const char* iter = format;
+        char* outIter = outputStr;
+        char bufa[MAX_STR_LEN + 1], fmtbufa[64], * fmta;
+
+        // invalid input arguments
+        if (outputStr == nullptr || len == 0)
+        {
+            LOG_WARNING(thread, "ReadFormattedString invalid input arg(s) in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+            SkipUnusedVarArgs(thread);
+            return -1; // error
+        }
+
+        if (len > 1 && format != nullptr)
+        {
+            while (*iter)
+            {
+                while (*iter && *iter != '%')
+                {
+                    if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
+                    *outIter++ = *iter++;
+                }
+
+                if (*iter == '%')
+                {
+                    // end of format string
+                    if (iter[1] == '\0')
+                    {
+                        LOG_WARNING(thread, "ReadFormattedString encountered incomplete format specifier in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+                        SkipUnusedVarArgs(thread);
+                        return -1; // error
+                    }
+
+                    // escaped % character
+                    if (iter[1] == '%')
+                    {
+                        if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
+                        *outIter++ = '%';
+                        iter += 2;
+                        continue;
+                    }
+
+                    //get flags and width specifier
+                    fmta = fmtbufa;
+                    *fmta++ = *iter++;
+                    while (*iter == '0' ||
+                        *iter == '+' ||
+                        *iter == '-' ||
+                        *iter == ' ' ||
+                        *iter == '*' ||
+                        *iter == '#')
+                    {
+                        if (*iter == '*')
+                        {
+                            //get width
+                            if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
+                            ReadScriptParams(thread, 1);
+                            _itoa_s(opcodeParams[0].dwParam, bufa, 10);
+
+                            char* buffiter = bufa;
+                            while (*buffiter)
+                                *fmta++ = *buffiter++;
+                        }
+                        else
+                            *fmta++ = *iter;
+                        iter++;
+                    }
+
+                    //get immidiate width value
+                    while (isdigit(*iter))
+                        *fmta++ = *iter++;
+
+                    //get precision
+                    if (*iter == '.')
+                    {
+                        *fmta++ = *iter++;
+                        if (*iter == '*')
+                        {
+                            if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
+                            ReadScriptParams(thread, 1);
+                            _itoa_s(opcodeParams[0].dwParam, bufa, 10);
+
+                            char* buffiter = bufa;
+                            while (*buffiter)
+                                *fmta++ = *buffiter++;
+                        }
+                        else
+                            while (isdigit(*iter))
+                                *fmta++ = *iter++;
+                    }
+                    //get size
+                    if (*iter == 'h' || *iter == 'l')
+                        *fmta++ = *iter++;
+
+                    switch (*iter)
+                    {
+                    case 's':
+                    {
+                        if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
+
+                        const char* str = ReadStringParam(thread, bufa, sizeof(bufa));
+                        if (str == nullptr) // read error
+                        {
+                            static const char none[] = "(INVALID_STR)";
+                            str = none;
+                        }
+
+                        while (*str)
+                        {
+                            if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
+                            *outIter++ = *str++;
+                        }
+                        iter++;
+                        break;
+                    }
+
+                    case 'c':
+                        if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
+                        if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
+                        ReadScriptParams(thread, 1);
+                        *outIter++ = (char)opcodeParams[0].nParam;
+                        iter++;
+                        break;
+
+                    default:
+                    {
+                        // For non wc types, use system sprintf and append to wide char output
+                        // FIXME: for unrecognised types, should ignore % when printing
+                        if (*iter == 'p' || *iter == 'P')
+                        {
+                            if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
+                            ReadScriptParams(thread, 1);
+                            sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
+                        }
+                        else
+                        {
+                            *fmta++ = *iter;
+                            *fmta = '\0';
+                            if (*iter == 'a' || *iter == 'A' ||
+                                *iter == 'e' || *iter == 'E' ||
+                                *iter == 'f' || *iter == 'F' ||
+                                *iter == 'g' || *iter == 'G')
+                            {
+                                if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
+                                ReadScriptParams(thread, 1);
+                                sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
+                            }
+                            else
+                            {
+                                if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
+                                ReadScriptParams(thread, 1);
+                                sprintf_s(bufa, fmtbufa, opcodeParams[0].pParam);
+                            }
+                        }
+                        char* bufaiter = bufa;
+                        while (*bufaiter)
+                        {
+                            if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
+                            *outIter++ = *bufaiter++;
+                        }
+                        iter++;
+                        break;
+                    }
+                    }
+                }
+            }
+        }
+
+        if (written >= len)
+        {
+        _ReadFormattedString_OutOfMemory: // jump here on error
+
+            LOG_WARNING(thread, "Target buffer too small (%d) to read whole formatted string in script %s", len, ((CCustomScript*)thread)->GetInfoStr().c_str());
+            SkipUnusedVarArgs(thread);
+            outputStr[len - 1] = '\0';
+            return -1; // error
+        }
+
+        // still more var-args available
+        if (thread->PeekDataType() != DT_END)
+        {
+            LOG_WARNING(thread, "More params than slots in formatted string in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+        }
+        SkipUnusedVarArgs(thread); // skip terminator too
+
+        outputStr[written] = '\0';
+        return (int)written;
+
+    _ReadFormattedString_ArgMissing: // jump here on error
+        LOG_WARNING(thread, "Less params than slots in formatted string in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+        thread->IncPtr(); // skip vararg terminator
+        outputStr[written] = '\0';
+        return -1; // error
+    }
+
+    // write output\result string parameter
+    bool CScriptEngine::WriteStringParam(CRunningScript* thread, const char* str)
+    {
+        auto target = ReadStringParamWriteBuffer(thread);
+        return WriteStringParam(target, str);
+    }
+
+    bool CScriptEngine::WriteStringParam(const StringParamBufferInfo& target, const char* str)
+    {
+        lastErrorMsg.clear();
+
+        if (str != nullptr && (size_t)str <= MinValidAddress)
+        {
+            lastErrorMsg = StringPrintf("Writing string from invalid '0x%X' pointer", target.data);
+            return false;
+        }
+
+        if ((size_t)target.data <= MinValidAddress)
+        {
+            lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
+            return false;
+        }
+
+        if (target.size == 0)
+        {
+            return false;
+        }
+
+        bool addTerminator = target.needTerminator;
+        size_t buffLen = target.size - addTerminator;
+        size_t length = str == nullptr ? 0 : strlen(str);
+
+        if (buffLen > length) addTerminator = true; // there is space left for terminator
+
+        length = std::min(length, buffLen);
+        if (length > 0) std::memcpy(target.data, str, length);
+        if (addTerminator) target.data[length] = '\0';
+
+        return true;
+    }
+
+    DWORD CScriptEngine::GetVarArgCount(CRunningScript* thread)
+    {
+        const auto ip = thread->GetBytePointer();
+        const auto handledParams = handledParamCount;
+
+        DWORD count = 0;
+        while (thread->PeekDataType() != DT_END)
+        {
+            CLEO_SkipOpcodeParams(thread, 1);
+            count++;
+        }
+
+        // restore original state
+        thread->SetIp(ip);
+        handledParamCount = handledParams;
+
+        return count;
+    }
+
+    void CScriptEngine::SkipUnusedVarArgs(CRunningScript* thread)
+    {
+        while (thread->PeekDataType() != DT_END)
+            CLEO_SkipOpcodeParams(thread, 1);
+
+        thread->IncPtr(); // skip terminator
+    }
+
+    void CScriptEngine::ThreadJump(CRunningScript* thread, int offset)
+    {
+        thread->SetIp(offset < 0 ? thread->GetBasePointer() - offset : CleoInstance.ScriptEngine.scmBlock + offset);
     }
 
     void CScriptEngine::DrawScriptText_Orig(char beforeFade)
@@ -344,23 +611,9 @@ namespace CLEO
         // Global Events crashfix
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
 
-        // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-        FUNC_ScriptOpcodeHandler00 = gvm.TranslateMemoryAddress(MA_SCRIPT_OPCODE_HANDLER0_FUNCTION);
-        FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
-        FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
-        FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
-        FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
-        FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
-
-        ScriptOpcodeHandler00 = reinterpret_cast<char(__thiscall*)(CRunningScript*, WORD)>(_ScriptOpcodeHandler00);
-        GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
-        TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
-        SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);
-        GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
-        GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
-
-        opcodeParams = gvm.TranslateMemoryAddress(MA_OPCODE_PARAMS);
-        missionLocals = gvm.TranslateMemoryAddress(MA_MISSION_LOCALS);
+        opcodeParams = (SCRIPT_VAR*)ScriptParams; // from TheScripts.h
+        missionLocals = (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission;
+        staticThreads = (CRunningScript*)CTheScripts::ScriptsArray;
 
         // Protect script dependencies
         inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
@@ -368,18 +621,16 @@ namespace CLEO
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
 
-        inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);
-        activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
-        staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
-
-        inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
-        inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
+        inj.ReplaceFunction(HOOK_LoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
+        inj.ReplaceFunction(HOOK_SaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
     }
 
     void CScriptEngine::InjectLate(CCodeInjector& inj)
     {
         TRACE("Injecting ScriptEngine: Phase 2");
         CGameVersionManager& gvm = CleoInstance.VersionManager;
+
+        inj.InjectFunction(HOOK_GetScriptStringParam, gaddrof(::CRunningScript::ReadTextLabelFromScript));
 
         // limit adjusters support: get adresses from (possibly) patched references
         inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), scmBlock);
@@ -389,6 +640,11 @@ namespace CLEO
     CScriptEngine::~CScriptEngine()
     {
         GameEnd();
+
+        TRACE(""); // separator
+        TRACE("Script Engine finalized:");
+        TRACE(" Last opcode executed: %04X", lastOpcode);
+        TRACE(" Previous opcode executed: %04X", prevOpcode);
     }
 
     CleoSafeHeader safe_header;
@@ -399,6 +655,8 @@ namespace CLEO
 
     void CScriptEngine::GameBegin()
     {
+        auto activeThreadQueue = (CRunningScript**)&CTheScripts::pActiveScripts;
+
         if(gameInProgress) return; // already started
         if(activeThreadQueue == nullptr || activeThreadQueue[0] == nullptr) return; // main gamescript not loaded yet 
         gameInProgress = true;
@@ -514,7 +772,7 @@ namespace CLEO
         }
     }
 
-    CCustomScript * CScriptEngine::LoadScript(const char * szFilePath)
+    CCustomScript* CScriptEngine::LoadScript(const char * szFilePath)
     {
         auto cs = new CCustomScript(szFilePath);
 
@@ -577,7 +835,7 @@ namespace CLEO
         if (cs && cs->IsOk())
         {
             AddCustomScript(cs);
-            if (fromThread) TransmitScriptParams(fromThread, cs);
+            if (fromThread) ((::CRunningScript*)fromThread)->ReadParametersForNewlyStartedScript((::CRunningScript*)cs);
         }
         else
         {
@@ -692,7 +950,7 @@ namespace CLEO
     {
         if (standardScripts)
         {
-            for (auto script = *activeThreadQueue; script; script = script->GetNext())
+            for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script; script = script->GetNext())
             {
                 if (script->IsCustom()) 
                 {
@@ -758,7 +1016,7 @@ namespace CLEO
         };
 
         // standard scripts
-        for (auto script = *activeThreadQueue; script; script = script->GetNext())
+        for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script; script = script->GetNext())
         {
             if (CheckScript(script))
             {
@@ -789,7 +1047,7 @@ namespace CLEO
 
     bool CScriptEngine::IsActiveScriptPtr(const CRunningScript* ptr) const
     {
-        for (auto script = *activeThreadQueue; script != nullptr; script = script->GetNext())
+        for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr)
                 return ptr->IsActive();
@@ -806,13 +1064,13 @@ namespace CLEO
 
     bool CScriptEngine::IsValidScriptPtr(const CRunningScript* ptr) const
     {
-        for (auto script = *activeThreadQueue; script != nullptr; script = script->GetNext())
+        for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr)
                 return true;
         }
 
-        for (auto script = *inactiveThreadQueue; script != nullptr; script = script->GetNext())
+        for (auto script = (CLEO::CRunningScript*)CTheScripts::pIdleScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr)
                 return true;
@@ -846,7 +1104,7 @@ namespace CLEO
             CustomScripts.push_back(cs);
         }
 
-        cs->AddScriptToList(activeThreadQueue);
+        cs->AddScriptToList((CRunningScript**)&CTheScripts::pActiveScripts);
         cs->SetActive(true);
 
         // run registered callbacks
@@ -868,8 +1126,8 @@ namespace CLEO
         else // native script
         {
             auto cs = (CCustomScript*)script;
-            cs->RemoveScriptFromList(activeThreadQueue);
-            cs->AddScriptToList(inactiveThreadQueue);
+            cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
+            cs->AddScriptToList((CRunningScript**)&CTheScripts::pIdleScripts);
             cs->ShutdownThisScript();
         }
     }
@@ -900,7 +1158,7 @@ namespace CLEO
         }
 
         cs->SetActive(false);
-        cs->RemoveScriptFromList(activeThreadQueue);
+        cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
         CustomScripts.remove(cs);
 
         if (cs->m_saveEnabled && !cs->IsMission())
@@ -942,7 +1200,7 @@ namespace CLEO
         TRACE("Unregistering all custom scripts");
         std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
         {
-            cs->RemoveScriptFromList(activeThreadQueue);
+            cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
             cs->SetActive(false);
         });
     }
@@ -952,7 +1210,7 @@ namespace CLEO
         TRACE("Reregistering all custom scripts");
         std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
         {
-            cs->AddScriptToList(activeThreadQueue);
+            cs->AddScriptToList((CRunningScript**)&CTheScripts::pActiveScripts);
             cs->SetActive(true);
         });
     }

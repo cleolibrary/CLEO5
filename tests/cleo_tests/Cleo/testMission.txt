@@ -1,0 +1,8 @@
+{$CLEO .cm}
+
+// just pass through input parameters
+008B: $100 = 0@
+008B: $101 = 1@
+008B: $102 = 2@
+
+terminate_this_script

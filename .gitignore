@@ -43,3 +43,5 @@ ipch/
 *.lib
 node_modules/
 tests/**/*.s
+*.cs
+*.cm

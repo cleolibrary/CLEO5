@@ -1,0 +1,45 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2002'
+test("2002 (cleo_return_with)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should return if condition false", test1)
+    return
+    
+    function test1
+        float fVal
+        int iVal
+    
+        fVal = -1.0
+        iVal = -1
+        is_pc_version // set condition result true
+        fVal, iVal = funcFalse()
+        assert_result_false()
+        assert_eqf(fVal, 3.1415)
+        assert_eq(iVal, iVal)
+        
+        fVal = -1.0
+        iVal = -1
+        is_australian_game // set condition result false
+        fVal, iVal = funcTrue()
+        assert_result_true()
+        assert_eqf(fVal, 3.1415)
+        assert_eq(iVal, iVal)
+    end
+end
+
+
+function funcFalse(): float, int
+    is_pc_version // set condition result true
+    cleo_return_with {conditionResult} false {retArgs} 3.1415 42
+end
+
+
+function funcTrue(): float, int
+    is_australian_game // set condition result false
+    cleo_return_with {conditionResult} true {retArgs} 3.1415 42
+end

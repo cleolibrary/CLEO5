@@ -32,10 +32,13 @@ namespace CLEO
     Macros to use inside opcode handler functions. Performs types validation, printing warnings and suspending script on critical errors.
     Please mind those expand into multiple lines, so CAN NOT be used in places where single code line is expected! (like 'if' condition body without brackets)
     
-    OPCODE_CONDITION_RESULT(value) // set result
-    OPCODE_SKIP_PARAMS(count) // ignore X params
+    OPCODE_CONDITION_RESULT(value) // set command logical result
 
-    OPCODE_PEEK_PARAM_TYPE() // get param type without advancing the script
+    OPCODE_SKIP_PARAMS(count) // ignore X params
+    OPCODE_SKIP_VARARG_PARAMS(count) // ignore remaining variable arguments, including var arg terminator
+
+    OPCODE_PEEK_PARAM_TYPE() // get next param type without advancing the script
+    OPCODE_PEEK_VARGARG_COUNT() // get count of remaining variable arguments
     
     // reading opcode input arguments
     OPCODE_READ_PARAM_BOOL()
@@ -755,7 +758,10 @@ namespace CLEO
     }
 
     #define OPCODE_SKIP_PARAMS(_count) CLEO_SkipOpcodeParams(thread, _count)
+    #define OPCODE_SKIP_VARARG_PARAMS() CLEO_SkipUnusedVarArgs(thread)
+
     #define OPCODE_PEEK_PARAM_TYPE() thread->PeekDataType()
+    #define OPCODE_PEEK_VARGARG_COUNT() CLEO_GetVarArgCount(thread)
 
     // macros for reading opcode input params. Performs type validation, throws error and suspends script if user provided invalid argument type
     // TOD: add range checks for limited size types?
@@ -784,7 +790,7 @@ namespace CLEO
     #define OPCODE_READ_PARAM_FLOAT() _readParamFloat(thread).fParam; \
         if (!IsLegacyScript(thread) && !_paramWasFloat()) { SHOW_ERROR_COMPAT("Input argument %s expected to be float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
-    #define OPCODE_READ_PARAM_ANY32() _readParam(thread).dwParam; \
+    #define OPCODE_READ_PARAM_ANY32() _readParam(thread); \
         if (!_paramWasInt() && !_paramWasFloat()) { SHOW_ERROR("Input argument %s expected to be int or float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
 
     #define OPCODE_READ_PARAM_STRING(_varName) char _buff_##_varName[MAX_STR_LEN + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }

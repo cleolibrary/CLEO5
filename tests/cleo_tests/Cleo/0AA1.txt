@@ -1,0 +1,29 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AA1'
+test("0AA1 (return_if_false)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should return if condition false", test1)
+    return
+    
+    function test1
+        0@ = -1
+        subroutine()
+        assert_eq(0@, 1)
+    end
+end
+
+
+:subroutine
+    is_pc_version // set condition result true
+    return_if_false
+    0@ = 1
+    
+    is_australian_game // set condition result false
+    return_if_false
+    0@ = 2
+return
