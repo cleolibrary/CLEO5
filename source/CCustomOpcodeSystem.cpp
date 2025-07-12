@@ -721,14 +721,29 @@ namespace CLEO
 
 			if (opcode > Last_Original_Opcode)
 			{
+				// is this start of extra SCM info data?
+				static constexpr const char* SCM_Extra_Section_Names[] = { "FLAG", "HEX", "SCR", "VAR" };
+				bool isSection = false;
+				for (auto name : SCM_Extra_Section_Names)
+				{
+					if (memcmp(CScriptEngine::lastOpcodePtr, name, strlen(name)) == 0)
+					{
+						isSection = true;
+						break;
+					}
+				}
+
+				auto errorMsg = isSection ? 
+					"Code execution past script end! This usually happens when [004E] command is missing." :
+					StringPrintf("Custom opcode[%04X] not registered!", opcode);
+
 				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
 				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
-				SHOW_ERROR("Custom opcode [%04X] not registered!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
-					opcode,
+				SHOW_ERROR("%s%s\nOccurred in script %s%s\nScript suspended.",
+					errorMsg.c_str(),
 					extensionMsg.c_str(),
-					((CCustomScript*)thread)->GetInfoStr().c_str(),
-					CScriptEngine::prevOpcode);
+					((CCustomScript*)thread)->GetInfoStr().c_str());
 
 				result = thread->Suspend();
 				return AfterOpcodeExecuted();
@@ -742,11 +757,10 @@ namespace CLEO
 				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
 				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
-				SHOW_ERROR("Opcode [%04X] not found!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
+				SHOW_ERROR("Opcode [%04X] not found!%s\nCalled in script %s%s\nScript suspended.",
 					opcode,
 					extensionMsg.c_str(),
-					((CCustomScript*)thread)->GetInfoStr().c_str(),
-					CScriptEngine::prevOpcode);
+					((CCustomScript*)thread)->GetInfoStr().c_str());
 
 				result = thread->Suspend();
 				return AfterOpcodeExecuted();
