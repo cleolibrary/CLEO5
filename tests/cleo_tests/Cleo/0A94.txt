@@ -7,18 +7,48 @@ terminate_this_custom_script
 
 
 function tests
-    it("should start custom mission from file", test1)
+    before_each(@cleanup)
+    after_each(@cleanup)
+    
+    it("should start custom mission from default location", test1)
+    it("should start custom mission from relative path", test2)
     return
     
+    
+    :cleanup
+        fail_current_mission // end any ongoing mission
+        wait {time} 0
+    return
+
+
     function test1
+        // use default search path "cleo\"
         $100 = -1
         $101 = -1
         $102 = -1
-        
+        0@ = -2
+        1@ = -2
+        2@ = -2
+        load_and_launch_custom_mission {scriptFileName} "cleo_tests/Cleo/testMission" {args} 3.1415 42
+        wait {time} 0
+        wait {time} 0
+        assert_eqf($100, 3.1415)
+        assert_eq($101, 42)
+        assert_eq($102, 0)
+    end
+
+
+    function test2
+        // use relative path
+        $100 = -1
+        $101 = -1
+        $102 = -1
+        0@ = -2
+        1@ = -2
+        2@ = -2
         load_and_launch_custom_mission {scriptFileName} "./testMission" {args} 3.1415 42
         wait {time} 0
         wait {time} 0
-        
         assert_eqf($100, 3.1415)
         assert_eq($101, 42)
         assert_eq($102, 0)

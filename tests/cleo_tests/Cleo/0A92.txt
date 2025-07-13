@@ -7,18 +7,39 @@ terminate_this_custom_script
 
 
 function tests
-    it("should start script from file", test1)
+    it("should start script from default location", test1)
+    it("should start script from relative path", test2)
     return
-    
+
+
     function test1
+        // use default search path "cleo\"
         $100 = -1
         $101 = -1
         $102 = -1
-        
+        0@ = -2
+        1@ = -2
+        2@ = -2
+        stream_custom_script {scriptFileName} "cleo_tests/Cleo/testScript.s" {args} 3.1415 42
+        wait {time} 0
+        wait {time} 0
+        assert_eqf($100, 3.1415)
+        assert_eq($101, 42)
+        assert_eq($102, 0)
+    end
+
+
+    function test2
+        // use relative path
+        $100 = -1
+        $101 = -1
+        $102 = -1
+        0@ = -2
+        1@ = -2
+        2@ = -2
         stream_custom_script {scriptFileName} "./testScript.s" {args} 3.1415 42
         wait {time} 0
         wait {time} 0
-        
         assert_eqf($100, 3.1415)
         assert_eq($101, 42)
         assert_eq($102, 0)
