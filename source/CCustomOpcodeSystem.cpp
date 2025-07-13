@@ -441,7 +441,7 @@ namespace CLEO
 		}
 		if (nParams)
 		{
-			auto nVarArg = OPCODE_PEEK_VARGARG_COUNT();
+			auto nVarArg = OPCODE_PEEK_VARARG_COUNT();
 			if (nParams > nVarArg) // if less it means there are return params too
 			{
 				SHOW_ERROR("Opcode [0AB1] declared %d input args, but provided %d in script %s\nScript suspended.", nParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
@@ -516,7 +516,7 @@ namespace CLEO
 	// cleo_return {numRet} [int] {retParams} [arguments]
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(CRunningScript* thread)
 	{
-		auto returnParamCount = OPCODE_PEEK_VARGARG_COUNT();
+		auto returnParamCount = OPCODE_PEEK_VARARG_COUNT();
 		if (returnParamCount)
 		{
 			auto paramType = (eDataType)*thread->GetBytePointer();
@@ -623,7 +623,7 @@ namespace CLEO
 	// cleo_return_with {conditionResult} [bool] {retArgs} [arguments] (logical)
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(CRunningScript* thread)
 	{
-		auto argCount = OPCODE_PEEK_VARGARG_COUNT();
+		auto argCount = OPCODE_PEEK_VARARG_COUNT();
 		if (argCount < 1)
 		{
 			SHOW_ERROR("Opcode [2002] missing condition result argument in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
@@ -641,7 +641,7 @@ namespace CLEO
 	// cleo_return_fail [arguments] (logical)
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2003(CRunningScript* thread)
 	{
-		auto argCount = OPCODE_PEEK_VARGARG_COUNT();
+		auto argCount = OPCODE_PEEK_VARARG_COUNT();
 		if (argCount != 0) // argument(s) not supported yet
 		{
 			SHOW_ERROR("Too many arguments of opcode [2003] in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
@@ -738,11 +738,14 @@ namespace CLEO
 					StringPrintf("Custom opcode[%04X] not registered!", opcode);
 
 				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
-				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
+				if (!extensionMsg.empty())
+				{
+					errorMsg += " ";
+					errorMsg += extensionMsg;
+				}
 
-				SHOW_ERROR("%s%s\nOccurred in script %s%s\nScript suspended.",
+				SHOW_ERROR("%s\nOccurred in script %s\nScript suspended.",
 					errorMsg.c_str(),
-					extensionMsg.c_str(),
 					((CCustomScript*)thread)->GetInfoStr().c_str());
 
 				result = thread->Suspend();

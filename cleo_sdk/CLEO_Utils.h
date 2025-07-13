@@ -38,7 +38,7 @@ namespace CLEO
     OPCODE_SKIP_VARARG_PARAMS(count) // ignore remaining variable arguments, including var arg terminator
 
     OPCODE_PEEK_PARAM_TYPE() // get next param type without advancing the script
-    OPCODE_PEEK_VARGARG_COUNT() // get count of remaining variable arguments
+    OPCODE_PEEK_VARARG_COUNT() // get count of remaining variable arguments
     
     // reading opcode input arguments
     OPCODE_READ_PARAM_BOOL()
@@ -774,7 +774,7 @@ namespace CLEO
     #define OPCODE_SKIP_VARARG_PARAMS() CLEO_SkipUnusedVarArgs(thread)
 
     #define OPCODE_PEEK_PARAM_TYPE() thread->PeekDataType()
-    #define OPCODE_PEEK_VARGARG_COUNT() CLEO_GetVarArgCount(thread)
+    #define OPCODE_PEEK_VARARG_COUNT() CLEO_GetVarArgCount(thread)
 
     // macros for reading opcode input params. Performs type validation, throws error and suspends script if user provided invalid argument type
     // TOD: add range checks for limited size types?

@@ -165,21 +165,21 @@ namespace CLEO
 
             switch (paramType)
             {
-            case DT_TEXTLABEL:
-            {
-                handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 8));
-                thread->IncPtr(8); // text data
-                return buff;
-            }
+                case DT_TEXTLABEL:
+                {
+                    handledParamCount++;
+                    memcpy(buff, str, std::min(buffLen, 8));
+                    thread->IncPtr(8); // text data
+                    return buff;
+                }
 
-            case DT_STRING:
-            {
-                handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 16));
-                thread->IncPtr(16); // ext data
-                return buff;
-            }
+                case DT_STRING:
+                {
+                    handledParamCount++;
+                    memcpy(buff, str, std::min(buffLen, 16));
+                    thread->IncPtr(16); // ext data
+                    return buff;
+                }
             }
         }
         else if (IsVarString(paramType))
@@ -187,28 +187,28 @@ namespace CLEO
             switch (paramType)
             {
                 // short string variable
-            case DT_VAR_TEXTLABEL:
-            case DT_LVAR_TEXTLABEL:
-            case DT_VAR_TEXTLABEL_ARRAY:
-            case DT_LVAR_TEXTLABEL_ARRAY:
-            {
-                auto str = (char*)GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 8));
-                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
-                return buff;
-            }
+                case DT_VAR_TEXTLABEL:
+                case DT_LVAR_TEXTLABEL:
+                case DT_VAR_TEXTLABEL_ARRAY:
+                case DT_LVAR_TEXTLABEL_ARRAY:
+                {
+                    auto str = (char*)GetScriptParamPointer(thread);
+                    memcpy(buff, str, std::min(buffLen, 8));
+                    if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
+                    return buff;
+                }
 
-            // long string variable
-            case DT_VAR_STRING:
-            case DT_LVAR_STRING:
-            case DT_VAR_STRING_ARRAY:
-            case DT_LVAR_STRING_ARRAY:
-            {
-                auto str = (char*)GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 16));
-                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
-                return buff;
-            }
+                // long string variable
+                case DT_VAR_STRING:
+                case DT_LVAR_STRING:
+                case DT_VAR_STRING_ARRAY:
+                case DT_LVAR_STRING_ARRAY:
+                {
+                    auto str = (char*)GetScriptParamPointer(thread);
+                    memcpy(buff, str, std::min(buffLen, 16));
+                    if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
+                    return buff;
+                }
             }
         }
 
