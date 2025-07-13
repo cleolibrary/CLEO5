@@ -1,0 +1,18 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AA9'
+test("0AA9 (is_game_version_original)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should check for v1.0 game", test1)
+    return
+    
+    function test1
+        is_australian_game // set condition result false
+        is_game_version_original
+        assert_result_true()
+    end
+end

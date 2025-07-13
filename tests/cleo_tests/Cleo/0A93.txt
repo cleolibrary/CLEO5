@@ -1,0 +1,17 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0A93'
+test("0A93 (terminate_this_custom_script)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should terminate this custom script", test1)
+    return
+    
+    function test1
+        terminate_this_custom_script
+        assert_false(true)
+    end
+end

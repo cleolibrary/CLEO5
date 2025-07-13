@@ -1,0 +1,27 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AB4'
+test("0AB4 (get_cleo_shared_var)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should get CLEO shared variable", test1)
+    return
+    
+    function test1
+        int iVal = 42
+        set_cleo_shared_var {index} 0 {value} 3.1415
+        set_cleo_shared_var {index} 1 {value} iVal
+        
+        int fVal = -1.0
+        iVal = -1
+        
+        fVal = get_cleo_shared_var {index} 0
+        iVal = get_cleo_shared_var {index} 1
+        
+        assert_eqf(fVal, 3.1415)
+        assert_eq(iVal, 42)
+    end
+end

@@ -1,0 +1,26 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0A92'
+test("0A92 (stream_custom_script)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should start script from file", test1)
+    return
+    
+    function test1
+        $100 = -1
+        $101 = -1
+        $102 = -1
+        
+        stream_custom_script {scriptFileName} "./testScript.s" {args} 3.1415 42
+        wait {time} 0
+        wait {time} 0
+        
+        assert_eqf($100, 3.1415)
+        assert_eq($101, 42)
+        assert_eq($102, 0)
+    end
+end

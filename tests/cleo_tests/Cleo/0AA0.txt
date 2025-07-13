@@ -1,0 +1,29 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AA0'
+test("0AA0 (gosub_if_false)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should gosub if condition false", test1)
+    return
+    
+    function test1
+        0@ = -1
+        is_pc_version // set condition result true
+        gosub_if_false @subroutine
+        assert_eq(0@, -1)
+        
+        0@ = -1
+        is_australian_game // set condition result false
+        gosub_if_false @subroutine
+        assert_eq(0@, 666)
+    end
+end
+
+
+:subroutine
+    0@ = 666  
+return

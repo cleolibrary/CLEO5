@@ -1,0 +1,18 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0DD5'
+test("0DD5 (get_platform)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should get platform info", test1)
+    return
+    
+    function test1
+        int platform = -1
+        platform = get_platform
+        assert_eq(platform, 9) // Platform.Windows
+    end
+end

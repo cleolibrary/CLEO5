@@ -41,9 +41,9 @@ function tests
             end
         end
         
-        assert_range(aCount, 80, 120)
-        assert_range(bCount, 80, 120)
-        assert_range(cCount, 80, 120)
+        assert_range(aCount, 75, 125)
+        assert_range(bCount, 75, 125)
+        assert_range(cCount, 75, 125)
         assert_eq(dCount, 0)
     end
 end

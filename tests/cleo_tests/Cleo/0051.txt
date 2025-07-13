@@ -1,0 +1,22 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0051'
+test("0051 (return)", tests)
+terminate_this_custom_script
+
+
+:test_function
+    0051: return
+    assert_false(true) // fail
+cleo_return 0
+
+
+function tests
+    it("should return from cleo_call", test1)
+    return
+    
+    function test1
+        cleo_call @test_function {numParams} 0
+    end
+end
