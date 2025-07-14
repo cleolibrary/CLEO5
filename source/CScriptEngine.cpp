@@ -4,32 +4,17 @@
 
 namespace CLEO
 {
-    DWORD FUNC_ScriptOpcodeHandler00;
     DWORD FUNC_GetScriptParams;
     DWORD FUNC_TransmitScriptParams;
     DWORD FUNC_SetScriptParams;
     DWORD FUNC_GetScriptParamPointer1;
     DWORD FUNC_GetScriptParamPointer2;
 
-    char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
     void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
     void(__thiscall * SetScriptParams)(CRunningScript *, int count);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
-    char __fastcall _ScriptOpcodeHandler00(CRunningScript *pScript, int dummy, WORD opcode)
-    {
-        int result;
-        _asm
-        {
-            push opcode
-            mov ecx, pScript
-            call FUNC_ScriptOpcodeHandler00
-            mov result, eax
-        }
-        return result;
-    }
 
     void __fastcall _GetScriptParams(CRunningScript *pScript, int dummy, int count)
     {
@@ -345,14 +330,12 @@ namespace CLEO
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
 
         // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-        FUNC_ScriptOpcodeHandler00 = gvm.TranslateMemoryAddress(MA_SCRIPT_OPCODE_HANDLER0_FUNCTION);
         FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
         FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
         FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
-        ScriptOpcodeHandler00 = reinterpret_cast<char(__thiscall*)(CRunningScript*, WORD)>(_ScriptOpcodeHandler00);
         GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
         TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
         SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);

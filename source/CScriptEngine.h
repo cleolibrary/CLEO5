@@ -80,7 +80,6 @@ namespace CLEO
         void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
     };
 
-    extern char(__thiscall * ScriptOpcodeHandler00)(CRunningScript *, WORD opcode);
     extern void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     extern void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
     extern void(__thiscall * SetScriptParams)(CRunningScript *, int count);
