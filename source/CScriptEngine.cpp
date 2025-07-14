@@ -359,8 +359,8 @@ namespace CLEO
         GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
-        opcodeParams = gvm.TranslateMemoryAddress(MA_OPCODE_PARAMS);
-        missionLocals = gvm.TranslateMemoryAddress(MA_MISSION_LOCALS);
+        opcodeParams = (SCRIPT_VAR*)ScriptParams; // from Plugin SDK's TheScripts.h
+        missionLocals = (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission;
 
         // Protect script dependencies
         inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
