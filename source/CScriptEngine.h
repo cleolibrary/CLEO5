@@ -15,7 +15,6 @@ namespace CLEO
         BYTE* scmBlock = nullptr;
         BYTE* missionBlock = nullptr;
         int missionIndex = -1;
-        CRunningScript** inactiveThreadQueue = nullptr;
         CRunningScript** activeThreadQueue = nullptr;
 
         friend class CCustomScript;

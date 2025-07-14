@@ -368,7 +368,6 @@ namespace CLEO
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
 
-        inactiveThreadQueue = gvm.TranslateMemoryAddress(MA_INACTIVE_THREAD_QUEUE);
         activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
         staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
 
@@ -812,7 +811,7 @@ namespace CLEO
                 return true;
         }
 
-        for (auto script = *inactiveThreadQueue; script != nullptr; script = script->GetNext())
+        for (auto script = (CLEO::CRunningScript*)CTheScripts::pIdleScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr)
                 return true;
@@ -869,7 +868,7 @@ namespace CLEO
         {
             auto cs = (CCustomScript*)script;
             cs->RemoveScriptFromList(activeThreadQueue);
-            cs->AddScriptToList(inactiveThreadQueue);
+            cs->AddScriptToList((CRunningScript**)&CTheScripts::pIdleScripts);
             cs->ShutdownThisScript();
         }
     }
