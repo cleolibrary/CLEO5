@@ -295,12 +295,12 @@ enum class eCallbackId : DWORD
 	GameEnd = 2, // void WINAPI OnGameEnd(); // game session ended
 	ScriptsLoaded = 3, // void WINAPI OnScriptsLoaded();
 	ScriptsFinalize = 4, // void WINAPI OnScriptsFinalize();
-	ScriptRegister = 5, // void WINAPI OnScriptRegister(CRunningScript* pScript); // called after script creation
-	ScriptUnregister = 6, // void WINAPI OnScriptUnregister(CRunningScript* pScript); // called before script deletion
-	ScriptProcessBefore = 7, // bool WINAPI OnScriptProcessBefore(CRunningScript* pScript); // return false to skip this script processing
-	ScriptProcessAfter = 15, // void WINAPI OnScriptProcessAfter(CRunningScript* pScript);
-	ScriptOpcodeProcessBefore = 8, // OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* pScript, DWORD opcode); // return other than OR_NONE to signal that opcode was handled in the callback
-	ScriptOpcodeProcessAfter = 9, // OpcodeResult WINAPI OnScriptOpcodeProcessAfter(CRunningScript* pScript, DWORD opcode, OpcodeResult result); // return other than OR_NONE to overwrite original result
+	ScriptRegister = 5, // void WINAPI OnScriptRegister(Script* script); // called after script creation
+	ScriptUnregister = 6, // void WINAPI OnScriptUnregister(Script* script); // called before script deletion
+	ScriptProcessBefore = 7, // bool WINAPI OnScriptProcessBefore(Script* script); // return false to skip this script processing
+	ScriptProcessAfter = 15, // void WINAPI OnScriptProcessAfter(Script* script);
+	ScriptOpcodeProcessBefore = 8, // OpcodeResult WINAPI OnScriptOpcodeProcessBefore(Script* script, DWORD opcode); // return other than OR_NONE to signal that opcode was handled in the callback
+	ScriptOpcodeProcessAfter = 9, // OpcodeResult WINAPI OnScriptOpcodeProcessAfter(Script* script, DWORD opcode, OpcodeResult result); // return other than OR_NONE to overwrite original result
 	ScriptDraw = 10, // void WINAPI OnScriptDraw(bool beforeFade);
 	DrawingFinished = 11, // void WINAPI OnDrawingFinished(); // called after game rendered everything and before presenting screen buffer
 	Log = 12, // void OnLog(eLogLevel level, const char* msg);
@@ -324,8 +324,8 @@ enum OpcodeResult : char
 	OR_INTERRUPT = 1,
 };
 
-class CRunningScript;
-typedef OpcodeResult(__stdcall* CustomOpcodeHandler)(CRunningScript*);
+class Script;
+typedef OpcodeResult(__stdcall* CustomOpcodeHandler)(Script*);
 
 // exports
 extern "C"
@@ -341,81 +341,81 @@ extern "C"
 	void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func);
 
 	// scripts deletion callback
-	typedef void(*FuncScriptDeleteDelegateT) (CRunningScript* script);
+	typedef void(*FuncScriptDeleteDelegateT) (Script* script);
 	void WINAPI CLEO_AddScriptDeleteDelegate(FuncScriptDeleteDelegateT func);
 	void WINAPI CLEO_RemoveScriptDeleteDelegate(FuncScriptDeleteDelegateT func);
 
 
 	// script utils
-	BOOL WINAPI CLEO_IsScriptRunning(const CRunningScript* thread); // check if script is active
-	void WINAPI CLEO_GetScriptInfoStr(CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize); // short text for displaying in error\log messages
+	BOOL WINAPI CLEO_IsScriptRunning(const Script* script); // check if script is active
+	void WINAPI CLEO_GetScriptInfoStr(const Script* script, bool currLineInfo, char* buf, DWORD bufSize); // short text for displaying in error\log messages
 	void WINAPI CLEO_GetScriptParamInfoStr(int idexOffset, char* buf, DWORD bufSize); // short text with last processed + idexOffset opcode's parameter info (index and name if available)
-	DWORD WINAPI CLEO_GetScriptBaseRelativeOffset(const CRunningScript* script, const BYTE* codePos); // get offset within script source file
-	eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread); // get compatible version
-	void WINAPI CLEO_SetScriptVersion(CRunningScript* thread, eCLEO_Version version); // set compatible version
-	LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread); // returns nullptr if provided script ptr is not valid
+	DWORD WINAPI CLEO_GetScriptBaseRelativeOffset(const Script* script, const BYTE* codePos); // get offset within script source file
+	eCLEO_Version WINAPI CLEO_GetScriptVersion(const Script* script); // get compatible version
+	void WINAPI CLEO_SetScriptVersion(Script* script, eCLEO_Version version); // set compatible version
+	LPCSTR WINAPI CLEO_GetScriptFilename(const Script* script); // returns nullptr if provided script ptr is not valid
 
-	LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread);
-	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
+	LPCSTR WINAPI CLEO_GetScriptWorkDir(const Script* script);
+	void WINAPI CLEO_SetScriptWorkDir(Script* script, const char* path);
 
-	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
-	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int offset);
-	void WINAPI CLEO_TerminateScript(CRunningScript* thread);
+	void WINAPI CLEO_SetThreadCondResult(Script* script, BOOL result);
+	void WINAPI CLEO_ThreadJumpAtLabelPtr(Script* script, int offset);
+	void WINAPI CLEO_TerminateScript(Script* script);
 
-	int WINAPI CLEO_GetOperandType(const CRunningScript* thread); // peek parameter data type. Returns int for legacy reason, should be eDataType.
-	DWORD WINAPI CLEO_GetVarArgCount(CRunningScript* thread); // peek remaining var-args count
+	int WINAPI CLEO_GetOperandType(const Script* script); // peek parameter data type. Returns int for legacy reason, should be eDataType.
+	DWORD WINAPI CLEO_GetVarArgCount(Script* script); // peek remaining var-args count
 
 	extern SCRIPT_VAR* opcodeParams;
 	extern SCRIPT_VAR* missionLocals;
-	extern CRunningScript* staticThreads;
+	extern Script* staticThreads;
 
 	BYTE* WINAPI CLEO_GetScmMainData(); // get pointer to main script block. Supports limit adjusters
 	SCRIPT_VAR* WINAPI CLEO_GetOpcodeParamsArray(); // get pointer to 'SCRIPT_VAR[32] opcodeParams'. Used by Retrieve/Record opcode params functions
 	BYTE WINAPI CLEO_GetParamsHandledCount(); // number of already read/written opcode parameters since current opcode handler was called
 
 	// param read
-	SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CRunningScript* thread); // get pointer to the variable's data, nullptr if parameter is not variable. Advances script to next param
-	void WINAPI CLEO_RetrieveOpcodeParams(CRunningScript* thread, int count); // read multiple params. Stored in opcodeParams array
-	DWORD WINAPI CLEO_GetIntOpcodeParam(CRunningScript* thread);
-	float WINAPI CLEO_GetFloatOpcodeParam(CRunningScript* thread);
-	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CRunningScript* thread, char* buff = nullptr, int buffSize = 0); // read always null-terminated string into buffer, clamped to its size. If no buffer provided then internal, globally shared by all CLEO_ReadStringOpcodeParam calls, is used. Returns pointer to the result buffer or nullptr on fail
-	LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CRunningScript* thread, char* buff = nullptr, int buffSize = 0); // read always null-terminated string into buffer, clamped to its size. If no buffer provided then internal, globally shared by all CLEO_ReadStringPointerOpcodeParam calls, is used. WARNING: returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source) 
-	void WINAPI CLEO_ReadStringParamWriteBuffer(CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator); // get info about the string opcode param, so it can be written latter. If outNeedsTerminator is not 0 then whole bufSize can be used as text characters. Advances script to next param
-	char* WINAPI CLEO_ReadParamsFormatted(CRunningScript* thread, const char* format, char* buf = nullptr, int bufSize = 0); // consumes all var-arg params and terminator
+	SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(Script* script); // get pointer to the variable's data, nullptr if parameter is not variable. Advances script to next param
+	void WINAPI CLEO_RetrieveOpcodeParams(Script* script, int count); // read multiple params. Stored in opcodeParams array
+	DWORD WINAPI CLEO_GetIntOpcodeParam(Script* script);
+	float WINAPI CLEO_GetFloatOpcodeParam(Script* script);
+	LPCSTR WINAPI CLEO_ReadStringOpcodeParam(Script* script, char* buff = nullptr, int buffSize = 0); // read always null-terminated string into buffer, clamped to its size. If no buffer provided then internal, globally shared by all CLEO_ReadStringOpcodeParam calls, is used. Returns pointer to the result buffer or nullptr on fail
+	LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(Script* script, char* buff = nullptr, int buffSize = 0); // read always null-terminated string into buffer, clamped to its size. If no buffer provided then internal, globally shared by all CLEO_ReadStringPointerOpcodeParam calls, is used. WARNING: returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source) 
+	void WINAPI CLEO_ReadStringParamWriteBuffer(Script* script, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator); // get info about the string opcode param, so it can be written latter. If outNeedsTerminator is not 0 then whole bufSize can be used as text characters. Advances script to next param
+	char* WINAPI CLEO_ReadParamsFormatted(Script* script, const char* format, char* buf = nullptr, int bufSize = 0); // consumes all var-arg params and terminator
 	// get param value without advancing the script
-	DWORD WINAPI CLEO_PeekIntOpcodeParam(CRunningScript* thread);
-	float WINAPI CLEO_PeekFloatOpcodeParam(CRunningScript* thread);
-	SCRIPT_VAR* WINAPI CLEO_PeekPointerToScriptVariable(CRunningScript* thread); // get pointer to the variable's data, nullptr if parameter is not variable
+	DWORD WINAPI CLEO_PeekIntOpcodeParam(Script* script);
+	float WINAPI CLEO_PeekFloatOpcodeParam(Script* script);
+	SCRIPT_VAR* WINAPI CLEO_PeekPointerToScriptVariable(Script* script); // get pointer to the variable's data, nullptr if parameter is not variable
 
 	// param skip without reading
-	void WINAPI CLEO_SkipOpcodeParams(CRunningScript* thread, int count);
-	void WINAPI CLEO_SkipUnusedVarArgs(CRunningScript* thread); // for var-args opcodes. Should be called even when all params were read (to skip var-arg terminator)
+	void WINAPI CLEO_SkipOpcodeParams(Script* script, int count);
+	void WINAPI CLEO_SkipUnusedVarArgs(Script* script); // for var-args opcodes. Should be called even when all params were read (to skip var-arg terminator)
 
 	// param write
-	void WINAPI CLEO_RecordOpcodeParams(CRunningScript* thread, int count); // write multiple params from opcodeParams array
-	void WINAPI CLEO_SetIntOpcodeParam(CRunningScript* thread, DWORD value);
-	void WINAPI CLEO_SetFloatOpcodeParam(CRunningScript* thread, float value);
-	void WINAPI CLEO_WriteStringOpcodeParam(CRunningScript* thread, const char* str);
+	void WINAPI CLEO_RecordOpcodeParams(Script* script, int count); // write multiple params from opcodeParams array
+	void WINAPI CLEO_SetIntOpcodeParam(Script* script, DWORD value);
+	void WINAPI CLEO_SetFloatOpcodeParam(Script* script, float value);
+	void WINAPI CLEO_WriteStringOpcodeParam(Script* script, const char* str);
 
 
-	BOOL WINAPI CLEO_GetScriptDebugMode(const CRunningScript* thread); // debug mode features enabled for this script?
-	void WINAPI CLEO_SetScriptDebugMode(CRunningScript* thread, BOOL enabled);
+	BOOL WINAPI CLEO_GetScriptDebugMode(const Script* script); // debug mode features enabled for this script?
+	void WINAPI CLEO_SetScriptDebugMode(Script* script, BOOL enabled);
 
-	CRunningScript* WINAPI CLEO_CreateCustomScript(CRunningScript* fromThread, const char* filePath, int label);
-	CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript();
-	CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex = 0); // can be called multiple times to find more scripts named threadName. resultIndex should be incremented until the method returns nullptr
-	CRunningScript* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex = 0); // can be absolute, partial path or just filename
+	Script* WINAPI CLEO_CreateCustomScript(Script* fromScript, const char* filePath, int label);
+	Script* WINAPI CLEO_GetLastCreatedCustomScript();
+	Script* WINAPI CLEO_GetScriptByName(const char* scriptName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex = 0); // can be called multiple times to find more scripts named scriptName. resultIndex should be incremented until the method returns nullptr
+	Script* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex = 0); // can be absolute, partial path or just filename
 
-	DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // returns RwTexture*
+	DWORD WINAPI CLEO_GetScriptTextureById(Script* script, int id); // returns RwTexture*
 
-	DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* unused, DWORD scriptAudioStreamHandle); // returns BASS' HSTREAM
+	DWORD WINAPI CLEO_GetInternalAudioStream(Script* unused, DWORD scriptAudioStreamHandle); // returns BASS' HSTREAM
 
 	struct StringList { DWORD count; char** strings; };
 	void WINAPI CLEO_StringListFree(StringList list); // releases resources used by StringList container
 
 	// Should be always used when working with files. Provides ModLoader compatibility
-	void WINAPI CLEO_ResolvePath(CRunningScript* thread, char* inOutPath, DWORD pathMaxLen); // convert to absolute (file system) path
-	StringList WINAPI CLEO_ListDirectory(CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles); // thread can be null, searchPath can contain wildcards. After use CLEO_StringListFree must be called on returned StringList to free its resources
+	void WINAPI CLEO_ResolvePath(Script* script, char* inOutPath, DWORD pathMaxLen); // convert to absolute (file system) path
+	StringList WINAPI CLEO_ListDirectory(Script* script, const char* searchPath, BOOL listDirs, BOOL listFiles); // script can be null, searchPath can contain wildcards. After use CLEO_StringListFree must be called on returned StringList to free its resources
 	LPCSTR WINAPI CLEO_GetGameDirectory(); // absolute game directory filepath without trailling path separator
 	LPCSTR WINAPI CLEO_GetUserDirectory(); // absolute game user files directory filepath without trailling path separator
 
@@ -423,11 +423,11 @@ extern "C"
 }
 
 #pragma pack(push,1)
-class CRunningScript
+class Script // equivalent of PluginSDK's CRunningScript
 {
 public:
-	CRunningScript* Next;		// 0x00 next script in queue
-	CRunningScript* Previous;	// 0x04 previous script in queue
+	Script* Next;				// 0x00 next script in queue
+	Script* Previous;			// 0x04 previous script in queue
 	char Name[8];				// 0x08 name of script, given by 03A4 opcode
 	void* BaseIP;				// 0x10 pointer to begin of script in memory
 	BYTE* CurrentIP;			// 0x14 current instruction pointer
@@ -439,7 +439,7 @@ public:
 	bool bIsActive;				// 0xC4 is script active
 	bool bCondResult;			// 0xC5 condition result. Use SetConditionResult to modify!
 	bool bUseMissionCleanup;	// 0xC6 clean mission
-	bool bIsExternal;			// 0xC7 is thread external (from script.img)
+	bool bIsExternal;			// 0xC7 is script external (from script.img)
 	bool bTextBlockOverride;	// 0xC8
 	BYTE bExternalType;			// 0xC9
 	BYTE _padCA[2];				// 0xCA padding
@@ -455,7 +455,7 @@ public:
 	bool bIsCustom;				// 0xDF is this CLEO script
 
 public:
-	CRunningScript()
+	Script()
 	{
 		strcpy_s(Name, "noname");
 		BaseIP = 0;
@@ -492,13 +492,13 @@ public:
 	void SetIp(void* ip) { CurrentIP = (BYTE*)ip; }
 	void SetBaseIp(void* ip) { BaseIP = ip; }
 	void Jump(int offset) { CLEO_ThreadJumpAtLabelPtr(this, offset); }
-	CRunningScript* GetNext() const { return Next; }
-	CRunningScript* GetPrev() const { return Previous; }
+	Script* GetNext() const { return Next; }
+	Script* GetPrev() const { return Previous; }
 	void SetIsExternal(bool b) { bIsExternal = b; }
 	void SetActive(bool b) { bIsActive = b; }
 	OpcodeResult Suspend() { WakeTime = 0xFFFFFFFF; return OpcodeResult::OR_INTERRUPT; } // suspend script execution forever
-	void SetNext(CRunningScript* v) { Next = v; }
-	void SetPrev(CRunningScript* v) { Previous = v; }
+	void SetNext(Script* v) { Next = v; }
+	void SetPrev(Script* v) { Previous = v; }
 	SCRIPT_VAR* GetVarPtr() { return LocalVar; }
 	SCRIPT_VAR* GetVarPtr(int i) { return &LocalVar[i]; }
 	int* GetIntVarPtr(int i) { return (int*)&LocalVar[i].dwParam; }
@@ -533,6 +533,6 @@ public:
 	void SetScmFunction(WORD id) { ScmFunction = id; }
 };
 #pragma pack(pop)
-static_assert(sizeof(CRunningScript) == 0xE0, "Invalid size of CRunningScript!");
+static_assert(sizeof(Script) == 0xE0, "Invalid size of Script!");
 
 } // CLEO namespace

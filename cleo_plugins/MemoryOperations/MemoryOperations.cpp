@@ -93,21 +93,21 @@ public:
     }
 
     // opcodes 0AA5 - 0AA8
-    static OpcodeResult CallFunctionGeneric(CLEO::CRunningScript* thread, void* func, void* obj, int numArg, int numPop, bool returnArg)
+    static OpcodeResult CallFunctionGeneric(Script* script, void* func, void* obj, int numArg, int numPop, bool returnArg)
     {
-        auto inputArgCount = (int)CLEO_GetVarArgCount(thread) - returnArg; // return slot not counted as input argument
+        auto inputArgCount = (int)CLEO_GetVarArgCount(script) - returnArg; // return slot not counted as input argument
 
         constexpr size_t Max_Args = 32;
         if (inputArgCount > Max_Args)
         {
-            SHOW_ERROR("Provided more (%d) than supported (%d) arguments in script %s\nScript suspended.", inputArgCount, Max_Args, CLEO::ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Provided more (%d) than supported (%d) arguments in script %s\nScript suspended.", inputArgCount, Max_Args, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
-        if (numArg != inputArgCount && !IsLegacyScript(thread)) // CLEO4 ignored param count missmatch (by providing zeros for missing)
+        if (numArg != inputArgCount && !IsLegacyScript(script)) // CLEO4 ignored param count missmatch (by providing zeros for missing)
         {
-            SHOW_ERROR_COMPAT("Declared %d input args, but provided %d in script %s\nScript suspended.", numArg, inputArgCount, CLEO::ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR_COMPAT("Declared %d input args, but provided %d in script %s\nScript suspended.", numArg, inputArgCount, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         static SCRIPT_VAR arguments[Max_Args] = { 0 };
@@ -122,11 +122,11 @@ public:
         {
             auto& param = arguments[i];
 
-            auto paramType = thread->PeekDataType();
+            auto paramType = script->PeekDataType();
             if (IsImmString(paramType) || IsVarString(paramType))
             {
 
-                if (IsLegacyScript(thread) && IsVarString(paramType))
+                if (IsLegacyScript(script) && IsVarString(paramType))
                 {
                     /*
                         Preserving behavior of CLEO 4 where string variables were always passed as pointers.
@@ -135,14 +135,14 @@ public:
                         call_function 0x12345678 num_params 3 pop 0 0@v // pass pointer to 0@
                         // read result from 0@
                     */
-                    param.pParam = CLEO_GetPointerToScriptVariable(thread);
+                    param.pParam = CLEO_GetPointerToScriptVariable(script);
                 }
                 else
                 {
                     if (currTextParam >= Max_Text_Params)
                     {
-                        SHOW_ERROR("Provided more (%d) than supported (%d) string arguments in script %s\nScript suspended.", currTextParam + 1, Max_Text_Params, CLEO::ScriptInfoStr(thread).c_str());
-                        return thread->Suspend();
+                        SHOW_ERROR("Provided more (%d) than supported (%d) string arguments in script %s\nScript suspended.", currTextParam + 1, Max_Text_Params, ScriptInfoStr(script).c_str());
+                        return script->Suspend();
                     }
 
                     OPCODE_READ_PARAM_STRING_LEN(str, MAX_STR_LEN);
@@ -153,13 +153,13 @@ public:
             }
             else if (IsImmInteger(paramType) || IsImmFloat(paramType) || IsVariable(paramType))
             {
-                CLEO_RetrieveOpcodeParams(thread, 1);
+                CLEO_RetrieveOpcodeParams(script, 1);
                 param = scriptParams[0];
             }
             else
             {
-                SHOW_ERROR("Invalid param type (%s) in script %s \nScript suspended.", ToKindStr(paramType), CLEO::ScriptInfoStr(thread).c_str());
-                return thread->Suspend();
+                SHOW_ERROR("Invalid param type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ScriptInfoStr(script).c_str());
+                return script->Suspend();
             }
         }
 
@@ -201,13 +201,13 @@ public:
 
             int diff = oriSp - postSp;
             int requiredPop = (numPop + diff) / 4;
-            SHOW_ERROR("Function call left stack position changed (%s%d). This usually happens when incorrect calling convention is used. \nArgument 'pop' value should have been %d in script %s \nScript suspended.", diff > 0 ? "+" : "", diff, requiredPop, CLEO::ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Function call left stack position changed (%s%d). This usually happens when incorrect calling convention is used. \nArgument 'pop' value should have been %d in script %s \nScript suspended.", diff > 0 ? "+" : "", diff, requiredPop, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         if (returnArg)
         {
-            auto paramType = thread->PeekDataType();
+            auto paramType = script->PeekDataType();
 
             if (IsVarString(paramType))
             {
@@ -219,7 +219,7 @@ public:
             }
         }
 
-        CLEO_SkipUnusedVarArgs(thread);
+        CLEO_SkipUnusedVarArgs(script);
 
         // set condition result
         if (!IsLegacyScript(thread))
@@ -232,14 +232,14 @@ public:
     }
 
     //0459=1,terminate_all_scripts_with_this_name %1s%
-    static OpcodeResult __stdcall opcode_0459(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0459(Script* script)
     {
-        OPCODE_READ_PARAM_STRING(threadName);
+        OPCODE_READ_PARAM_STRING(scriptName);
 
         while (true)
         {
             // we only want to terminate game scripts, not custom ones
-            auto found = CLEO_GetScriptByName(threadName, true, false, 0);
+            auto found = CLEO_GetScriptByName(scriptName, true, false, 0);
             if (found == nullptr)
                 break;
 
@@ -250,7 +250,7 @@ public:
     }
 
     //0A8C=4,write_memory %1d% size %2d% value %3d% virtual_protect %4d%
-    static OpcodeResult __stdcall opcode_0A8C(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A8C(Script* script)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
@@ -258,11 +258,11 @@ public:
 
         // value param
         const void* source;
-        auto paramType = thread->PeekDataType();
+        auto paramType = script->PeekDataType();
         bool sourceText = false;
         if (IsVariable(paramType) || IsVarString(paramType))
         {
-            source = CLEO_GetPointerToScriptVariable(thread);
+            source = CLEO_GetPointerToScriptVariable(script);
         }
         else if (IsImmString(paramType))
         {
@@ -270,19 +270,19 @@ public:
 
             if (size > MAX_STR_LEN)
             {
-                SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN, ScriptInfoStr(thread).c_str());
-                return thread->Suspend();
+                SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN, ScriptInfoStr(script).c_str());
+                return script->Suspend();
             }
 
             ZeroMemory(buffer, size); // padd with zeros if size > length
-            source = CLEO_ReadStringOpcodeParam(thread, buffer, sizeof(buffer));
+            source = CLEO_ReadStringOpcodeParam(script, buffer, sizeof(buffer));
             sourceText = true;
         }
         else
         {
             static SCRIPT_VAR value;
 
-            CLEO_RetrieveOpcodeParams(thread, 1);
+            CLEO_RetrieveOpcodeParams(script, 1);
             value = CLEO_GetOpcodeParamsArray()[0];
             source = &value;
         }
@@ -292,8 +292,8 @@ public:
         // validate params
         if (size < 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         // perform
@@ -322,7 +322,7 @@ public:
     }
 
     //0A8D=4,read_memory %1d% size %2d% virtual_protect %3d% store_to %4d%
-    static OpcodeResult __stdcall opcode_0A8D(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A8D(Script* script)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
@@ -332,8 +332,8 @@ public:
         // validate params
         if (size < 0 || size > sizeof(SCRIPT_VAR))
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         // perform
@@ -354,7 +354,7 @@ public:
     }
 
     //0A96=2,get_ped_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A96(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A96(Script* script)
     {
         // collect params
         auto handle = OPCODE_READ_PARAM_UINT();
@@ -374,7 +374,7 @@ public:
     }
 
     //0A97=2,get_vehicle_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A97(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A97(Script* script)
     {
         // collect params
         auto handle = OPCODE_READ_PARAM_UINT();
@@ -394,7 +394,7 @@ public:
     }
 
     //0A98=2,get_object_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A98(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A98(Script* script)
     {
         // collect params
         auto handle = OPCODE_READ_PARAM_UINT();
@@ -414,14 +414,14 @@ public:
     }
 
     //0A9F=1, get_this_script_struct store_to %1d%
-    static OpcodeResult __stdcall opcode_0A9F(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9F(Script* script)
     {
-        OPCODE_WRITE_PARAM_PTR(thread);
+        OPCODE_WRITE_PARAM_PTR(script);
         return OR_CONTINUE;
     }
 
     //0AA2=2, load_dynamic_library %1s% store_to %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_0AA2(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AA2(Script* script)
     {
         OPCODE_READ_PARAM_STRING(path);
 
@@ -430,7 +430,7 @@ public:
         // resolve absolute path and try load
         char buff[MAX_PATH];
         strncpy_s(buff, path, sizeof(buff));
-        CLEO_ResolvePath(thread, buff, sizeof(buff));
+        CLEO_ResolvePath(script, buff, sizeof(buff));
         ptr = LoadLibrary(buff);
 
         // in case of just filename let LoadLibrary resolve it itself
@@ -450,20 +450,20 @@ public:
     }
 
     //0AA3=1,free_library %1h%
-    static OpcodeResult __stdcall opcode_0AA3(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AA3(Script* script)
     {
         auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
 
         // validate
         if (m_libraries.find(ptr) == m_libraries.end())
         {
-            LOG_WARNING(thread, "Invalid '0x%X' library pointer param in script %s", ptr, ScriptInfoStr(thread).c_str());
+            LOG_WARNING(script, "Invalid '0x%X' library pointer param in script %s", ptr, ScriptInfoStr(script).c_str());
             return OR_CONTINUE;
         }
 
         if (m_libraries[ptr] == 0)
         {
-            LOG_WARNING(thread, "Trying to free already unloaded library in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(script, "Trying to free already unloaded library in script %s", ScriptInfoStr(script).c_str());
             return OR_CONTINUE;
         }
 
@@ -473,11 +473,11 @@ public:
     }
 
     //0AA4=3, get_proc_address %1d% library %2d% result %3d% // IF and SET
-    static OpcodeResult __stdcall opcode_0AA4(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AA4(Script* script)
     {
         void* funcPtr = nullptr;
 
-        auto paramType = thread->PeekDataType();
+        auto paramType = script->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
         {
             auto procedure = OPCODE_READ_PARAM_UINT(); // text pointer or export index - see GetProcAddress docs
@@ -499,22 +499,22 @@ public:
     }
 
     //0AA5=-1,call %1d% num_params %2h% pop %3h%
-    static OpcodeResult __stdcall opcode_0AA5(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AA5(Script* script)
     {
         auto func = OPCODE_READ_PARAM_PTR();
         auto numArgs = OPCODE_READ_PARAM_INT();
         auto numPop = OPCODE_READ_PARAM_INT();
 
-        return CallFunctionGeneric(thread, func, nullptr, numArgs, numPop, false);
+        return CallFunctionGeneric(script, func, nullptr, numArgs, numPop, false);
     }
 
     //0AA6=-1,call_method %1d% struct %2d% num_params %3h% pop %4h%
-    static OpcodeResult __stdcall opcode_0AA6(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AA6(Script* script)
     {
         auto func = OPCODE_READ_PARAM_PTR();
 
         void* obj = nullptr;
-        if (!IsLegacyScript(thread))
+        if (!IsLegacyScript(script))
         {
             obj = OPCODE_READ_PARAM_PTR();
         }
@@ -526,26 +526,26 @@ public:
         auto numArgs = OPCODE_READ_PARAM_INT();
         auto numPop = OPCODE_READ_PARAM_INT();
 
-        return CallFunctionGeneric(thread, func, obj, numArgs, numPop, false);
+        return CallFunctionGeneric(script, func, obj, numArgs, numPop, false);
     }
 
     //0AA7=-1,call_function_return %1d% num_params %2h% pop %3h%
-    static OpcodeResult __stdcall opcode_0AA7(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AA7(Script* script)
     {
         auto func = OPCODE_READ_PARAM_PTR();
         auto numArgs = OPCODE_READ_PARAM_INT();
         auto numPop = OPCODE_READ_PARAM_INT();
 
-        return CallFunctionGeneric(thread, func, nullptr, numArgs, numPop, true);
+        return CallFunctionGeneric(script, func, nullptr, numArgs, numPop, true);
     }
 
     //0AA8=-1,call_method_return %1d% struct %2d% num_params %3h% pop %4h%
-    static OpcodeResult __stdcall opcode_0AA8(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AA8(Script* script)
     {
         auto func = OPCODE_READ_PARAM_PTR();
 
         void* obj = nullptr;
-        if (!IsLegacyScript(thread))
+        if (!IsLegacyScript(script))
         {
             obj = OPCODE_READ_PARAM_PTR();
         }
@@ -557,11 +557,11 @@ public:
         auto numArgs = OPCODE_READ_PARAM_INT();
         auto numPop = OPCODE_READ_PARAM_INT();
 
-        return CallFunctionGeneric(thread, func, obj, numArgs, numPop, true);
+        return CallFunctionGeneric(script, func, obj, numArgs, numPop, true);
     }
 
     //0AAA=2,  get_script_struct_named %1d% pointer %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_0AAA(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AAA(Script *script)
     {
         OPCODE_READ_PARAM_STRING(name);
 
@@ -573,18 +573,18 @@ public:
     }
 
     //0ABA=1,terminate_all_custom_scripts_with_this_name %1d%
-    static OpcodeResult __stdcall opcode_0ABA(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0ABA(Script* script)
     {
-        OPCODE_READ_PARAM_STRING(threadName);
+        OPCODE_READ_PARAM_STRING(scriptName);
 
         bool terminateCurrent = false;
         while (true)
         {
-            auto found = CLEO_GetScriptByName(threadName, false, true, 0);
+            auto found = CLEO_GetScriptByName(scriptName, false, true, 0);
             if (found == nullptr)
                 break;
 
-            if (found == thread)
+            if (found == script)
                 terminateCurrent = true;
 
             CLEO_TerminateScript(found);
@@ -594,14 +594,14 @@ public:
     }
 
     //0AC6=2,get_label_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AC6(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AC6(Script* script)
     {
         auto label = OPCODE_READ_PARAM_INT();
 
         // perform
         void* ptr = nullptr;
         if (label < 0)
-            ptr = thread->GetBasePointer() - label;
+            ptr = script->GetBasePointer() - label;
         else
             ptr = CTheScripts::ScriptSpace + label;
 
@@ -610,23 +610,23 @@ public:
     }
 
     //0AC7=2,get_var_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AC7(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AC7(Script* script)
     {
-        auto resultType = thread->PeekDataType();
+        auto resultType = script->PeekDataType();
         if (!IsVariable(resultType) && !IsVarString(resultType))
         {
-            SHOW_ERROR("Input argument #%d expected to be variable, got constant in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Input argument #%d expected to be variable, got constant in script %s\nScript suspended.", CLEO_GetParamsHandledCount(), ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
-        auto ptr = CLEO_GetPointerToScriptVariable(thread);
+        auto ptr = CLEO_GetPointerToScriptVariable(script);
 
         OPCODE_WRITE_PARAM_PTR(ptr);
         return OR_CONTINUE;
     }
 
     //0AC8=2,  allocate_memory size %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AC8(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AC8(Script* script)
     {
         // collect params
         int size = OPCODE_READ_PARAM_INT();
@@ -634,8 +634,8 @@ public:
         // validate params
         if (size <= 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         // perform
@@ -648,7 +648,7 @@ public:
             m_allocations.insert(mem);
         }
         else
-            LOG_WARNING(thread, "Failed to allocate %d bytes of memory in script %s", size, ScriptInfoStr(thread).c_str());
+            LOG_WARNING(script, "Failed to allocate %d bytes of memory in script %s", size, ScriptInfoStr(script).c_str());
 
         OPCODE_WRITE_PARAM_PTR(mem);
         OPCODE_CONDITION_RESULT(mem != nullptr);
@@ -656,7 +656,7 @@ public:
     }
 
     //0AC9=1,free_memory %1d%
-    static OpcodeResult __stdcall opcode_0AC9(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AC9(Script* script)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
@@ -664,7 +664,7 @@ public:
         // validate params
         if (m_allocations.find(address) == m_allocations.end())
         {
-            LOG_WARNING(thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address, ScriptInfoStr(thread).c_str());
+            LOG_WARNING(script, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address, ScriptInfoStr(script).c_str());
             return OR_CONTINUE;
         }
 
@@ -674,7 +674,7 @@ public:
     }
 
     //0AE9=1,pop_float store_to %1d%
-    static OpcodeResult __stdcall opcode_0AE9(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AE9(Script* script)
     {
         float result;
         _asm fstp result
@@ -684,7 +684,7 @@ public:
     }
 
     //0AEA=2,get_ped_ref %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AEA(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AEA(Script* script)
     {
         // collect params
         auto ptr = (CPed*)OPCODE_READ_PARAM_PTR();
@@ -703,7 +703,7 @@ public:
     }
 
     //0AEB=2,get_vehicle_ref %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AEB(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AEB(Script* script)
     {
         auto ptr = (CVehicle*)OPCODE_READ_PARAM_PTR();
 
@@ -721,7 +721,7 @@ public:
     }
 
     //0AEC=2,get_object_ref %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AEC(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AEC(Script* script)
     {
         auto ptr = (CObject*)OPCODE_READ_PARAM_PTR();
 
@@ -739,7 +739,7 @@ public:
     }
 
     //2400=3,copy_memory %1d% to %2d% size %3d%
-    static OpcodeResult __stdcall opcode_2400(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2400(Script* script)
     {
         auto src = (BYTE*)OPCODE_READ_PARAM_PTR();
         auto trg = (BYTE*)OPCODE_READ_PARAM_PTR();
@@ -751,8 +751,8 @@ public:
         }
         if (size < 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         memmove((void*)trg, (void*)src, size);
@@ -760,7 +760,7 @@ public:
     }
 
     //2401=4,read_memory_with_offset %1d% offset %2d% size %3d% store_to %4d%
-    static OpcodeResult __stdcall opcode_2401(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2401(Script* script)
     {
         auto ptr = (BYTE*)OPCODE_READ_PARAM_PTR();
         auto offset = OPCODE_READ_PARAM_INT();
@@ -768,11 +768,11 @@ public:
 
         if (size < 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
-        auto resultType = thread->PeekDataType();
+        auto resultType = script->PeekDataType();
         if (IsVariable(resultType))
         {
             if (size == 0)
@@ -784,7 +784,7 @@ public:
             DWORD result = 0;
             if (size > sizeof(result))
             {
-                LOG_WARNING(thread, "Size '%d' argument out of supported range (%d) in script %s", size, sizeof(result), ScriptInfoStr(thread).c_str());
+                LOG_WARNING(script, "Size '%d' argument out of supported range (%d) in script %s", size, sizeof(result), ScriptInfoStr(script).c_str());
                 size = sizeof(result);
             }
             if (size > 0) memcpy(&result, (void*)(ptr + offset), size);
@@ -799,12 +799,12 @@ public:
             return OR_CONTINUE;
         }
 
-        SHOW_ERROR("Invalid type (%s) of the result argument in script %s \nScript suspended.", ToKindStr(resultType), ScriptInfoStr(thread).c_str());
-        return thread->Suspend();
+        SHOW_ERROR("Invalid type (%s) of the result argument in script %s \nScript suspended.", ToKindStr(resultType), ScriptInfoStr(script).c_str());
+        return script->Suspend();
     }
 
     //2402=4,write_memory_with_offset %1d% offset %2d% size %3d% value %4d%
-    static OpcodeResult __stdcall opcode_2402(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2402(Script* script)
     {
         auto ptr = (BYTE*)OPCODE_READ_PARAM_PTR();
         auto offset = OPCODE_READ_PARAM_INT();
@@ -812,22 +812,22 @@ public:
 
         if (size < 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         if (size == 0)
         {
-            CLEO_SkipOpcodeParams(thread, 1); // value not used
+            CLEO_SkipOpcodeParams(script, 1); // value not used
             return OR_CONTINUE; // done
         }
 
-        auto valueType = thread->PeekDataType();
+        auto valueType = script->PeekDataType();
         if (IsImmInteger(valueType) || IsImmFloat(valueType) || IsVariable(valueType))
         {
             if (size > sizeof(DWORD))
             {
-                LOG_WARNING(thread, "Size '%d' argument out of supported range (%d) in script %s", size, sizeof(DWORD), ScriptInfoStr(thread).c_str());
+                LOG_WARNING(script, "Size '%d' argument out of supported range (%d) in script %s", size, sizeof(DWORD), ScriptInfoStr(script).c_str());
                 size = sizeof(DWORD);
             }
 
@@ -847,12 +847,12 @@ public:
             return OR_CONTINUE;
         }
 
-        SHOW_ERROR("Invalid type (%s) of the input argument #%d in script %s \nScript suspended.", CLEO_GetParamsHandledCount(), ToKindStr(valueType), ScriptInfoStr(thread).c_str());
-        return thread->Suspend();
+        SHOW_ERROR("Invalid type (%s) of the input argument #%d in script %s \nScript suspended.", CLEO_GetParamsHandledCount(), ToKindStr(valueType), ScriptInfoStr(script).c_str());
+        return script->Suspend();
     }
 
     //2403=1,forget_memory %1d%
-    static OpcodeResult __stdcall opcode_2403(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2403(Script* script)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
@@ -860,7 +860,7 @@ public:
         // validate params
         if (m_allocations.find(address) == m_allocations.end())
         {
-            LOG_WARNING(thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address, ScriptInfoStr(thread).c_str());
+            LOG_WARNING(script, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address, ScriptInfoStr(script).c_str());
             return OR_CONTINUE;
         }
 
@@ -869,9 +869,9 @@ public:
     }
 
     //2404=1,get_script_struct_just_created %1d%
-    static OpcodeResult __stdcall opcode_2404(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2404(Script* script)
     {
-        auto head = thread;
+        auto head = script;
         while(head->Previous)
         {
             head = head->Previous;
@@ -882,9 +882,9 @@ public:
     }
 
     //2405=1,  is_script_running %1d%
-    static OpcodeResult __stdcall opcode_2405(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2405(Script* script)
     {
-        auto address = (CLEO::CRunningScript*)OPCODE_READ_PARAM_INT(); // allow invalid pointers too
+        auto address = (Script*)OPCODE_READ_PARAM_INT(); // allow invalid pointers too
 
         auto running = CLEO_IsScriptRunning(address);
 
@@ -893,7 +893,7 @@ public:
     }
 
     //2406=1,  get_script_struct_from_filename %1s%
-    static OpcodeResult __stdcall opcode_2406(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2406(Script* script)
     {
         OPCODE_READ_PARAM_STRING(filename);
 
@@ -905,7 +905,7 @@ public:
     }
 
     //2407=3,  is_memory_equal address_a %1d% address_b %2d% size %d3%
-    static OpcodeResult __stdcall opcode_2407(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2407(Script* script)
     {
         auto addressA = OPCODE_READ_PARAM_PTR();
         auto addressB = OPCODE_READ_PARAM_PTR();
@@ -918,8 +918,8 @@ public:
         }
         if (size < 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         auto result = memcmp(addressA, addressB, size);
@@ -929,13 +929,13 @@ public:
     }
 
     //2408=1,terminate_script %1d%
-    static OpcodeResult __stdcall opcode_2408(CLEO::CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2408(Script* script)
     {
-        auto address = (CLEO::CRunningScript*)OPCODE_READ_PARAM_PTR();
+        auto address = (Script*)OPCODE_READ_PARAM_PTR();
 
         CLEO_TerminateScript(address);
 
-        return (address == thread) ? OR_INTERRUPT : OR_CONTINUE;
+        return (address == script) ? OR_INTERRUPT : OR_CONTINUE;
     }
 } Memory;
 

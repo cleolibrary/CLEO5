@@ -2,7 +2,7 @@
 
 namespace CLEO
 {
-    class CCustomScript : public CRunningScript
+    class CCustomScript : public Script
     {
         friend class CScriptEngine;
         friend class CCustomOpcodeSystem;
@@ -24,12 +24,12 @@ namespace CLEO
         std::string m_workDir;
 
     public:
-        CCustomScript(const char* szFileName, bool bIsMiss = false, CRunningScript* parent = nullptr, int label = 0);
+        CCustomScript(const char* szFileName, bool bIsMiss = false, Script* parent = nullptr, int label = 0);
         CCustomScript(const CCustomScript&) = delete; // no copying
         ~CCustomScript();
 
-        void AddScriptToList(CRunningScript** queuelist);
-        void RemoveScriptFromList(CRunningScript** queuelist);
+        void AddScriptToList(Script** queuelist);
+        void RemoveScriptFromList(Script** queuelist);
 
         void ShutdownThisScript();
 

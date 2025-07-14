@@ -4,27 +4,27 @@
 
 struct ScriptLog
 {
-    CRunningScript* thread = nullptr;
+    Script* script = nullptr;
     clock_t startTime = 0;
     size_t commandCounter = 0;
 
-    void Begin(CRunningScript* thread)
+    void Begin(Script* script)
     {
-        this->thread = thread;
+        this->script = script;
         startTime = clock();
         commandCounter = 0;
     }
 
     void Clear()
     {
-        thread = nullptr;
+        script = nullptr;
         startTime = 0;
         commandCounter = 0;
     }
 
-    void ProcessCommand(CRunningScript* thread)
+    void ProcessCommand(Script* script)
     {
-        if (this->thread != thread) Begin(thread);
+        if (this->script != script) Begin(script);
 
         commandCounter++;
     }

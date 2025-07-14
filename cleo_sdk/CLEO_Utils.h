@@ -82,9 +82,9 @@ namespace CLEO
     OPCODE_WRITE_PARAM_PTR(value) // memory address
     */
 
-    static bool IsLegacyScript(CLEO::CRunningScript* thread)
+    static bool IsLegacyScript(const Script* script)
     {
-        return CLEO_GetScriptVersion(thread) < CLEO_VER_5;
+        return CLEO_GetScriptVersion(script) < CLEO_VER_5;
     }
 
     static std::string StringPrintf(const char* format, ...)
@@ -205,10 +205,10 @@ namespace CLEO
         std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
     }
 
-    static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
+    static std::string ScriptInfoStr(Script* script)
     {
         std::string info(1024, '\0');
-        CLEO_GetScriptInfoStr(thread, true, info.data(), info.length());
+        CLEO_GetScriptInfoStr(script, true, info.data(), info.length());
         return std::move(info);
     }
 
@@ -300,7 +300,7 @@ namespace CLEO
     }
 
     // does normalized file path points inside game directories? (game root or user files)
-    static bool FilepathIsSafe(CLEO::CRunningScript* thread, const char* path)
+    static bool FilepathIsSafe(Script* script, const char* path)
     {
         if (strchr(path, '%') != nullptr)
         {
@@ -310,7 +310,7 @@ namespace CLEO
         std::string absolute;
         if (!std::filesystem::path(path).is_absolute())
         {
-            absolute = CLEO_GetScriptWorkDir(thread);
+            absolute = CLEO_GetScriptWorkDir(script);
             if (!absolute.empty())
             {
                 absolute += '\\';
@@ -404,9 +404,9 @@ namespace CLEO
         va_end(args);
     }
 
-    static void Trace(const CLEO::CRunningScript* thread, CLEO::eLogLevel level, const char* format, ...)
+    static void Trace(const Script* script, CLEO::eLogLevel level, const char* format, ...)
     {
-        if (thread != nullptr && CLEO_GetScriptVersion(thread) < CLEO::eCLEO_Version::CLEO_VER_5)
+        if (script != nullptr && CLEO_GetScriptVersion(script) < CLEO::eCLEO_Version::CLEO_VER_5)
         {
             return; // do not log this in older versions
         }
@@ -549,28 +549,28 @@ namespace CLEO
     #define SHOW_ERROR_COMPAT(a,...) {CLEO::ShowError(COMPAT_MODE_TIP(a), __VA_ARGS__);}
 
     const size_t MinValidAddress = 0x10000; // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
-    #define OPCODE_VALIDATE_POINTER(x) if((size_t)x <= MinValidAddress) { SHOW_ERROR("Invalid '0x%X' pointer argument in script %s \nScript suspended.", x, ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_VALIDATE_POINTER(x) if((size_t)x <= MinValidAddress) { SHOW_ERROR("Invalid '0x%X' pointer argument in script %s \nScript suspended.", x, ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_CONDITION_RESULT(value) CLEO_SetThreadCondResult(thread, value);
+    #define OPCODE_CONDITION_RESULT(value) CLEO_SetThreadCondResult(script, value);
 
     // opcode param handling utils internal
     static SCRIPT_VAR* _paramsArray = nullptr;
     static eDataType _lastParamType = eDataType::DT_END;
     static eArrayDataType _lastParamArrayType = eArrayDataType::ADT_NONE;
 
-    static SCRIPT_VAR& _readParam(CRunningScript* thread)
+    static SCRIPT_VAR& _readParam(Script* script)
     {
-        _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamType = script->PeekDataType();
+        _lastParamArrayType = IsArray(_lastParamType) ? script->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
-        CLEO_RetrieveOpcodeParams(thread, 1);
+        CLEO_RetrieveOpcodeParams(script, 1);
         if (_paramsArray == nullptr) _paramsArray = CLEO_GetOpcodeParamsArray();
         return _paramsArray[0];
     }
 
-    static SCRIPT_VAR& _readParamFloat(CRunningScript* thread)
+    static SCRIPT_VAR& _readParamFloat(Script* script)
     {
-        auto& var = _readParam(thread);
+        auto& var = _readParam(script);
 
         // people tend to use '0' instead '0.0' when providing literal float params in scripts
         // binary these are equal, so can be allowed
@@ -584,43 +584,43 @@ namespace CLEO
         return var;
     }
 
-    static SCRIPT_VAR* _readParamVariable(CRunningScript* thread)
+    static SCRIPT_VAR* _readParamVariable(Script* script)
     {
-        _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamType = script->PeekDataType();
+        _lastParamArrayType = IsArray(_lastParamType) ? script->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
-        return CLEO_GetPointerToScriptVariable(thread);
+        return CLEO_GetPointerToScriptVariable(script);
     }
 
-    static StringParamBufferInfo _readParamStringInfo(CRunningScript* thread)
+    static StringParamBufferInfo _readParamStringInfo(Script* script)
     {
-        _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamType = script->PeekDataType();
+        _lastParamArrayType = IsArray(_lastParamType) ? script->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
         StringParamBufferInfo result;
-        CLEO_ReadStringParamWriteBuffer(thread, &result.data, &result.size, &result.needTerminator);
+        CLEO_ReadStringParamWriteBuffer(script, &result.data, &result.size, &result.needTerminator);
         return result;
     }
 
-    static void _writeParamPtr(CRunningScript* thread, void* valuePtr)
+    static void _writeParamPtr(Script* script, void* valuePtr)
     {
-        _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamType = script->PeekDataType();
+        _lastParamArrayType = IsArray(_lastParamType) ? script->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
         if (_paramsArray == nullptr) _paramsArray = CLEO_GetOpcodeParamsArray();
         _paramsArray[0].pParam = valuePtr;
-        CLEO_RecordOpcodeParams(thread, 1);
+        CLEO_RecordOpcodeParams(script, 1);
     }
 
-    template<typename T> static void _writeParam(CRunningScript* thread, T value)
+    template<typename T> static void _writeParam(Script* script, T value)
     {
-        _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamType = script->PeekDataType();
+        _lastParamArrayType = IsArray(_lastParamType) ? script->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
         if (_paramsArray == nullptr) _paramsArray = CLEO_GetOpcodeParamsArray();
         _paramsArray[0].dwParam = 0;
         memcpy(&_paramsArray[0], &value, sizeof(T));
-        CLEO_RecordOpcodeParams(thread, 1);
+        CLEO_RecordOpcodeParams(script, 1);
     }
 
     static inline bool _paramWasInt(bool output = false)
@@ -663,20 +663,20 @@ namespace CLEO
         return IsVariable(_lastParamType);
     }
 
-    static const char* _readParamText(CRunningScript* thread, char* buffer, size_t bufferSize)
+    static const char* _readParamText(Script* script, char* buffer, size_t bufferSize)
     {
-        _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamType = script->PeekDataType();
+        _lastParamArrayType = IsArray(_lastParamType) ? script->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
         if (!_paramWasString())
         {
-            SHOW_ERROR("Input argument %s expected to be string, got %s in script %s\nScript suspended.", GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str());
-            thread->Suspend();
+            SHOW_ERROR("Input argument %s expected to be string, got %s in script %s\nScript suspended.", GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(script).c_str());
+            script->Suspend();
             _lastParamType = DT_INVALID; // mark error
             return nullptr;
         }
 
-        auto str = CLEO_ReadStringPointerOpcodeParam(thread, buffer, bufferSize); // returns pointer to source data whenever possible
+        auto str = CLEO_ReadStringPointerOpcodeParam(script, buffer, bufferSize); // returns pointer to source data whenever possible
         
         if (str == nullptr) // reading string failed
         {
@@ -684,15 +684,15 @@ namespace CLEO
             if ((IsImmInteger(_lastParamType) || isVariableInt) && // pointer argument type?
                 CLEO_GetOpcodeParamsArray()->dwParam <= MinValidAddress)
             {
-                SHOW_ERROR("Invalid '0x%X' pointer of input string argument %s in script %s", CLEO_GetOpcodeParamsArray()->dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
+                SHOW_ERROR("Invalid '0x%X' pointer of input string argument %s in script %s", CLEO_GetOpcodeParamsArray()->dwParam, GetParamInfo().c_str(), ScriptInfoStr(script).c_str());
             }
             else
             {
                 // other error
-                SHOW_ERROR("Invalid input argument %s in script %s\nScript suspended.", GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
+                SHOW_ERROR("Invalid input argument %s in script %s\nScript suspended.", GetParamInfo().c_str(), ScriptInfoStr(script).c_str());
             }
 
-            thread->Suspend();
+            script->Suspend();
             _lastParamType = DT_INVALID; // mark error
             return nullptr;
         }
@@ -700,19 +700,19 @@ namespace CLEO
         return str;
     }
 
-    static bool _writeParamText(CLEO::CRunningScript* thread, const StringParamBufferInfo& target, const char* str)
+    static bool _writeParamText(Script* script, const StringParamBufferInfo& target, const char* str)
     {
         if (str != nullptr && (size_t)str <= MinValidAddress)
         {
-            SHOW_ERROR("Invalid '0x%X' source pointer of output string argument %s in script %s \nScript suspended.", str, GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str());
-            thread->Suspend();
+            SHOW_ERROR("Invalid '0x%X' source pointer of output string argument %s in script %s \nScript suspended.", str, GetParamInfo(1).c_str(), ScriptInfoStr(script).c_str());
+            script->Suspend();
             return false;
         }
 
         if ((size_t)target.data <= MinValidAddress)
         {
-            SHOW_ERROR("Invalid '0x%X' target pointer of output string argument in script %s \nScript suspended.", target.data, ScriptInfoStr(thread).c_str());
-            thread->Suspend();
+            SHOW_ERROR("Invalid '0x%X' target pointer of output string argument in script %s \nScript suspended.", target.data, ScriptInfoStr(script).c_str());
+            script->Suspend();
             return false;
         }
 
@@ -734,160 +734,160 @@ namespace CLEO
         return true;
     }
 
-    static bool _writeParamText(CRunningScript* thread, const char* str)
+    static bool _writeParamText(Script* script, const char* str)
     {
-        _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamType = script->PeekDataType();
+        _lastParamArrayType = IsArray(_lastParamType) ? script->PeekArrayDataType() : eArrayDataType::ADT_NONE;
 
         if (str != nullptr && (size_t)str <= MinValidAddress)
         {
-            SHOW_ERROR("Invalid '0x%X' source pointer of output string argument %s in script %s \nScript suspended.", str, GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str());
-            thread->Suspend();
+            SHOW_ERROR("Invalid '0x%X' source pointer of output string argument %s in script %s \nScript suspended.", str, GetParamInfo(1).c_str(), ScriptInfoStr(script).c_str());
+            script->Suspend();
             return false;
         }
 
         if (!_paramWasString(true))
         {
-            SHOW_ERROR("Output argument %s expected to be variable string, got %s in script %s\nScript suspended.", GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str());
-            thread->Suspend();
+            SHOW_ERROR("Output argument %s expected to be variable string, got %s in script %s\nScript suspended.", GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(script).c_str());
+            script->Suspend();
             return false;
         }
 
         if (IsImmInteger(_lastParamType) || IsVariable(_lastParamType)) // pointer to buffer
         {
-            auto ptr = CLEO_PeekIntOpcodeParam(thread);
+            auto ptr = CLEO_PeekIntOpcodeParam(script);
 
             if ((size_t)ptr <= MinValidAddress)
             {
-                SHOW_ERROR("Invalid '0x%X' pointer of output string argument %s in script %s \nScript suspended.", ptr, GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str());
-                thread->Suspend();
+                SHOW_ERROR("Invalid '0x%X' pointer of output string argument %s in script %s \nScript suspended.", ptr, GetParamInfo(1).c_str(), ScriptInfoStr(script).c_str());
+                script->Suspend();
                 return false;
             }
         }
         
         StringParamBufferInfo info;
-        CLEO_ReadStringParamWriteBuffer(thread, &info.data, &info.size, &info.needTerminator);
-        return _writeParamText(thread, info, str); // done
+        CLEO_ReadStringParamWriteBuffer(script, &info.data, &info.size, &info.needTerminator);
+        return _writeParamText(script, info, str); // done
     }
 
-    #define OPCODE_SKIP_PARAMS(_count) CLEO_SkipOpcodeParams(thread, _count)
-    #define OPCODE_SKIP_VARARG_PARAMS() CLEO_SkipUnusedVarArgs(thread)
+    #define OPCODE_SKIP_PARAMS(_count) CLEO_SkipOpcodeParams(script, _count)
+    #define OPCODE_SKIP_VARARG_PARAMS() CLEO_SkipUnusedVarArgs(script)
 
-    #define OPCODE_PEEK_PARAM_TYPE() thread->PeekDataType()
-    #define OPCODE_PEEK_VARARG_COUNT() CLEO_GetVarArgCount(thread)
+    #define OPCODE_PEEK_PARAM_TYPE() script->PeekDataType()
+    #define OPCODE_PEEK_VARARG_COUNT() CLEO_GetVarArgCount(script)
 
     // macros for reading opcode input params. Performs type validation, throws error and suspends script if user provided invalid argument type
     // TOD: add range checks for limited size types?
 
-    #define OPCODE_READ_PARAM_BOOL() _readParam(thread).dwParam != false; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_BOOL() _readParam(script).dwParam != false; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_INT8() _readParam(thread).cParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_INT8() _readParam(script).cParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_UINT8() _readParam(thread).ucParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_UINT8() _readParam(script).ucParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_INT16() _readParam(thread).wParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_INT16() _readParam(script).wParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_UINT16() _readParam(thread).usParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_UINT16() _readParam(script).usParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_INT() _readParam(thread).nParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_INT() _readParam(script).nParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_UINT() _readParam(thread).dwParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_UINT() _readParam(script).dwParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_FLOAT() _readParamFloat(thread).fParam; \
-        if (!IsLegacyScript(thread) && !_paramWasFloat()) { SHOW_ERROR_COMPAT("Input argument %s expected to be float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_FLOAT() _readParamFloat(script).fParam; \
+        if (!IsLegacyScript(script) && !_paramWasFloat()) { SHOW_ERROR_COMPAT("Input argument %s expected to be float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_ANY32() _readParam(thread); \
-        if (!_paramWasInt() && !_paramWasFloat()) { SHOW_ERROR("Input argument %s expected to be int or float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_ANY32() _readParam(script); \
+        if (!_paramWasInt() && !_paramWasFloat()) { SHOW_ERROR("Input argument %s expected to be int or float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_STRING(_varName) char _buff_##_varName[MAX_STR_LEN + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_READ_PARAM_STRING(_varName) char _buff_##_varName[MAX_STR_LEN + 1]; const char* ##_varName = _readParamText(script, _buff_##_varName, MAX_STR_LEN + 1); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen) char _buff_##_varName[_maxLen + 1]; const char* ##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1); if(##_varName != nullptr) ##_varName = _buff_##_varName; if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen) char _buff_##_varName[_maxLen + 1]; const char* ##_varName = _readParamText(script, _buff_##_varName, _maxLen + 1); if(##_varName != nullptr) ##_varName = _buff_##_varName; if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_READ_PARAM_STRING_FORMATTED(_varName) char _buff_format_##_varName[MAX_STR_LEN + 1]; const char* _format_##_varName = _readParamText(thread, _buff_format_##_varName, MAX_STR_LEN + 1); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; } \
-        char _varName[2 * MAX_STR_LEN + 1]; char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName)); \
-        if(_varName##Ok == nullptr) { SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_STRING_FORMATTED(_varName) char _buff_format_##_varName[MAX_STR_LEN + 1]; const char* _format_##_varName = _readParamText(script, _buff_format_##_varName, MAX_STR_LEN + 1); if(!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; } \
+        char _varName[2 * MAX_STR_LEN + 1]; char* _varName##Ok = CLEO_ReadParamsFormatted(script, _buff_format_##_varName, _varName, sizeof(_varName)); \
+        if(_varName##Ok == nullptr) { SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName) char _varName[2 * MAX_STR_LEN + 1]; char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName)); \
-        if(_varName##Ok == nullptr) { SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName) char _varName[2 * MAX_STR_LEN + 1]; char* _varName##Ok = CLEO_ReadParamsFormatted(script, _format, _varName, sizeof(_varName)); \
+        if(_varName##Ok == nullptr) { SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; const char* ##_varName = _readParamText(thread, _buff_##_varName, 512); if(##_varName != nullptr) ##_varName = _buff_##_varName; if(_paramWasString()) CLEO_ResolvePath(thread, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT; \
-        if(!FilepathIsSafe(thread, ##_varName)) { SHOW_ERROR("Forbidden file path '%s' outside game directories in script %s \nScript suspended.", ##_varName, ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_FILEPATH(_varName) char _buff_##_varName[512]; const char* ##_varName = _readParamText(script, _buff_##_varName, 512); if(##_varName != nullptr) ##_varName = _buff_##_varName; if(_paramWasString()) CLEO_ResolvePath(script, _buff_##_varName, 512); else return OpcodeResult::OR_INTERRUPT; \
+        if(!FilepathIsSafe(script, ##_varName)) { SHOW_ERROR("Forbidden file path '%s' outside game directories in script %s \nScript suspended.", ##_varName, ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_PTR() _readParam(thread).pParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        else if (_paramsArray[0].dwParam <= MinValidAddress) { SHOW_ERROR("Invalid pointer '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_PTR() _readParam(script).pParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); } \
+        else if (_paramsArray[0].dwParam <= MinValidAddress) { SHOW_ERROR("Invalid pointer '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_OBJECT_HANDLE() _readParam(thread).dwParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        else if (!IsObjectHandleValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid object handle '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_OBJECT_HANDLE() _readParam(script).dwParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); } \
+        else if (!IsObjectHandleValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid object handle '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_PED_HANDLE() _readParam(thread).dwParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        else if (!IsPedHandleValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid character handle '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_PED_HANDLE() _readParam(script).dwParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); } \
+        else if (!IsPedHandleValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid character handle '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_VEHICLE_HANDLE() _readParam(thread).dwParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        else if (!IsVehicleHandleValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid vehicle handle '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_VEHICLE_HANDLE() _readParam(script).dwParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); } \
+        else if (!IsVehicleHandleValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid vehicle handle '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_PLAYER_ID() _readParam(thread).dwParam; \
-        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        else if (!IsPlayerIdValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid player id '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_PLAYER_ID() _readParam(script).dwParam; \
+        if (!_paramWasInt()) { SHOW_ERROR("Input argument %s expected to be integer, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); } \
+        else if (!IsPlayerIdValid(_paramsArray[0].dwParam)) { SHOW_ERROR("Invalid player id '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_OUTPUT_VAR_ANY32() _readParamVariable(thread); \
-        if (!_paramWasVariable()) { SHOW_ERROR("Output argument %s expected to be variable int or float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_OUTPUT_VAR_ANY32() _readParamVariable(script); \
+        if (!_paramWasVariable()) { SHOW_ERROR("Output argument %s expected to be variable int or float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_OUTPUT_VAR_INT() (int*)_readParamVariable(thread); \
-        if (!_paramWasVariable()) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_OUTPUT_VAR_INT() (int*)_readParamVariable(script); \
+        if (!_paramWasVariable()) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); } \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT() (float*)_readParamVariable(thread); \
-        if (!_paramWasVariable()) { SHOW_ERROR("Output argument %s expected to be variable float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); } \
-        if (!IsLegacyScript(thread) && !_paramWasFloat(true)) { SHOW_ERROR_COMPAT("Output argument %s expected to be variable float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT() (float*)_readParamVariable(script); \
+        if (!_paramWasVariable()) { SHOW_ERROR("Output argument %s expected to be variable float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); } \
+        if (!IsLegacyScript(script) && !_paramWasFloat(true)) { SHOW_ERROR_COMPAT("Output argument %s expected to be variable float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_READ_PARAM_OUTPUT_VAR_STRING() _readParamStringInfo(thread); \
-        if (!_paramWasString(true)) { SHOW_ERROR("Output argument %s expected to be variable string, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_READ_PARAM_OUTPUT_VAR_STRING() _readParamStringInfo(script); \
+        if (!_paramWasString(true)) { SHOW_ERROR("Output argument %s expected to be variable string, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
 
     // macros for writing opcode output params. Performs type validation, throws error and suspends script if user provided invalid argument type
 
-    #define OPCODE_WRITE_PARAM_BOOL(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_BOOL(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_INT8(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_INT8(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_UINT8(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_UINT8(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_INT16(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_INT16(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_UINT16(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_UINT16(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_INT(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_INT(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_UINT(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_UINT(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_ANY32(_value) _writeParam(thread, _value); \
-        if (!_paramWasInt(true) && !_paramWasFloat(true)) { SHOW_ERROR("Output argument %s expected to be int or float variable, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_ANY32(_value) _writeParam(script, _value); \
+        if (!_paramWasInt(true) && !_paramWasFloat(true)) { SHOW_ERROR("Output argument %s expected to be int or float variable, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_FLOAT(_value) _writeParam(thread, _value); \
-        if (!IsLegacyScript(thread) && !_paramWasFloat(true)) { SHOW_ERROR_COMPAT("Output argument %s expected to be variable float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_FLOAT(_value) _writeParam(script, _value); \
+        if (!IsLegacyScript(script) && !_paramWasFloat(true)) { SHOW_ERROR_COMPAT("Output argument %s expected to be variable float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 
-    #define OPCODE_WRITE_PARAM_STRING(_value) if(!_writeParamText(thread, _value)) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_WRITE_PARAM_STRING(_value) if(!_writeParamText(script, _value)) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_WRITE_PARAM_VAR_STRING(_info, _value) if(!_writeParamText(thread, _info, _value)) { return OpcodeResult::OR_INTERRUPT; }
+    #define OPCODE_WRITE_PARAM_VAR_STRING(_info, _value) if(!_writeParamText(script, _info, _value)) { return OpcodeResult::OR_INTERRUPT; }
 
-    #define OPCODE_WRITE_PARAM_PTR(_value) _writeParamPtr(thread, (void*)_value); \
-        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+    #define OPCODE_WRITE_PARAM_PTR(_value) _writeParamPtr(script, (void*)_value); \
+        if (!_paramWasInt(true)) { SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(script).c_str()); return script->Suspend(); }
 }

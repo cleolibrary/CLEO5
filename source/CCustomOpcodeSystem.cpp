@@ -5,8 +5,8 @@
 #include "ScmFunction.h"
 
 
-#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
-#define OPCODE_READ_FORMATTED_STRING(thread, buf, bufSize, format) if(ReadFormattedString(thread, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str()); return thread->Suspend(); }
+#define OPCODE_VALIDATE_STR_ARG_WRITE(x) if((void*)x == nullptr) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)script)->GetInfoStr().c_str()); return script->Suspend(); }
+#define OPCODE_READ_FORMATTED_STRING(script, buf, bufSize, format) if(ReadFormattedString(script, buf, bufSize, format) == -1) { SHOW_ERROR("%s in script %s \nScript suspended.", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)script)->GetInfoStr().c_str()); return script->Suspend(); }
 
 namespace CLEO 
 {
@@ -99,15 +99,15 @@ namespace CLEO
 		return true;
 	}
 
-	OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs, DWORD returnArgCount, bool strictArgCount)
+	OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, Script* script, bool returnArgs, DWORD returnArgCount, bool strictArgCount)
 	{
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
+		auto cs = reinterpret_cast<CCustomScript*>(script);
 
 		ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
 		if (scmFunc == nullptr)
 		{
 			SHOW_ERROR("Invalid Cleo Call reference. [%04X] possibly used without preceding [0AB1] in script %s\nScript suspended.", opcode, cs->GetInfoStr().c_str());
-			return thread->Suspend();
+			return script->Suspend();
 		}
 
 		// store return arguments
@@ -119,14 +119,14 @@ namespace CLEO
 			if (returnArgCount > 32)
 			{
 				SHOW_ERROR("Opcode [%04X] has too many (%d) args in script %s\nScript suspended.", opcode, returnArgCount, cs->GetInfoStr().c_str());
-				return thread->Suspend();
+				return script->Suspend();
 			}
 
-			auto nVarArg = CScriptEngine::GetVarArgCount(thread);
+			auto nVarArg = CScriptEngine::GetVarArgCount(script);
 			if (returnArgCount > nVarArg)
 			{
-				SHOW_ERROR("Opcode [%04X] declared %d args, but %d was provided in script %s\nScript suspended.", opcode, returnArgCount, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Opcode [%04X] declared %d args, but %d was provided in script %s\nScript suspended.", opcode, returnArgCount, nVarArg, ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 
 			for (DWORD i = 0; i < returnArgCount; i++)
@@ -134,14 +134,14 @@ namespace CLEO
 				SCRIPT_VAR* arg = arguments + i;
 				argumentIsStr[i] = false;
 
-				auto paramType = (eDataType)*thread->GetBytePointer();
+				auto paramType = (eDataType)*script->GetBytePointer();
 				if (IsImmInteger(paramType) || IsVariable(paramType))
 				{
-					arg->dwParam = CLEO_GetIntOpcodeParam(thread);
+					arg->dwParam = CLEO_GetIntOpcodeParam(script);
 				}
 				else if (paramType == DT_FLOAT)
 				{
-					arg->fParam = CLEO_GetFloatOpcodeParam(thread);
+					arg->fParam = CLEO_GetFloatOpcodeParam(script);
 				}
 				else if (IsImmString(paramType) || IsVarString(paramType))
 				{
@@ -153,8 +153,8 @@ namespace CLEO
 				}
 				else
 				{
-					SHOW_ERROR("Invalid argument type '0x%02X' in opcode [%04X] in script %s\nScript suspended.", paramType, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return thread->Suspend();
+					SHOW_ERROR("Invalid argument type '0x%02X' in opcode [%04X] in script %s\nScript suspended.", paramType, opcode, ((CCustomScript*)script)->GetInfoStr().c_str());
+					return script->Suspend();
 				}
 			}
 		}
@@ -175,14 +175,14 @@ namespace CLEO
 				}
 				else
 				{
-					LOG_WARNING(thread, "Opcode [%04X] returned %d params, while function caller expected %d in script %s", opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
+					LOG_WARNING(script, "Opcode [%04X] returned %d params, while function caller expected %d in script %s", opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str());
 				}
 			}
 
 			// set return args
 			for (DWORD i = 0; i < std::min<DWORD>(returnArgCount, returnSlotCount); i++)
 			{
-				auto arg = (SCRIPT_VAR*)thread->GetBytePointer();
+				auto arg = (SCRIPT_VAR*)script->GetBytePointer();
 
 				auto paramType = *(eDataType*)arg;
 				if (IsVarString(paramType))
@@ -196,170 +196,170 @@ namespace CLEO
 						OPCODE_WRITE_PARAM_STRING(arguments[i].pcParam);
 					}
 					else
-						CLEO_SetIntOpcodeParam(thread, arguments[i].dwParam);
+						CLEO_SetIntOpcodeParam(script, arguments[i].dwParam);
 				}
 				else
 				{
-					SHOW_ERROR("Invalid output argument type '0x%02X' in opcode [%04X] in script %s\nScript suspended.", paramType, opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-					return thread->Suspend();
+					SHOW_ERROR("Invalid output argument type '0x%02X' in opcode [%04X] in script %s\nScript suspended.", paramType, opcode, ((CCustomScript*)script)->GetInfoStr().c_str());
+					return script->Suspend();
 				}
 			}
 		}
 
-		CScriptEngine::SkipUnusedVarArgs(thread); // skip var args terminator too
+		CScriptEngine::SkipUnusedVarArgs(script); // skip var args terminator too
 
 		return OR_CONTINUE;
 	}
 
 	// terminate_this_script
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_004E(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_004E(Script* script)
 	{
-		CleoInstance.ScriptEngine.RemoveScript(thread);
+		CleoInstance.ScriptEngine.RemoveScript(script);
 		return OR_INTERRUPT;
 	}
 
 	// GOSUB return
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(Script* script)
 	{
-		if (thread->SP == 0 && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
+		if (script->SP == 0 && !IsLegacyScript(script)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
 		{
 			OPCODE_CONDITION_RESULT(false);
-			return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0051, thread, false); // try CLEO's function return
+			return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0051, script, false); // try CLEO's function return
 		}
 
-		if (thread->SP == 0)
+		if (script->SP == 0)
 		{
-			SHOW_ERROR("`return` used without preceding `gosub` call in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("`return` used without preceding `gosub` call in script %s\nScript suspended.", ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
 		size_t tableIdx = 0x0051 / Opcodes_Table_Size;
-		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
+		return originalOpcodeHandlers[tableIdx](script, 0x0051); // call game's original
 	}
 
 	// load_and_launch_mission_internal
 	// load_and_launch_mission_internal {index} [int]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(Script* script)
 	{
-		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
+		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(script);
 
 		size_t tableIdx = 0x0417 / Opcodes_Table_Size;
-		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
+		return originalOpcodeHandlers[tableIdx](script, 0x0417); // call game's original
 	}
 
 	// stream_custom_script
 	// stream_custom_script {scriptFileName} [string] [arguments]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A92(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A92(Script* script)
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
-		TRACE("[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str());
+		auto filename = reinterpret_cast<CCustomScript*>(script)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
+		TRACE("[0A92] Starting new custom script %s from script named '%s'", filename.c_str(), script->GetName().c_str());
 
-		auto cs = new CCustomScript(filename.c_str(), false, thread);
-		thread->SetConditionResult(cs && cs->IsOk());
+		auto cs = new CCustomScript(filename.c_str(), false, script);
+		script->SetConditionResult(cs && cs->IsOk());
 		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
-			((::CRunningScript*)thread)->ReadParametersForNewlyStartedScript((::CRunningScript*)cs);
+			((::CRunningScript*)script)->ReadParametersForNewlyStartedScript((::CRunningScript*)cs);
 		}
 		else
 		{
 			if (cs) delete cs;
 			OPCODE_SKIP_VARARG_PARAMS();
-			LOG_WARNING(0, "Failed to load script '%s' in script ", filename.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(0, "Failed to load script '%s' in script ", filename.c_str(), ((CCustomScript*)script)->GetInfoStr().c_str());
 		}
 
 		return OR_CONTINUE;
 	}
 
 	// terminate_this_custom_script
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A93(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A93(Script* script)
 	{
-		CCustomScript* cs = reinterpret_cast<CCustomScript*>(thread);
-		if (thread->IsMission() || !cs->IsCustom())
+		CCustomScript* cs = reinterpret_cast<CCustomScript*>(script);
+		if (script->IsMission() || !cs->IsCustom())
 		{
-			LOG_WARNING(0, "Incorrect usage of opcode [0A93] in script '%s'. Use [004E] instead.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			LOG_WARNING(0, "Incorrect usage of opcode [0A93] in script '%s'. Use [004E] instead.", ((CCustomScript*)script)->GetInfoStr().c_str());
 			return OR_CONTINUE; // legacy behavior
 		}
 
-		CleoInstance.ScriptEngine.RemoveScript(thread);
+		CleoInstance.ScriptEngine.RemoveScript(script);
 		return OR_INTERRUPT;
 	}
 
 	// load_and_launch_custom_mission
 	// load_and_launch_custom_mission {scriptFileName} [string] [arguments]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A94(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A94(Script* script)
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
-		auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
+		auto filename = reinterpret_cast<CCustomScript*>(script)->ResolvePath(path, DIR_CLEO); // legacy: default search location is game\cleo directory
 		filename += ".cm"; // add custom mission extension
-		TRACE("[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(), thread->GetName().c_str());
+		TRACE("[0A94] Starting new custom mission '%s' from script named '%s'", filename.c_str(), script->GetName().c_str());
 
-		auto cs = new CCustomScript(filename.c_str(), true, thread);
-		thread->SetConditionResult(cs && cs->IsOk());
+		auto cs = new CCustomScript(filename.c_str(), true, script);
+		script->SetConditionResult(cs && cs->IsOk());
 		if (cs && cs->IsOk())
 		{
 			CleoInstance.ScriptEngine.AddCustomScript(cs);
 			CTheScripts::WipeLocalVariableMemoryForMissionScript();
-			auto fakeScriptAddress = (BYTE*)missionLocals - offsetof(CRunningScript, LocalVar); // TODO: maybe copy params ourself instead?
-			((::CRunningScript*)thread)->ReadParametersForNewlyStartedScript((::CRunningScript*)fakeScriptAddress);
+			auto fakeScriptAddress = (BYTE*)missionLocals - offsetof(Script, LocalVar); // TODO: maybe copy params ourself instead?
+			((::CRunningScript*)script)->ReadParametersForNewlyStartedScript((::CRunningScript*)fakeScriptAddress);
 		}
 		else
 		{
 			if (cs) delete cs;
 			OPCODE_SKIP_VARARG_PARAMS();
-			LOG_WARNING(0, "[0A94] Failed to load mission '%s' from script '%s'.", filename.c_str(), thread->GetName().c_str());
+			LOG_WARNING(0, "[0A94] Failed to load mission '%s' from script '%s'.", filename.c_str(), script->GetName().c_str());
 		}
 
 		return OR_CONTINUE;
 	}
 
 	// save_this_custom_script
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A95(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A95(Script* script)
 	{
-		if (thread->IsCustom())
+		if (script->IsCustom())
 		{
-			reinterpret_cast<CCustomScript*>(thread)->EnableSaving();
+			reinterpret_cast<CCustomScript*>(script)->EnableSaving();
 		}
 		return OR_CONTINUE;
 	}
 
 	// gosub_if_false
 	// gosub_if_false [label]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA0(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA0(Script* script)
 	{
 		auto offset = OPCODE_READ_PARAM_INT();
 
-		if (thread->GetConditionResult()) return OR_CONTINUE;
+		if (script->GetConditionResult()) return OR_CONTINUE;
 
-		thread->PushStack(thread->GetBytePointer());
-		thread->Jump(offset);
+		script->PushStack(script->GetBytePointer());
+		script->Jump(offset);
 		return OR_CONTINUE;
 	}
 
 	// return_if_false
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA1(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA1(Script* script)
 	{
-		if (thread->GetConditionResult()) return OR_CONTINUE;
+		if (script->GetConditionResult()) return OR_CONTINUE;
 
-		if (thread->SP == 0)
+		if (script->SP == 0)
 		{
-			SHOW_ERROR("`return_if_false` used without preceding `gosub` call in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("`return_if_false` used without preceding `gosub` call in script %s\nScript suspended.", ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
-		thread->SetIp(thread->PopStack());
+		script->SetIp(script->PopStack());
 		return OR_CONTINUE;
 	}
 
 	// is_game_version_original
 	// is_game_version_original (logical)
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA9(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA9(Script* script)
 	{
 		auto gameVer = CleoInstance.VersionManager.GetGameVersion();
-		auto scriptVer = CLEO_GetScriptVersion(thread);
+		auto scriptVer = CLEO_GetScriptVersion(script);
 
 		bool result = (gameVer == GV_US10) ||
 			(scriptVer <= CLEO_VER_4_MIN && gameVer == GV_EU10);
@@ -370,29 +370,29 @@ namespace CLEO
 
 	// cleo_call
 	// cleo_call [label] {numParams} [int] {params} [arguments]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(Script* script)
 	{
 		int label = 0;
 		std::string moduleTxt;
 
-		auto paramType = thread->PeekDataType();
+		auto paramType = script->PeekDataType();
 		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
-			label = CLEO_GetIntOpcodeParam(thread); // label offset
+			label = CLEO_GetIntOpcodeParam(script); // label offset
 		}
 		else if (IsImmString(paramType) || IsVarString(paramType))
 		{
 			char tmp[MAX_STR_LEN + 1];
-			auto str = CScriptEngine::ReadStringParam(thread, tmp, sizeof(tmp)); // string with module and export name
+			auto str = CScriptEngine::ReadStringParam(script, tmp, sizeof(tmp)); // string with module and export name
 			if (str != nullptr) moduleTxt = str;
 		}
 		else
 		{
-			SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 	
-		ScmFunction* scmFunc = new ScmFunction(thread);
+		ScmFunction* scmFunc = new ScmFunction(script);
 		
 		// parse module reference text
 		if (!moduleTxt.empty())
@@ -400,43 +400,43 @@ namespace CLEO
 			auto pos = moduleTxt.find('@');
 			if (pos == moduleTxt.npos)
 			{
-				SHOW_ERROR("Invalid module reference '%s' in opcode [0AB1] in script %s \nScript suspended.", moduleTxt.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Invalid module reference '%s' in opcode [0AB1] in script %s \nScript suspended.", moduleTxt.c_str(), ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 			auto strExport = std::string_view(moduleTxt.data(), pos);
 			auto strModule = std::string_view(moduleTxt.data() + pos + 1);
 
 			// get module's file absolute path
 			auto modulePath = std::string(strModule);
-			modulePath = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(modulePath.c_str(), DIR_SCRIPT); // by default search relative to current script location
+			modulePath = reinterpret_cast<CCustomScript*>(script)->ResolvePath(modulePath.c_str(), DIR_SCRIPT); // by default search relative to current script location
 
 			// get export reference
 			auto scriptRef = CleoInstance.ModuleSystem.GetExport(modulePath, strExport);
 			if (!scriptRef.Valid())
 			{
-				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), moduleTxt.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Not found module '%s' export '%s', requested by opcode [0AB1] in script %s", modulePath.c_str(), moduleTxt.c_str(), ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 
-			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileDir(FS::path(modulePath).parent_path().string().c_str());
-			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileName(FS::path(modulePath).filename().string().c_str());
-			thread->SetBaseIp(scriptRef.base);
+			reinterpret_cast<CCustomScript*>(script)->SetScriptFileDir(FS::path(modulePath).parent_path().string().c_str());
+			reinterpret_cast<CCustomScript*>(script)->SetScriptFileName(FS::path(modulePath).filename().string().c_str());
+			script->SetBaseIp(scriptRef.base);
 			label = scriptRef.offset;
 		}
 
 		// "number of input parameters" opcode argument
 		DWORD nParams = 0;
-		paramType = thread->PeekDataType();
+		paramType = script->PeekDataType();
 		if (paramType != DT_END)
 		{
 			if (IsImmInteger(paramType))
 			{
-				nParams = CLEO_GetIntOpcodeParam(thread);
+				nParams = CLEO_GetIntOpcodeParam(script);
 			}
 			else
 			{
-				SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Invalid type (%s) of the 'input param count' argument in opcode [0AB1] in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 		}
 		if (nParams)
@@ -444,20 +444,20 @@ namespace CLEO
 			auto nVarArg = OPCODE_PEEK_VARARG_COUNT();
 			if (nParams > nVarArg) // if less it means there are return params too
 			{
-				SHOW_ERROR("Opcode [0AB1] declared %d input args, but provided %d in script %s\nScript suspended.", nParams, nVarArg, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Opcode [0AB1] declared %d input args, but provided %d in script %s\nScript suspended.", nParams, nVarArg, ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 
 			if (nParams > 32)
 			{
-				SHOW_ERROR("Argument count %d is out of supported range (32) of opcode [0AB1] in script %s", nParams, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Argument count %d is out of supported range (32) of opcode [0AB1] in script %s", nParams, ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 		}
 		scmFunc->callArgCount = (BYTE)nParams;
 
 		static SCRIPT_VAR arguments[32];
-		SCRIPT_VAR* locals = thread->IsMission() ? missionLocals : thread->GetVarPtr();
+		SCRIPT_VAR* locals = script->IsMission() ? missionLocals : script->GetVarPtr();
 		SCRIPT_VAR* localsEnd = locals + 32;
 		SCRIPT_VAR* storedLocals = scmFunc->savedTls;
 
@@ -466,15 +466,15 @@ namespace CLEO
 		{
 			SCRIPT_VAR* arg = arguments + i;
 
-			auto paramType = thread->PeekDataType();
+			auto paramType = script->PeekDataType();
 			if (IsImmInteger(paramType) || IsVariable(paramType))
 			{
-				arg->dwParam = CLEO_GetIntOpcodeParam(thread);
+				arg->dwParam = CLEO_GetIntOpcodeParam(script);
 
 			}
 			else if(paramType == DT_FLOAT)
 			{
-				arg->fParam = CLEO_GetFloatOpcodeParam(thread);
+				arg->fParam = CLEO_GetFloatOpcodeParam(script);
 			}
 			else if (IsImmString(paramType) || IsVarString(paramType))
 			{
@@ -482,87 +482,87 @@ namespace CLEO
 				// For strings stored in variables there is no guarantee these will end with terminator.
 				// In both cases copy is necessary to create proper c-string
 				char tmp[MAX_STR_LEN + 1];
-				auto str = CScriptEngine::ReadStringParam(thread, tmp, sizeof(tmp));
+				auto str = CScriptEngine::ReadStringParam(script, tmp, sizeof(tmp));
 				scmFunc->stringParams.emplace_back(str);
 				arg->pcParam = (char*)scmFunc->stringParams.back().c_str();
 			}
 			else
 			{
-				SHOW_ERROR("Invalid argument type '0x%02X' in opcode [0AB1] in script %s\nScript suspended.", paramType, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Invalid argument type '0x%02X' in opcode [0AB1] in script %s\nScript suspended.", paramType, ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 		}
 
 		// all arguments read
-		scmFunc->retnAddress = thread->GetBytePointer();
+		scmFunc->retnAddress = script->GetBytePointer();
 
 		// pass arguments as new scope local variables
 		memcpy(locals, arguments, nParams * sizeof(SCRIPT_VAR));
 
 		// initialize (clear) rest of new scope local variables
-		if (CLEO_GetScriptVersion(thread) >= CLEO_VER_4_MIN) // CLEO 3 did not cleared local variables
+		if (CLEO_GetScriptVersion(script) >= CLEO_VER_4_MIN) // CLEO 3 did not cleared local variables
 		{
 			for (DWORD i = nParams; i < 32; i++)
 			{
-				thread->SetIntVar(i, 0); // fill with zeros
+				script->SetIntVar(i, 0); // fill with zeros
 			}
 		}
 
-		thread->Jump(label); // script offset
+		script->Jump(label); // script offset
 		return OR_CONTINUE;
 	}
 
 	// cleo_return
 	// cleo_return {numRet} [int] {retParams} [arguments]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(Script* script)
 	{
 		auto returnParamCount = OPCODE_PEEK_VARARG_COUNT();
 		if (returnParamCount)
 		{
-			auto paramType = (eDataType)*thread->GetBytePointer();
+			auto paramType = (eDataType)*script->GetBytePointer();
 			if (!IsImmInteger(paramType))
 			{
-				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
-			DWORD declaredParamCount = CLEO_GetIntOpcodeParam(thread);
+			DWORD declaredParamCount = CLEO_GetIntOpcodeParam(script);
 
 			if (returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
 			{
-				SHOW_ERROR("Opcode [0AB2] declared %d return args, but provided %d in script %s\nScript suspended.", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				return thread->Suspend();
+				SHOW_ERROR("Opcode [0AB2] declared %d return args, but provided %d in script %s\nScript suspended.", declaredParamCount, returnParamCount - 1, ((CCustomScript*)script)->GetInfoStr().c_str());
+				return script->Suspend();
 			}
 			else if (returnParamCount - 1 > declaredParamCount) // more args than needed, not critical
 			{
-				LOG_WARNING(thread, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1, ((CCustomScript*)thread)->GetInfoStr().c_str());
+				LOG_WARNING(script, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1, ((CCustomScript*)script)->GetInfoStr().c_str());
 			}
 
 			returnParamCount = declaredParamCount;
 		}
 
-		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, true, returnParamCount, !IsLegacyScript(thread));
+		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0AB2, script, true, returnParamCount, !IsLegacyScript(script));
 	}
 
 	// set_cleo_shared_var
 	// set_cleo_shared_var {index} [int] {value} [any]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB3(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB3(Script* script)
 	{
 		auto varIdx = OPCODE_READ_PARAM_INT();
 
 		const auto VarCount = _countof(CScriptEngine::CleoVariables);
 		if (varIdx < 0 || varIdx >= VarCount)
 		{
-			SHOW_ERROR("Variable index '%d' out of supported range in script %s\nScript suspended.", varIdx, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Variable index '%d' out of supported range in script %s\nScript suspended.", varIdx, ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
-		auto paramType = thread->PeekDataType();
+		auto paramType = script->PeekDataType();
 		if (!IsImmInteger(paramType) &&
 			!IsImmFloat(paramType) &&
 			!IsVariable(paramType))
 		{
-			SHOW_ERROR("Invalid value type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid value type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
 		auto value = OPCODE_READ_PARAM_ANY32();
@@ -572,22 +572,22 @@ namespace CLEO
 
 	// get_cleo_shared_var
 	// [var result: any] = get_cleo_shared_var {index} [int]
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB4(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB4(Script* script)
 	{
 		auto varIdx = OPCODE_READ_PARAM_INT();
 
 		const auto VarCount = _countof(CScriptEngine::CleoVariables);
 		if (varIdx < 0 || varIdx >= VarCount)
 		{
-			SHOW_ERROR("Variable index '%d' out of supported range in script %s\nScript suspended.", varIdx, ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Variable index '%d' out of supported range in script %s\nScript suspended.", varIdx, ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
-		auto paramType = thread->PeekDataType();
+		auto paramType = script->PeekDataType();
 		if (!IsVariable(paramType))
 		{
-			SHOW_ERROR("Invalid result argument type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid result argument type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
 		OPCODE_WRITE_PARAM_ANY32(CleoInstance.ScriptEngine.CleoVariables[varIdx]);
@@ -596,7 +596,7 @@ namespace CLEO
 
 	// get_platform
 	// [var platform: Platform] = get_platform
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0DD5(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0DD5(Script* script)
 	{
 		OPCODE_WRITE_PARAM_INT(PLATFORM_WINDOWS);
 		return OR_CONTINUE;
@@ -604,15 +604,15 @@ namespace CLEO
 
 	// get_cleo_arg_count
 	// [var count: int] = get_cleo_arg_count
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2000(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2000(Script* script)
 	{
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
+		auto cs = reinterpret_cast<CCustomScript*>(script);
 
 		ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
 		if (scmFunc == nullptr)
 		{
 			SHOW_ERROR("Quering argument count without preceding CLEO function call in script %s\nScript suspended.", cs->GetInfoStr().c_str());
-			return thread->Suspend();
+			return script->Suspend();
 		}
 
 		OPCODE_WRITE_PARAM_INT(scmFunc->callArgCount);
@@ -621,39 +621,39 @@ namespace CLEO
 
 	// cleo_return_with
 	// cleo_return_with {conditionResult} [bool] {retArgs} [arguments] (logical)
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(Script* script)
 	{
 		auto argCount = OPCODE_PEEK_VARARG_COUNT();
 		if (argCount < 1)
 		{
-			SHOW_ERROR("Opcode [2002] missing condition result argument in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Opcode [2002] missing condition result argument in script %s\nScript suspended.", ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
 		auto result = OPCODE_READ_PARAM_BOOL();
 		argCount--;
 
 		OPCODE_CONDITION_RESULT(result);
-		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2002, thread, true, argCount);
+		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2002, script, true, argCount);
 	}
 
 	// cleo_return_fail
 	// cleo_return_fail [arguments] (logical)
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2003(CRunningScript* thread)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2003(Script* script)
 	{
 		auto argCount = OPCODE_PEEK_VARARG_COUNT();
 		if (argCount != 0) // argument(s) not supported yet
 		{
-			SHOW_ERROR("Too many arguments of opcode [2003] in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Too many arguments of opcode [2003] in script %s\nScript suspended.", ((CCustomScript*)script)->GetInfoStr().c_str());
+			return script->Suspend();
 		}
 
 		OPCODE_CONDITION_RESULT(false);
-		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2003, thread);
+		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2003, script);
 	}
 
 	// opcode handler for custom opcodes
-	OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode)
+	OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(Script* script, int dummy, WORD opcode)
 	{
 		OpcodeResult result = OR_NONE;
 
@@ -663,8 +663,8 @@ namespace CLEO
 			OpcodeResult callbackResult = OR_NONE;
 			for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessAfter))
 			{
-				typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
-				auto res = ((callback*)func)(thread, opcode, result);
+				typedef OpcodeResult WINAPI callback(Script*, DWORD, OpcodeResult);
+				auto res = ((callback*)func)(script, opcode, result);
 
 				callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
 			}
@@ -672,21 +672,21 @@ namespace CLEO
 			return (callbackResult != OR_NONE) ? callbackResult : result;
 		};
 
-		CScriptEngine::prevOpcode = (thread == CScriptEngine::lastScript) ? CScriptEngine::lastOpcode : 0xFFFF;
-		CScriptEngine::lastScript = thread;
+		CScriptEngine::prevOpcode = (script == CScriptEngine::lastScript) ? CScriptEngine::lastOpcode : 0xFFFF;
+		CScriptEngine::lastScript = script;
 		CScriptEngine::lastOpcode = opcode;
-		CScriptEngine::lastOpcodePtr = thread->GetBytePointer() - sizeof(WORD); // rewind to the command start
+		CScriptEngine::lastOpcodePtr = script->GetBytePointer() - sizeof(WORD); // rewind to the command start
 		CScriptEngine::handledParamCount = 0;
 
 		// prevent past code execution
-		if (thread->IsCustom() && !IsLegacyScript(thread))
+		if (script->IsCustom() && !IsLegacyScript(script))
 		{
-			auto cs = (CCustomScript*)thread;
+			auto cs = (CCustomScript*)script;
 			auto endPos = cs->GetBasePointer() + cs->GetCodeSize();
 			if (CScriptEngine::lastOpcodePtr == endPos || CScriptEngine::lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
 			{
-				SHOW_ERROR_COMPAT("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
-				result = thread->Suspend();
+				SHOW_ERROR_COMPAT("Code execution past script end in script %s\nThis usually happens when [004E] command is missing.\nScript suspended.", ((CCustomScript*)script)->GetInfoStr().c_str());
+				result = script->Suspend();
 				return AfterOpcodeExecuted();
 			}
 		}
@@ -694,8 +694,8 @@ namespace CLEO
 		// execute registered callbacks
 		for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessBefore))
 		{
-			typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
-			result = ((callback*)func)(thread, opcode);
+			typedef OpcodeResult WINAPI callback(Script*, DWORD);
+			result = ((callback*)func)(script, opcode);
 
 			if (result != OR_NONE)
 				break; // processed
@@ -705,15 +705,15 @@ namespace CLEO
 		{
 			if (opcode > Last_Custom_Opcode)
 			{
-				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)thread)->GetInfoStr().c_str());
-				result = thread->Suspend();
+				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ((CCustomScript*)script)->GetInfoStr().c_str());
+				result = script->Suspend();
 				return AfterOpcodeExecuted();
 			}
 
 			CustomOpcodeHandler handler = customOpcodeProc[opcode];
 			if (handler != nullptr)
 			{
-				result = handler(thread);
+				result = handler(script);
 				return AfterOpcodeExecuted();
 			}
 
@@ -746,14 +746,14 @@ namespace CLEO
 
 				SHOW_ERROR("%s\nOccurred in script %s\nScript suspended.",
 					errorMsg.c_str(),
-					((CCustomScript*)thread)->GetInfoStr().c_str());
+					((CCustomScript*)script)->GetInfoStr().c_str());
 
-				result = thread->Suspend();
+				result = script->Suspend();
 				return AfterOpcodeExecuted();
 			}
 
 			size_t tableIdx = opcode / Opcodes_Table_Size;
-			result = originalOpcodeHandlers[tableIdx](thread, opcode);
+			result = originalOpcodeHandlers[tableIdx](script, opcode);
 
 			if (result == OR_ERROR)
 			{
@@ -763,9 +763,9 @@ namespace CLEO
 				SHOW_ERROR("Opcode [%04X] not found!%s\nCalled in script %s%s\nScript suspended.",
 					opcode,
 					extensionMsg.c_str(),
-					((CCustomScript*)thread)->GetInfoStr().c_str());
+					((CCustomScript*)script)->GetInfoStr().c_str());
 
-				result = thread->Suspend();
+				result = script->Suspend();
 				return AfterOpcodeExecuted();
 			}
 		}

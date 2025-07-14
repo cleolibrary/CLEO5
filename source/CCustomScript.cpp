@@ -8,8 +8,8 @@ using namespace CLEO;
 
 
 // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
-CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScript* parent, int label)
-    : CRunningScript(), m_saveEnabled(false), m_ok(false),
+CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, Script* parent, int label)
+    : Script(), m_saveEnabled(false), m_ok(false),
     m_compatVer(CLEO_VER_CUR)
 {
     TRACE(""); // separator
@@ -24,10 +24,10 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
         if (label != 0) // Create external from label.
         {
             if (!parent)
-                throw std::logic_error("Trying to create external thread from label without parent thread");
+                throw std::logic_error("Trying to create external script from label without parent script");
 
             if (!parent->IsCustom())
-                throw std::logic_error("Only custom threads can spawn children threads from label");
+                throw std::logic_error("Only custom scripts can spawn children scripts from label");
 
             auto cs = (CCustomScript*)parent;
 
@@ -150,13 +150,13 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             m_codeSize = length;
             m_codeChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
 
-            // thread name from filename
-            auto threadNamePath = path;
-            if (threadNamePath.extension() == cs3_ext || threadNamePath.extension() == cs4_ext)
+            // script name from filename
+            auto scriptNamePath = path;
+            if (scriptNamePath.extension() == cs3_ext || scriptNamePath.extension() == cs4_ext)
             {
-                threadNamePath.replace_extension(cs_ext); // keep original extension even in compatibility modes
+                scriptNamePath.replace_extension(cs_ext); // keep original extension even in compatibility modes
             }
-            auto fName = threadNamePath.filename().string();
+            auto fName = scriptNamePath.filename().string();
 
             memset(Name, '\0', sizeof(Name));
             if (!fName.empty())
@@ -186,19 +186,19 @@ CCustomScript::~CCustomScript()
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
 }
 
-void CCustomScript::AddScriptToList(CRunningScript** queuelist)
+void CCustomScript::AddScriptToList(Script** queuelist)
 {
-    ((::CRunningScript*)this)->AddScriptToList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
+    ((CRunningScript*)this)->AddScriptToList((CRunningScript**)queuelist); // CRunningScript from Plugin SDK
 }
 
-void CCustomScript::RemoveScriptFromList(CRunningScript** queuelist)
+void CCustomScript::RemoveScriptFromList(Script** queuelist)
 {
-    ((::CRunningScript*)this)->RemoveScriptFromList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
+    ((CRunningScript*)this)->RemoveScriptFromList((CRunningScript**)queuelist); // CRunningScript from Plugin SDK
 }
 
 void CCustomScript::ShutdownThisScript()
 {
-    ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
+    ((CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
 }
 
 bool CCustomScript::GetDebugMode() const
@@ -284,7 +284,7 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
 
         if (_strcmpi(r, DIR_GAME) == 0) virtualPrefix = VPref::Game;
         else if (_strcmpi(r, DIR_USER) == 0) virtualPrefix = VPref::User;
-        else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript((CRunningScript*)this)) virtualPrefix = VPref::Script;
+        else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript(this)) virtualPrefix = VPref::Script;
         else if (_strcmpi(r, DIR_CLEO) == 0) virtualPrefix = VPref::Cleo;
         else if (_strcmpi(r, DIR_MODULES) == 0) virtualPrefix = VPref::Modules;
     }
@@ -334,12 +334,12 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
 {
     std::ostringstream ss;
 
-    auto threadName = GetName();
+    auto scriptName = GetName();
     auto fileName = GetScriptFileName();
 
-    if (memcmp(threadName.c_str(), fileName, threadName.length()) != 0) // thread name no longer same as filename (was set with 03A4)
+    if (memcmp(scriptName.c_str(), fileName, scriptName.length()) != 0) // script name no longer same as filename (was set with 03A4)
     {
-        ss << "'" << threadName << "' from ";
+        ss << "'" << scriptName << "' from ";
     }
 
     ss << "'" << fileName << "'";

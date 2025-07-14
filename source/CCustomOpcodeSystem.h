@@ -24,36 +24,36 @@ namespace CLEO
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
 
-        static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
+        static OpcodeResult CleoReturnGeneric(WORD opcode, Script* script, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
 
         // new/customized opcodes
-        static OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
-        static OpcodeResult __stdcall opcode_0051(CRunningScript* thread); // GOSUB return
-        static OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
+        static OpcodeResult __stdcall opcode_004E(Script* script); // terminate_this_script
+        static OpcodeResult __stdcall opcode_0051(Script* script); // GOSUB return
+        static OpcodeResult __stdcall opcode_0417(Script* script); // load_and_launch_mission_internal
 
-        static OpcodeResult __stdcall opcode_0A92(CRunningScript* thread); // stream_custom_script
-        static OpcodeResult __stdcall opcode_0A93(CRunningScript* thread); // terminate_this_custom_script
-        static OpcodeResult __stdcall opcode_0A94(CRunningScript* thread); // load_and_launch_custom_mission
-        static OpcodeResult __stdcall opcode_0A95(CRunningScript* thread); // save_this_custom_script
-        static OpcodeResult __stdcall opcode_0AA0(CRunningScript* thread); // gosub_if_false
-        static OpcodeResult __stdcall opcode_0AA1(CRunningScript* thread); // return_if_false
-        static OpcodeResult __stdcall opcode_0AA9(CRunningScript* thread); // is_game_version_original
-        static OpcodeResult __stdcall opcode_0AB1(CRunningScript* thread); // cleo_call
-        static OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
-        static OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
-        static OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
+        static OpcodeResult __stdcall opcode_0A92(Script* script); // stream_custom_script
+        static OpcodeResult __stdcall opcode_0A93(Script* script); // terminate_this_custom_script
+        static OpcodeResult __stdcall opcode_0A94(Script* script); // load_and_launch_custom_mission
+        static OpcodeResult __stdcall opcode_0A95(Script* script); // save_this_custom_script
+        static OpcodeResult __stdcall opcode_0AA0(Script* script); // gosub_if_false
+        static OpcodeResult __stdcall opcode_0AA1(Script* script); // return_if_false
+        static OpcodeResult __stdcall opcode_0AA9(Script* script); // is_game_version_original
+        static OpcodeResult __stdcall opcode_0AB1(Script* script); // cleo_call
+        static OpcodeResult __stdcall opcode_0AB2(Script* script); // cleo_return
+        static OpcodeResult __stdcall opcode_0AB3(Script* script); // set_cleo_shared_var
+        static OpcodeResult __stdcall opcode_0AB4(Script* script); // get_cleo_shared_var
 
-        static OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
+        static OpcodeResult __stdcall opcode_0DD5(Script* script); // get_platform
 
-        static OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // get_cleo_arg_count
+        static OpcodeResult __stdcall opcode_2000(Script* script); // get_cleo_arg_count
         // 2001 free slot
-        static OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
-        static OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
+        static OpcodeResult __stdcall opcode_2002(Script* script); // cleo_return_with
+        static OpcodeResult __stdcall opcode_2003(Script* script); // cleo_return_fail
 
     private:
         bool initialized = false;
 
-        typedef OpcodeResult(__thiscall* OpcodeHandler)(CRunningScript* thread, WORD opcode);
+        typedef OpcodeResult(__thiscall* OpcodeHandler)(Script* script, WORD opcode);
 
         static constexpr size_t Original_Opcode_Handlers_Count = (Last_Original_Opcode / Opcodes_Table_Size) + 1;
         static OpcodeHandler originalOpcodeHandlers[OriginalOpcodeHandlersCount]; // backuped when patching
@@ -61,7 +61,7 @@ namespace CLEO
         static constexpr size_t Custom_Opcode_Handlers_Count = (Last_Custom_Opcode / Opcodes_Table_Size) + 1;
         static OpcodeHandler customOpcodeHandlers[CustomOpcodeHandlersCount]; // original + new opcodes
 
-        static OpcodeResult __fastcall customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode); // universal CLEO's opcode handler
+        static OpcodeResult __fastcall customOpcodeHandler(Script* script, int dummy, WORD opcode); // universal CLEO's opcode handler
 
         static CustomOpcodeHandler customOpcodeProc[Last_Custom_Opcode + 1]; // procedure for each opcode
     };

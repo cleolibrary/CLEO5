@@ -15,9 +15,9 @@ using namespace std;
 class GameEntities
 {
 public:
-	std::map<CRunningScript*, int> charSearchState; // for get_random_char_in_sphere_no_save_recursive
-	std::map<CRunningScript*, int> carSearchState; // for get_random_car_in_sphere_no_save_recursive
-	std::map<CRunningScript*, int> objectSearchState; // for get_random_object_in_sphere_no_save_recursive
+	std::map<Script*, int> charSearchState; // for get_random_char_in_sphere_no_save_recursive
+	std::map<Script*, int> carSearchState; // for get_random_car_in_sphere_no_save_recursive
+	std::map<Script*, int> objectSearchState; // for get_random_object_in_sphere_no_save_recursive
 
 	GameEntities()
 	{
@@ -55,7 +55,7 @@ public:
 
 	// store_closest_entities
 	// [var carHandle: Car], [var charHandle: Char] = store_closest_entities [Char]
-	static OpcodeResult __stdcall opcode_0AB5(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB5(Script* script)
 	{
 		auto pedHandle = OPCODE_READ_PARAM_PED_HANDLE();
 
@@ -102,7 +102,7 @@ public:
 
 	// get_target_blip_coords
 	// [var x: float], [var y: float], [var z: float] = get_target_blip_coords (logical)
-	static OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB6(Script* script)
 	{
 		auto blipIdx = CRadar::GetActualBlipArrayIndex(FrontEndMenuManager.m_nTargetBlipIndex);
 		if (blipIdx == -1)
@@ -126,7 +126,7 @@ public:
 
 	// get_car_number_of_gears
 	// [var numGear: int] = get_car_number_of_gears [Car]
-	static OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB7(Script* script)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -139,7 +139,7 @@ public:
 
 	// get_car_current_gear
 	// [var gear : int] = get_car_current_gear [Car]
-	static OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB8(Script* script)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -152,7 +152,7 @@ public:
 
 	// is_car_siren_on
 	// is_car_siren_on [Car] (logical)
-	static OpcodeResult __stdcall opcode_0ABD(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ABD(Script* script)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -165,7 +165,7 @@ public:
 
 	// is_car_engine_on
 	// is_car_engine_on [Car] (logical)
-	static OpcodeResult __stdcall opcode_0ABE(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ABE(Script* script)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -178,7 +178,7 @@ public:
 
 	// cleo_set_car_engine_on
 	// cleo_set_car_engine_on [Car] {state} [bool]
-	static OpcodeResult __stdcall opcode_0ABF(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ABF(Script* script)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 		auto state = OPCODE_READ_PARAM_BOOL();
@@ -191,7 +191,7 @@ public:
 
 	// get_char_player_is_targeting
 	// [var handle: Char] = get_char_player_is_targeting [Player] (logical)
-	static OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AD2(Script* script)
 	{
 		auto playerId = OPCODE_READ_PARAM_PLAYER_ID();
 
@@ -216,7 +216,7 @@ public:
 
 	// spawn_vehicle_by_cheating
 	// spawn_vehicle_by_cheating {modelId} [model_vehicle]
-	static OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ADD(Script* script)
 	{
 		auto modelIndex = OPCODE_READ_PARAM_INT();
 
@@ -254,7 +254,7 @@ public:
 
 	// get_random_char_in_sphere_no_save_recursive
 	// [var handle: Char] = get_random_char_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {filter} [int] (logical)
-	static OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AE1(Script* script)
 	{
 		CVector center = {};
 		center.x = OPCODE_READ_PARAM_FLOAT();
@@ -267,7 +267,7 @@ public:
 		bool skipDead = (filter == 1);
 		bool skipPlayer = (filter != -1);
 
-		int& searchIdx = Instance.charSearchState[thread];
+		int& searchIdx = Instance.charSearchState[script];
 		if (!findNext) searchIdx = 0;
 
 		CPed* found = nullptr;
@@ -324,7 +324,7 @@ public:
 
 	// get_random_car_in_sphere_no_save_recursive
 	// [var handle: Car] = get_random_car_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {skipWrecked} [bool] (logical)
-	static OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AE2(Script* script)
 	{
 		CVector center = {};
 		center.x = OPCODE_READ_PARAM_FLOAT();
@@ -334,7 +334,7 @@ public:
 		auto findNext = OPCODE_READ_PARAM_BOOL();
 		auto skipWrecked = OPCODE_READ_PARAM_BOOL();
 
-		int& searchIdx = Instance.carSearchState[thread];
+		int& searchIdx = Instance.carSearchState[script];
 		if (!findNext) searchIdx = 0;
 
 		CVehicle* found = nullptr;
@@ -386,7 +386,7 @@ public:
 
 	// get_random_object_in_sphere_no_save_recursive
 	// [var handle: Object] = get_random_object_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] (logical)
-	static OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AE3(Script* script)
 	{
 		CVector center = {};
 		center.x = OPCODE_READ_PARAM_FLOAT();
@@ -395,7 +395,7 @@ public:
 		auto radius = OPCODE_READ_PARAM_FLOAT();
 		auto findNext = OPCODE_READ_PARAM_BOOL();
 
-		int& searchIdx = Instance.objectSearchState[thread];
+		int& searchIdx = Instance.objectSearchState[script];
 		if (!findNext) searchIdx = 0;
 
 		CObject* found = nullptr;

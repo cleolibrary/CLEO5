@@ -19,15 +19,15 @@ static void fixIniFilepath(char* buff)
 #define OPCODE_READ_PARAM_FILEPATH_INI(_varName) OPCODE_READ_PARAM_FILEPATH(_varName); fixIniFilepath(_buff_##_varName)
 
 #define OPCODE_READ_PARAM_STRING_OR_ZERO(_varName) const char* ##_varName; \
-if (IsLegacyScript(thread) && IsImmInteger(thread->PeekDataType()) && CLEO_PeekIntOpcodeParam(thread) == 0) \
+if (IsLegacyScript(script) && IsImmInteger(script->PeekDataType()) && CLEO_PeekIntOpcodeParam(script) == 0) \
 { \
-	CLEO_SkipOpcodeParams(thread, 1); \
+	CLEO_SkipOpcodeParams(script, 1); \
 	##_varName = nullptr; \
 } \
 else \
 { \
 	char _buff_##_varName[MAX_STR_LEN + 1]; \
-	##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1); \
+	##_varName = _readParamText(script, _buff_##_varName, MAX_STR_LEN + 1); \
 	if (!_paramWasString()) { return OpcodeResult::OR_INTERRUPT; } \
 };
 
@@ -49,7 +49,7 @@ public:
 		CLEO_RegisterOpcode(0x2801, Script_InifileDeleteKey);
 	}
 
-	static OpcodeResult __stdcall Script_InifileGetInt(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileGetInt(Script* script)
 		/****************************************************************
 		Opcode Format
 		0AF0=4,%4d% = get_int_from_ini_file %1s% section %2s% key %3s%
@@ -79,7 +79,7 @@ public:
 			char* end;
 			int value = strtol(str, &end, base);
 			if (end != str || // at least one number character consumed
-				IsLegacyScript(thread)) // old CLEO reported success anyway with value 0
+				IsLegacyScript(script)) // old CLEO reported success anyway with value 0
 			{
 				OPCODE_WRITE_PARAM_INT(value);
 				OPCODE_CONDITION_RESULT(true);
@@ -88,7 +88,7 @@ public:
 		}
 
 		// failed
-		if (IsLegacyScript(thread))
+		if (IsLegacyScript(script))
 		{
 			OPCODE_WRITE_PARAM_INT(0x80000000); // CLEO4 behavior
 		}
@@ -101,7 +101,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult __stdcall Script_InifileWriteInt(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileWriteInt(Script* script)
 		/****************************************************************
 		Opcode Format
 		0AF1=4,write_int %1d% to_ini_file %2s% section %3s% key %4s%
@@ -120,7 +120,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult __stdcall Script_InifileGetFloat(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileGetFloat(Script* script)
 		/****************************************************************
 		Opcode Format
 		0AF2=4,%4d% = get_float_from_ini_file %1s% section %2s% key %3s%
@@ -147,7 +147,7 @@ public:
 			}
 
 			if (end != str || // at least one number character consumed
-				IsLegacyScript(thread)) // old CLEO reported success anyway with value 0
+				IsLegacyScript(script)) // old CLEO reported success anyway with value 0
 			{
 				OPCODE_WRITE_PARAM_FLOAT(value);
 				OPCODE_CONDITION_RESULT(true);
@@ -161,7 +161,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult __stdcall Script_InifileWriteFloat(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileWriteFloat(Script* script)
 		/****************************************************************
 		Opcode Format
 		0AF3=4,write_float %1d% to_ini_file %2s% section %3s% key %4s%
@@ -180,7 +180,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult __stdcall Script_InifileReadString(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileReadString(Script* script)
 		/****************************************************************
 		Opcode Format
 		0AF4=4,%4d% = read_string_from_ini_file %1s% section %2s% key %3s%
@@ -204,7 +204,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult __stdcall Script_InifileWriteString(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileWriteString(Script* script)
 		/****************************************************************
 		Opcode Format
 		0AF5=4,write_string %1s% to_ini_file %2s% section %3s% key %4s%
@@ -221,7 +221,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult __stdcall Script_InifileDeleteSection(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileDeleteSection(Script* script)
 		/****************************************************************
 		Opcode Format
 		2800=2,delete_section_from_ini_file %1s% section %2s%
@@ -236,7 +236,7 @@ public:
 		return OR_CONTINUE;
 	}
 
-	static OpcodeResult __stdcall Script_InifileDeleteKey(CRunningScript* thread)
+	static OpcodeResult __stdcall Script_InifileDeleteKey(Script* script)
 		/****************************************************************
 		Opcode Format
 		2801=3,delete_key_from_ini_file %1s% section %2s%

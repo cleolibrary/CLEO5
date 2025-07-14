@@ -49,10 +49,10 @@ namespace CLEO
 		::operator delete(mem);
 	}
 
-	ScmFunction::ScmFunction(CLEO::CRunningScript* thread) :
-		prevScmFunctionId(reinterpret_cast<CCustomScript*>(thread)->GetScmFunction())
+	ScmFunction::ScmFunction(Script* script) :
+		prevScmFunctionId(reinterpret_cast<CCustomScript*>(script)->GetScmFunction())
 	{
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
+		auto cs = reinterpret_cast<CCustomScript*>(script);
 
 		// create snapshot of current scope
 		savedBaseIP = cs->BaseIP;
@@ -79,9 +79,9 @@ namespace CLEO
 		cs->SetScmFunction(thisScmFunctionId = (unsigned short)allocationPlace);
 	}
 
-	void ScmFunction::Return(CRunningScript* thread)
+	void ScmFunction::Return(Script* script)
 	{
-		auto cs = reinterpret_cast<CCustomScript*>(thread);
+		auto cs = reinterpret_cast<CCustomScript*>(script);
 
 		// restore parent scope's gosub call stack
 		cs->BaseIP = savedBaseIP;
