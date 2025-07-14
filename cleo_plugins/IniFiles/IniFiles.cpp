@@ -37,23 +37,22 @@ public:
 	IniFiles()
 	{
 		auto cleoVer = CLEO_GetVersion();
-		if (cleoVer >= CLEO_VERSION)
+		if (cleoVer < CLEO_VERSION)
 		{
-			// register opcodes
-			CLEO_RegisterOpcode(0x0AF0, Script_InifileGetInt);
-			CLEO_RegisterOpcode(0x0AF1, Script_InifileWriteInt);
-			CLEO_RegisterOpcode(0x0AF2, Script_InifileGetFloat);
-			CLEO_RegisterOpcode(0x0AF3, Script_InifileWriteFloat);
-			CLEO_RegisterOpcode(0x0AF4, Script_InifileReadString);
-			CLEO_RegisterOpcode(0x0AF5, Script_InifileWriteString);
-			CLEO_RegisterOpcode(0x2800, Script_InifileDeleteSection);
-			CLEO_RegisterOpcode(0x2801, Script_InifileDeleteKey);
+			auto err = StringPrintf("%s.cleo plugin requires CLEO.asi version %X or later! \nCurrent version is %X.", TARGET_NAME, CLEO_VERSION >> 8, cleoVer >> 8);
+			MessageBox(HWND_DESKTOP, err.c_str(), "CLEO plugin error", MB_SYSTEMMODAL | MB_ICONERROR);
+			return;
 		}
-		else
-		{
-			auto err = StringPrintf("This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-			MessageBox(HWND_DESKTOP, err.c_str(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
-		}
+
+		// register opcodes
+		CLEO_RegisterOpcode(0x0AF0, Script_InifileGetInt);
+		CLEO_RegisterOpcode(0x0AF1, Script_InifileWriteInt);
+		CLEO_RegisterOpcode(0x0AF2, Script_InifileGetFloat);
+		CLEO_RegisterOpcode(0x0AF3, Script_InifileWriteFloat);
+		CLEO_RegisterOpcode(0x0AF4, Script_InifileReadString);
+		CLEO_RegisterOpcode(0x0AF5, Script_InifileWriteString);
+		CLEO_RegisterOpcode(0x2800, Script_InifileDeleteSection);
+		CLEO_RegisterOpcode(0x2801, Script_InifileDeleteKey);
 	}
 
 	static OpcodeResult __stdcall Script_InifileGetInt(CRunningScript* thread)

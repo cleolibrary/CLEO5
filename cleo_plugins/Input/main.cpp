@@ -25,28 +25,27 @@ public:
 		keyStatesPrev = new std::array<BYTE, Key_Code_Max + 1>();
 
 		auto cleoVer = CLEO_GetVersion();
-		if (cleoVer >= CLEO_VERSION)
+		if (cleoVer < CLEO_VERSION)
 		{
-			// register opcodes
-			CLEO_RegisterOpcode(0x0AB0, opcode_0AB0); // is_key_pressed
-			CLEO_RegisterOpcode(0x0ADC, opcode_0ADC); // test_cheat
-			CLEO_RegisterOpcode(0x2080, opcode_2080); // is_key_just_pressed
-			CLEO_RegisterOpcode(0x2081, opcode_2081); // get_key_pressed_in_range
-			CLEO_RegisterOpcode(0x2082, opcode_2082); // get_key_just_pressed_in_range
-			CLEO_RegisterOpcode(0x2083, opcode_2083); // emulate_key_press
-			CLEO_RegisterOpcode(0x2084, opcode_2084); // emulate_key_release
-			CLEO_RegisterOpcode(0x2085, opcode_2085); // get_controller_key
-			CLEO_RegisterOpcode(0x2086, opcode_2086); // get_key_name
+			auto err = StringPrintf("%s.cleo plugin requires CLEO.asi version %X or later! \nCurrent version is %X.", TARGET_NAME, CLEO_VERSION >> 8, cleoVer >> 8);
+			MessageBox(HWND_DESKTOP, err.c_str(), "CLEO plugin error", MB_SYSTEMMODAL | MB_ICONERROR);
+			return;
+		}
 
-			// register event callbacks
-			CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
-			CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
-		}
-		else
-		{
-			auto err = StringPrintf("This plugin requires version %X or later! \nCurrent version of CLEO is %X.", CLEO_VERSION >> 8, cleoVer >> 8);
-			MessageBox(HWND_DESKTOP, err.c_str(), TARGET_NAME, MB_SYSTEMMODAL | MB_ICONERROR);
-		}
+		// register opcodes
+		CLEO_RegisterOpcode(0x0AB0, opcode_0AB0); // is_key_pressed
+		CLEO_RegisterOpcode(0x0ADC, opcode_0ADC); // test_cheat
+		CLEO_RegisterOpcode(0x2080, opcode_2080); // is_key_just_pressed
+		CLEO_RegisterOpcode(0x2081, opcode_2081); // get_key_pressed_in_range
+		CLEO_RegisterOpcode(0x2082, opcode_2082); // get_key_just_pressed_in_range
+		CLEO_RegisterOpcode(0x2083, opcode_2083); // emulate_key_press
+		CLEO_RegisterOpcode(0x2084, opcode_2084); // emulate_key_release
+		CLEO_RegisterOpcode(0x2085, opcode_2085); // get_controller_key
+		CLEO_RegisterOpcode(0x2086, opcode_2086); // get_key_name
+
+		// register event callbacks
+		CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
+		CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
 	}
 
 	~Input()
