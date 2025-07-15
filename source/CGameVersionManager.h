@@ -38,7 +38,6 @@ namespace CLEO
         MA_SCM_BLOCK_REF,
         MA_MISSION_BLOCK_REF,
         MA_ACTIVE_THREAD_QUEUE,
-        MA_STATIC_THREADS,
         MA_CALL_INIT_SCM1,
         MA_CALL_INIT_SCM2,
         MA_CALL_INIT_SCM3,

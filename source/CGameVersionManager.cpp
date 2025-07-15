@@ -24,7 +24,6 @@ namespace CLEO
         { 0x0044CA44,	memory_und, memory_und, memory_und, memory_und },		// MA_SCM_BLOCK_REF,
         { 0x004899D7,	memory_und, memory_und, memory_und, memory_und },		// MA_MISSION_BLOCK_REF,
         { 0x00A8B42C,	memory_und, 0x00A8B42C, 0x00A8DAAC, 0x00B00558 },		// MA_ACTIVE_THREAD_QUEUE,
-        { 0x00A8B430,	memory_und, 0x00A8B430, 0x00A8DAB0, 0x00B00560 },		// MA_STATIC_THREADS,
         { 0x0053BDD7,	memory_und, 0x0053BDD7, memory_und, 0x0054DD49 },		// MA_CALL_INIT_SCM1,
         { 0x005BA340,	memory_und, 0x005BA340, memory_und, 0x005D8EE9 },		// MA_CALL_INIT_SCM2,
         { 0x005D4FD7,	memory_und, 0x005D4FD7, 0x005D57B7, 0x005F1777 },		// MA_CALL_INIT_SCM3,

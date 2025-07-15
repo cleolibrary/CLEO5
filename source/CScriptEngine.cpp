@@ -344,6 +344,7 @@ namespace CLEO
 
         opcodeParams = (SCRIPT_VAR*)ScriptParams; // from Plugin SDK's TheScripts.h
         missionLocals = (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission;
+        staticThreads = (CRunningScript*)CTheScripts::ScriptsArray;
 
         // Protect script dependencies
         inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
@@ -352,8 +353,6 @@ namespace CLEO
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
 
         activeThreadQueue = gvm.TranslateMemoryAddress(MA_ACTIVE_THREAD_QUEUE);
-        staticThreads = gvm.TranslateMemoryAddress(MA_STATIC_THREADS);
-
         inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
         inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
     }
