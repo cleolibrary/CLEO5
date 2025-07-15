@@ -4,29 +4,13 @@
 
 namespace CLEO
 {
-    DWORD FUNC_GetScriptParams;
     DWORD FUNC_TransmitScriptParams;
-    DWORD FUNC_SetScriptParams;
     DWORD FUNC_GetScriptParamPointer1;
     DWORD FUNC_GetScriptParamPointer2;
 
-    void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
-    void(__thiscall * SetScriptParams)(CRunningScript *, int count);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer1)(CRunningScript *);
     SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
-    void __fastcall _GetScriptParams(CRunningScript *pScript, int dummy, int count)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push count
-            call FUNC_GetScriptParams
-        }
-
-        CleoInstance.OpcodeSystem.handledParamCount += count;
-    }
 
     void __fastcall _TransmitScriptParams(CRunningScript *pScript, int dummy, CRunningScript *pScriptB)
     {
@@ -36,18 +20,6 @@ namespace CLEO
             push pScriptB
             call FUNC_TransmitScriptParams
         }
-    }
-
-    void __fastcall _SetScriptParams(CRunningScript *pScript, int dummy, int count)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push count
-            call FUNC_SetScriptParams
-        }
-
-        CleoInstance.OpcodeSystem.handledParamCount += count;
     }
 
     SCRIPT_VAR * __fastcall _GetScriptParamPointer1(CRunningScript *pScript)
@@ -288,6 +260,18 @@ namespace CLEO
         }
     }
 
+    void CScriptEngine::GetScriptParams(CRunningScript* script, BYTE count)
+    {
+        ((::CRunningScript*)script)->CollectParameters(count);
+        CleoInstance.OpcodeSystem.handledParamCount += count;
+    }
+
+    void CScriptEngine::SetScriptParams(CRunningScript* script, BYTE count)
+    {
+        ((::CRunningScript*)script)->StoreParameters(count);
+        CleoInstance.OpcodeSystem.handledParamCount += count;
+    }
+
     void CScriptEngine::DrawScriptText_Orig(char beforeFade)
     {
         if (beforeFade)
@@ -330,15 +314,11 @@ namespace CLEO
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
 
         // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-        FUNC_GetScriptParams = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAMS_FUNCTION);
         FUNC_TransmitScriptParams = gvm.TranslateMemoryAddress(MA_TRANSMIT_SCRIPT_PARAMS_FUNCTION);
-        FUNC_SetScriptParams = gvm.TranslateMemoryAddress(MA_SET_SCRIPT_PARAMS_FUNCTION);
         FUNC_GetScriptParamPointer1 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER1_FUNCTION);
         FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
 
-        GetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_GetScriptParams);
         TransmitScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, CRunningScript*)>(_TransmitScriptParams);
-        SetScriptParams = reinterpret_cast<void(__thiscall*)(CRunningScript*, int)>(_SetScriptParams);
         GetScriptParamPointer1 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*)>(_GetScriptParamPointer1);
         GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 

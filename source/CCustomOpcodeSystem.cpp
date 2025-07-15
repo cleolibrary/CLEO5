@@ -253,7 +253,7 @@ namespace CLEO
 
 	inline CRunningScript& operator>>(CRunningScript& thread, DWORD& uval)
 	{
-		GetScriptParams(&thread, 1);
+		CScriptEngine::GetScriptParams(&thread, 1);
 		uval = opcodeParams[0].dwParam;
 		return thread;
 	}
@@ -261,13 +261,13 @@ namespace CLEO
 	inline CRunningScript& operator<<(CRunningScript& thread, DWORD uval)
 	{
 		opcodeParams[0].dwParam = uval;
-		SetScriptParams(&thread, 1);
+		CScriptEngine::SetScriptParams(&thread, 1);
 		return thread;
 	}
 
 	inline CRunningScript& operator>>(CRunningScript& thread, int& nval)
 	{
-		GetScriptParams(&thread, 1);
+		CScriptEngine::GetScriptParams(&thread, 1);
 		nval = opcodeParams[0].nParam;
 		return thread;
 	}
@@ -275,13 +275,13 @@ namespace CLEO
 	inline CRunningScript& operator<<(CRunningScript& thread, int nval)
 	{
 		opcodeParams[0].nParam = nval;
-		SetScriptParams(&thread, 1);
+		CScriptEngine::SetScriptParams(&thread, 1);
 		return thread;
 	}
 
 	inline CRunningScript& operator>>(CRunningScript& thread, float& fval)
 	{
-		GetScriptParams(&thread, 1);
+		CScriptEngine::GetScriptParams(&thread, 1);
 		fval = opcodeParams[0].fParam;
 		return thread;
 	}
@@ -289,7 +289,7 @@ namespace CLEO
 	inline CRunningScript& operator<<(CRunningScript& thread, float fval)
 	{
 		opcodeParams[0].fParam = fval;
-		SetScriptParams(&thread, 1);
+		CScriptEngine::SetScriptParams(&thread, 1);
 		return thread;
 	}
 
@@ -311,7 +311,7 @@ namespace CLEO
 
 	inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval)
 	{
-		GetScriptParams(&thread, 1);
+		CScriptEngine::GetScriptParams(&thread, 1);
 		pval = opcodeParams[0].pParam;
 		return thread;
 	}
@@ -380,7 +380,7 @@ namespace CLEO
 		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
 			// address to output buffer
-			GetScriptParams(thread, 1);
+			CScriptEngine::GetScriptParams(thread, 1);
 
 			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
 			{
@@ -485,7 +485,7 @@ namespace CLEO
 						{
 							//get width
 							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
-							GetScriptParams(thread, 1);
+							CScriptEngine::GetScriptParams(thread, 1);
 							_itoa_s(opcodeParams[0].dwParam, bufa, 10);
 
 							char* buffiter = bufa;
@@ -508,7 +508,7 @@ namespace CLEO
 						if (*iter == '*')
 						{
 							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
-							GetScriptParams(thread, 1);
+							CScriptEngine::GetScriptParams(thread, 1);
 							_itoa_s(opcodeParams[0].dwParam, bufa, 10);
 
 							char* buffiter = bufa;
@@ -548,7 +548,7 @@ namespace CLEO
 					case 'c':
 						if (written++ >= len) goto _ReadFormattedString_OutOfMemory;
 						if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
-						GetScriptParams(thread, 1);
+						CScriptEngine::GetScriptParams(thread, 1);
 						*outIter++ = (char)opcodeParams[0].nParam;
 						iter++;
 						break;
@@ -560,7 +560,7 @@ namespace CLEO
 						if (*iter == 'p' || *iter == 'P')
 						{
 							if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
-							GetScriptParams(thread, 1);
+							CScriptEngine::GetScriptParams(thread, 1);
 							sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
 						}
 						else
@@ -573,13 +573,13 @@ namespace CLEO
 								*iter == 'g' || *iter == 'G')
 							{
 								if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
-								GetScriptParams(thread, 1);
+								CScriptEngine::GetScriptParams(thread, 1);
 								sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
 							}
 							else
 							{
 								if (thread->PeekDataType() == DT_END) goto _ReadFormattedString_ArgMissing;
-								GetScriptParams(thread, 1);
+								CScriptEngine::GetScriptParams(thread, 1);
 								sprintf_s(bufa, fmtbufa, opcodeParams[0].pParam);
 							}
 						}
@@ -1101,7 +1101,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		GetScriptParams(thread, 1);
+		CScriptEngine::GetScriptParams(thread, 1);
 		CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam = opcodeParams[0].dwParam;
 		return OR_CONTINUE;
 	}

@@ -66,6 +66,10 @@ namespace CLEO
         inline CCustomScript* GetCustomMission() { return CustomMission; }
         inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
 
+        // params into/from opcodeParams array
+        static void GetScriptParams(CRunningScript* script, BYTE count);
+        static void SetScriptParams(CRunningScript* script, BYTE count);
+
         static void DrawScriptText_Orig(char beforeFade);
 
     private:
@@ -79,9 +83,7 @@ namespace CLEO
         void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
     };
 
-    extern void(__thiscall * GetScriptParams)(CRunningScript *, int count);
     extern void(__thiscall * TransmitScriptParams)(CRunningScript *, CRunningScript *);
-    extern void(__thiscall * SetScriptParams)(CRunningScript *, int count);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer1)(CRunningScript *);
     extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
 
