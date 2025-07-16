@@ -359,10 +359,10 @@ namespace CLEO
 
     void CScriptEngine::GameBegin()
     {
-        auto& activeScripsListHead = (CRunningScript*&)CTheScripts::pActiveScripts; // reference, but with type casted to CLEO's CRunningScript
+        auto& activeScriptsListHead = (CRunningScript*&)CTheScripts::pActiveScripts; // reference, but with type casted to CLEO's CRunningScript
 
         if(gameInProgress) return; // already started
-        if(activeScripsListHead == nullptr) return; // main gamescript not loaded yet 
+        if(activeScriptsListHead == nullptr) return; // main gamescript not loaded yet 
         gameInProgress = true;
 
         if (CGame::bMissionPackGame == 0) // regular main game
@@ -397,22 +397,22 @@ namespace CLEO
         LoadState(CleoInstance.saveSlot);
 
         // keep already loaded scripts at front of processing queue
-        auto head = activeScripsListHead;
+        auto head = activeScriptsListHead;
         auto tail = head;
         while (tail->Next) tail = tail->Next;
 
         // load custom scripts as new list
-        activeScripsListHead = nullptr;
+        activeScriptsListHead = nullptr;
         LoadCustomScripts();
 
         // append custom scripts list to the back
-        if (activeScripsListHead != nullptr)
+        if (activeScriptsListHead != nullptr)
         {
-            tail->Next = activeScripsListHead;
-            activeScripsListHead->Previous = tail;
+            tail->Next = activeScriptsListHead;
+            activeScriptsListHead->Previous = tail;
         }
 
-        activeScripsListHead = head; // restore original
+        activeScriptsListHead = head; // restore original
     }
 
     void CScriptEngine::GameEnd()
