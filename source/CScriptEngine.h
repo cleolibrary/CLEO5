@@ -65,6 +65,8 @@ namespace CLEO
         inline CCustomScript* GetCustomMission() { return CustomMission; }
         inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
 
+        static SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread);
+
         // params into/from opcodeParams array
         static void GetScriptParams(CRunningScript* script, BYTE count);
         static void SetScriptParams(CRunningScript* script, BYTE count);
@@ -82,13 +84,9 @@ namespace CLEO
         void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
     };
 
-    extern SCRIPT_VAR * (__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
     // reimplemented hook of original game's procedure
     // returns buff or pointer provided by script, nullptr on fail
     // WARNING: Null terminator ommited if not enought space in the buffer!
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
-
-    inline SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread);
 }
 

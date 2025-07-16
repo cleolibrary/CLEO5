@@ -199,7 +199,7 @@ extern "C"
 
     SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CLEO::CRunningScript* thread)
     {
-        return GetScriptParamPointer(thread);
+        return CScriptEngine::GetScriptParamPointer(thread);
     }
 
     void WINAPI CLEO_RetrieveOpcodeParams(CLEO::CRunningScript* thread, int count)
@@ -320,7 +320,7 @@ extern "C"
         auto ip = thread->CurrentIP;
         auto count = CleoInstance.OpcodeSystem.handledParamCount;
 
-        auto result = GetScriptParamPointer(thread);
+        auto result = CScriptEngine::GetScriptParamPointer(thread);
 
         // restore state
         thread->CurrentIP = ip;

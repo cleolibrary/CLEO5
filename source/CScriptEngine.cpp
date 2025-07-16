@@ -4,10 +4,6 @@
 
 namespace CLEO
 {
-    DWORD FUNC_GetScriptParamPointer2;
-
-    SCRIPT_VAR *	(__thiscall * GetScriptParamPointer2)(CRunningScript *, int __unused__);
-
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
     {
         if (buff == nullptr || buffLen < 0)
@@ -87,7 +83,7 @@ namespace CLEO
                 case DT_VAR_TEXTLABEL_ARRAY:
                 case DT_LVAR_TEXTLABEL_ARRAY:
                 {
-                    auto str = (char*)GetScriptParamPointer(thread);
+                    auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
                     memcpy(buff, str, std::min(buffLen, 8));
                     if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
                     return buff;
@@ -99,7 +95,7 @@ namespace CLEO
                 case DT_VAR_STRING_ARRAY:
                 case DT_LVAR_STRING_ARRAY:
                 {
-                    auto str = (char*)GetScriptParamPointer(thread);
+                    auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
                     memcpy(buff, str, std::min(buffLen, 16));
                     if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
                     return buff;
@@ -111,23 +107,6 @@ namespace CLEO
         LOG_WARNING(thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(), ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str());
         CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
         return nullptr; // error
-    }
-
-    SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread)
-    {
-        SCRIPT_VAR* ptr = GetScriptParamPointer2(thread, 0);
-        CleoInstance.OpcodeSystem.handledParamCount++; // TODO: hook game's GetScriptParamPointer1 and GetScriptParamPointer2 procedures so this is always incremented
-        return ptr;
-    }
-
-    SCRIPT_VAR * __fastcall _GetScriptParamPointer2(CRunningScript *pScript, int dummy, int unused)
-    {
-        _asm
-        {
-            mov ecx, pScript
-            push unused
-            call FUNC_GetScriptParamPointer2
-        }
     }
 
     void(__cdecl * InitScm)();
@@ -234,6 +213,14 @@ namespace CLEO
         }
     }
 
+    SCRIPT_VAR* CScriptEngine::GetScriptParamPointer(CRunningScript* thread)
+    {
+        auto type = DT_DWORD; //thread->PeekDataType(); // ignored in GetPointerToScriptVariable anyway
+        auto ptr = ((::CRunningScript*)thread)->GetPointerToScriptVariable(type);
+        CleoInstance.OpcodeSystem.handledParamCount++; // TODO: hook game's GetPointerToScriptVariable so this is always incremented?
+        return (SCRIPT_VAR*)ptr;
+    }
+
     void CScriptEngine::GetScriptParams(CRunningScript* script, BYTE count)
     {
         ((::CRunningScript*)script)->CollectParameters(count);
@@ -286,11 +273,6 @@ namespace CLEO
             
         // Global Events crashfix
         //inj.MemoryWrite(0xA9AF6C, 0, 4);
-
-        // Dirty hacks to keep compatibility with plugins + overcome VS thiscall restrictions
-        FUNC_GetScriptParamPointer2 = gvm.TranslateMemoryAddress(MA_GET_SCRIPT_PARAM_POINTER2_FUNCTION);
-
-        GetScriptParamPointer2 = reinterpret_cast<SCRIPT_VAR* (__thiscall*)(CRunningScript*, int)>(_GetScriptParamPointer2);
 
         opcodeParams = (SCRIPT_VAR*)ScriptParams; // from Plugin SDK's TheScripts.h
         missionLocals = (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission;
