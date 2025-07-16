@@ -9,6 +9,7 @@ namespace CLEO
         C3DAudioStream(const char* filepath);
 
         // overloaded actions
+        virtual bool Is3d() const { return true; }
         virtual void Set3dPosition(const CVector& pos);
         virtual void Set3dSourceSize(float radius);
         virtual void SetHost(CEntity* host, const CVector& offset);

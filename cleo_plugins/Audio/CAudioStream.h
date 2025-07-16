@@ -48,6 +48,7 @@ namespace CLEO
         float GetVolume() const;
 
         // 3d
+        virtual bool Is3d() const { return false; }
         virtual void Set3dPosition(const CVector& pos);
         virtual void Set3dSourceSize(float radius);
         virtual void SetHost(CEntity* placable, const CVector& offset);
