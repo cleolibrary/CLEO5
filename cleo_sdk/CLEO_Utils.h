@@ -441,6 +441,19 @@ namespace CLEO
         }
     }
 
+    static bool PluginCheckCleoVersion()
+    {
+        auto ver = CLEO_GetVersion();
+
+        if (ver < CLEO_VERSION)
+        {
+            ShowError("%s.cleo plugin requires CLEO.asi version %s or later! \nCurrent version is %s", TARGET_NAME, CLEO_VERSION_STR, CLEO_GetVersionStr());
+            return false;
+        }
+
+        return true;
+    }
+
     static std::string GetParamInfo(int offset = 0)
     {
         std::string info;

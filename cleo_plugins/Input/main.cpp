@@ -24,13 +24,7 @@ public:
 		keyStatesCurr = new std::array<BYTE, Key_Code_Max + 1>();
 		keyStatesPrev = new std::array<BYTE, Key_Code_Max + 1>();
 
-		auto cleoVer = CLEO_GetVersion();
-		if (cleoVer < CLEO_VERSION)
-		{
-			auto err = StringPrintf("%s.cleo plugin requires CLEO.asi version %s or later! \nCurrent version is %d.%d.%d", TARGET_NAME, CLEO_VERSION_STR, (cleoVer >> 24) & 0xFF, (cleoVer >> 16) & 0xFF, (cleoVer >> 8) & 0xFF);
-			MessageBox(HWND_DESKTOP, err.c_str(), "CLEO plugin error", MB_SYSTEMMODAL | MB_ICONERROR);
-			return;
-		}
+		if (!PluginCheckCleoVersion()) return;
 
 		// register opcodes
 		CLEO_RegisterOpcode(0x0AB0, opcode_0AB0); // is_key_pressed

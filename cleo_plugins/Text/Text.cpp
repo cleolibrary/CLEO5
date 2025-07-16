@@ -31,17 +31,11 @@ public:
 	bool m_initialized = false;
 	MemPatch m_patchCTextGet;
 
-    Text()
-    {
-		auto cleoVer = CLEO_GetVersion();
-		if (cleoVer < CLEO_VERSION)
-		{
-			auto err = StringPrintf("%s.cleo plugin requires CLEO.asi version %s or later! \nCurrent version is %d.%d.%d", TARGET_NAME, CLEO_VERSION_STR, (cleoVer >> 24) & 0xFF, (cleoVer >> 16) & 0xFF, (cleoVer >> 8) & 0xFF);
-			MessageBox(HWND_DESKTOP, err.c_str(), "CLEO plugin error", MB_SYSTEMMODAL | MB_ICONERROR);
-			return;
-		}
+	Text()
+	{
+		if (!PluginCheckCleoVersion()) return;
 
-        //register opcodes
+		//register opcodes
 		CLEO_RegisterOpcode(0x0ACA, opcode_0ACA); // print_help_string
 		CLEO_RegisterOpcode(0x0ACB, opcode_0ACB); // print_big_string
 		CLEO_RegisterOpcode(0x0ACC, opcode_0ACC); // print_string
