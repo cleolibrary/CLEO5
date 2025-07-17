@@ -437,7 +437,7 @@ public:
         }
 
         auto value = OPCODE_READ_PARAM_ANY32();
-        OPCODE_CONDITION_RESULT(value != 0);
+        OPCODE_CONDITION_RESULT(value.dwParam != 0);
         return OR_CONTINUE;
     }
 
