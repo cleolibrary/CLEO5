@@ -172,17 +172,17 @@ namespace CLEO
 
 		// replace all handlers in original table
 		// store original opcode handlers for later use
-		_OpcodeHandler* handlersTable = gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER);
+		auto handlersTable = (OpcodeHandler*)::CRunningScript::CommandHandlerTable;
 		for(size_t i = 0; i < OriginalOpcodeHandlersCount; i++)
 		{
 			originalOpcodeHandlers[i] = handlersTable[i];
-			handlersTable[i] = (_OpcodeHandler)customOpcodeHandler;
+			handlersTable[i] = (OpcodeHandler)customOpcodeHandler;
 		}
 
 		// initialize and apply new handlers table
 		for (size_t i = 0; i < CustomOpcodeHandlersCount; i++)
 		{
-			customOpcodeHandlers[i] = (_OpcodeHandler)customOpcodeHandler;
+			customOpcodeHandlers[i] = (OpcodeHandler)customOpcodeHandler;
 		}
 		MemWrite(gvm.TranslateMemoryAddress(MA_OPCODE_HANDLER_REF), &customOpcodeHandlers);
 		MemWrite(0x00469EF0, &customOpcodeHandlers); // TODO: game version translation
@@ -228,8 +228,8 @@ namespace CLEO
 		TRACE(" Previous opcode executed: %04X", prevOpcode);
 	}
 
-	CCustomOpcodeSystem::_OpcodeHandler CCustomOpcodeSystem::originalOpcodeHandlers[OriginalOpcodeHandlersCount];
-	CCustomOpcodeSystem::_OpcodeHandler CCustomOpcodeSystem::customOpcodeHandlers[CustomOpcodeHandlersCount];
+	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::originalOpcodeHandlers[OriginalOpcodeHandlersCount];
+	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::customOpcodeHandlers[CustomOpcodeHandlersCount];
 	CustomOpcodeHandler CCustomOpcodeSystem::customOpcodeProc[LastCustomOpcode + 1];
 
 	bool CCustomOpcodeSystem::RegisterOpcode(WORD opcode, CustomOpcodeHandler callback)

@@ -45,13 +45,13 @@ namespace CLEO
     private:
         bool initialized = false;
 
-        typedef OpcodeResult(__thiscall* _OpcodeHandler)(CRunningScript* thread, WORD opcode);
+        typedef OpcodeResult(__thiscall* OpcodeHandler)(CRunningScript* thread, WORD opcode);
 
         static const size_t OriginalOpcodeHandlersCount = (LastOriginalOpcode / 100) + 1; // 100 opcodes peer handler
-        static _OpcodeHandler originalOpcodeHandlers[OriginalOpcodeHandlersCount]; // backuped when patching
+        static OpcodeHandler originalOpcodeHandlers[OriginalOpcodeHandlersCount]; // backuped when patching
 
         static const size_t CustomOpcodeHandlersCount = (LastCustomOpcode / 100) + 1; // 100 opcodes peer handler
-        static _OpcodeHandler customOpcodeHandlers[CustomOpcodeHandlersCount]; // original + new opcodes
+        static OpcodeHandler customOpcodeHandlers[CustomOpcodeHandlersCount]; // original + new opcodes
 
         static OpcodeResult __fastcall customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode); // universal CLEO's opcode handler
 
