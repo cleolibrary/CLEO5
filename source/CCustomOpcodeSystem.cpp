@@ -15,30 +15,6 @@ namespace CLEO
 	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval);
 	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
 
-
-	OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
-	OpcodeResult __stdcall opcode_0051(CRunningScript * thread); // GOSUB return
-	OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
-
-	OpcodeResult __stdcall opcode_0A92(CRunningScript* thread); // stream_custom_script
-	OpcodeResult __stdcall opcode_0A93(CRunningScript* thread); // terminate_this_custom_script
-	OpcodeResult __stdcall opcode_0A94(CRunningScript* thread); // load_and_launch_custom_mission
-	OpcodeResult __stdcall opcode_0A95(CRunningScript* thread); // save_this_custom_script
-	OpcodeResult __stdcall opcode_0AA0(CRunningScript* thread); // gosub_if_false
-	OpcodeResult __stdcall opcode_0AA1(CRunningScript* thread); // return_if_false
-	OpcodeResult __stdcall opcode_0AA9(CRunningScript* thread); // is_game_version_original
-	OpcodeResult __stdcall opcode_0AB1(CRunningScript* thread); // cleo_call
-	OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
-	OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
-	OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
-
-	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
-
-	OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // get_cleo_arg_count
-	// 2001 free slot
-	OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
-	OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
-
 	void(__thiscall * ProcessScript)(CRunningScript*);
 
 	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
@@ -768,13 +744,15 @@ namespace CLEO
 	/*						Opcode definitions								*/
 	/************************************************************************/
 
+	// terminate_this_script
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_004E(CRunningScript* thread)
 	{
 		CleoInstance.ScriptEngine.RemoveScript(thread);
 		return OR_INTERRUPT;
 	}
 
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript* thread) // GOSUB return
+	// GOSUB return
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript* thread)
 	{
 		if (thread->SP == 0 && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
 		{
@@ -792,15 +770,18 @@ namespace CLEO
 		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
 	}
 
-	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread) // load_and_launch_mission_internal
+	// load_and_launch_mission_internal
+	// load_and_launch_mission_internal {index} [int]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread)
 	{
 		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
 		size_t tableIdx = 0x0417 / 100; // 100 opcodes peer handler table
 		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
 	}
 
-	//0A92=-1,create_custom_thread %1d%
-	OpcodeResult __stdcall opcode_0A92(CRunningScript *thread)
+	// stream_custom_script
+	// stream_custom_script {scriptFileName} [string] [arguments]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A92(CRunningScript *thread)
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
@@ -824,8 +805,8 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0A93=0,terminate_this_custom_script
-	OpcodeResult __stdcall opcode_0A93(CRunningScript *thread)
+	// terminate_this_custom_script
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A93(CRunningScript *thread)
 	{
 		CCustomScript *cs = reinterpret_cast<CCustomScript *>(thread);
 		if (thread->IsMission() || !cs->IsCustom())
@@ -838,8 +819,9 @@ namespace CLEO
 		return OR_INTERRUPT;
 	}
 
-	//0A94=-1,create_custom_mission %1d%
-	OpcodeResult __stdcall opcode_0A94(CRunningScript *thread)
+	// load_and_launch_custom_mission
+	// load_and_launch_custom_mission {scriptFileName} [string] [arguments]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A94(CRunningScript *thread)
 	{
 		OPCODE_READ_PARAM_STRING(path);
 
@@ -866,8 +848,8 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0A95=0,enable_thread_saving
-	OpcodeResult __stdcall opcode_0A95(CRunningScript *thread)
+	// save_this_custom_script
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A95(CRunningScript *thread)
 	{
 		if (thread->IsCustom())
 		{
@@ -876,8 +858,9 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AA0=1,gosub_if_false %1p%
-	OpcodeResult __stdcall opcode_0AA0(CRunningScript *thread)
+	// gosub_if_false
+	// gosub_if_false [label]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA0(CRunningScript *thread)
 	{
 		int off;
 		*thread >> off;
@@ -887,16 +870,17 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AA1=0,return_if_false
-	OpcodeResult __stdcall opcode_0AA1(CRunningScript *thread)
+	// return_if_false
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA1(CRunningScript *thread)
 	{
 		if (thread->GetConditionResult()) return OR_CONTINUE;
 		thread->SetIp(thread->PopStack());
 		return OR_CONTINUE;
 	}
 
-	//0AA9=0,  is_game_version_original
-	OpcodeResult __stdcall opcode_0AA9(CRunningScript *thread)
+	// is_game_version_original
+	// is_game_version_original (logical)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA9(CRunningScript *thread)
 	{
 		auto gameVer = CleoInstance.VersionManager.GetGameVersion();
 		auto scriptVer = CLEO_GetScriptVersion(thread);
@@ -908,8 +892,9 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB1=-1,call_scm_func %1p%
-	OpcodeResult __stdcall opcode_0AB1(CRunningScript *thread)
+	// cleo_call
+	// cleo_call [label] {numParams} [int] {params} [arguments]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
 	{
 		int label = 0;
 		std::string moduleTxt;
@@ -1051,8 +1036,9 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB2=-1,cleo_return
-	OpcodeResult __stdcall opcode_0AB2(CRunningScript *thread)
+	// cleo_return
+	// cleo_return {numRet} [int] {retParams} [arguments]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(CRunningScript *thread)
 	{
 		DWORD returnParamCount = GetVarArgCount(thread);
 		if (returnParamCount)
@@ -1081,8 +1067,9 @@ namespace CLEO
 		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, true, returnParamCount, !IsLegacyScript(thread));
 	}
 
-	//0AB3=2,set_cleo_shared_var %1d% = %2d%
-	OpcodeResult __stdcall opcode_0AB3(CRunningScript *thread)
+	// set_cleo_shared_var
+	// set_cleo_shared_var {index} [int] {value} [any]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB3(CRunningScript *thread)
 	{
 		auto varIdx = OPCODE_READ_PARAM_INT();
 
@@ -1107,8 +1094,9 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0AB4=2,%2d% = get_cleo_shared_var %1d%
-	OpcodeResult __stdcall opcode_0AB4(CRunningScript *thread)
+	// get_cleo_shared_var
+	// [var result: any] = get_cleo_shared_var {index} [int]
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB4(CRunningScript *thread)
 	{
 		auto varIdx = OPCODE_READ_PARAM_INT();
 
@@ -1131,15 +1119,17 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//0DD5=1,%1d% = get_platform
-	OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread)
+	// get_platform
+	// [var platform: Platform] = get_platform
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0DD5(CRunningScript* thread)
 	{
 		*thread << PLATFORM_WINDOWS;
 		return OR_CONTINUE;
 	}
 
-	//2000=1, %1d% = get_cleo_arg_count
-	OpcodeResult __stdcall opcode_2000(CRunningScript* thread)
+	// get_cleo_arg_count
+	// [var count: int] = get_cleo_arg_count
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2000(CRunningScript* thread)
 	{
 		auto cs = reinterpret_cast<CCustomScript*>(thread);
 
@@ -1154,8 +1144,9 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	//2002=-1, cleo_return_with ...
-	OpcodeResult __stdcall opcode_2002(CRunningScript* thread)
+	// cleo_return_with
+	// cleo_return_with {conditionResult} [bool] {retArgs} [arguments] (logical)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(CRunningScript* thread)
 	{
 		DWORD argCount = GetVarArgCount(thread);
 		if (argCount < 1)
@@ -1171,8 +1162,9 @@ namespace CLEO
 		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2002, thread, true, argCount);
 	}
 
-	//2003=-1, cleo_return_fail
-	OpcodeResult __stdcall opcode_2003(CRunningScript* thread)
+	// cleo_return_fail
+	// cleo_return_fail [arguments] (logical)
+	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2003(CRunningScript* thread)
 	{
 		DWORD argCount = GetVarArgCount(thread);
 		if (argCount != 0) // argument(s) not supported yet

@@ -38,9 +38,29 @@ namespace CLEO
 
         static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
 
+        // new/customized opcodes
         static OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
-        static OpcodeResult __stdcall opcode_0051(CRunningScript* thread); // GOSUB's return
+        static OpcodeResult __stdcall opcode_0051(CRunningScript* thread); // GOSUB return
         static OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
+
+        static OpcodeResult __stdcall opcode_0A92(CRunningScript* thread); // stream_custom_script
+        static OpcodeResult __stdcall opcode_0A93(CRunningScript* thread); // terminate_this_custom_script
+        static OpcodeResult __stdcall opcode_0A94(CRunningScript* thread); // load_and_launch_custom_mission
+        static OpcodeResult __stdcall opcode_0A95(CRunningScript* thread); // save_this_custom_script
+        static OpcodeResult __stdcall opcode_0AA0(CRunningScript* thread); // gosub_if_false
+        static OpcodeResult __stdcall opcode_0AA1(CRunningScript* thread); // return_if_false
+        static OpcodeResult __stdcall opcode_0AA9(CRunningScript* thread); // is_game_version_original
+        static OpcodeResult __stdcall opcode_0AB1(CRunningScript* thread); // cleo_call
+        static OpcodeResult __stdcall opcode_0AB2(CRunningScript* thread); // cleo_return
+        static OpcodeResult __stdcall opcode_0AB3(CRunningScript* thread); // set_cleo_shared_var
+        static OpcodeResult __stdcall opcode_0AB4(CRunningScript* thread); // get_cleo_shared_var
+
+        static OpcodeResult __stdcall opcode_0DD5(CRunningScript* thread); // get_platform
+
+        static OpcodeResult __stdcall opcode_2000(CRunningScript* thread); // get_cleo_arg_count
+        // 2001 free slot
+        static OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
+        static OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
 
     private:
         bool initialized = false;
