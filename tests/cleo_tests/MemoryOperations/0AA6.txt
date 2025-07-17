@@ -7,6 +7,7 @@ terminate_this_custom_script
 
 function tests
     it("should call method", test1)
+    it_cs4("should not set condition in legacy modes", test2)
     return
             
     function test1
@@ -30,6 +31,19 @@ function tests
         is_pc_version // set result true
         call_method {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} 0xFF
         assert_result_false()
+    end
+    
+
+    function test2
+        int funcPtr = get_label_pointer @increment
+
+        is_australian_game // set result false
+        call_method {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} 1
+        assert_result_false()
+        
+        is_pc_version // set result true
+        call_method {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} 1
+        assert_result_true()
     end
 end
 

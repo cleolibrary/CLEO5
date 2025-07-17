@@ -11,6 +11,7 @@ function tests
     it_cs4("should ignore null 'this' in legacy modes", test2)
     it_cs4("should handle misused 'this' in legacy modes", test3)
     it("should set condition result", test4)
+    it_cs4("should not set condition in legacy modes", test5)
     return
 
 
@@ -66,6 +67,20 @@ function tests
         result = call_method_return {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} 0xFF
         assert_result_true()
         assert_eq(result, 0x100)
+    end
+
+
+    function test5
+        int funcPtr = get_label_pointer @increment
+        int result
+
+        is_australian_game // set result false
+        result = call_method_return {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} 1
+        assert_result_false()
+        
+        is_pc_version // set result true
+        result = call_method_return {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} 1
+        assert_result_true()
     end
 end
 
