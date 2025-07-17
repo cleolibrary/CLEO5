@@ -251,7 +251,7 @@ public:
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with regular audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         CVector pos;
@@ -272,7 +272,7 @@ public:
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with regular audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         if (stream)
@@ -292,7 +292,7 @@ public:
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with regular audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         if (stream)
@@ -312,7 +312,7 @@ public:
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with regular audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         if (stream)
