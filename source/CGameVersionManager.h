@@ -47,7 +47,8 @@ namespace CLEO
         MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND,
 
         // CustomOpcodeSystem
-        MA_OPCODE_HANDLER_REF,
+        MA_OPCODE_HANDLER_REF_1,
+        MA_OPCODE_HANDLER_REF_2,
 
         MA_CALL_CREATE_MAIN_WINDOW,
 

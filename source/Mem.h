@@ -13,7 +13,7 @@ inline void MemWrite(U p, const T v, int n) { memcpy((void*)p, &v, n); }
 template<typename T, typename U>
 inline T MemRead(U p) { return *(T*)p; }
 template<typename T, typename U>
-inline void MemFill(U p, T v, int n) { memset((void*)p, v, n); }
+inline void MemFill(U p, T v, int n) { memset((void*)p, (int)v, n); }
 template<typename T, typename U>
 inline void MemCopy(U p, const T v) { memcpy((void*)p, &v, sizeof(T)); }
 template<typename T, typename U>
