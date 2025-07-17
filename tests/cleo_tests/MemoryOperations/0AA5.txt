@@ -23,7 +23,7 @@ function tests
         call_function {address} funcPtr {numArgs} 1 {pop} 1 {args} 0
         assert_result_true()
 
-        // -1 -> 0 = true
+        // -1 -> 0 = false
         is_pc_version // set result true
         call_function {address} funcPtr {numArgs} 1 {pop} 1 {args} -1
         assert_result_false()

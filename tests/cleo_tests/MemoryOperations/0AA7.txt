@@ -29,7 +29,7 @@ function tests
         assert_result_true()
         assert_eq(result, 1)
 
-        // -1 -> 0 = true
+        // -1 -> 0 = false
         result = 666
         is_pc_version // set result true
         result = call_function_return {address} funcPtr {numArgs} 1 {pop} 1 {args} -1

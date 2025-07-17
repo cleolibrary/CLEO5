@@ -53,7 +53,7 @@ function tests
         assert_result_true()
         assert_eq(result, 1)
 
-        // -1 -> 0 = true
+        // -1 -> 0 = false
         result = 666
         is_pc_version // set result true
         result = call_method_return {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} -1

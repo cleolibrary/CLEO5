@@ -21,7 +21,7 @@ function tests
         call_method {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} 0
         assert_result_true()
 
-        // -1 -> 0 = true
+        // -1 -> 0 = false
         is_pc_version // set result true
         call_method {address} funcPtr {struct} 0x20000 {numArgs} 1 {pop} 1 {args} -1
         assert_result_false()
