@@ -1,0 +1,44 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AA5"
+test("0AA5 (call_function)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should call function", test1)
+    return
+
+
+    function test1
+        int funcPtr = get_label_pointer @increment
+
+        is_australian_game // set result false
+        call_function {address} funcPtr {numArgs} 1 {pop} 1 {args} 1
+        assert_result_true()
+
+        // 0 -> 1 = true
+        is_australian_game // set result false
+        call_function {address} funcPtr {numArgs} 1 {pop} 1 {args} 0
+        assert_result_true()
+
+        // -1 -> 0 = true
+        is_pc_version // set result true
+        call_function {address} funcPtr {numArgs} 1 {pop} 1 {args} -1
+        assert_result_false()
+        
+        // 0xFF -> 0x100 = false
+        is_pc_version // set result true
+        call_function {address} funcPtr {numArgs} 1 {pop} 1 {args} 0xFF
+        assert_result_false()
+    end
+end
+
+
+:increment
+hex
+    8B 44 24 04  // mov eax, [esp + 4]
+    40        // inc eax
+    C3        // retn
+end

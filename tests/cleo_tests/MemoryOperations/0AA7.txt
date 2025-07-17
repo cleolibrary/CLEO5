@@ -1,0 +1,54 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AA7"
+test("0AA7 (call_function_return)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should call function with return", test1)
+    return
+
+
+    function test1
+        int funcPtr = get_label_pointer @increment
+        int result
+
+        // 1 -> 2 = true
+        result = 666
+        is_australian_game // set result false
+        result = call_function_return {address} funcPtr {numArgs} 1 {pop} 1 {args} 1
+        assert_result_true()
+        assert_eq(result, 2)
+
+        // 0 -> 1 = true
+        result = 666
+        is_australian_game // set result false
+        result = call_function_return {address} funcPtr {numArgs} 1 {pop} 1 {args} 0
+        assert_result_true()
+        assert_eq(result, 1)
+
+        // -1 -> 0 = true
+        result = 666
+        is_pc_version // set result true
+        result = call_function_return {address} funcPtr {numArgs} 1 {pop} 1 {args} -1
+        assert_result_false()
+        assert_eq(result, 0)
+        
+        // 0xFF -> 0x100 = true
+        result = 666
+        is_australian_game // set result false
+        result = call_function_return {address} funcPtr {numArgs} 1 {pop} 1 {args} 0xFF
+        assert_result_true()
+        assert_eq(result, 0x100)
+    end
+end
+
+
+:increment
+hex
+    8B 44 24 04  // mov eax, [esp + 4]
+    40        // inc eax
+    C3        // retn
+end

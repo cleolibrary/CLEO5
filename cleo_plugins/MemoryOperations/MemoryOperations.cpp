@@ -220,6 +220,11 @@ public:
         }
 
         CLEO_SkipUnusedVarArgs(thread);
+
+        // set condition result
+        if (!returnArg) result &= 0xFF; // clip to AL
+        OPCODE_CONDITION_RESULT(result != 0);
+
         return OR_CONTINUE;
     }
 
