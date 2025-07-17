@@ -12,6 +12,7 @@
 - new opcode **2085 ([get_controller_key](https://library.sannybuilder.com/#/sa/script/extensions/input/2085))**
 - new opcode **2086 ([get_key_name](https://library.sannybuilder.com/#/sa/script/extensions/input/2086))**
 - added warning message to commands **0AC2-0AC5** if used with non-3d audio streams
+- call function/method commands **0AA5-0AA7** are now setting logical result
 
 ## 5.0.3
 - added **GxtHook.cleo** plugin to ignored list
