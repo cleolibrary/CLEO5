@@ -6,7 +6,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FileUtils.h" />
-    <ClInclude Include="Utils.h" />
     <ClInclude Include="..\..\cleo_sdk\CLEO.h">
       <Filter>cleo_sdk</Filter>
     </ClInclude>
