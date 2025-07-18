@@ -7,11 +7,6 @@
 
 namespace CLEO
 {
-	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, T*& pval);
-	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, T* pval);
-	template<typename T> inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval);
-	template<typename T> inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval);
-
 	void(__thiscall * ProcessScript)(CRunningScript*);
 
 	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
@@ -220,79 +215,6 @@ namespace CLEO
 		dst = callback;
 		TRACE("Opcode [%04X] registered", opcode);
 		return true;
-	}
-
-	inline CRunningScript& operator>>(CRunningScript& thread, DWORD& uval)
-	{
-		CScriptEngine::GetScriptParams(&thread, 1);
-		uval = opcodeParams[0].dwParam;
-		return thread;
-	}
-
-	inline CRunningScript& operator<<(CRunningScript& thread, DWORD uval)
-	{
-		opcodeParams[0].dwParam = uval;
-		CScriptEngine::SetScriptParams(&thread, 1);
-		return thread;
-	}
-
-	inline CRunningScript& operator>>(CRunningScript& thread, int& nval)
-	{
-		CScriptEngine::GetScriptParams(&thread, 1);
-		nval = opcodeParams[0].nParam;
-		return thread;
-	}
-
-	inline CRunningScript& operator<<(CRunningScript& thread, int nval)
-	{
-		opcodeParams[0].nParam = nval;
-		CScriptEngine::SetScriptParams(&thread, 1);
-		return thread;
-	}
-
-	inline CRunningScript& operator>>(CRunningScript& thread, float& fval)
-	{
-		CScriptEngine::GetScriptParams(&thread, 1);
-		fval = opcodeParams[0].fParam;
-		return thread;
-	}
-
-	inline CRunningScript& operator<<(CRunningScript& thread, float fval)
-	{
-		opcodeParams[0].fParam = fval;
-		CScriptEngine::SetScriptParams(&thread, 1);
-		return thread;
-	}
-
-	template<typename T>
-	inline CRunningScript& operator>>(CRunningScript& thread, T *& pval)
-	{
-		GetScriptParams(&thread, 1);
-		pval = reinterpret_cast<T *>(opcodeParams[0].pParam);
-		return thread;
-	}
-
-	template<typename T>
-	inline CRunningScript& operator<<(CRunningScript& thread, T *pval)
-	{
-		opcodeParams[0].pParam = (void *)(pval);
-		SetScriptParams(&thread, 1);
-		return thread;
-	}
-
-	inline CRunningScript& operator>>(CRunningScript& thread, memory_pointer& pval)
-	{
-		CScriptEngine::GetScriptParams(&thread, 1);
-		pval = opcodeParams[0].pParam;
-		return thread;
-	}
-
-	template<typename T>
-	inline CRunningScript& operator<<(CRunningScript& thread, memory_pointer pval)
-	{
-		opcodeParams[0].pParam = pval;
-		SetScriptParams(&thread, 1);
-		return thread;
 	}
 
 	const char* ReadStringParam(CRunningScript *thread, char* buff, int buffSize)
@@ -633,11 +555,11 @@ namespace CLEO
 				auto paramType = (eDataType)*thread->GetBytePointer();
 				if (IsImmInteger(paramType) || IsVariable(paramType))
 				{
-					*thread >> arg->dwParam;
+					arg->dwParam = CLEO_GetIntOpcodeParam(thread);
 				}
 				else if (paramType == DT_FLOAT)
 				{
-					*thread >> arg->fParam;
+					arg->fParam = CLEO_GetFloatOpcodeParam(thread);
 				}
 				else if (IsImmString(paramType) || IsVarString(paramType))
 				{
@@ -692,7 +614,7 @@ namespace CLEO
 						OPCODE_WRITE_PARAM_STRING(arguments[i].pcParam);
 					}
 					else
-						*thread << arguments[i].dwParam;
+						CLEO_SetIntOpcodeParam(thread, arguments[i].dwParam);
 				}
 				else
 				{
@@ -911,7 +833,7 @@ namespace CLEO
 		auto paramType = thread->PeekDataType();
 		if (IsImmInteger(paramType) || IsVariable(paramType))
 		{
-			*thread >> label; // label offset
+			label = CLEO_GetIntOpcodeParam(thread); // label offset
 		}
 		else if (IsImmString(paramType) || IsVarString(paramType))
 		{
@@ -964,7 +886,7 @@ namespace CLEO
 		{
 			if (IsImmInteger(paramType))
 			{
-				*thread >> nParams;
+				nParams = CLEO_GetIntOpcodeParam(thread);
 			}
 			else
 			{
@@ -1002,11 +924,12 @@ namespace CLEO
 			auto paramType = thread->PeekDataType();
 			if (IsImmInteger(paramType) || IsVariable(paramType))
 			{
-				*thread >> arg->dwParam;
+				arg->dwParam = CLEO_GetIntOpcodeParam(thread);
+
 			}
 			else if(paramType == DT_FLOAT)
 			{
-				*thread >> arg->fParam;
+				arg->fParam = CLEO_GetFloatOpcodeParam(thread);
 			}
 			else if (IsImmString(paramType) || IsVarString(paramType))
 			{
@@ -1058,7 +981,7 @@ namespace CLEO
 				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ScriptInfoStr(thread).c_str());
 				return thread->Suspend();
 			}
-			DWORD declaredParamCount; *thread >> declaredParamCount;
+			DWORD declaredParamCount = CLEO_GetIntOpcodeParam(thread);
 
 			if (returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
 			{

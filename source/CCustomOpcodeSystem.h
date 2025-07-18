@@ -91,11 +91,4 @@ namespace CLEO
 
     void SkipUnusedVarArgs(CRunningScript* thread); // for var-args opcodes
     DWORD GetVarArgCount(CRunningScript* thread); // for var-args opcodes
-
-    inline CRunningScript& operator>>(CRunningScript& thread, DWORD& uval);
-    inline CRunningScript& operator<<(CRunningScript& thread, DWORD uval);
-    inline CRunningScript& operator>>(CRunningScript& thread, int& nval);
-    inline CRunningScript& operator<<(CRunningScript& thread, int nval);
-    inline CRunningScript& operator>>(CRunningScript& thread, float& fval);
-    inline CRunningScript& operator<<(CRunningScript& thread, float fval);
 }
