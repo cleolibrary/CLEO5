@@ -46,7 +46,8 @@ CLEO scripts can be found on Grand Theft Auto fansites and modding sites such as
 
 CLEO is continually being improved and extended over time. In very rare circumstances, new major releases may break some older scripts. To fix this, CLEO provides a 'compatibility mode' to closely emulate behavior of previous versions and improve stability of old scripts. 
 - To run a script with maximum compatibility with 'CLEO 4', change the script extension from `.cs` to `.cs4`.
-- To run a script with maximum compatibility with 'CLEO 3', change the script extension from `.cs` to `.cs3`. 
+- To run a script with maximum compatibility with 'CLEO 3', change the script extension from `.cs` to `.cs3`.  
+[Read more about differences in legacy modes](https://github.com/cleolibrary/CLEO5/wiki/CLEO4-Compat-Mode-(.cs4))
 
 ## Creating CLEO Scripts
 
