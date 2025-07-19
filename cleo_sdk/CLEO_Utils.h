@@ -32,10 +32,13 @@ namespace CLEO
     Macros to use inside opcode handler functions. Performs types validation, printing warnings and suspending script on critical errors.
     Please mind those expand into multiple lines, so CAN NOT be used in places where single code line is expected! (like 'if' condition body without brackets)
     
-    OPCODE_CONDITION_RESULT(value) // set result
+    OPCODE_CONDITION_RESULT(value) // set command logical result
+
     OPCODE_SKIP_PARAMS(count) // ignore X params
+    OPCODE_SKIP_VARARG_PARAMS(count) // ignore remaining variable arguments, including varArg terminator
 
     OPCODE_PEEK_PARAM_TYPE() // get param type without advancing the script
+    OPCODE_PEEK_VARARG_COUNT() // get count of remaining variable arguments (not including varArg terminator)
     
     // reading opcode input arguments
     OPCODE_READ_PARAM_BOOL()
@@ -768,7 +771,10 @@ namespace CLEO
     }
 
     #define OPCODE_SKIP_PARAMS(_count) CLEO_SkipOpcodeParams(thread, _count)
+    #define OPCODE_SKIP_VARARG_PARAMS() CLEO_SkipUnusedVarArgs(thread)
+
     #define OPCODE_PEEK_PARAM_TYPE() thread->PeekDataType()
+    #define OPCODE_PEEK_VARARG_COUNT() CLEO_GetVarArgCount(thread)
 
     // macros for reading opcode input params. Performs type validation, throws error and suspends script if user provided invalid argument type
     // TOD: add range checks for limited size types?
