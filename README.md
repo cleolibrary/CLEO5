@@ -21,6 +21,7 @@ CLEO itself does not replace any game file, however the following files and fold
 - **cleo\\cleo_plugins\\SA.FileSystemOperations.cleo** - disk drive files related operations plugin
 - **cleo\\cleo_plugins\\SA.GameEntities.cleo** - cars/peds/objects/pickups related utilities plugin
 - **cleo\\cleo_plugins\\SA.IniFiles.cleo** - .ini config files handling plugin
+- **cleo\\cleo_plugins\\SA.Input.cleo** - keyboard/mouse related utilities plugin
 - **cleo\\cleo_plugins\\SA.Math.cleo** - additional math operations plugin
 - **cleo\\cleo_plugins\\SA.MemoryOperations.cleo** - memory and .dll libraries utilities plugin
 - **cleo\\cleo_plugins\\SA.Text.cleo** - text processing and screen drawing plugin
