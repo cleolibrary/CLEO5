@@ -13,6 +13,9 @@
 - new opcode **2086 ([get_key_name](https://library.sannybuilder.com/#/sa/script/extensions/input/2086))**
 - added warning message to commands **0AC2-0AC5** if used with non-3d audio streams
 - call function/method commands **0AA5-0AA7** are now setting logical result
+- limited "previously called opcode" info in script error messages to show just commands of that script
+- now more script error messages include previously executed command name
+- added missing **terminate_this_script** command error message for scripts compiled with extra SCM info
 
 ## 5.0.3
 - added **GxtHook.cleo** plugin to ignored list
