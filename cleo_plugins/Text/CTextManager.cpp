@@ -100,7 +100,7 @@ namespace CLEO
         FS::create_directory(std::string(CLEO_GetGameDirectory()) + "\\cleo\\cleo_text");
 
         // load whole FXT files directory
-        auto list = CLEO::CLEO_ListDirectory(nullptr, "cleo\\cleo_text\\*.fxt", false, true);
+        auto list = CLEO_ListDirectory(nullptr, "cleo\\cleo_text\\*.fxt", false, true);
         for (DWORD i = 0; i < list.count; i++)
         {
             try
@@ -114,7 +114,7 @@ namespace CLEO
                 LOG_WARNING(0, " Loading of FXT file '%s' failed: \n%s", list.strings[i], ex.what());
             }
         }
-        CLEO::CLEO_StringListFree(list);
+        CLEO_StringListFree(list);
 
         TRACE(""); // separator
     }

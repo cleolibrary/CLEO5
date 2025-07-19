@@ -31,8 +31,8 @@ namespace CLEO
 
 		void* operator new(size_t size);
 		void operator delete(void* mem);
-		ScmFunction(CRunningScript* thread);
+		ScmFunction(Script* script);
 
-		void Return(CRunningScript* thread);
+		void Return(Script* script);
 	};
 }

@@ -17,20 +17,28 @@ namespace CLEO
         int missionIndex = -1;
 
         friend class CCustomScript;
-        std::list<CCustomScript *> CustomScripts;
-        std::list<CCustomScript *> ScriptsWaitingForDelete;
+        std::list<CCustomScript*> CustomScripts;
+        std::list<CCustomScript*> ScriptsWaitingForDelete;
         std::set<unsigned long> InactiveScriptHashes;
         CCustomScript *CustomMission = nullptr;
         CCustomScript *LastScriptCreated = nullptr;
 
         CCustomScript* LoadScript(const char* filePath);
-        CCustomScript* CreateCustomScript(CRunningScript* fromThread, const char* filePath, int label);
+        CCustomScript* CreateCustomScript(Script* fromScript, const char* filePath, int label);
 
         bool NativeScriptsDebugMode; // debug mode enabled?
-        CLEO::eCLEO_Version NativeScriptsVersion; // allows using legacy modes
+        eCLEO_Version NativeScriptsVersion; // allows using legacy modes
         std::string MainScriptFileDir;
         std::string MainScriptFileName;
         std::string MainScriptCurWorkDir;
+
+        // most recently processed
+        static Script* lastScript;
+        static WORD lastOpcode;
+        static BYTE* lastOpcodePtr; // start of the command
+        static std::string lastErrorMsg;
+        static WORD prevOpcode; // previous
+        static BYTE handledParamCount; // read/writen since current opcode handling started
 
         static SCRIPT_VAR CleoVariables[0x400];
 
@@ -50,12 +58,12 @@ namespace CLEO
         void LoadState(int saveSlot);
         void SaveState();
 
-        CRunningScript* FindScriptNamed(const char* threadName, bool standardScripts, bool customScripts, size_t resultIndex = 0); // can be called multiple times to find more scripts named threadName. resultIndex should be incremented until the method returns nullptr
-        CRunningScript* FindScriptByFilename(const char* path, size_t resultIndex = 0); // if path is not absolute it will be resolved with cleo directory as root
-        bool IsActiveScriptPtr(const CRunningScript*) const; // leads to active script? (regular or custom)
-        bool IsValidScriptPtr(const CRunningScript*) const; // leads to any script? (regular or custom)
-        void AddCustomScript(CCustomScript*);
-        void RemoveScript(CRunningScript*); // native or custom
+        Script* FindScriptNamed(const char* scriptName, bool standardScripts, bool customScripts, size_t resultIndex = 0); // can be called multiple times to find more scripts named scriptName. resultIndex should be incremented until the method returns nullptr
+        Script* FindScriptByFilename(const char* path, size_t resultIndex = 0); // if path is not absolute it will be resolved with cleo directory as root
+        bool IsActiveScriptPtr(const Script* script) const; // leads to active script? (regular or custom)
+        bool IsValidScriptPtr(const Script* script) const; // leads to any script? (regular or custom)
+        void AddCustomScript(CCustomScript* script);
+        void RemoveScript(Script* script); // native or custom
         void RemoveAllCustomScripts();
 
         // remove/re-add to active scripts queue
@@ -65,11 +73,25 @@ namespace CLEO
         inline CCustomScript* GetCustomMission() { return CustomMission; }
         inline size_t WorkingScriptsCount() { return CustomScripts.size(); }
 
-        static SCRIPT_VAR* GetScriptParamPointer(CRunningScript* thread);
-
         // params into/from opcodeParams array
-        static void GetScriptParams(CRunningScript* script, BYTE count);
-        static void SetScriptParams(CRunningScript* script, BYTE count);
+        static void ReadScriptParams(Script* script, BYTE count);
+        static void WriteScriptParams(Script* script, BYTE count);
+
+        // read string params
+        static SCRIPT_VAR* GetScriptParamPointer(Script* script); // peek
+        static StringParamBufferInfo ReadStringParamWriteBuffer(Script* script); // get buffer info to write later
+        static const char* ReadStringParam(Script* script, char* buff, int buffSize);
+        static int ReadFormattedString(Script* script, char* buf, DWORD bufSize, const char* format);
+
+        // write string params
+        static bool WriteStringParam(Script* script, const char* str);
+        static bool WriteStringParam(const StringParamBufferInfo& target, const char* str);
+
+        // variable arguments
+        static DWORD GetVarArgCount(Script* script);
+        static void SkipUnusedVarArgs(Script* script);
+
+        static void ThreadJump(Script* script, int offset);
 
         static void DrawScriptText_Orig(char beforeFade);
 
@@ -79,14 +101,16 @@ namespace CLEO
         static void __cdecl HOOK_DrawScriptText(char beforeFade);
         void(__cdecl* DrawScriptTextBeforeFade_Orig)(char beforeFade) = nullptr;
         void(__cdecl* DrawScriptTextAfterFade_Orig)(char beforeFade) = nullptr;
-        
-        static void __fastcall HOOK_ProcessScript(CLEO::CRunningScript*);
-        void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
-    };
 
-    // reimplemented hook of original game's procedure
-    // returns buff or pointer provided by script, nullptr on fail
-    // WARNING: Null terminator ommited if not enought space in the buffer!
-    const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen); 
+        static void HOOK_LoadScmData(void);
+        static void HOOK_SaveScmData(void);
+        
+        // returns buff or pointer provided by script, nullptr on fail
+        // WARNING: Null terminator ommited if not enought space in the target buffer!
+        static const char* __fastcall HOOK_GetScriptStringParam(Script* script, int dummy, char* buff, int buffLen);
+
+        static void __fastcall HOOK_ProcessScript(Script*);
+        void(__fastcall* ProcessScript_Orig)(Script*) = nullptr;
+    };
 }
 

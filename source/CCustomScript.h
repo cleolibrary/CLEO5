@@ -2,7 +2,7 @@
 
 namespace CLEO
 {
-    class CCustomScript : public CRunningScript
+    class CCustomScript : public Script
     {
         friend class CScriptEngine;
         friend class CCustomOpcodeSystem;
@@ -24,22 +24,21 @@ namespace CLEO
         std::string m_workDir;
 
     public:
-        inline SCRIPT_VAR* GetVarsPtr() { return LocalVar; }
+        CCustomScript(const char* szFileName, bool bIsMiss = false, Script* parent = nullptr, int label = 0);
+        CCustomScript(const CCustomScript&) = delete; // no copying
+        ~CCustomScript();
+
+        void AddScriptToList(Script** queuelist);
+        void RemoveScriptFromList(Script** queuelist);
+
+        void ShutdownThisScript();
+
         inline bool IsOk() const { return m_ok; }
         inline DWORD GetCodeSize() const { return m_codeSize; }
         inline DWORD GetCodeChecksum() const { return m_codeChecksum; }
         inline void EnableSaving(bool en = true) { m_saveEnabled = en; }
         inline void SetCompatibility(eCLEO_Version ver) { m_compatVer = ver; }
         inline eCLEO_Version GetCompatibility() const { return m_compatVer; }
-
-        CCustomScript(const char* szFileName, bool bIsMiss = false, CRunningScript* parent = nullptr, int label = 0);
-        CCustomScript(const CCustomScript&) = delete; // no copying
-        ~CCustomScript();
-
-        void AddScriptToList(CRunningScript** queuelist);
-        void RemoveScriptFromList(CRunningScript** queuelist);
-
-        void ShutdownThisScript();
 
         // debug related utils enabled?
         bool GetDebugMode() const;

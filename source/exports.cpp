@@ -58,19 +58,19 @@ extern "C"
         CleoInstance.OpcodeSystem.scriptDeleteDelegate -= func;
     }
 
-    BOOL WINAPI CLEO_IsScriptRunning(const CLEO::CRunningScript* thread)
+    BOOL WINAPI CLEO_IsScriptRunning(const Script* script)
     {
-        return CleoInstance.ScriptEngine.IsActiveScriptPtr(thread);
+        return CleoInstance.ScriptEngine.IsActiveScriptPtr(script);
     }
 
-    void WINAPI CLEO_GetScriptInfoStr(CLEO::CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize)
+    void WINAPI CLEO_GetScriptInfoStr(const Script* script, bool currLineInfo, char* buf, DWORD bufSize)
     {
-        if (thread == nullptr || buf == nullptr || bufSize < 2)
+        if (script == nullptr || buf == nullptr || bufSize < 2)
         {
             return; // invalid param
         }
 
-        auto text = reinterpret_cast<CCustomScript*>(thread)->GetInfoStr(currLineInfo);
+        auto text = reinterpret_cast<const CCustomScript*>(script)->GetInfoStr(currLineInfo);
 
         if (text.length() >= bufSize)
             text.resize(bufSize - 1); // and terminator character
@@ -80,8 +80,8 @@ extern "C"
 
     void WINAPI CLEO_GetScriptParamInfoStr(int idexOffset, char* buf, DWORD bufSize)
     {
-        auto curr = idexOffset - 1 + CleoInstance.OpcodeSystem.handledParamCount;
-        auto name = CleoInstance.OpcodeInfoDb.GetArgumentName(CleoInstance.OpcodeSystem.lastOpcode, curr);
+        auto curr = idexOffset - 1 + CScriptEngine::handledParamCount;
+        auto name = CleoInstance.OpcodeInfoDb.GetArgumentName(CScriptEngine::lastOpcode, curr);
 
         curr++; // 1-based argument index display
 
@@ -92,7 +92,7 @@ extern "C"
         strncpy_s(buf, bufSize, msg.c_str(), bufSize);
     }
 
-    DWORD WINAPI CLEO_GetScriptBaseRelativeOffset(const CRunningScript* script, const BYTE* codePos)
+    DWORD WINAPI CLEO_GetScriptBaseRelativeOffset(const Script* script, const BYTE* codePos)
     {
         auto base = (BYTE*)script->BaseIP;
         if (base == 0) base = CleoInstance.ScriptEngine.scmBlock;
@@ -103,7 +103,7 @@ extern "C"
             {
                 // we are in mission code buffer
                 // native missions are loaded from script file into mission block area
-                codePos += ((DWORD*)CTheScripts::MultiScriptArray)[CleoInstance.ScriptEngine.missionIndex]; // start offset of this mission within source script file
+                codePos += CTheScripts::MultiScriptArray[CleoInstance.ScriptEngine.missionIndex]; // start offset of this mission within source script file
             }
             else
             {
@@ -114,73 +114,73 @@ extern "C"
         return codePos - base;
     }
 
-    eCLEO_Version WINAPI CLEO_GetScriptVersion(const CRunningScript* thread)
+    eCLEO_Version WINAPI CLEO_GetScriptVersion(const Script* script)
     {
-        if (thread->IsCustom())
-            return reinterpret_cast<const CCustomScript*>(thread)->GetCompatibility();
+        if (script->IsCustom())
+            return reinterpret_cast<const CCustomScript*>(script)->GetCompatibility();
         else
             return CleoInstance.ScriptEngine.NativeScriptsVersion;
     }
 
-    void WINAPI CLEO_SetScriptVersion(CRunningScript* thread, eCLEO_Version version)
+    void WINAPI CLEO_SetScriptVersion(Script* script, eCLEO_Version version)
     {
-        if (thread->IsCustom())
-            ((CCustomScript*)thread)->SetCompatibility(version);
+        if (script->IsCustom())
+            ((CCustomScript*)script)->SetCompatibility(version);
         else
             CleoInstance.ScriptEngine.NativeScriptsVersion = version;
     }
 
-    LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread)
+    LPCSTR WINAPI CLEO_GetScriptFilename(const Script* script)
     {
-        if (!CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
+        if (!CleoInstance.ScriptEngine.IsValidScriptPtr(script))
         {
             return nullptr;
         }
 
-        auto cs = (CCustomScript*)thread;
+        auto cs = (CCustomScript*)script;
         return cs->GetScriptFileName();
     }
 
-    LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread)
+    LPCSTR WINAPI CLEO_GetScriptWorkDir(const Script* script)
     {
-        auto cs = (CCustomScript*)thread;
+        auto cs = (CCustomScript*)script;
         return cs->GetWorkDir();
     }
 
-    void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path)
+    void WINAPI CLEO_SetScriptWorkDir(Script* script, const char* path)
     {
-        auto cs = (CCustomScript*)thread;
+        auto cs = (CCustomScript*)script;
         cs->SetWorkDir(path);
     }
 
-    void WINAPI CLEO_SetThreadCondResult(CLEO::CRunningScript* thread, BOOL result)
+    void WINAPI CLEO_SetThreadCondResult(Script* script, BOOL result)
     {
-        ((::CRunningScript*)thread)->UpdateCompareFlag(result != FALSE); // CRunningScript from Plugin SDK
+        ((CRunningScript*)script)->UpdateCompareFlag(result != FALSE);
     }
 
-    void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)
+    void WINAPI CLEO_ThreadJumpAtLabelPtr(Script* script, int offset)
     {
-        ThreadJump(thread, labelPtr);
+        CleoInstance.ScriptEngine.ThreadJump(script, offset);
     }
 
-    void WINAPI CLEO_TerminateScript(CLEO::CRunningScript* thread)
+    void WINAPI CLEO_TerminateScript(Script* script)
     {
-        CleoInstance.ScriptEngine.RemoveScript(thread);
+        CleoInstance.ScriptEngine.RemoveScript(script);
     }
 
-    int WINAPI CLEO_GetOperandType(const CLEO::CRunningScript* thread)
+    int WINAPI CLEO_GetOperandType(const Script* script)
     {
-        return (int)thread->PeekDataType();
+        return (int)script->PeekDataType();
     }
 
-    DWORD WINAPI CLEO_GetVarArgCount(CLEO::CRunningScript* thread)
+    DWORD WINAPI CLEO_GetVarArgCount(Script* script)
     {
-        return GetVarArgCount(thread);
+        return CScriptEngine::GetVarArgCount(script);
     }
 
     SCRIPT_VAR* opcodeParams;
     SCRIPT_VAR* missionLocals;
-    CRunningScript* staticThreads;
+    Script* staticThreads;
 
     BYTE* WINAPI CLEO_GetScmMainData()
     {
@@ -194,34 +194,32 @@ extern "C"
 
     BYTE WINAPI CLEO_GetParamsHandledCount()
     {
-        return CleoInstance.OpcodeSystem.handledParamCount;
+        return CScriptEngine::handledParamCount;
     }
 
-    SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(CLEO::CRunningScript* thread)
+    SCRIPT_VAR* WINAPI CLEO_GetPointerToScriptVariable(Script* script)
     {
-        return CScriptEngine::GetScriptParamPointer(thread);
+        return CScriptEngine::GetScriptParamPointer(script);
     }
 
-    void WINAPI CLEO_RetrieveOpcodeParams(CLEO::CRunningScript* thread, int count)
+    void WINAPI CLEO_RetrieveOpcodeParams(Script* script, int count)
     {
-        CScriptEngine::GetScriptParams(thread, count);
+        CScriptEngine::ReadScriptParams(script, count);
     }
 
-    DWORD WINAPI CLEO_GetIntOpcodeParam(CLEO::CRunningScript* thread)
+    DWORD WINAPI CLEO_GetIntOpcodeParam(Script* script)
     {
-        DWORD result;
-        *thread >> result;
-        return result;
+        CScriptEngine::ReadScriptParams(script, 1);
+        return opcodeParams[0].dwParam;
     }
 
-    float WINAPI CLEO_GetFloatOpcodeParam(CLEO::CRunningScript* thread)
+    float WINAPI CLEO_GetFloatOpcodeParam(Script* script)
     {
-        float result;
-        *thread >> result;
-        return result;
+        CScriptEngine::ReadScriptParams(script, 1);
+        return opcodeParams[0].fParam;
     }
 
-    LPCSTR WINAPI CLEO_ReadStringOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
+    LPCSTR WINAPI CLEO_ReadStringOpcodeParam(Script* script, char* buff, int buffSize)
     {
         static char internal_buff[MAX_STR_LEN + 1]; // and terminator
         if (!buff)
@@ -230,11 +228,11 @@ extern "C"
             buffSize = (buffSize > 0) ? std::min<int>(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
         }
 
-        auto result = ReadStringParam(thread, buff, buffSize);
+        auto result = CScriptEngine::ReadStringParam(script, buff, buffSize);
         return (result != nullptr) ? buff : nullptr;
     }
 
-    LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(CLEO::CRunningScript* thread, char* buff, int buffSize)
+    LPCSTR WINAPI CLEO_ReadStringPointerOpcodeParam(Script* script, char* buff, int buffSize)
     {
         static char internal_buff[MAX_STR_LEN + 1]; // and terminator
         bool userBuffer = buff != nullptr;
@@ -244,33 +242,33 @@ extern "C"
             buffSize = (buffSize > 0) ? std::min<int>(buffSize, sizeof(internal_buff)) : sizeof(internal_buff); // allow user's length limit
         }
 
-        return ReadStringParam(thread, buff, buffSize);
+        return CScriptEngine::ReadStringParam(script, buff, buffSize);
     }
 
-    void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator)
+    void WINAPI CLEO_ReadStringParamWriteBuffer(Script* script, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator)
     {
-        if (thread == nullptr ||
+        if (script == nullptr ||
             outBuf == nullptr ||
             outBufSize == nullptr ||
             outNeedsTerminator == nullptr)
         {
-            LOG_WARNING(thread, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s", ((CCustomScript*)thread)->GetInfoStr().c_str());
+            LOG_WARNING(script, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s", ((CCustomScript*)script)->GetInfoStr().c_str());
             return;
         }
 
-        auto target = GetStringParamWriteBuffer(thread);
+        auto target = CScriptEngine::ReadStringParamWriteBuffer(script);
         *outBuf = target.data;
         *outBufSize = target.size;
         *outNeedsTerminator = target.needTerminator;
     }
 
-    char* WINAPI CLEO_ReadParamsFormatted(CLEO::CRunningScript* thread, const char* format, char* buf, int bufSize)
+    char* WINAPI CLEO_ReadParamsFormatted(Script* script, const char* format, char* buf, int bufSize)
     {
         static char internal_buf[MAX_STR_LEN * 4];
         if (!buf) { buf = internal_buf; bufSize = sizeof(internal_buf); }
         if (!bufSize) bufSize = MAX_STR_LEN;
 
-        if (ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
+        if (CScriptEngine::ReadFormattedString(script, buf, bufSize, format) == -1) // error?
         {
             return nullptr; // error
         }
@@ -278,64 +276,64 @@ extern "C"
         return buf;
     }
 
-    DWORD WINAPI CLEO_PeekIntOpcodeParam(CLEO::CRunningScript* thread)
+    DWORD WINAPI CLEO_PeekIntOpcodeParam(Script* script)
     {
         // store state
         auto param = CLEO::opcodeParams[0];
-        auto ip = thread->CurrentIP;
-        auto count = CleoInstance.OpcodeSystem.handledParamCount;
+        auto ip = script->CurrentIP;
+        auto count = CScriptEngine::handledParamCount;
 
-        CScriptEngine::GetScriptParams(thread, 1);
+        CScriptEngine::ReadScriptParams(script, 1);
         DWORD result = CLEO::opcodeParams[0].dwParam;
 
         // restore state
-        thread->CurrentIP = ip;
-        CleoInstance.OpcodeSystem.handledParamCount = count;
+        script->CurrentIP = ip;
+        CScriptEngine::handledParamCount = count;
         CLEO::opcodeParams[0] = param;
 
         return result;
     }
 
-    float WINAPI CLEO_PeekFloatOpcodeParam(CLEO::CRunningScript* thread)
+    float WINAPI CLEO_PeekFloatOpcodeParam(Script* script)
     {
         // store state
         auto param = CLEO::opcodeParams[0];
-        auto ip = thread->CurrentIP;
-        auto count = CleoInstance.OpcodeSystem.handledParamCount;
+        auto ip = script->CurrentIP;
+        auto count = CScriptEngine::handledParamCount;
 
-        CScriptEngine::GetScriptParams(thread, 1);
+        CScriptEngine::ReadScriptParams(script, 1);
         float result = CLEO::opcodeParams[0].fParam;
 
         // restore state
-        thread->CurrentIP = ip;
-        CleoInstance.OpcodeSystem.handledParamCount = count;
+        script->CurrentIP = ip;
+        CScriptEngine::handledParamCount = count;
         CLEO::opcodeParams[0] = param;
 
         return result;
     }
 
-    SCRIPT_VAR* WINAPI CLEO_PeekPointerToScriptVariable(CLEO::CRunningScript* thread)
+    SCRIPT_VAR* WINAPI CLEO_PeekPointerToScriptVariable(Script* script)
     {
         // store state
-        auto ip = thread->CurrentIP;
-        auto count = CleoInstance.OpcodeSystem.handledParamCount;
+        auto ip = script->CurrentIP;
+        auto count = CScriptEngine::handledParamCount;
 
-        auto result = CScriptEngine::GetScriptParamPointer(thread);
+        auto result = CScriptEngine::GetScriptParamPointer(script);
 
         // restore state
-        thread->CurrentIP = ip;
-        CleoInstance.OpcodeSystem.handledParamCount = count;
+        script->CurrentIP = ip;
+        CScriptEngine::handledParamCount = count;
 
         return result;
     }
 
-    void WINAPI CLEO_SkipOpcodeParams(CLEO::CRunningScript* thread, int count)
+    void WINAPI CLEO_SkipOpcodeParams(Script* script, int count)
     {
         if (count < 1) return;
 
         for (int i = 0; i < count; i++)
         {
-            switch (thread->ReadDataType())
+            switch (script->ReadDataType())
             {
             case DT_VAR:
             case DT_LVAR:
@@ -343,7 +341,7 @@ extern "C"
             case DT_LVAR_STRING:
             case DT_VAR_TEXTLABEL:
             case DT_LVAR_TEXTLABEL:
-                thread->IncPtr(2);
+                script->IncPtr(2);
                 break;
             case DT_VAR_ARRAY:
             case DT_LVAR_ARRAY:
@@ -351,94 +349,94 @@ extern "C"
             case DT_LVAR_TEXTLABEL_ARRAY:
             case DT_VAR_STRING_ARRAY:
             case DT_LVAR_STRING_ARRAY:
-                thread->IncPtr(6);
+                script->IncPtr(6);
                 break;
             case DT_BYTE:
                 //case DT_END: // should be only skipped with var args dediacated functions
-                thread->IncPtr();
+                script->IncPtr();
                 break;
             case DT_WORD:
-                thread->IncPtr(2);
+                script->IncPtr(2);
                 break;
             case DT_DWORD:
             case DT_FLOAT:
-                thread->IncPtr(4);
+                script->IncPtr(4);
                 break;
             case DT_VARLEN_STRING:
-                thread->IncPtr((int)1 + *thread->GetBytePointer()); // as unsigned! length byte + string data
+                script->IncPtr((int)1 + *script->GetBytePointer()); // as unsigned! length byte + string data
                 break;
 
             case DT_TEXTLABEL:
-                thread->IncPtr(8);
+                script->IncPtr(8);
                 break;
             case DT_STRING:
-                thread->IncPtr(16);
+                script->IncPtr(16);
                 break;
             }
         }
 
-        CleoInstance.OpcodeSystem.handledParamCount += count;
+        CScriptEngine::handledParamCount += count;
     }
 
-    void WINAPI CLEO_SkipUnusedVarArgs(CLEO::CRunningScript* thread)
+    void WINAPI CLEO_SkipUnusedVarArgs(Script* script)
     {
-        SkipUnusedVarArgs(thread);
+        CScriptEngine::SkipUnusedVarArgs(script);
     }
 
-    void WINAPI CLEO_RecordOpcodeParams(CLEO::CRunningScript* thread, int count)
+    void WINAPI CLEO_RecordOpcodeParams(Script* script, int count)
     {
-        CScriptEngine::SetScriptParams(thread, count);
+        CScriptEngine::WriteScriptParams(script, count);
     }
 
-    void WINAPI CLEO_SetIntOpcodeParam(CLEO::CRunningScript* thread, DWORD value)
+    void WINAPI CLEO_SetIntOpcodeParam(Script* script, DWORD value)
     {
         CLEO::opcodeParams[0].dwParam = value;
-        CScriptEngine::SetScriptParams(thread, 1);
+        CScriptEngine::WriteScriptParams(script, 1);
     }
 
-    void WINAPI CLEO_SetFloatOpcodeParam(CLEO::CRunningScript* thread, float value)
+    void WINAPI CLEO_SetFloatOpcodeParam(Script* script, float value)
     {
         CLEO::opcodeParams[0].fParam = value;
-        CScriptEngine::SetScriptParams(thread, 1);
+        CScriptEngine::WriteScriptParams(script, 1);
     }
 
-    void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
+    void WINAPI CLEO_WriteStringOpcodeParam(Script* script, const char* str)
     {
-        if (!WriteStringParam(thread, str))
-            LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
+        if (!CScriptEngine::WriteStringParam(script, str))
+            LOG_WARNING(script, "%s in script %s", CScriptEngine::lastErrorMsg.c_str(), ((CCustomScript*)script)->GetInfoStr().c_str());
     }
 
-    BOOL WINAPI CLEO_GetScriptDebugMode(const CLEO::CRunningScript* thread)
+    BOOL WINAPI CLEO_GetScriptDebugMode(const Script* script)
     {
-        return reinterpret_cast<const CCustomScript*>(thread)->GetDebugMode();
+        return reinterpret_cast<const CCustomScript*>(script)->GetDebugMode();
     }
 
-    void WINAPI CLEO_SetScriptDebugMode(CLEO::CRunningScript* thread, BOOL enabled)
+    void WINAPI CLEO_SetScriptDebugMode(Script* script, BOOL enabled)
     {
-        reinterpret_cast<CCustomScript*>(thread)->SetDebugMode(enabled);
+        reinterpret_cast<CCustomScript*>(script)->SetDebugMode(enabled);
     }
 
-    CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* filePath, int label)
+    Script* WINAPI CLEO_CreateCustomScript(Script* fromScript, const char* filePath, int label)
     {
-        return (CLEO::CRunningScript*)CleoInstance.ScriptEngine.CreateCustomScript(fromThread, filePath, label);
+        return (Script*)CleoInstance.ScriptEngine.CreateCustomScript(fromScript, filePath, label);
     }
 
-    CLEO::CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript()
+    Script* WINAPI CLEO_GetLastCreatedCustomScript()
     {
         return CleoInstance.ScriptEngine.LastScriptCreated;
     }
 
-    CLEO::CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
+    Script* WINAPI CLEO_GetScriptByName(const char* scriptName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
     {
-        return CleoInstance.ScriptEngine.FindScriptNamed(threadName, standardScripts, customScripts, resultIndex);
+        return CleoInstance.ScriptEngine.FindScriptNamed(scriptName, standardScripts, customScripts, resultIndex);
     }
 
-    CLEO::CRunningScript* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex)
+    Script* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex)
     {
         return CleoInstance.ScriptEngine.FindScriptByFilename(path, resultIndex);
     }
 
-    DWORD WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
+    DWORD WINAPI CLEO_GetScriptTextureById(Script* script, int id)
     {
         HMODULE textPlugin = GetModuleHandleA("SA.Text.cleo");
         if (textPlugin == nullptr)
@@ -446,23 +444,23 @@ extern "C"
             return (DWORD)nullptr;
         }
 
-        auto GetScriptTexture = (RwTexture* (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
+        auto GetScriptTexture = (RwTexture* (__cdecl*)(Script*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
         if (GetScriptTexture == nullptr)
         {
             return (DWORD)nullptr;
         }
 
-        return (DWORD)GetScriptTexture(thread, id);
+        return (DWORD)GetScriptTexture(script, id);
     }
 
-    DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
+    DWORD WINAPI CLEO_GetInternalAudioStream(Script* unused, DWORD audioStreamPtr)
     {
         return *(DWORD*)(audioStreamPtr + 0x4); // CAudioStream->streamInternal
     }
 
     // void WINAPI CLEO_StringListFree(StringList list)
-    // void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
-    // StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+    // void WINAPI CLEO_ResolvePath(Script* script, char* inOutPath, DWORD pathMaxLen)
+    // StringList WINAPI CLEO_ListDirectory(Script* script, const char* searchPath, BOOL listDirs, BOOL listFiles)
     // defined in CleoBase.h
 
     LPCSTR WINAPI CLEO_GetGameDirectory()

@@ -7,7 +7,7 @@
 using namespace CLEO;
 
 
-void ScriptDrawing::ScriptProcessingBegin(CLEO::CRunningScript* script)
+void ScriptDrawing::ScriptProcessingBegin(Script* script)
 {
     if (!script->IsCustom()) return;
 
@@ -17,7 +17,7 @@ void ScriptDrawing::ScriptProcessingBegin(CLEO::CRunningScript* script)
     m_currCustomScript = script;
 }
 
-void ScriptDrawing::ScriptProcessingEnd(CLEO::CRunningScript* script)
+void ScriptDrawing::ScriptProcessingEnd(Script* script)
 {
     if (!script->IsCustom()) return;
 
@@ -27,7 +27,7 @@ void ScriptDrawing::ScriptProcessingEnd(CLEO::CRunningScript* script)
     m_currCustomScript = nullptr;
 }
 
-void ScriptDrawing::ScriptUnregister(CLEO::CRunningScript* script)
+void ScriptDrawing::ScriptUnregister(Script* script)
 {
     if (!script->IsCustom()) return;
 
@@ -54,7 +54,7 @@ void ScriptDrawing::Draw(bool beforeFade)
     m_globalDrawingState.Apply();
 }
 
-RwTexture* ScriptDrawing::GetScriptTexture(CLEO::CRunningScript* script, DWORD slot)
+RwTexture* ScriptDrawing::GetScriptTexture(Script* script, DWORD slot)
 {
     if (script == nullptr || slot == 0 || slot > _countof(CTheScripts::ScriptSprites))
     {

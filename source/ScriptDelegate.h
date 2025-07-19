@@ -18,7 +18,7 @@ namespace CLEO
 			funcs.erase(std::remove(funcs.begin(), funcs.end(), mFunc), funcs.end());
 		}
 
-		void operator()(CRunningScript* script)
+		void operator()(Script* script)
 		{
 			for (auto& f : funcs) f(script);
 		}

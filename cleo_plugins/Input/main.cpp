@@ -119,7 +119,7 @@ public:
 
 	// is_key_pressed
 	// is_key_pressed {keyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_0AB0(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB0(Script* script)
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
@@ -130,20 +130,20 @@ public:
 		}
 		if (key < 0 || key > Key_Code_Max)
 		{
-			LOG_WARNING(thread, "Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str()); // legacy opcode, just warning
+			LOG_WARNING(script, "Invalid key code (%d) used in script %s", key, ScriptInfoStr(script).c_str()); // legacy opcode, just warning
 			OPCODE_CONDITION_RESULT(false);
 			return OR_CONTINUE;
 		}
 
 		bool isDown = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
 
-		thread->SetConditionResult(isDown);
+		script->SetConditionResult(isDown);
 		return OR_CONTINUE;
 	}
 
 	// test_cheat
 	// test_cheat {input} [string] (logical)
-	static OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ADC(Script* script)
 	{
 		OPCODE_READ_PARAM_STRING_LEN(text, sizeof(CCheat::m_CheatString));
 
@@ -168,7 +168,7 @@ public:
 
 	// is_key_just_pressed
 	// is_key_just_pressed {keyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_2080(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2080(Script* script)
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
@@ -179,8 +179,8 @@ public:
 		}
 		if (key < 0 || key > Key_Code_Max)
 		{
-			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 
 		bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Flag_Down;
@@ -192,20 +192,20 @@ public:
 
 	// get_key_pressed_in_range
 	// [var keyCode: KeyCode] = get_key_pressed_in_range {minKeyCode} [KeyCode] {maxKeyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_2081(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2081(Script* script)
 	{
 		auto keyMin = OPCODE_READ_PARAM_INT();
 		auto keyMax = OPCODE_READ_PARAM_INT();
 
 		if (keyMin < 0 || keyMin > Key_Code_Max)
 		{
-			SHOW_ERROR("Invalid value (%d) of 'minKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid value (%d) of 'minKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 		if (keyMax < 0 || keyMax > Key_Code_Max || keyMax < keyMin)
 		{
-			SHOW_ERROR("Invalid value (%d) of 'maxKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid value (%d) of 'maxKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 
 		for (auto key = keyMin; key <= keyMax; key++)
@@ -227,20 +227,20 @@ public:
 
 	// get_key_just_pressed_in_range
 	// [var keyCode: KeyCode] = get_key_just_pressed_in_range {minKeyCode} [KeyCode] {maxKeyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_2082(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2082(Script* script)
 	{
 		auto keyMin = OPCODE_READ_PARAM_INT();
 		auto keyMax = OPCODE_READ_PARAM_INT();
 
 		if (keyMin < 0 || keyMin > Key_Code_Max)
 		{
-			SHOW_ERROR("Invalid value (%d) of 'minKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid value (%d) of 'minKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 		if (keyMax < 0 || keyMax > Key_Code_Max || keyMax < keyMin)
 		{
-			SHOW_ERROR("Invalid value (%d) of 'maxKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid value (%d) of 'maxKeyCode' argument in script %s\nScript suspended.", keyMin, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 
 		for (auto key = keyMin; key <= keyMax; key++)
@@ -263,7 +263,7 @@ public:
 
 	// emulate_key_press
 	// emulate_key_press {keyCode} [KeyCode]
-	static OpcodeResult __stdcall opcode_2083(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2083(Script* script)
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
@@ -273,8 +273,8 @@ public:
 		}
 		if (key < 0 || key > Key_Code_Max)
 		{
-			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 
 		SendKeyEvent(key, true);
@@ -284,7 +284,7 @@ public:
 
 	// emulate_key_release
 	// emulate_key_release {keyCode} [KeyCode]
-	static OpcodeResult __stdcall opcode_2084(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2084(Script* script)
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 
@@ -294,8 +294,8 @@ public:
 		}
 		if (key < 0 || key > Key_Code_Max)
 		{
-			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 
 		SendKeyEvent(key, false);
@@ -305,20 +305,20 @@ public:
 
 	// get_controller_key
 	// [var keyCode: KeyCode] = get_controller_key {action} [ControllerAction] {altKeyIdx} [int] (logical)
-	static OpcodeResult __stdcall opcode_2085(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2085(Script* script)
 	{
 		auto actionId = OPCODE_READ_PARAM_INT();
 		auto altKeyIdx = OPCODE_READ_PARAM_INT();
 
 		if (actionId < 0 || actionId >= _countof(ControlsManager.m_actions))
 		{
-			SHOW_ERROR("Invalid value (%d) of 'action' argument in script %s\nScript suspended.", actionId, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid value (%d) of 'action' argument in script %s\nScript suspended.", actionId, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 		if (altKeyIdx < 0 || altKeyIdx >= _countof(CControllerAction::keys))
 		{
-			SHOW_ERROR("Invalid value (%d) of 'altKeyIdx' argument in script %s\nScript suspended.", actionId, ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
+			SHOW_ERROR("Invalid value (%d) of 'altKeyIdx' argument in script %s\nScript suspended.", actionId, ScriptInfoStr(script).c_str());
+			return script->Suspend();
 		}
 
 		auto& action = ControlsManager.m_actions[actionId];
@@ -431,7 +431,7 @@ public:
 
 	// get_key_name
 	// [var name: string] = get_key_name {keyCode} [KeyCode] (logical)
-	static OpcodeResult __stdcall opcode_2086(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_2086(Script* script)
 	{
 		auto key = OPCODE_READ_PARAM_INT();
 		

@@ -11,7 +11,7 @@ using namespace plugin;
 namespace FS = std::filesystem;
 
 #define OPCODE_READ_PARAM_FILE_HANDLE(handle) auto handle = (DWORD)OPCODE_READ_PARAM_PTR(); \
-    if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = ScriptInfoStr(thread); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return thread->Suspend(); }
+    if(m_hFiles.find(handle) == m_hFiles.end()) { auto info = ScriptInfoStr(script); SHOW_ERROR("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, info.c_str()); return script->Suspend(); }
 
 class FileSystemOperations 
 {
@@ -82,11 +82,11 @@ public:
     }
 
     //0A99=1,set_current_directory %1b:userdir/rootdir%
-    static OpcodeResult __stdcall opcode_0A99(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A99(Script* script)
     {
         const char* path;
 
-        auto paramType = thread->PeekDataType();
+        auto paramType = script->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
         {
             // numbered predefined paths
@@ -97,7 +97,7 @@ public:
                 case 1: path = DIR_USER; break;
                 case 2: path = DIR_SCRIPT; break;
                 default:
-                    LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(thread).c_str());
+                    LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(script).c_str());
                     return OR_CONTINUE;
             }
 
@@ -113,17 +113,17 @@ public:
             path = str;
         }
 
-        CLEO_SetScriptWorkDir(thread, path);
+        CLEO_SetScriptWorkDir(script, path);
         return OR_CONTINUE;
     }
 
     //0A9A=3,%3d% = openfile %1d% mode %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_0A9A(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9A(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
         char mode[16];
-        auto paramType = thread->PeekDataType();
+        auto paramType = script->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
         {
             // integer param (for backward compatibility with CLEO 3)
@@ -143,7 +143,7 @@ public:
 
         // either CLEO 3 or CLEO 4 made a big mistake! (they differ in one major unapparent preference)
         // lets try to resolve this with a legacy mode
-        bool legacy = CLEO_GetScriptVersion(thread) < CLEO_VER_4_3;
+        bool legacy = CLEO_GetScriptVersion(script) < CLEO_VER_4_3;
 
         auto handle = File::open(filename, mode, legacy);
         if (!File::isOk(handle))
@@ -161,7 +161,7 @@ public:
     }
 
     //0A9B=1,closefile %1d%
-    static OpcodeResult __stdcall opcode_0A9B(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9B(Script* script)
     {
         auto handle = OPCODE_READ_PARAM_INT();
 
@@ -172,10 +172,10 @@ public:
         }
         else
         {
-            if (!IsLegacyScript(thread))
+            if (!IsLegacyScript(script))
             {
-                SHOW_ERROR_COMPAT("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, ScriptInfoStr(thread).c_str());
-                return thread->Suspend();
+                SHOW_ERROR_COMPAT("Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle, ScriptInfoStr(script).c_str());
+                return script->Suspend();
             }
         }
 
@@ -183,7 +183,7 @@ public:
     }
 
     //0A9C=2,get_file_size %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A9C(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9C(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -194,7 +194,7 @@ public:
     }
 
     //0A9D=3,read_from_file %1d% size %2d% store_to %3d%
-    static OpcodeResult __stdcall opcode_0A9D(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9D(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -202,8 +202,8 @@ public:
 
         if (size < 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         destination->dwParam = 0; // clear not overwritten bytes - https://github.com/cleolibrary/CLEO4/issues/91
@@ -212,15 +212,15 @@ public:
     }
 
     //0A9E=3,write_to_file %1d% size %2d% from %3d%
-    static OpcodeResult __stdcall opcode_0A9E(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0A9E(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
 
         if (size < 0)
         {
-            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         if (size == 0)
@@ -230,10 +230,10 @@ public:
         }
 
         const void* source;
-        auto paramType = thread->PeekDataType();
+        auto paramType = script->PeekDataType();
         if (IsVariable(paramType))
         {
-            source = CLEO_GetPointerToScriptVariable(thread);
+            source = CLEO_GetPointerToScriptVariable(script);
         }
         else if(IsImmString(paramType) || IsVarString(paramType))
         {
@@ -241,22 +241,22 @@ public:
 
             if (size > MAX_STR_LEN)
             {
-                SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN, ScriptInfoStr(thread).c_str());
-                return thread->Suspend();
+                SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN, ScriptInfoStr(script).c_str());
+                return script->Suspend();
             }
 
             ZeroMemory(buffer, size); // padd with zeros if size > length
-            source = CLEO_ReadStringOpcodeParam(thread, buffer, sizeof(buffer));
+            source = CLEO_ReadStringOpcodeParam(script, buffer, sizeof(buffer));
         }
         else
         {
             if (size > sizeof(SCRIPT_VAR))
             {
-                SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, sizeof(SCRIPT_VAR), ScriptInfoStr(thread).c_str());
-                return thread->Suspend();
+                SHOW_ERROR("Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, sizeof(SCRIPT_VAR), ScriptInfoStr(script).c_str());
+                return script->Suspend();
             }
 
-            CLEO_RetrieveOpcodeParams(thread, 1);
+            CLEO_RetrieveOpcodeParams(script, 1);
             source = CLEO_GetOpcodeParamsArray();
         }
 
@@ -266,7 +266,7 @@ public:
     }
 
     // 0AAB=1,  does_file_exist %1s%
-    static OpcodeResult __stdcall Script_FS_FileExists(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FileExists(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -278,7 +278,7 @@ public:
     }
 
     //0AD5=3,  file_seek %1d% offset %2d% origin %3d% //IF and SET
-    static OpcodeResult __stdcall opcode_0AD5(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD5(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto offset = OPCODE_READ_PARAM_INT();
@@ -291,7 +291,7 @@ public:
     }
 
     //0AD6=1,  is_end_of_file_reached %1d%
-    static OpcodeResult __stdcall opcode_0AD6(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD6(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -302,7 +302,7 @@ public:
     }
 
     //0AD7=3,  read_string_from_file %1d% to %2d% size %3d% //IF and SET
-    static OpcodeResult __stdcall opcode_0AD7(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD7(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
@@ -310,8 +310,8 @@ public:
 
         if (size < 0)
         {
-            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         if (size == 0)
@@ -324,7 +324,7 @@ public:
         bool ok = File::readString(handle, result.data, size) != nullptr;
 
         // remove line ending characters if present
-        if (ok && !IsLegacyScript(thread))
+        if (ok && !IsLegacyScript(script))
         {
             auto last = (int)strlen(result.data) - 1;
             while (last >= 0)
@@ -344,7 +344,7 @@ public:
     }
 
     //0AD8=2,  write_string_to_file %1d% from %2d% //IF and SET
-    static OpcodeResult __stdcall opcode_0AD8(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD8(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(text);
@@ -362,7 +362,7 @@ public:
     }
 
     //0AD9=-1,write_formated_text %2d% to_file %1d%
-    static OpcodeResult __stdcall opcode_0AD9(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0AD9(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
@@ -378,7 +378,7 @@ public:
     }
 
     //0ADA=-1,  %3d% = scan_file %1d% format %2d% //IF and SET
-    static OpcodeResult __stdcall opcode_0ADA(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_0ADA(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(format);
@@ -386,12 +386,12 @@ public:
 
         size_t paramCount = 0;
         SCRIPT_VAR* outputParams[35];
-        while (thread->PeekDataType() != eDataType::DT_END)
+        while (script->PeekDataType() != eDataType::DT_END)
         {
             // TODO: if target param is string variable it should be handled correctly
-            outputParams[paramCount++] = CLEO_GetPointerToScriptVariable(thread);
+            outputParams[paramCount++] = CLEO_GetPointerToScriptVariable(script);
         }
-        CLEO_SkipUnusedVarArgs(thread); // var arg terminator
+        CLEO_SkipUnusedVarArgs(script); // var arg terminator
 
         result->dwParam = File::scan(handle, format, (void**)&outputParams);
 
@@ -401,7 +401,7 @@ public:
     }
 
     // 0AE4=1,  directory_exist %1s%
-    static OpcodeResult __stdcall Script_FS_DirectoryExists(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_DirectoryExists(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -413,7 +413,7 @@ public:
     }
 
     // 0AE5=1,  create_directory %1s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CreateDirectory(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_CreateDirectory(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -424,7 +424,7 @@ public:
     }
 
     // 0AE6=3,  %2d% = find_first_file %1s% get_filename_to %3s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_FindFirstFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FindFirstFile(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -448,13 +448,13 @@ public:
     }
 
     // 0AE7=2,%2s% = find_next_file %1d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_FindNextFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FindNextFile(Script* script)
     {
         auto handle = (HANDLE)OPCODE_READ_PARAM_INT();
 
         if (m_hFileSearches.find(handle) == m_hFileSearches.end())
         {
-            LOG_WARNING(thread, "Invalid or already closed file search handle (0x%X) in script %s", handle, ScriptInfoStr(thread).c_str());
+            LOG_WARNING(script, "Invalid or already closed file search handle (0x%X) in script %s", handle, ScriptInfoStr(script).c_str());
             OPCODE_SKIP_PARAMS(1);
             OPCODE_CONDITION_RESULT(false);
             return OR_CONTINUE;
@@ -474,13 +474,13 @@ public:
     }
 
     // 0AE8=1,find_close %1d%
-    static OpcodeResult __stdcall Script_FS_FindClose(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_FindClose(Script* script)
     {
         auto handle = (HANDLE)OPCODE_READ_PARAM_INT();
 
         if (m_hFileSearches.find(handle) == m_hFileSearches.end())
         {
-            LOG_WARNING(thread, "Invalid or already closed file search handle (0x%X) in script %s", handle, ScriptInfoStr(thread).c_str());
+            LOG_WARNING(script, "Invalid or already closed file search handle (0x%X) in script %s", handle, ScriptInfoStr(script).c_str());
             return OR_CONTINUE;
         }
 
@@ -490,7 +490,7 @@ public:
     }
 
     // 0B00=1,  delete_file %1s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_DeleteFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_DeleteFile(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -546,7 +546,7 @@ public:
     }
 
     // 0B01=1, delete_directory %1s% with_all_files_and_subdirectories %2d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_DeleteDirectory(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_DeleteDirectory(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
         auto deleteContents = OPCODE_READ_PARAM_BOOL();
@@ -568,7 +568,7 @@ public:
     }
 
     // 0B02=2, move_file %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_MoveFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_MoveFile(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -588,7 +588,7 @@ public:
     }
 
     // 0B03=2, move_directory %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_MoveDir(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_MoveDir(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -608,7 +608,7 @@ public:
     }
 
     // 0B04=2, copy_file %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CopyFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_CopyFile(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -626,7 +626,7 @@ public:
     }
 
     // 0B05=2,  copy_directory %1d% to %2d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CopyDir(CRunningScript* thread)
+    static OpcodeResult __stdcall Script_FS_CopyDir(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -646,7 +646,7 @@ public:
     }
 
     //2300=2,get_file_position %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_2300(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2300(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -657,7 +657,7 @@ public:
     }
 
     //2301=3,read_block_from_file %1d% size %2d% buffer %3d% // IF and SET
-    static OpcodeResult __stdcall opcode_2301(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2301(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -665,8 +665,8 @@ public:
 
         if (size < 0)
         {
-            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         if (size == 0)
@@ -687,7 +687,7 @@ public:
     }
 
     //2302=3,  write_block_to_file %1d% size %2d% address %3d% // IF and SET
-    static OpcodeResult __stdcall opcode_2302(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2302(Script* script)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -695,8 +695,8 @@ public:
 
         if (size < 0)
         {
-            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SHOW_ERROR("Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(script).c_str());
+            return script->Suspend();
         }
 
         if (size == 0)
@@ -712,7 +712,7 @@ public:
     }
 
     //2303=2,%2s% = resolve_filepath %1s%
-    static OpcodeResult __stdcall opcode_2303(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2303(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(path); // it also resolves the path to absolute form
 
@@ -721,21 +721,21 @@ public:
     }
 
     //2304=3,%3s% = get_script_filename %1d% full_path %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_2304(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2304(Script* script)
     {
-        auto script = OPCODE_READ_PARAM_INT();
+        auto scriptPtr = OPCODE_READ_PARAM_INT();
         auto fullPath = OPCODE_READ_PARAM_BOOL();
 
-        if (script == -1) // special case: current script
+        if (scriptPtr == -1) // special case: current script
         {
-            script = (int)thread;
+            scriptPtr = (int)script;
         }
         else
         {
             OPCODE_VALIDATE_POINTER(script);
         }
 
-        const char* filename = CLEO_GetScriptFilename((CRunningScript*)script);
+        const char* filename = CLEO_GetScriptFilename((Script*)script);
         if (filename == nullptr)
         {
             OPCODE_SKIP_PARAMS(1);
@@ -752,7 +752,7 @@ public:
             std::string absolute = ".\\";
             absolute += filename;
             absolute.resize(MAX_STR_LEN);
-            CLEO_ResolvePath((CRunningScript*)script, absolute.data(), MAX_STR_LEN);
+            CLEO_ResolvePath((Script*)script, absolute.data(), MAX_STR_LEN);
             OPCODE_WRITE_PARAM_STRING(absolute.c_str());
         }
 
@@ -761,7 +761,7 @@ public:
     }
 
     //2305=8,  get_file_write_time %1s% year %2d% month %3d% day %3d% hour %4d% minute %5d% second %6d% milisecond %7d% // IF and SET
-    static OpcodeResult __stdcall opcode_2305(CRunningScript* thread)
+    static OpcodeResult __stdcall opcode_2305(Script* script)
     {
         OPCODE_READ_PARAM_FILEPATH(path);
 

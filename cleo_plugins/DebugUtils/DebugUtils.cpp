@@ -22,9 +22,9 @@ public:
 
     struct PausedScriptInfo 
     { 
-        CRunningScript* ptr;
+        Script* ptr;
         std::string msg;
-        PausedScriptInfo(CRunningScript* ptr, const char* msg) : ptr(ptr), msg(msg) {}
+        PausedScriptInfo(Script* ptr, const char* msg) : ptr(ptr), msg(msg) {}
     };
     static std::deque<PausedScriptInfo> pausedScripts;
 
@@ -181,13 +181,13 @@ public:
         currScript.Clear(); // make sure current script log does not persists to next render frame
     }
 
-    static bool WINAPI OnScriptProcess(CRunningScript* thread)
+    static bool WINAPI OnScriptProcess(Script* script)
     {
-        currScript.Begin(thread);
+        currScript.Begin(script);
 
         for (size_t i = 0; i < pausedScripts.size(); i++)
         {
-            if (pausedScripts[i].ptr == thread)
+            if (pausedScripts[i].ptr == script)
             {
                 return false; // script paused, do not process
             }
@@ -196,9 +196,9 @@ public:
         return true;
     }
 
-    static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* thread, DWORD opcode)
+    static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(Script* script, DWORD opcode)
     {
-        currScript.ProcessCommand(thread);
+        currScript.ProcessCommand(script);
 
         // script per render frame commands limit
         if (configLimitCommand > 0 && currScript.commandCounter > configLimitCommand)
@@ -213,8 +213,8 @@ public:
             }
             limitStr = StringPrintf("%d%s", limit, limitStr.c_str());
 
-            SHOW_ERROR("Over %s commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Command' property in %s.ini file and restart the game.", limitStr.c_str(), ScriptInfoStr(thread).c_str(), TARGET_NAME);
-            return thread->Suspend();
+            SHOW_ERROR("Over %s commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Command' property in %s.ini file and restart the game.", limitStr.c_str(), ScriptInfoStr(script).c_str(), TARGET_NAME);
+            return script->Suspend();
         }
 
         // script per frame time execution limit
@@ -222,8 +222,8 @@ public:
         {
             if (configLimitTime > 0 && currScript.GetElapsedSeconds() > configLimitTime)
             {
-                SHOW_ERROR("Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and restart the game.", configLimitTime, ScriptInfoStr(thread).c_str(), TARGET_NAME);
-                return thread->Suspend();
+                SHOW_ERROR("Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and restart the game.", configLimitTime, ScriptInfoStr(script).c_str(), TARGET_NAME);
+                return script->Suspend();
             }
         }
 
@@ -238,27 +238,27 @@ public:
     // ---------------------------------------------- opcodes -------------------------------------------------
 
     // 00C3=0, debug_on
-    static OpcodeResult __stdcall Opcode_DebugOn(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_DebugOn(Script* script)
     {
-        CLEO_SetScriptDebugMode(thread, true);
+        CLEO_SetScriptDebugMode(script, true);
 
         return OR_CONTINUE;
     }
 
     // 00C4=0, debug_off
-    static OpcodeResult __stdcall Opcode_DebugOff(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_DebugOff(Script* script)
     {
-        CLEO_SetScriptDebugMode(thread, false);
+        CLEO_SetScriptDebugMode(script, false);
 
         return OR_CONTINUE;
     }
 
     // 2100=-1, breakpoint ...
-    static OpcodeResult __stdcall Opcode_Breakpoint(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_Breakpoint(Script* script)
     {
-        if (!CLEO_GetScriptDebugMode(thread))
+        if (!CLEO_GetScriptDebugMode(script))
         {
-            CLEO_SkipUnusedVarArgs(thread);
+            CLEO_SkipUnusedVarArgs(script);
             return OR_CONTINUE;
         }
 
@@ -266,16 +266,16 @@ public:
         std::string name = "";
 
         // bool param - blocking
-        auto paramType = thread->PeekDataType();
+        auto paramType = script->PeekDataType();
         if(paramType == DT_BYTE)
         {
-            blocking = CLEO_GetIntOpcodeParam(thread) != 0;
+            blocking = CLEO_GetIntOpcodeParam(script) != 0;
         }
 
-        paramType = thread->PeekDataType();
+        paramType = script->PeekDataType();
         if (paramType == eDataType::DT_END)
         {
-            thread->IncPtr(); // consume arguments terminator
+            script->IncPtr(); // consume arguments terminator
         }
         else // breakpoint formatted name string
         {
@@ -284,12 +284,12 @@ public:
             name = nameStr;
         }
 
-        pausedScripts.emplace_back(thread, name.c_str());
+        pausedScripts.emplace_back(script, name.c_str());
 
         std::stringstream ss;
         ss << "Script breakpoint";
         if (!name.empty()) ss << " '" << name << "'";
-        ss << " captured in '" << thread->GetName() << "'";
+        ss << " captured in '" << script->GetName() << "'";
         CLEO_Log(eLogLevel::Debug, ss.str().c_str());
 
         if(blocking)
@@ -302,11 +302,11 @@ public:
     }
 
     // 2101=-1, trace %1s% ...
-    static OpcodeResult __stdcall Opcode_Trace(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_Trace(Script* script)
     {
-        if (!CLEO_GetScriptDebugMode(thread))
+        if (!CLEO_GetScriptDebugMode(script))
         {
-            CLEO_SkipUnusedVarArgs(thread);
+            CLEO_SkipUnusedVarArgs(script);
             return OR_CONTINUE;
         }
 
@@ -318,9 +318,9 @@ public:
     }
 
     // 2102=-1, log_to_file %1s% timestamp %2d% text %3s% ...
-    static OpcodeResult __stdcall Opcode_LogToFile(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_LogToFile(Script* script)
     {
-        auto filestr = CLEO_ReadStringOpcodeParam(thread);
+        auto filestr = CLEO_ReadStringOpcodeParam(script);
 
         // normalized absolute filepath
         std::string filename(MAX_PATH, '\0');
@@ -332,7 +332,7 @@ public:
             else
                 filename[i] = std::tolower(filestr[i]);
         }
-        CLEO_ResolvePath(thread, filename.data(), MAX_PATH);
+        CLEO_ResolvePath(script, filename.data(), MAX_PATH);
         filename.resize(strlen(filename.data())); // clip to actual cstr len
 
         auto it = logFiles.find(filename);
@@ -348,12 +348,12 @@ public:
             ss << "Failed to open log file '" << filename << "'";
             CLEO_Log(eLogLevel::Error, ss.str().c_str());
 
-            CLEO_SkipUnusedVarArgs(thread);
+            CLEO_SkipUnusedVarArgs(script);
             return OR_CONTINUE;
         }
 
         // time stamp
-        if(CLEO_GetIntOpcodeParam(thread) != 0)
+        if(CLEO_GetIntOpcodeParam(script) != 0)
         {
             SYSTEMTIME t;
             GetLocalTime(&t);
@@ -371,15 +371,15 @@ public:
     }
 
     // 0662=1, printstring %1s%
-    static OpcodeResult __stdcall Opcode_PrintString(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_PrintString(Script* script)
     {
-        if (!CLEO_GetScriptDebugMode(thread))
+        if (!CLEO_GetScriptDebugMode(script))
         {
-            CLEO_SkipOpcodeParams(thread, 1);
+            CLEO_SkipOpcodeParams(script, 1);
             return OR_CONTINUE;
         }
 
-        auto text = CLEO_ReadStringOpcodeParam(thread);
+        auto text = CLEO_ReadStringOpcodeParam(script);
 
         CLEO_Log(eLogLevel::Debug, text);
 
@@ -387,16 +387,16 @@ public:
     }
 
     // 0663=1, printint %1s% %2d%
-    static OpcodeResult __stdcall Opcode_PrintInt(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_PrintInt(Script* script)
     {
-        if (!CLEO_GetScriptDebugMode(thread))
+        if (!CLEO_GetScriptDebugMode(script))
         {
-            CLEO_SkipOpcodeParams(thread, 2);
+            CLEO_SkipOpcodeParams(script, 2);
             return OR_CONTINUE;
         }
 
-        auto text = CLEO_ReadStringOpcodeParam(thread);
-        auto value = CLEO_GetIntOpcodeParam(thread);
+        auto text = CLEO_ReadStringOpcodeParam(script);
+        auto value = CLEO_GetIntOpcodeParam(script);
 
         std::ostringstream ss;
         ss << text << ": " << value;
@@ -406,16 +406,16 @@ public:
     }
 
     // 0664=1, printfloat %1s% %2f%
-    static OpcodeResult __stdcall Opcode_PrintFloat(CRunningScript* thread)
+    static OpcodeResult __stdcall Opcode_PrintFloat(Script* script)
     {
-        if (!CLEO_GetScriptDebugMode(thread))
+        if (!CLEO_GetScriptDebugMode(script))
         {
-            CLEO_SkipOpcodeParams(thread, 2);
+            CLEO_SkipOpcodeParams(script, 2);
             return OR_CONTINUE;
         }
 
-        auto text = CLEO_ReadStringOpcodeParam(thread);
-        auto value = CLEO_GetFloatOpcodeParam(thread);
+        auto text = CLEO_ReadStringOpcodeParam(script);
+        auto value = CLEO_GetFloatOpcodeParam(script);
 
         std::ostringstream ss;
         ss << text << ": " << value;

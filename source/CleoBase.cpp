@@ -161,7 +161,6 @@ namespace CLEO
 
             ScriptEngine.InjectLate(CodeInjector);
 
-            CodeInjector.InjectFunction(GetScriptStringParam, gaddrof(::CRunningScript::ReadTextLabelFromScript));
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Idle, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE), &GameRestartDebugDisplayTextBuffer_IdleOrig);
             CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Frontend, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND), &GameRestartDebugDisplayTextBuffer_FrontendOrig);
             CodeInjector.ReplaceFunction(OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS), &UpdateGameLogics_Orig);
@@ -207,7 +206,7 @@ namespace CLEO
         TRACE("Ending current game");
         CleoInstance.CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
         ScriptEngine.GameEnd();
-        OpcodeSystem.FinalizeScriptObjects();
+        OpcodeSystem.GameEnd();
 
         saveSlot = -1;
     }
@@ -245,14 +244,14 @@ namespace CLEO
         }
     }
 
-    void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
+    void WINAPI CLEO_ResolvePath(Script* script, char* inOutPath, DWORD pathMaxLen)
     {
-        if (thread == nullptr || inOutPath == nullptr || pathMaxLen < 2)
+        if (script == nullptr || inOutPath == nullptr || pathMaxLen < 2)
         {
             return; // invalid param
         }
 
-        auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
+        auto resolved = reinterpret_cast<CCustomScript*>(script)->ResolvePath(inOutPath);
 
         if (resolved.length() >= pathMaxLen)
             resolved.resize(pathMaxLen - 1); // and terminator character
@@ -273,7 +272,7 @@ namespace CLEO
         }
     }
 
-    StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+    StringList WINAPI CLEO_ListDirectory(Script* script, const char* searchPath, BOOL listDirs, BOOL listFiles)
     {
         if (searchPath == nullptr)
             return {}; // invalid param
@@ -285,8 +284,8 @@ namespace CLEO
         auto fsSearchPath = FS::path(searchPath);
         if (!fsSearchPath.is_absolute())
         {
-            if (thread != nullptr)
-                fsSearchPath = ((CCustomScript*)thread)->GetWorkDir() / fsSearchPath;
+            if (script != nullptr)
+                fsSearchPath = ((CCustomScript*)script)->GetWorkDir() / fsSearchPath;
             else
                 fsSearchPath = Filepath_Game / fsSearchPath;
         }
