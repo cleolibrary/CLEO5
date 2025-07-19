@@ -202,6 +202,33 @@ namespace CLEO
         std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
     }
 
+    // remove white characters from left hand side of the string
+    static void StringTrimLeft(std::string& str)
+    {
+        auto it = std::find_if(str.begin(), str.end(), [](char c)
+        {
+            return c != ' ' && c != '\t' && c != '\v' && c != '\r' && c != '\n' && c != '\f';
+        });
+        str.erase(str.begin(), it);
+    }
+
+    // remove white characters from right hand side of the string
+    static void StringTrimRight(std::string& str)
+    {
+        auto it = std::find_if(str.rbegin(), str.rend(), [](char c)
+        {
+            return c != ' ' && c != '\t' && c != '\v' && c != '\r' && c != '\n' && c != '\f';
+        });
+        str.erase(it.base(), str.end());
+    }
+
+    // remove white characters at each end of the string
+    static void StringTrim(std::string& str)
+    {
+        StringTrimRight(str);
+        StringTrimLeft(str);
+    }
+
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
     {
         std::string info(1024, '\0');
