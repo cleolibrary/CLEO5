@@ -87,9 +87,11 @@
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
+xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 if defined GTA_SA_DIR (
-  xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
-)</Command>
+xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)
+ </Command>
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>TARGET_NAME=$(TargetFileName)</PreprocessorDefinitions>
@@ -117,9 +119,11 @@ if defined GTA_SA_DIR (
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
+xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 if defined GTA_SA_DIR (
-  xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
-)</Command>
+xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
+)
+ </Command>
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>TARGET_NAME=$(TargetFileName)</PreprocessorDefinitions>
@@ -162,6 +166,9 @@ if defined GTA_SA_DIR (
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SA.MemoryOperations.ini" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

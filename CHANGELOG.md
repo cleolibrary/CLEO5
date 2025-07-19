@@ -16,6 +16,7 @@
 - limited "previously called opcode" info in script error messages to show just commands of that script
 - now more script error messages include previously executed command name
 - added missing **terminate_this_script** command error message for scripts compiled with extra SCM info
+- added warnings about exceeding memory allocations count/size limits with **allocate_memory**
 
 ## 5.0.3
 - added **GxtHook.cleo** plugin to ignored list
