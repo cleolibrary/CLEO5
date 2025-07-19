@@ -95,11 +95,10 @@ namespace CLEO
 				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
 				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
-				SHOW_ERROR("Custom opcode [%04X] not registered!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
+				SHOW_ERROR("Custom opcode [%04X] not registered!%s\nCalled in script %s\nScript suspended.",
 					opcode,
 					extensionMsg.c_str(),
-					ScriptInfoStr(thread).c_str(),
-					prevOpcode);
+					ScriptInfoStr(thread).c_str());
 
 				result = thread->Suspend();
 				return AfterOpcodeExecuted();
@@ -113,11 +112,10 @@ namespace CLEO
 				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
 				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
 
-				SHOW_ERROR("Opcode [%04X] not found!%s\nCalled in script %s\nPreviously called opcode: [%04X]\nScript suspended.",
+				SHOW_ERROR("Opcode [%04X] not found!%s\nCalled in script %s\nScript suspended.",
 					opcode,
 					extensionMsg.c_str(),
-					ScriptInfoStr(thread).c_str(),
-					prevOpcode);
+					ScriptInfoStr(thread).c_str());
 
 				result = thread->Suspend();
 				return AfterOpcodeExecuted();
