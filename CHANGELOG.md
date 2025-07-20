@@ -1,3 +1,6 @@
+## 5.1.1
+- added check for preceding **gosub** call in **0AA1 ([return_if_false](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AA1))**
+
 ## 5.1.0
 - fixed collision of GXT texts hook with SAMP and other mods
 - rewritten script drawing handling code. Logic moved from **CLEO.asi** to **Text.cleo** plugin

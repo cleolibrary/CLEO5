@@ -722,7 +722,9 @@ namespace CLEO
 
 	DWORD GetVarArgCount(CRunningScript* thread)
 	{
+		// store state
 		const auto ip = thread->GetBytePointer();
+		const auto handledParams = CleoInstance.OpcodeSystem.handledParamCount;
 
 		DWORD count = 0;
 		while (thread->PeekDataType() != DT_END)
@@ -731,7 +733,10 @@ namespace CLEO
 			count++;
 		}
 
-		thread->SetIp(ip); // restore
+		// restore state
+		thread->SetIp(ip);
+		CleoInstance.OpcodeSystem.handledParamCount = handledParams;
+
 		return count;
 	}
 
@@ -751,7 +756,7 @@ namespace CLEO
 	{
 		if (thread->SP == 0 && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
 		{
-			thread->SetConditionResult(false);
+			OPCODE_CONDITION_RESULT(false);
 			return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0051, thread, false); // try CLEO's function return
 		}
 
@@ -770,6 +775,7 @@ namespace CLEO
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread)
 	{
 		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
+
 		size_t tableIdx = 0x0417 / 100; // 100 opcodes peer handler table
 		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
 	}
@@ -857,11 +863,12 @@ namespace CLEO
 	// gosub_if_false [label]
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA0(CRunningScript *thread)
 	{
-		int off;
-		*thread >> off;
+		auto offset = OPCODE_READ_PARAM_INT();
+
 		if (thread->GetConditionResult()) return OR_CONTINUE;
+
 		thread->PushStack(thread->GetBytePointer());
-		ThreadJump(thread, off);
+		ThreadJump(thread, offset);
 		return OR_CONTINUE;
 	}
 
@@ -869,6 +876,13 @@ namespace CLEO
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA1(CRunningScript *thread)
 	{
 		if (thread->GetConditionResult()) return OR_CONTINUE;
+
+		if (thread->SP == 0)
+		{
+			SHOW_ERROR("`return_if_false` used without preceding `gosub` call in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			return thread->Suspend();
+		}
+
 		thread->SetIp(thread->PopStack());
 		return OR_CONTINUE;
 	}
@@ -1035,10 +1049,10 @@ namespace CLEO
 	// cleo_return {numRet} [int] {retParams} [arguments]
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(CRunningScript *thread)
 	{
-		DWORD returnParamCount = GetVarArgCount(thread);
+		auto returnParamCount = OPCODE_PEEK_VARARG_COUNT();
 		if (returnParamCount)
 		{
-			auto paramType = (eDataType)*thread->GetBytePointer();
+			auto paramType = thread->PeekDataType();
 			if (!IsImmInteger(paramType))
 			{
 				SHOW_ERROR("Invalid type of first argument in opcode [0AB2], in script %s", ScriptInfoStr(thread).c_str());
@@ -1075,17 +1089,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		auto paramType = thread->PeekDataType();
-		if (!IsImmInteger(paramType) &&
-			!IsImmFloat(paramType) &&
-			!IsVariable(paramType))
-		{
-			SHOW_ERROR("Invalid value type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
-		}
-
-		CScriptEngine::GetScriptParams(thread, 1);
-		CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam = opcodeParams[0].dwParam;
+		CleoInstance.ScriptEngine.CleoVariables[varIdx] = OPCODE_READ_PARAM_ANY32();
 		return OR_CONTINUE;
 	}
 
@@ -1102,15 +1106,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		auto paramType = thread->PeekDataType();
-		if (!IsVariable(paramType))
-		{
-			SHOW_ERROR("Invalid result argument type (%s) in script %s \nScript suspended.", ToKindStr(paramType), ScriptInfoStr(thread).c_str());
-			return thread->Suspend();
-		}
-
-		opcodeParams[0].dwParam = CleoInstance.ScriptEngine.CleoVariables[varIdx].dwParam;
-		CLEO_RecordOpcodeParams(thread, 1);
+		OPCODE_WRITE_PARAM_ANY32(CleoInstance.ScriptEngine.CleoVariables[varIdx]);
 		return OR_CONTINUE;
 	}
 
@@ -1118,7 +1114,7 @@ namespace CLEO
 	// [var platform: Platform] = get_platform
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0DD5(CRunningScript* thread)
 	{
-		*thread << PLATFORM_WINDOWS;
+		OPCODE_WRITE_PARAM_INT(PLATFORM_WINDOWS);
 		return OR_CONTINUE;
 	}
 
@@ -1143,17 +1139,17 @@ namespace CLEO
 	// cleo_return_with {conditionResult} [bool] {retArgs} [arguments] (logical)
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(CRunningScript* thread)
 	{
-		DWORD argCount = GetVarArgCount(thread);
+		auto argCount = OPCODE_PEEK_VARARG_COUNT();
 		if (argCount < 1)
 		{
 			SHOW_ERROR("Opcode [2002] missing condition result argument in script %s\nScript suspended.", ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
 
-		DWORD result; *thread >> result;
+		auto result = OPCODE_READ_PARAM_BOOL();
 		argCount--;
-		thread->SetConditionResult(result != 0);
 
+		OPCODE_CONDITION_RESULT(result);
 		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2002, thread, true, argCount);
 	}
 
@@ -1161,14 +1157,14 @@ namespace CLEO
 	// cleo_return_fail [arguments] (logical)
 	OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2003(CRunningScript* thread)
 	{
-		DWORD argCount = GetVarArgCount(thread);
+		auto argCount = OPCODE_PEEK_VARARG_COUNT();
 		if (argCount != 0) // argument(s) not supported yet
 		{
 			SHOW_ERROR("Too many arguments of opcode [2003] in script %s\nScript suspended.", ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
 
-		thread->SetConditionResult(false);
+		OPCODE_CONDITION_RESULT(false);
 		return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x2003, thread);
 	}
 }
