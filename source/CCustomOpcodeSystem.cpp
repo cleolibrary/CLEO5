@@ -879,7 +879,7 @@ namespace CLEO
 
 		if (thread->SP == 0)
 		{
-			SHOW_ERROR("`return_if_false` used without preceding `gosub` call in script %s\nScript suspended.", ((CCustomScript*)thread)->GetInfoStr().c_str());
+			SHOW_ERROR("`return_if_false` used without preceding `gosub` call in script %s\nScript suspended.", ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
 
