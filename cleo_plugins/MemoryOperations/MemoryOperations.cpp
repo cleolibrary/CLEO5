@@ -3,8 +3,7 @@
 #include "plugin.h"
 #include "CTheScripts.h"
 #include <filesystem>
-#include <map>
-#include <set>
+#include <unordered_map>
 
 using namespace CLEO;
 using namespace plugin;
@@ -12,12 +11,22 @@ using namespace plugin;
 class MemoryOperations 
 {
 public:
-    static std::set<void*> m_allocations;
-    static std::map<HMODULE, size_t> m_libraries;
+    std::unordered_map<void*, size_t> m_allocations;
+    std::unordered_map<HMODULE, size_t> m_libraries;
+
+    // keep track of per-script memory allocations
+    struct AllocationInfo { int count; int size; };
+    std::unordered_map<CLEO::CRunningScript*, AllocationInfo> m_scriptAllocationsInfo;
+    int m_configLimitAllocationCount;
+    int m_configLimitAllocationSize;
 
     MemoryOperations()
     {
         if (!PluginCheckCleoVersion()) return;
+
+        auto config = GetConfigFilename();
+        m_configLimitAllocationCount = GetPrivateProfileInt("Limits", "MemoryAllocations", 4000, config.c_str());
+        m_configLimitAllocationSize = GetPrivateProfileInt("Limits", "MemoryTotalSize", 32, config.c_str()) * 1024 * 1024; // megabytes
 
         //register opcodes
         CLEO_RegisterOpcode(0x0459, opcode_0459); // terminate_all_scripts_with_this_name
@@ -75,13 +84,14 @@ public:
 
     static void __stdcall OnFinalizeScriptObjects()
     {
-        TRACE("Cleaning up %d allocated memory blocks...", m_allocations.size());
-        for (auto p : m_allocations) free(p);
-        m_allocations.clear();
+        TRACE("Cleaning up %d allocated memory blocks...", Instance.m_allocations.size());
+        for (auto p : Instance.m_allocations) free(p.first);
+        Instance.m_allocations.clear();
+        Instance.m_scriptAllocationsInfo.clear();
 
-        size_t libCount = std::count_if(m_libraries.begin(), m_libraries.end(), [](auto& entry) { return entry.second; });
+        size_t libCount = std::count_if(Instance.m_libraries.begin(), Instance.m_libraries.end(), [](auto& entry) { return entry.second; });
         TRACE("Cleaning up %d loaded libraries...", libCount);
-        for (auto& entry : m_libraries)
+        for (auto& entry : Instance.m_libraries)
         {
             while (entry.second > 0)
             {
@@ -89,7 +99,7 @@ public:
                 entry.second -= 1;
             }
         }
-        m_libraries.clear();
+        Instance.m_libraries.clear();
     }
 
     // opcodes 0AA5 - 0AA8
@@ -441,7 +451,7 @@ public:
 
         if (ptr != nullptr)
         {
-            m_libraries[ptr] += 1;
+            Instance.m_libraries[ptr] += 1;
         }
 
         OPCODE_WRITE_PARAM_PTR(ptr);
@@ -455,20 +465,20 @@ public:
         auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
 
         // validate
-        if (m_libraries.find(ptr) == m_libraries.end())
+        if (Instance.m_libraries.find(ptr) == Instance.m_libraries.end())
         {
             LOG_WARNING(thread, "Invalid '0x%X' library pointer param in script %s", ptr, ScriptInfoStr(thread).c_str());
             return OR_CONTINUE;
         }
 
-        if (m_libraries[ptr] == 0)
+        if (Instance.m_libraries[ptr] == 0)
         {
             LOG_WARNING(thread, "Trying to free already unloaded library in script %s", ScriptInfoStr(thread).c_str());
             return OR_CONTINUE;
         }
 
         FreeLibrary(ptr);
-        m_libraries[ptr] -= 1;
+        Instance.m_libraries[ptr] -= 1;
         return OR_CONTINUE;
     }
 
@@ -645,7 +655,19 @@ public:
             DWORD oldProtect;
             VirtualProtect(mem, size, PAGE_EXECUTE_READWRITE, &oldProtect);
 
-            m_allocations.insert(mem);
+            Instance.m_allocations[mem] = size;
+            auto& info = Instance.m_scriptAllocationsInfo[thread];
+            info.count++;
+            info.size += size;
+
+            if (Instance.m_configLimitAllocationSize > 0 && info.size > Instance.m_configLimitAllocationSize)
+            {
+                LOG_WARNING(thread, "%d MB of memory currently allocated by script %s", info.size / (1024 * 1024), ScriptInfoStr(thread).c_str());
+            }
+            else if (Instance.m_configLimitAllocationCount > 0 && info.count > Instance.m_configLimitAllocationCount)
+            {
+                LOG_WARNING(thread, "More than %d memory blocks currently allocated by script %s", Instance.m_configLimitAllocationCount, ScriptInfoStr(thread).c_str());
+            }
         }
         else
             LOG_WARNING(thread, "Failed to allocate %d bytes of memory in script %s", size, ScriptInfoStr(thread).c_str());
@@ -662,14 +684,19 @@ public:
         auto address = OPCODE_READ_PARAM_PTR();
 
         // validate params
-        if (m_allocations.find(address) == m_allocations.end())
+        if (Instance.m_allocations.find(address) == Instance.m_allocations.end())
         {
             LOG_WARNING(thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address, ScriptInfoStr(thread).c_str());
             return OR_CONTINUE;
         }
 
         free(address);
-        m_allocations.erase(address);
+        
+        auto& info = Instance.m_scriptAllocationsInfo[thread];
+        info.count--;
+        info.size -= Instance.m_allocations[address];
+        Instance.m_allocations.erase(address);
+
         return OR_CONTINUE; // done
     }
 
@@ -858,13 +885,13 @@ public:
         auto address = OPCODE_READ_PARAM_PTR();
 
         // validate params
-        if (m_allocations.find(address) == m_allocations.end())
+        if (Instance.m_allocations.find(address) == Instance.m_allocations.end())
         {
             LOG_WARNING(thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address, ScriptInfoStr(thread).c_str());
             return OR_CONTINUE;
         }
 
-        m_allocations.erase(address);
+        Instance.m_allocations.erase(address);
         return OR_CONTINUE; // done
     }
 
@@ -937,7 +964,5 @@ public:
 
         return (address == thread) ? OR_INTERRUPT : OR_CONTINUE;
     }
-} Memory;
+} Instance;
 
-std::set<void*> MemoryOperations::m_allocations;
-std::map<HMODULE, size_t> MemoryOperations::m_libraries;
