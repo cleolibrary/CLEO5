@@ -25,8 +25,8 @@ public:
         if (!PluginCheckCleoVersion()) return;
 
         auto config = GetConfigFilename();
-        m_configLimitAllocationCount = GetPrivateProfileInt("Limits", "MemoryAllocations", 4000, config.c_str());
-        m_configLimitAllocationSize = GetPrivateProfileInt("Limits", "MemoryTotalSize", 32, config.c_str()) * 1024 * 1024; // megabytes
+        m_configLimitAllocationCount = GetPrivateProfileInt("Limits", "MemoryAllocations", 2000, config.c_str());
+        m_configLimitAllocationSize = GetPrivateProfileInt("Limits", "MemoryTotalSize", 16, config.c_str()) * 1024 * 1024; // megabytes
 
         //register opcodes
         CLEO_RegisterOpcode(0x0459, opcode_0459); // terminate_all_scripts_with_this_name
@@ -123,6 +123,22 @@ public:
             }
         }
         Instance.m_libraries.clear();
+    }
+
+    void RegisterMemoryAllocation(CLEO::CRunningScript* thread, void* address, size_t size)
+    {
+        m_allocations[address] = size;
+        auto& info = m_scriptAllocationsInfo[thread];
+        info.count++;
+        info.size += size;
+    }
+
+    void UnregisterMemoryAllocation(CLEO::CRunningScript* thread, void* address)
+    {
+        auto& info = m_scriptAllocationsInfo[thread];
+        info.count--;
+        info.size -= m_allocations[address];
+        m_allocations.erase(address);
     }
 
     // opcodes 0AA5 - 0AA8
@@ -678,11 +694,9 @@ public:
             DWORD oldProtect;
             VirtualProtect(mem, size, PAGE_EXECUTE_READWRITE, &oldProtect);
 
-            Instance.m_allocations[mem] = size;
-            auto& info = Instance.m_scriptAllocationsInfo[thread];
-            info.count++;
-            info.size += size;
+            Instance.RegisterMemoryAllocation(thread, mem, size);
 
+            const auto& info = Instance.m_scriptAllocationsInfo[thread];
             if (Instance.m_configLimitAllocationSize > 0 && info.size > Instance.m_configLimitAllocationSize)
             {
                 LOG_WARNING(thread, "%d MB of memory currently allocated by script %s", info.size / (1024 * 1024), ScriptInfoStr(thread).c_str());
@@ -715,10 +729,7 @@ public:
 
         free(address);
         
-        auto& info = Instance.m_scriptAllocationsInfo[thread];
-        info.count--;
-        info.size -= Instance.m_allocations[address];
-        Instance.m_allocations.erase(address);
+        Instance.UnregisterMemoryAllocation(thread, address);
 
         return OR_CONTINUE; // done
     }
@@ -914,10 +925,7 @@ public:
             return OR_CONTINUE;
         }
 
-        auto& info = Instance.m_scriptAllocationsInfo[thread];
-        info.count--;
-        info.size -= Instance.m_allocations[address];
-        Instance.m_allocations.erase(address);
+        Instance.UnregisterMemoryAllocation(thread, address);
 
         return OR_CONTINUE; // done
     }
