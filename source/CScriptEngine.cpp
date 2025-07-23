@@ -391,7 +391,7 @@ namespace CLEO
                 const auto ext = FS::path(fileList.strings[i]).extension();
                 if (ext == cs_ext || ext == cs3_ext || ext == cs4_ext)
                 {
-                    TRACE(" - '%s'", fileList.strings[i]);
+                    TRACE(" %s", fileList.strings[i]);
                     found.emplace(fileList.strings[i]);
                 }
             }
@@ -830,6 +830,7 @@ namespace CLEO
 
     void CScriptEngine::RemoveAllCustomScripts(void)
     {
+        TRACE("");
         TRACE("Unloading scripts...");
 
         if (CustomMission)

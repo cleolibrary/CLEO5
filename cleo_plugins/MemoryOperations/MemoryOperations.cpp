@@ -74,25 +74,48 @@ public:
         
 
         // register event callbacks
-        CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
+        CLEO_RegisterCallback(eCallbackId::GameEnd, OnGameEnd);
     }
 
     ~MemoryOperations()
     {
-        CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
+        CLEO_UnregisterCallback(eCallbackId::GameEnd, OnGameEnd);
     }
 
-    static void __stdcall OnFinalizeScriptObjects()
+    static void __stdcall OnGameEnd()
     {
-        TRACE("Cleaning up %d allocated memory blocks...", Instance.m_allocations.size());
+        // release memory allocations
+        TRACE("");
+        TRACE("Cleaning up %d allocated memory block(s):", Instance.m_allocations.size());
+        for (auto entry : Instance.m_scriptAllocationsInfo) // list remaining allocations per script
+        {
+            if (entry.second.count == 0) continue;
+
+            std::string str(128, '\0');
+            CLEO_GetScriptInfoStr(entry.first, false, str.data(), str.length());
+            TRACE(" %d block%s (%0.2f kB) in script %s",
+                entry.second.count,
+                entry.second.count > 1 ? "s" : "",
+                float(entry.second.size) / 1024,
+                str.c_str());
+        }
         for (auto p : Instance.m_allocations) free(p.first);
         Instance.m_allocations.clear();
         Instance.m_scriptAllocationsInfo.clear();
 
+        // release loaded dlls
         size_t libCount = std::count_if(Instance.m_libraries.begin(), Instance.m_libraries.end(), [](auto& entry) { return entry.second; });
-        TRACE("Cleaning up %d loaded libraries...", libCount);
+        TRACE("");
+        TRACE("Cleaning up %d loaded libraries:", libCount);
         for (auto& entry : Instance.m_libraries)
         {
+            if (entry.second == 0) continue;
+
+            std::string str(MAX_PATH, '\0');
+            GetModuleFileNameA(entry.first, str.data(), str.length());
+            FilepathRemoveParent(str, CLEO_GetGameDirectory());
+            TRACE(" %s", str.c_str());
+
             while (entry.second > 0)
             {
                 FreeLibrary(entry.first);
@@ -891,7 +914,11 @@ public:
             return OR_CONTINUE;
         }
 
+        auto& info = Instance.m_scriptAllocationsInfo[thread];
+        info.count--;
+        info.size -= Instance.m_allocations[address];
         Instance.m_allocations.erase(address);
+
         return OR_CONTINUE; // done
     }
 

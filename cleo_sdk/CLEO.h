@@ -294,7 +294,7 @@ enum class eCallbackId : DWORD
 	GameProcessAfter = 14, // void WINAPI OnGameProcessAfter(); // called once every frame after game logic processing
 	GameEnd = 2, // void WINAPI OnGameEnd(); // game session ended
 	ScriptsLoaded = 3, // void WINAPI OnScriptsLoaded();
-	ScriptsFinalize = 4, // void WINAPI OnScriptsFinalize();
+	ScriptsFinalize = 4, // void WINAPI OnScriptsFinalize(); // called after all scripts has been deleted. Pointers to scripts are no longer valid!
 	ScriptRegister = 5, // void WINAPI OnScriptRegister(CRunningScript* pScript); // called after script creation
 	ScriptUnregister = 6, // void WINAPI OnScriptUnregister(CRunningScript* pScript); // called before script deletion
 	ScriptProcessBefore = 7, // bool WINAPI OnScriptProcessBefore(CRunningScript* pScript); // return false to skip this script processing
