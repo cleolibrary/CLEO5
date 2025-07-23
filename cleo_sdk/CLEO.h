@@ -513,7 +513,7 @@ public:
 	eDataType PeekDataType() const { return *(eDataType*)CurrentIP; }
 	eDataType ReadDataType() { return (eDataType)ReadByte(); }
 
-	eArrayDataType PeekArrayType() const { BYTE t = *(CurrentIP + 1 + 2 + 2 + 1); t &= ArrayTypeMask; return (eArrayDataType)t; } // result valid only for array type params
+	eArrayDataType PeekArrayType() const { return (eArrayDataType)(!IsArray(PeekDataType()) ? ADT_NONE : *(CurrentIP + 1 + 2 + 2 + 1) & ArrayTypeMask); }
 	WORD ReadVarIndex() { return ReadWord(); }
 	WORD ReadArrayOffset() { return ReadWord(); }
 	WORD ReadArrayIndexVarIndex() { return ReadWord(); } // index of variable sotring array element index
