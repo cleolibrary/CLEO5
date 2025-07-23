@@ -78,7 +78,7 @@ enum eArrayDataType : BYTE
 	ADT_STRING, // variable with long string (16 char)
 	ADT_NONE = 0xFF // CLEO internal
 };
-static const BYTE ArrayDataTypeMask = ADT_INT | ADT_FLOAT | ADT_TEXTLABEL | ADT_STRING; // array flags byte contains other info too. Type needs to be masked when read
+static const BYTE ArrayTypeMask = ADT_INT | ADT_FLOAT | ADT_TEXTLABEL | ADT_STRING; // array flags byte contains other info too. Type needs to be masked when read
 
 static const char* ToStr(eDataType type)
 {
@@ -511,19 +511,19 @@ public:
 	void SetNotFlag(bool state) { NotFlag = state; }
 
 	eDataType PeekDataType() const { return *(eDataType*)CurrentIP; }
-	eArrayDataType PeekArrayDataType() const { BYTE t = *(CurrentIP + 1 + 2 + 2 + 1); t &= ArrayDataTypeMask; return (eArrayDataType)t; } // result valid only for array type params
+	eDataType ReadDataType() { return (eDataType)ReadByte(); }
 
-	eDataType ReadDataType() { return (eDataType)ReadDataByte(); }
-	short ReadDataVarIndex() { return ReadDataWord(); }
-	short ReadDataArrayOffset() { return ReadDataWord(); }
-	short ReadDataArrayIndex() { return ReadDataWord(); }
-	short ReadDataArraySize() { return ReadDataByte(); }
-	short ReadDataArrayFlags() { return ReadDataByte(); }
+	eArrayDataType PeekArrayType() const { BYTE t = *(CurrentIP + 1 + 2 + 2 + 1); t &= ArrayTypeMask; return (eArrayDataType)t; } // result valid only for array type params
+	WORD ReadVarIndex() { return ReadWord(); }
+	WORD ReadArrayOffset() { return ReadWord(); }
+	WORD ReadArrayIndexVarIndex() { return ReadWord(); } // index of variable sotring array element index
+	BYTE ReadArraySize() { return ReadByte(); }
+	BYTE ReadArrayFlags() { return ReadByte(); }
 
 	void IncPtr(int n = 1) { CurrentIP += n; }
-	int ReadDataByte() { char b = *CurrentIP; ++CurrentIP; return b; }
-	short ReadDataWord() { short v = *(short*)CurrentIP; CurrentIP += 2; return v; }
-	int ReadDataInt() { int i = *(int*)CurrentIP; CurrentIP += 4; return i; }
+	BYTE ReadByte() { BYTE b = *CurrentIP; CurrentIP += sizeof(BYTE); return b; }
+	WORD ReadWord() { WORD v = *(WORD*)CurrentIP; CurrentIP += sizeof(WORD); return v; }
+	DWORD ReadDword() { DWORD i = *(DWORD*)CurrentIP; CurrentIP += sizeof(DWORD); return i; }
 
 	void PushStack(BYTE* ptr) { Stack[SP++] = ptr; }
 	BYTE* PopStack() { return Stack[--SP]; }

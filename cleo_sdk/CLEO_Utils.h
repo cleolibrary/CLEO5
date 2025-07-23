@@ -561,7 +561,7 @@ namespace CLEO
     static SCRIPT_VAR& _readParam(CRunningScript* thread)
     {
         _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayType() : eArrayDataType::ADT_NONE;
 
         CLEO_RetrieveOpcodeParams(thread, 1);
         if (_paramsArray == nullptr) _paramsArray = CLEO_GetOpcodeParamsArray();
@@ -587,7 +587,7 @@ namespace CLEO
     static SCRIPT_VAR* _readParamVariable(CRunningScript* thread)
     {
         _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayType() : eArrayDataType::ADT_NONE;
 
         return CLEO_GetPointerToScriptVariable(thread);
     }
@@ -595,7 +595,7 @@ namespace CLEO
     static StringParamBufferInfo _readParamStringInfo(CRunningScript* thread)
     {
         _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayType() : eArrayDataType::ADT_NONE;
 
         StringParamBufferInfo result;
         CLEO_ReadStringParamWriteBuffer(thread, &result.data, &result.size, &result.needTerminator);
@@ -605,7 +605,7 @@ namespace CLEO
     static void _writeParamPtr(CRunningScript* thread, void* valuePtr)
     {
         _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayType() : eArrayDataType::ADT_NONE;
 
         if (_paramsArray == nullptr) _paramsArray = CLEO_GetOpcodeParamsArray();
         _paramsArray[0].pParam = valuePtr;
@@ -615,7 +615,7 @@ namespace CLEO
     template<typename T> static void _writeParam(CRunningScript* thread, T value)
     {
         _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayType() : eArrayDataType::ADT_NONE;
 
         if (_paramsArray == nullptr) _paramsArray = CLEO_GetOpcodeParamsArray();
         _paramsArray[0].dwParam = 0;
@@ -666,7 +666,7 @@ namespace CLEO
     static const char* _readParamText(CRunningScript* thread, char* buffer, size_t bufferSize)
     {
         _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayType() : eArrayDataType::ADT_NONE;
 
         if (!_paramWasString())
         {
@@ -737,7 +737,7 @@ namespace CLEO
     static bool _writeParamText(CRunningScript* thread, const char* str)
     {
         _lastParamType = thread->PeekDataType();
-        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayDataType() : eArrayDataType::ADT_NONE;
+        _lastParamArrayType = IsArray(_lastParamType) ? thread->PeekArrayType() : eArrayDataType::ADT_NONE;
 
         if (str != nullptr && (size_t)str <= MinValidAddress)
         {
