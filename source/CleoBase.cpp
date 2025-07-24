@@ -174,12 +174,8 @@ namespace CLEO
 
     void CCleoInstance::Stop()
     {
-        if (m_initStage >= InitStage::Initial)
-        {
-            ScriptEngine.GameEnd();
-            PluginSystem.UnloadPlugins();
-        }
-
+        GameEnd();
+        PluginSystem.UnloadPlugins();
         m_initStage = InitStage::None;
     }
 
@@ -190,7 +186,7 @@ namespace CLEO
 
         saveSlot = FrontEndMenuManager.m_bWantToLoad ? FrontEndMenuManager.m_nSelectedSaveGame : -1;
 
-        TRACE("Starting new game, save slot: %d", saveSlot);
+        TRACE("Starting new game session, save slot: %d", saveSlot);
 
         // late initialization if not done yet
         CleoInstance.Start(CCleoInstance::InitStage::OnDraw);
@@ -204,7 +200,7 @@ namespace CLEO
         if (!m_bGameInProgress) return;
         m_bGameInProgress = false;
 
-        TRACE("Ending current game");
+        TRACE("Ending current game session");
         CleoInstance.CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
         ScriptEngine.GameEnd();
         OpcodeSystem.FinalizeScriptObjects();
