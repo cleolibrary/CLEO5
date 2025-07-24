@@ -79,6 +79,10 @@ enum eArrayDataType : BYTE
 	ADT_NONE = 0xFF // CLEO internal
 };
 static const BYTE ArrayTypeMask = ADT_INT | ADT_FLOAT | ADT_TEXTLABEL | ADT_STRING; // array flags byte contains other info too. Type needs to be masked when read
+enum eArrayDataTypeFlags : BYTE
+{
+	ADTF_INDEX_GLOBAL = 0x80
+};
 
 static const char* ToStr(eDataType type)
 {
@@ -358,6 +362,7 @@ extern "C"
 	LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread);
 	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
+	DWORD WINAPI CLEO_GetScriptCleoStackSize(CRunningScript* thread); // get length of current cleo_call chain
 	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
 	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);
 	void WINAPI CLEO_TerminateScript(CRunningScript* thread);

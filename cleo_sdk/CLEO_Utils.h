@@ -107,6 +107,107 @@ namespace CLEO
         return result;
     }
 
+    static void StringAppendPrintf(std::string& dest, const char* format, ...)
+    {
+        va_list args;
+
+        va_start(args, format);
+        auto len = std::vsnprintf(nullptr, 0, format, args);
+        va_end(args);
+
+        if (len <= 0) return; // empty or encoding error
+
+        size_t oriSize = dest.size();
+        dest.resize(dest.size() + len);
+
+        va_start(args, format);
+        std::vsnprintf(dest.data() + oriSize, len + 1, format, args);
+        va_end(args);
+    }
+
+    static void StringAppendNum(std::string& dest, int number, int padLen = 0)
+    {
+        static const char digits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+        char buff[16];
+
+        if (number < 0)
+        {
+            dest.push_back('-');
+            padLen--;
+            number = -number;
+        }
+
+        int i = 0;
+        do
+        {
+            buff[i] = digits[number % 10];
+            number /= 10;
+            i++;
+            padLen--;
+        } while (number != 0 || padLen > 0);
+
+        dest.reserve(dest.length() + i);
+        while (i > 0)
+        {
+            i--;
+            dest.push_back(buff[i]);
+        }
+    }
+
+    static void StringAppendHex(std::string& dest, DWORD number, int padLen = 0)
+    {
+        static const char digits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        char buff[16];
+
+        int i = 0;
+        do
+        {
+            buff[i] = digits[number & 0xF];
+            number >>= 4; // 4 bits peer hex digit
+            i++;
+            padLen--;
+        } while (number != 0 || padLen > 0);
+
+        dest.reserve(dest.length() + i);
+        while (i > 0)
+        {
+            i--;
+            dest.push_back(buff[i]);
+        }
+    }
+
+    static void StringAppendFloat(std::string& dest, float number, int padLen = 0)
+    {
+        char buff[64];
+        sprintf_s(buff, "%g", number);
+        
+        // add '.0' if not present
+        bool justNumbers = true;
+        const char* ch = buff;
+        while (*ch != '\0')
+        {
+            if (*ch != '-' && !(*ch >= '0' && *ch <= '9'))
+            {
+                justNumbers = false;
+                break;
+            }
+            ch++;
+        }
+        if (justNumbers)
+        {
+            strcat_s(buff, ".0");
+        }
+
+        padLen -= strlen(buff);
+        while (padLen > 0)
+        {
+            dest += ' ';
+            padLen--;
+        }
+
+        dest += buff;
+    }
+
     static bool StringStartsWith(const std::string_view str, const std::string_view prefix, bool caseSensitive = true)
     {
         if (str.length() < prefix.length())
@@ -203,6 +304,33 @@ namespace CLEO
     static void StringToLower(std::string& str)
     {
         std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
+    }
+
+    // remove whitespaces prefixing the string
+    static void StringTrimLeft(std::string& str)
+    {
+        auto it = std::find_if(str.begin(), str.end(), [](char c) 
+        {
+            return !std::isspace<char>(c, std::locale::classic());
+        });
+        str.erase(str.begin(), it);
+    }
+
+    // remove whitespaces after the string
+    static void StringTrimRight(std::string& str)
+    {
+        auto it = std::find_if(str.rbegin(), str.rend(), [](char c) 
+        {
+            return !std::isspace<char>(c, std::locale::classic());
+        });
+        str.erase(it.base(), str.end());
+    }
+
+    // remove whitespaces before and after the string
+    static void StringTrim(std::string& str)
+    {
+        StringTrimRight(str);
+        StringTrimLeft(str);
     }
 
     static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
@@ -485,13 +613,15 @@ namespace CLEO
             memcpy(buffer.data(), src, size);
         }
 
-        void Apply()
+        inline void Apply() const
         {
             if (!buffer.empty())
             {
                 memcpy(address, buffer.data(), buffer.size());
             }
         }
+
+        inline void* GetAddress() const { return address; }
     };
 
     static MemPatch MemPatchJump(size_t position, void* jumpTarget)
