@@ -23,7 +23,7 @@ namespace CLEO
             auto str = (char*)CLEO_PeekIntOpcodeParam(thread);
             CLEO_SkipOpcodeParams(thread, 1);
 
-            if ((size_t)str <= CCustomOpcodeSystem::MinValidAddress)
+            if ((size_t)str <= MinValidAddress)
             {
                 LOG_WARNING(thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str());
                 return nullptr; // error
@@ -108,8 +108,6 @@ namespace CLEO
         CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
         return nullptr; // error
     }
-
-    void(__cdecl * InitScm)();
 
     void OnLoadScmData(void)
     {

@@ -138,7 +138,7 @@ public:
 	}
 
 	// get_car_current_gear
-	// [var gear : int] = get_car_current_gear [Car]
+	// [var gear: int] = get_car_current_gear [Car]
 	static OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();

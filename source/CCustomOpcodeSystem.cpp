@@ -7,8 +7,6 @@
 
 namespace CLEO
 {
-	void(__thiscall * ProcessScript)(CRunningScript*);
-
 	CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
 	WORD CCustomOpcodeSystem::lastOpcode = 0xFFFF;
 	WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
@@ -68,7 +66,7 @@ namespace CLEO
 
 		if(result == OR_NONE) // opcode not proccessed yet
 		{
-			if(opcode > LastCustomOpcode)
+			if(opcode > Opcode_Max)
 			{
 				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ScriptInfoStr(thread).c_str());
 				result = thread->Suspend();
@@ -85,7 +83,7 @@ namespace CLEO
 
 			// Not registered as custom opcode. Call game's original handler
 
-			if (opcode > LastOriginalOpcode)
+			if (opcode > Opcode_Max_Original)
 			{
 				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
 				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
@@ -99,7 +97,7 @@ namespace CLEO
 				return AfterOpcodeExecuted();
 			}
 
-			size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
+			size_t tableIdx = opcode / Opcode_Table_Size;
 			result = originalOpcodeHandlers[tableIdx](thread, opcode);
 
 			if(result == OR_ERROR)
@@ -196,11 +194,11 @@ namespace CLEO
 
 	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::originalOpcodeHandlers[OriginalOpcodeHandlersCount];
 	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::customOpcodeHandlers[CustomOpcodeHandlersCount];
-	CustomOpcodeHandler CCustomOpcodeSystem::customOpcodeProc[LastCustomOpcode + 1];
+	CustomOpcodeHandler CCustomOpcodeSystem::customOpcodeProc[Opcode_Max + 1];
 
 	bool CCustomOpcodeSystem::RegisterOpcode(WORD opcode, CustomOpcodeHandler callback)
 	{
-		if (opcode > LastCustomOpcode)
+		if (opcode > Opcode_Max)
 		{
 			SHOW_ERROR("Can not register [%04X] opcode! Out of supported range.", opcode);
 			return false;
@@ -234,13 +232,13 @@ namespace CLEO
 	{
 		CCustomOpcodeSystem::lastErrorMsg.clear();
 
-		if (str != nullptr && (size_t)str <= CCustomOpcodeSystem::MinValidAddress)
+		if (str != nullptr && (size_t)str <= MinValidAddress)
 		{
 			CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string from invalid '0x%X' pointer", target.data);
 			return false;
 		}
 
-		if ((size_t)target.data <= CCustomOpcodeSystem::MinValidAddress)
+		if ((size_t)target.data <= MinValidAddress)
 		{
 			CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
 			return false;
@@ -275,7 +273,7 @@ namespace CLEO
 			// address to output buffer
 			CScriptEngine::GetScriptParams(thread, 1);
 
-			if (opcodeParams[0].dwParam <= CCustomOpcodeSystem::MinValidAddress)
+			if (opcodeParams[0].dwParam <= MinValidAddress)
 			{
 				CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
 				return result; // error
@@ -629,11 +627,6 @@ namespace CLEO
 		return OR_CONTINUE;
 	}
 
-	inline void ThreadJump(CRunningScript *thread, int off)
-	{
-		thread->SetIp(off < 0 ? thread->GetBasePointer() - off : CleoInstance.ScriptEngine.scmBlock + off);
-	}
-
 	void SkipUnusedVarArgs(CRunningScript *thread)
 	{
 		while (thread->PeekDataType() != DT_END)
@@ -688,7 +681,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		size_t tableIdx = 0x0051 / 100; // 100 opcodes peer handler table
+		size_t tableIdx = 0x0051 / Opcode_Table_Size;
 		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
 	}
 
@@ -698,7 +691,7 @@ namespace CLEO
 	{
 		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
 
-		size_t tableIdx = 0x0417 / 100; // 100 opcodes peer handler table
+		size_t tableIdx = 0x0417 / Opcode_Table_Size;
 		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
 	}
 
@@ -790,7 +783,7 @@ namespace CLEO
 		if (thread->GetConditionResult()) return OR_CONTINUE;
 
 		thread->PushStack(thread->GetBytePointer());
-		ThreadJump(thread, offset);
+		thread->Jump(offset);
 		return OR_CONTINUE;
 	}
 
@@ -964,7 +957,7 @@ namespace CLEO
 		}
 
 		// jump to label
-		ThreadJump(thread, label); // script offset
+		thread->Jump(label);
 		return OR_CONTINUE;
 	}
 
