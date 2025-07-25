@@ -107,10 +107,15 @@ struct ScriptParamInfo
 
             // immediate texts
             case DT_TEXTLABEL:
+                value.pParam = script->CurrentIP;
+                stringLen = strnlen(value.pcParam, 8);
+                script->IncPtr(8);
+                break;
+
             case DT_STRING:
                 value.pParam = script->CurrentIP;
-                stringLen = strnlen(value.pcParam, type == DT_TEXTLABEL ? 8 : 16);
-                script->IncPtr(8);
+                stringLen = strnlen(value.pcParam, 16);
+                script->IncPtr(16);
                 break;
 
             case DT_VARLEN_STRING:
