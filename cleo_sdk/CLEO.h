@@ -359,7 +359,7 @@ extern "C"
 	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
 	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
-	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int labelPtr);
+	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int offset);
 	void WINAPI CLEO_TerminateScript(CRunningScript* thread);
 
 	int WINAPI CLEO_GetOperandType(const CRunningScript* thread); // peek parameter data type. Returns int for legacy reason, should be eDataType.
@@ -491,6 +491,7 @@ public:
 	BYTE* GetBytePointer() const { return CurrentIP; }
 	void SetIp(void* ip) { CurrentIP = (BYTE*)ip; }
 	void SetBaseIp(void* ip) { BaseIP = ip; }
+	void Jump(int offset) { CLEO_ThreadJumpAtLabelPtr(this, offset); }
 	CRunningScript* GetNext() const { return Next; }
 	CRunningScript* GetPrev() const { return Previous; }
 	void SetIsExternal(bool b) { bIsExternal = b; }

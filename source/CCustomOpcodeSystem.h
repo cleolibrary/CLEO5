@@ -5,16 +5,13 @@
 
 namespace CLEO
 {
-    void ThreadJump(CRunningScript* thread, int off);
-
     class CCustomOpcodeSystem
     {
     public:
-        static const size_t MinValidAddress = 0x10000; // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
-
-        static const size_t LastOriginalOpcode = 0x0A4E; // GTA SA
-        static const size_t LastCustomOpcode = 0x7FFF;
-
+        static constexpr size_t Opcode_Max_Original = 0x0A4E; // GTA SA
+        static constexpr size_t Opcode_Max = 0x7FFF;
+        static constexpr size_t Opcode_Table_Size = 100; // opcodes per handler
+        
         // most recently processed
         static CRunningScript* lastScript;
         static WORD lastOpcode;
@@ -67,15 +64,15 @@ namespace CLEO
 
         typedef OpcodeResult(__thiscall* OpcodeHandler)(CRunningScript* thread, WORD opcode);
 
-        static const size_t OriginalOpcodeHandlersCount = (LastOriginalOpcode / 100) + 1; // 100 opcodes peer handler
+        static const size_t OriginalOpcodeHandlersCount = (Opcode_Max_Original / Opcode_Table_Size) + 1;
         static OpcodeHandler originalOpcodeHandlers[OriginalOpcodeHandlersCount]; // backuped when patching
 
-        static const size_t CustomOpcodeHandlersCount = (LastCustomOpcode / 100) + 1; // 100 opcodes peer handler
+        static const size_t CustomOpcodeHandlersCount = (Opcode_Max / Opcode_Table_Size) + 1;
         static OpcodeHandler customOpcodeHandlers[CustomOpcodeHandlersCount]; // original + new opcodes
 
         static OpcodeResult __fastcall customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode); // universal CLEO's opcode handler
 
-        static CustomOpcodeHandler customOpcodeProc[LastCustomOpcode + 1]; // procedure for each opcode
+        static CustomOpcodeHandler customOpcodeProc[Opcode_Max + 1]; // procedure for each opcode
     };
 
     // Read null-terminated string into the buffer

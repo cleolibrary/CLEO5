@@ -17,8 +17,8 @@ namespace CLEO
         int missionIndex = -1;
 
         friend class CCustomScript;
-        std::list<CCustomScript *> CustomScripts;
-        std::list<CCustomScript *> ScriptsWaitingForDelete;
+        std::list<CCustomScript*> CustomScripts;
+        std::list<CCustomScript*> ScriptsWaitingForDelete;
         std::set<unsigned long> InactiveScriptHashes;
         CCustomScript *CustomMission = nullptr;
         CCustomScript *LastScriptCreated = nullptr;
@@ -26,8 +26,8 @@ namespace CLEO
         CCustomScript* LoadScript(const char* filePath);
         CCustomScript* CreateCustomScript(CRunningScript* fromThread, const char* filePath, int label);
 
-        bool NativeScriptsDebugMode; // debug mode enabled?
-        CLEO::eCLEO_Version NativeScriptsVersion; // allows using legacy modes
+        bool NativeScriptsDebugMode = false; // debug mode enabled?
+        eCLEO_Version NativeScriptsVersion = eCLEO_Version::CLEO_VER_CUR; // allows using legacy modes
         std::string MainScriptFileDir;
         std::string MainScriptFileName;
         std::string MainScriptCurWorkDir;

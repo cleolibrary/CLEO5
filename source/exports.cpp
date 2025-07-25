@@ -158,9 +158,9 @@ extern "C"
         ((::CRunningScript*)thread)->UpdateCompareFlag(result != FALSE); // CRunningScript from Plugin SDK
     }
 
-    void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int labelPtr)
+    void WINAPI CLEO_ThreadJumpAtLabelPtr(CLEO::CRunningScript* thread, int offset)
     {
-        ThreadJump(thread, labelPtr);
+        thread->SetIp(offset < 0 ? thread->GetBasePointer() - offset : CleoInstance.ScriptEngine.scmBlock + offset);
     }
 
     void WINAPI CLEO_TerminateScript(CLEO::CRunningScript* thread)
