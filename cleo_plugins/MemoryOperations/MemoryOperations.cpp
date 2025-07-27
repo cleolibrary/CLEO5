@@ -2,6 +2,7 @@
 #include "CLEO_Utils.h"
 #include "plugin.h"
 #include "CTheScripts.h"
+#include "ArenaAllocator.h"
 #include <filesystem>
 #include <map>
 #include <set>
@@ -14,6 +15,7 @@ class MemoryOperations
 public:
     static std::set<void*> m_allocations;
     static std::map<HMODULE, size_t> m_libraries;
+    static std::map<CLEO::CRunningScript*, ArenaAllocator> m_arenaAllocators;
 
     MemoryOperations()
     {
@@ -68,15 +70,38 @@ public:
         CLEO_RegisterOpcode(0x2406, opcode_2406); // get_script_struct_from_filename
         CLEO_RegisterOpcode(0x2407, opcode_2407); // is_memory_equal
         CLEO_RegisterOpcode(0x2408, opcode_2408); // terminate_script
-        
+
+        CLEO_RegisterOpcode(0x2409, opcode_2409); // create_arena_allocator
+        CLEO_RegisterOpcode(0x240A, opcode_240A); // allocate_arena_memory
 
         // register event callbacks
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
+        CLEO_RegisterCallback(eCallbackId::ScriptUnregister, OnScriptUnregister);
+        CLEO_RegisterCallback(eCallbackId::ScriptProcessBefore, OnScriptProcessBefore);
     }
 
     ~MemoryOperations()
     {
         CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnFinalizeScriptObjects);
+    }
+
+    static void __stdcall OnScriptUnregister(CLEO::CRunningScript* script) {
+        if (auto it = m_arenaAllocators.find(script); it != m_arenaAllocators.end())
+        {
+            const auto arena = &it->second;
+            TRACE("Cleaning up arena allocator for script %s. Arena use: %d out of %d", CLEO::ScriptInfoStr(script).c_str(), arena->getUsedMemory(), arena->getTotalMemory());
+            m_arenaAllocators.erase(it);
+        }
+    }
+
+    bool static __stdcall OnScriptProcessBefore(CLEO::CRunningScript* script)
+    {
+        // check if script has arena allocator
+        if (auto it = m_arenaAllocators.find(script); it != m_arenaAllocators.end())
+        {
+            it->second.reset();
+        }
+        return true;
     }
 
     static void __stdcall OnFinalizeScriptObjects()
@@ -935,7 +960,55 @@ public:
 
         return (address == thread) ? OR_INTERRUPT : OR_CONTINUE;
     }
+
+    //2409=2,create_arena_allocator size %1d%
+    static OpcodeResult __stdcall opcode_2409(CLEO::CRunningScript* thread)
+    {
+        int size = OPCODE_READ_PARAM_INT();
+        if (size < 0)
+        {
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+
+        if (const auto it = m_arenaAllocators.find(thread); it != m_arenaAllocators.end())
+        {
+            TRACE("Arena allocator already created in script %s. Replacing with new one.");
+            m_arenaAllocators.erase(it); // remove old arena
+        }
+        
+        m_arenaAllocators.emplace(thread, ArenaAllocator(size));
+        return OR_CONTINUE;
+    }
+
+    //240A=2,allocate_arena_memory %1d%
+    static OpcodeResult __stdcall opcode_240A(CLEO::CRunningScript* thread)
+    {
+        if (!m_arenaAllocators.count(thread))
+        {
+            // create new arena automatically
+            m_arenaAllocators.emplace(thread, ArenaAllocator(0));
+        }
+        const auto it = m_arenaAllocators.find(thread);
+        const int size = OPCODE_READ_PARAM_INT();
+        if (size <= 0)
+        {
+            SHOW_ERROR("Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str());
+            return thread->Suspend();
+        }
+        const auto arena = &it->second;
+        const auto ptr = arena->allocate(size);
+        if (ptr == nullptr)
+        {
+            LOG_WARNING(thread, "Failed to allocate %d bytes of arena memory in script %s. Arena use: %d out of %d.", size, ScriptInfoStr(thread).c_str(), arena->getUsedMemory(), arena->getTotalMemory());
+            OPCODE_WRITE_PARAM_PTR(nullptr);
+            return OR_CONTINUE;
+        }
+        OPCODE_WRITE_PARAM_PTR(ptr);
+        return OR_CONTINUE;
+    }
 } Memory;
 
 std::set<void*> MemoryOperations::m_allocations;
 std::map<HMODULE, size_t> MemoryOperations::m_libraries;
+std::map<CLEO::CRunningScript*, ArenaAllocator> MemoryOperations::m_arenaAllocators;

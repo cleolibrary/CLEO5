@@ -154,11 +154,13 @@ if defined GTA_SA_DIR (
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
+    <ClCompile Include="ArenaAllocator.cpp" />
     <ClCompile Include="MemoryOperations.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\cleo_sdk\CLEO.h" />
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h" />
+    <ClInclude Include="ArenaAllocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />

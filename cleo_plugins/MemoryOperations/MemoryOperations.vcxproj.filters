@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\Patch.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="ArenaAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cleo_sdk">
@@ -39,6 +40,7 @@
     <ClInclude Include="..\..\cleo_sdk\CLEO_Utils.h">
       <Filter>cleo_sdk</Filter>
     </ClInclude>
+    <ClInclude Include="ArenaAllocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />
