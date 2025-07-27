@@ -6,6 +6,8 @@
 #include <CModelInfo.h>
 #include <CRadar.h>
 #include <CWorld.h>
+#include <CTheScripts.h>
+#include <CStreaming.h>
 #include <map>
 
 using namespace CLEO;
@@ -15,9 +17,9 @@ using namespace std;
 class GameEntities
 {
 public:
-	std::map<CRunningScript*, int> charSearchState; // for get_random_char_in_sphere_no_save_recursive
-	std::map<CRunningScript*, int> carSearchState; // for get_random_car_in_sphere_no_save_recursive
-	std::map<CRunningScript*, int> objectSearchState; // for get_random_object_in_sphere_no_save_recursive
+	std::map<CLEO::CRunningScript*, int> charSearchState; // for get_random_char_in_sphere_no_save_recursive
+	std::map<CLEO::CRunningScript*, int> carSearchState; // for get_random_car_in_sphere_no_save_recursive
+	std::map<CLEO::CRunningScript*, int> objectSearchState; // for get_random_object_in_sphere_no_save_recursive
 
 	GameEntities()
 	{
@@ -37,6 +39,10 @@ public:
 		CLEO_RegisterOpcode(0x0AE2, opcode_0AE2); // get_random_car_in_sphere_no_save_recursive
 		CLEO_RegisterOpcode(0x0AE3, opcode_0AE3); // get_random_object_in_sphere_no_save_recursive
 
+		// overloaded native opcodes
+		CLEO_RegisterOpcode(0x009A, opcode_009A); // create_char
+		CLEO_RegisterOpcode(0x00A5, opcode_00A5); // create_car
+
 		// register event callbacks
 		CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
 	}
@@ -55,7 +61,7 @@ public:
 
 	// store_closest_entities
 	// [var carHandle: Car], [var charHandle: Char] = store_closest_entities [Char]
-	static OpcodeResult __stdcall opcode_0AB5(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB5(CLEO::CRunningScript* thread)
 	{
 		auto pedHandle = OPCODE_READ_PARAM_PED_HANDLE();
 
@@ -102,7 +108,7 @@ public:
 
 	// get_target_blip_coords
 	// [var x: float], [var y: float], [var z: float] = get_target_blip_coords (logical)
-	static OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB6(CLEO::CRunningScript* thread)
 	{
 		auto blipIdx = CRadar::GetActualBlipArrayIndex(FrontEndMenuManager.m_nTargetBlipIndex);
 		if (blipIdx == -1)
@@ -126,7 +132,7 @@ public:
 
 	// get_car_number_of_gears
 	// [var numGear: int] = get_car_number_of_gears [Car]
-	static OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB7(CLEO::CRunningScript* thread)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -139,7 +145,7 @@ public:
 
 	// get_car_current_gear
 	// [var gear : int] = get_car_current_gear [Car]
-	static OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AB8(CLEO::CRunningScript* thread)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -152,7 +158,7 @@ public:
 
 	// is_car_siren_on
 	// is_car_siren_on [Car] (logical)
-	static OpcodeResult __stdcall opcode_0ABD(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ABD(CLEO::CRunningScript* thread)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -165,7 +171,7 @@ public:
 
 	// is_car_engine_on
 	// is_car_engine_on [Car] (logical)
-	static OpcodeResult __stdcall opcode_0ABE(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ABE(CLEO::CRunningScript* thread)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -178,7 +184,7 @@ public:
 
 	// cleo_set_car_engine_on
 	// cleo_set_car_engine_on [Car] {state} [bool]
-	static OpcodeResult __stdcall opcode_0ABF(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ABF(CLEO::CRunningScript* thread)
 	{
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 		auto state = OPCODE_READ_PARAM_BOOL();
@@ -191,7 +197,7 @@ public:
 
 	// get_char_player_is_targeting
 	// [var handle: Char] = get_char_player_is_targeting [Player] (logical)
-	static OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AD2(CLEO::CRunningScript* thread)
 	{
 		auto playerId = OPCODE_READ_PARAM_PLAYER_ID();
 
@@ -216,7 +222,7 @@ public:
 
 	// spawn_vehicle_by_cheating
 	// spawn_vehicle_by_cheating {modelId} [model_vehicle]
-	static OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0ADD(CLEO::CRunningScript* thread)
 	{
 		auto modelIndex = OPCODE_READ_PARAM_INT();
 
@@ -254,7 +260,7 @@ public:
 
 	// get_random_char_in_sphere_no_save_recursive
 	// [var handle: Char] = get_random_char_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {filter} [int] (logical)
-	static OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AE1(CLEO::CRunningScript* thread)
 	{
 		CVector center = {};
 		center.x = OPCODE_READ_PARAM_FLOAT();
@@ -324,7 +330,7 @@ public:
 
 	// get_random_car_in_sphere_no_save_recursive
 	// [var handle: Car] = get_random_car_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] {skipWrecked} [bool] (logical)
-	static OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AE2(CLEO::CRunningScript* thread)
 	{
 		CVector center = {};
 		center.x = OPCODE_READ_PARAM_FLOAT();
@@ -386,7 +392,7 @@ public:
 
 	// get_random_object_in_sphere_no_save_recursive
 	// [var handle: Object] = get_random_object_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius} [float] {findNext} [bool] (logical)
-	static OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread)
+	static OpcodeResult __stdcall opcode_0AE3(CLEO::CRunningScript* thread)
 	{
 		CVector center = {};
 		center.x = OPCODE_READ_PARAM_FLOAT();
@@ -435,5 +441,67 @@ public:
 		OPCODE_WRITE_PARAM_INT(handle);
 		OPCODE_CONDITION_RESULT(handle != -1);
 		return OR_CONTINUE;
+	}
+
+	// create_char
+	// [var handle: Char] = create_char {pedType} [PedType] {modelId} [model_char] {x} [float] {y} [float] {z} [float]
+	static OpcodeResult __stdcall opcode_009A(CLEO::CRunningScript* thread)
+	{
+		auto ip = thread->CurrentIP;
+		CLEO_SkipOpcodeParams(thread, 1); // skip pedtype param
+		auto modelIndex = (int)CLEO_PeekIntOpcodeParam(thread); // read model index
+
+		if (modelIndex < 0)
+		{
+			SHOW_ERROR("Model id (%d) can't be used to create a character in script %s\nScript suspended.", modelIndex, CLEO::ScriptInfoStr(thread).c_str());
+			return thread->Suspend();
+		}
+
+		// check if model is a character
+		if (auto modelInfo = CModelInfo::GetModelInfo(modelIndex); modelInfo->GetModelType() == ModelInfoType::MODEL_INFO_PED)
+		{
+			if (CStreaming::ms_aInfoForModel[modelIndex].m_nLoadState != 1)
+			{
+				// model not loaded, suspend script
+				SHOW_ERROR("Model id (%d) is not loaded in script %s\nLoad the model using REQUEST_MODEL command. Script suspended.", modelIndex, CLEO::ScriptInfoStr(thread).c_str());
+				return thread->Suspend();
+			}
+			thread->SetIp(ip); // restore instruction pointer to the opcode start
+			return CLEO_CallNativeOpcode(thread, 0x009A);
+		}
+
+		SHOW_ERROR("Model id (%d) is not a character in script %s\nScript suspended.", modelIndex, CLEO::ScriptInfoStr(thread).c_str());
+		return thread->Suspend();
+
+    }
+
+	// create_car
+	// [var handle: Car] = create_car {modelId} [model_vehicle] {x} [float] {y} [float] {z} [float]
+	static OpcodeResult __stdcall opcode_00A5(CLEO::CRunningScript* thread)
+	{
+		auto ip = thread->CurrentIP;
+		auto modelIndex = (int)CLEO_PeekIntOpcodeParam(thread); // read model index
+
+		if (modelIndex < 0)
+		{
+			SHOW_ERROR("Model id (%d) can't be used to create a car in script %s\nScript suspended.", modelIndex, CLEO::ScriptInfoStr(thread).c_str());
+			return thread->Suspend();
+		}
+
+		// check if model is a vehicle
+		if (auto modelInfo = CModelInfo::GetModelInfo(modelIndex); modelInfo->GetModelType() == ModelInfoType::MODEL_INFO_VEHICLE)
+		{
+			if (CStreaming::ms_aInfoForModel[modelIndex].m_nLoadState != 1)
+			{
+				// model not loaded, suspend script
+				SHOW_ERROR("Model id (%d) is not loaded in script %s\nLoad the model using REQUEST_MODEL command. Script suspended.", modelIndex, CLEO::ScriptInfoStr(thread).c_str());
+				return thread->Suspend();
+			}
+			thread->SetIp(ip); // restore instruction pointer to the opcode start
+			return CLEO_CallNativeOpcode(thread, 0x00A5);
+		}
+
+		SHOW_ERROR("Model id (%d) is not a vehicle in script %s\nScript suspended.", modelIndex, CLEO::ScriptInfoStr(thread).c_str());
+		return thread->Suspend();
 	}
 } Instance;

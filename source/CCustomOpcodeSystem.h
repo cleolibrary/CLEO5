@@ -35,7 +35,7 @@ namespace CLEO
         ~CCustomOpcodeSystem();
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
-
+        static OpcodeResult CallNativeOpcode(CRunningScript* thread, WORD opcode);
         static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
 
         // new/customized opcodes
