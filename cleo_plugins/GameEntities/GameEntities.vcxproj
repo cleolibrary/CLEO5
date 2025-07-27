@@ -165,6 +165,14 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTheScripts.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CStreaming.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+    </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\shared\DynAddress.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>

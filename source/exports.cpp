@@ -477,5 +477,10 @@ extern "C"
     {
         Debug.Trace(level, msg);
     }
+
+    OpcodeResult WINAPI CLEO_CallNativeOpcode(CRunningScript* script, WORD opcode)
+    {
+        return CCustomOpcodeSystem::CallNativeOpcode(script, opcode);
+    }
 }
 }

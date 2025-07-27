@@ -66,9 +66,9 @@ namespace CLEO
 				break; // processed
 		}
 
-		if(result == OR_NONE) // opcode not proccessed yet
+		if (result == OR_NONE) // opcode not proccessed yet
 		{
-			if(opcode > LastCustomOpcode)
+			if (opcode > LastCustomOpcode)
 			{
 				SHOW_ERROR("Opcode [%04X] out of supported range! \nCalled in script %s\nScript suspended.", opcode, ScriptInfoStr(thread).c_str());
 				result = thread->Suspend();
@@ -76,7 +76,7 @@ namespace CLEO
 			}
 
 			CustomOpcodeHandler handler = customOpcodeProc[opcode];
-			if(handler != nullptr)
+			if (handler != nullptr)
 			{
 				lastCustomOpcode = opcode;
 				result = handler(thread);
@@ -84,23 +84,7 @@ namespace CLEO
 			}
 
 			// Not registered as custom opcode. Call game's original handler
-
-			if (opcode > LastOriginalOpcode)
-			{
-				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
-				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
-
-				SHOW_ERROR("Custom opcode [%04X] not registered!%s\nCalled in script %s\nScript suspended.",
-					opcode,
-					extensionMsg.c_str(),
-					ScriptInfoStr(thread).c_str());
-
-				result = thread->Suspend();
-				return AfterOpcodeExecuted();
-			}
-
-			size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
-			result = originalOpcodeHandlers[tableIdx](thread, opcode);
+			result = CallNativeOpcode(thread, opcode);
 
 			if(result == OR_ERROR)
 			{
@@ -113,7 +97,6 @@ namespace CLEO
 					ScriptInfoStr(thread).c_str());
 
 				result = thread->Suspend();
-				return AfterOpcodeExecuted();
 			}
 		}
 
@@ -197,6 +180,24 @@ namespace CLEO
 	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::originalOpcodeHandlers[OriginalOpcodeHandlersCount];
 	CCustomOpcodeSystem::OpcodeHandler CCustomOpcodeSystem::customOpcodeHandlers[CustomOpcodeHandlersCount];
 	CustomOpcodeHandler CCustomOpcodeSystem::customOpcodeProc[LastCustomOpcode + 1];
+
+	OpcodeResult CCustomOpcodeSystem::CallNativeOpcode(CRunningScript* thread, WORD opcode)
+	{
+		if (opcode > LastOriginalOpcode)
+		{
+			auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
+			if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
+
+			SHOW_ERROR("Opcode [%04X] not registered!%s\nCalled in script %s\nScript suspended.",
+				opcode,
+				extensionMsg.c_str(),
+				ScriptInfoStr(thread).c_str());
+
+			return thread->Suspend();
+		}
+		size_t tableIdx = opcode / 100; // 100 opcodes peer handler table
+		return originalOpcodeHandlers[tableIdx](thread, opcode);
+    }
 
 	bool CCustomOpcodeSystem::RegisterOpcode(WORD opcode, CustomOpcodeHandler callback)
 	{
@@ -688,8 +689,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		size_t tableIdx = 0x0051 / 100; // 100 opcodes peer handler table
-		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
+		return CallNativeOpcode(thread, 0x0051);
 	}
 
 	// load_and_launch_mission_internal
@@ -698,8 +698,7 @@ namespace CLEO
 	{
 		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
 
-		size_t tableIdx = 0x0417 / 100; // 100 opcodes peer handler table
-		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
+		return CallNativeOpcode(thread, 0x0417);
 	}
 
 	// stream_custom_script

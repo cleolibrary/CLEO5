@@ -61,3 +61,4 @@ EXPORTS
 	_CLEO_SetScriptVersion@8				@58
 	_CLEO_GetScriptBaseRelativeOffset@8		@59
 	_CLEO_GetScmMainData@0					@60
+	_CLEO_CallNativeOpcode@8				@61

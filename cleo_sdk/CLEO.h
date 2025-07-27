@@ -336,6 +336,7 @@ extern "C"
 
 	BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
 	BOOL WINAPI CLEO_RegisterCommand(const char* commandName, CustomOpcodeHandler callback); // uses cleo\.CONFIG\sa.json to obtain opcode number from name
+	OpcodeResult WINAPI CLEO_CallNativeOpcode(CRunningScript* script, WORD opcode); // call original unhooked opcode handler
 
 	void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func);
 	void WINAPI CLEO_UnregisterCallback(eCallbackId id, void* func);
