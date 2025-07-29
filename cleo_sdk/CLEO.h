@@ -70,15 +70,19 @@ enum eDataType : BYTE
 	DT_INVALID = 0xFF // CLEO internal
 };
 
-enum eArrayDataType : BYTE
+enum eArrayType : BYTE
 {
-	ADT_INT, // variable with integer
-	ADT_FLOAT, // variable with integer
-	ADT_TEXTLABEL, // variable with short string (8 char)
-	ADT_STRING, // variable with long string (16 char)
-	ADT_NONE = 0xFF // CLEO internal
+	AT_INT, // variable with integer
+	AT_FLOAT, // variable with integer
+	AT_TEXTLABEL, // variable with short string (8 char)
+	AT_STRING, // variable with long string (16 char)
+	AT_NONE = 0xFF // CLEO internal
 };
-static const BYTE ArrayTypeMask = ADT_INT | ADT_FLOAT | ADT_TEXTLABEL | ADT_STRING; // array flags byte contains other info too. Type needs to be masked when read
+static const BYTE ArrayTypeMask = AT_INT | AT_FLOAT | AT_TEXTLABEL | AT_STRING; // array flags byte contains other info too. Type needs to be masked when read
+enum eArrayTypeFlags : BYTE
+{
+	ATF_INDEX_GLOBAL = 0x80
+};
 
 static const char* ToStr(eDataType type)
 {
@@ -175,7 +179,7 @@ static bool IsArray(eDataType type)
 	}
 	return false;
 }
-static const char* ToKindStr(eDataType type, eArrayDataType arrType = ADT_NONE)
+static const char* ToKindStr(eDataType type, eArrayType arrType = AT_NONE)
 {
 	switch (type)
 	{
@@ -208,14 +212,14 @@ static const char* ToKindStr(eDataType type, eArrayDataType arrType = ADT_NONE)
 		case DT_LVAR_ARRAY:
 			switch(arrType)
 			{
-				case ADT_INT:
+				case AT_INT:
 					return "int"; break;
 
-				case ADT_FLOAT:
+				case AT_FLOAT:
 					return "float"; break;
 
-				case ADT_TEXTLABEL:
-				case ADT_STRING:
+				case AT_TEXTLABEL:
+				case AT_STRING:
 					return "string"; break;
 
 				default: return "variable";
@@ -359,6 +363,7 @@ extern "C"
 	LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread);
 	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
+	DWORD WINAPI CLEO_GetScriptCleoStackSize(CRunningScript* thread); // get length of current cleo_call chain
 	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
 	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int offset);
 	void WINAPI CLEO_TerminateScript(CRunningScript* thread);
@@ -515,7 +520,7 @@ public:
 	eDataType PeekDataType() const { return *(eDataType*)CurrentIP; }
 	eDataType ReadDataType() { return (eDataType)ReadByte(); }
 
-	eArrayDataType PeekArrayType() const { return (eArrayDataType)(!IsArray(PeekDataType()) ? ADT_NONE : *(CurrentIP + 1 + 2 + 2 + 1) & ArrayTypeMask); }
+	eArrayType PeekArrayType() const { return (eArrayType)(!IsArray(PeekDataType()) ? AT_NONE : *(CurrentIP + 1 + 2 + 2 + 1) & ArrayTypeMask); }
 	WORD ReadVarIndex() { return ReadWord(); }
 	WORD ReadArrayOffset() { return ReadWord(); }
 	WORD ReadArrayIndexVarIndex() { return ReadWord(); } // index of variable sotring array element index
