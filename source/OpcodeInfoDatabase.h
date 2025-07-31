@@ -76,7 +76,7 @@ public:
 	OpcodeInfoDatabase() = default;
 
 	bool LoadCommands(const char* filepath); // mode json file
-	bool LoadEnums(const char* filepath); // enums.txt file
+	bool LoadEnums(const char* filepath); // enums.json file
 
 	bool HasCommand(uint16_t opcode) const;
 	bool HasCommand(const char* name) const;

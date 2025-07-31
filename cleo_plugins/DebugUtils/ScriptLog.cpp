@@ -47,7 +47,7 @@ ScriptLog::ScriptLog()
     m_opcodeDatabase.LoadCommands(path.c_str());
 
     path = CLEO_GetGameDirectory();
-    path += "\\cleo\\.config\\enums.txt";
+    path += "\\cleo\\.config\\enums.json";
     m_opcodeDatabase.LoadEnums(path.c_str());
 
     // TODO: start file writer thread

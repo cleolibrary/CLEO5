@@ -17,21 +17,21 @@ bool OpcodeInfoDatabase::LoadCommands(const char* filepath)
 	auto error = parser.load(filepath).get(root);
 	if (error)
 	{ 
-		TRACE("Failed to parse opcodes database '%s' file. Code %d", filepath, error);
+		TRACE("Failed to parse commands database '%s' file. Code %d", filepath, error);
 		return false;
 	}
 
 	const char* version;
 	if (root["meta"]["version"].get_c_str().get(version))
 	{
-		TRACE("Invalid opcodes database '%s' file.", filepath);
+		TRACE("Invalid commands database '%s' file.", filepath);
 		return false;
 	}
 
 	dom::array ext;
 	if (root["extensions"].get_array().get(ext))
 	{
-		TRACE("Invalid opcodes database '%s' file.", filepath);
+		TRACE("Invalid commands database '%s' file.", filepath);
 		return false;
 	}
 
@@ -159,129 +159,91 @@ bool OpcodeInfoDatabase::LoadEnums(const char* filepath)
 {
 	m_enums.clear();
 
-	std::ifstream file(filepath, std::ios::in);
-	if (!file.is_open())
-	{
-		TRACE("Failed to open enums database '%s' file", filepath);
+	dom::parser parser;
+	dom::object root;
+
+	auto error = parser.load(filepath).get(root);
+	if (error)
+	{ 
+		TRACE("Failed to parse enums database '%s' file. Code %d", filepath, error);
 		return false;
 	}
 
-	bool inEnum = false;
-	Enum currEnum;
-	std::string line;
-	size_t lineCount = 0;
-	while (std::getline(file, line))
+	for (auto& enumPair : root)
 	{
-		lineCount++;
+		auto name = std::string(enumPair.key);
 
-		CLEO::StringTrim(line);
+		Enum currEnum = Enum();
+		currEnum.name = name;
 
-		if (line.empty()) continue;
-
-		if (!inEnum)
+		CLEO::StringToLower(name);
+		if (m_enums.find(name) != m_enums.end())
 		{
-			if (CLEO::StringStartsWith(line, "enum ", false))
-			{
-				currEnum = Enum();
-				currEnum.name = line.c_str() + 5; // + strlen("enum ")
+			TRACE("Failed to parse enums database '%s' file. Enum '%s' already defined!", filepath, currEnum.name.c_str());
+			return false;
+		}
 
-				inEnum = true;
-				continue;
-			}
-			else
+		int nextValue = 0;
+		dom::object values;
+		if(!enumPair.value.get_object().get(values))
+		{
+			for (auto& valPair : values)
 			{
-				TRACE("Failed to parse enums database '%s' file. Unexpected keyword in line %d", filepath, lineCount);
+				auto valName = std::string(valPair.key);
+
+				if (valPair.value.is_null())
+				{
+					if (!currEnum.IsEmpty() && !currEnum.IsNumeric())
+					{
+						TRACE("Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath, currEnum.name.c_str());
+						return false;
+					}
+
+					currEnum.valuesNum[nextValue] = std::move(valName);
+					nextValue++;
+					continue;
+				}
+
+				int64_t num;
+				if (!valPair.value.get_int64().get(num))
+				{
+					if (!currEnum.IsEmpty() && !currEnum.IsNumeric())
+					{
+						TRACE("Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath, currEnum.name.c_str());
+						return false;
+					}
+
+					nextValue = (int)num;
+					currEnum.valuesNum[nextValue] = std::move(valName);
+					nextValue++;
+					continue;
+				}
+
+				std::string_view txt;
+				if (!valPair.value.get_string().get(txt))
+				{
+					if (!currEnum.IsEmpty() && currEnum.IsNumeric())
+					{
+						TRACE("Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath, currEnum.name.c_str());
+						return false;
+					}
+
+					currEnum.valuesTxt[std::string(txt)] = std::move(valName);
+					continue;
+				}
+
+				TRACE("Failed to parse enums database '%s' file. Enum '%s' contains invalid value type!", filepath, currEnum.name.c_str());
 				return false;
 			}
 		}
-		else
+
+		if (!currEnum.IsEmpty())
 		{
-			if (CLEO::StringStartsWith(line, "enum ", false))
-			{
-				TRACE("Failed to parse enums database '%s' file. Unexpected 'enum' keyword in line %d", filepath, lineCount);
-				return false;
-			}
-
-			if (_stricmp(line.c_str(), "end") == 0)
-			{
-				if (!currEnum.valuesNum.empty() && !currEnum.valuesTxt.empty())
-				{
-					TRACE("Failed to parse enums database '%s' file. Enum with mixed data type in line %d", filepath, lineCount);
-					return false;
-				}
-
-				if (!currEnum.IsEmpty())
-				{
-					auto name = currEnum.name;
-					CLEO::StringToLower(name);
-					m_enums.emplace(std::move(name), std::move(currEnum));
-				}
-
-				inEnum = false;
-				continue;
-			}
-
-			std::vector<std::string> elements;
-			CLEO::StringSplit(line, "=", elements);
-			if (elements.size() > 2)
-			{
-				TRACE("Failed to parse enums database '%s' file. Too many '=' characters in line %d", filepath, lineCount);
-				return false;
-			}
-
-			std::string& name = elements[0];
-			std::string value = elements.size() > 1 ? elements[1] : "";
-
-			if (value.find_first_not_of("-0123456789") != std::string::npos)
-			{
-				if (value.front() != '"' || value.back() != '"')
-				{
-					TRACE("Failed to parse enums database '%s' file. Invalid format of value in line %d", filepath, lineCount);
-					return false;
-				}
-				value.pop_back();
-				value.erase(0, 1);
-				currEnum.valuesTxt.emplace(std::move(value), std::move(name));
-			}
-			else // numeric or empty
-			{
-				int numValue;
-				if (value.empty())
-				{
-					if (currEnum.valuesNum.empty()) numValue = 0;
-					else numValue = std::prev(currEnum.valuesNum.end())->first + 1; // value of last entry + 1
-				}
-				else
-				{
-					char* end;
-					long i = strtol(value.c_str(), &end, 10);
-
-					if (i > std::numeric_limits<int>::max() || i < std::numeric_limits<int>::min())
-					{
-						TRACE("Failed to parse enums database '%s' file. Numeric value out of range in line %d", filepath, lineCount);
-						return false;
-					}
-
-					if (end != value.c_str() + value.length())
-					{
-						TRACE("Failed to parse enums database '%s' file. Unexpected character in numeric value in line %d", filepath, lineCount);
-						return false;
-					}
-
-					numValue = (int)i;
-				}
-
-				if (currEnum.valuesNum.count(numValue) != 0)
-				{
-					continue; // do not store duplicates
-				}
-
-				currEnum.valuesNum.emplace(numValue, std::move(name));
-			}
+			m_enums.emplace(std::move(name), std::move(currEnum));
 		}
 	}
 
-	TRACE("Enums database loaded from '%s'", filepath);
+	TRACE("Database of %d enums loaded from '%s'", m_enums.size(), filepath);
 	return true;
 }
 
