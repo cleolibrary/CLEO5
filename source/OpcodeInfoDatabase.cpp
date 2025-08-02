@@ -337,21 +337,21 @@ OpcodeInfoDatabase::CommandArgumentType OpcodeInfoDatabase::TypeFromName(const s
 	auto str = name.data();
 	auto len = name.length();
 
-	if (!_strnicmp(str, "Any", len)) return CommandArgumentType::Any;
-	if (!_strnicmp(str, "Arguments", len)) return CommandArgumentType::Arguments;
-	if (!_strnicmp(str, "Bool", len)) return CommandArgumentType::Bool;
-	if (!_strnicmp(str, "Float", len)) return CommandArgumentType::Float;
-	if (!_strnicmp(str, "GxtKey", len)) return CommandArgumentType::GxtKey;
-	if (!_strnicmp(str, "Int", len)) return CommandArgumentType::Int;
-	if (!_strnicmp(str, "Label", len)) return CommandArgumentType::Label;
-	if (!_strnicmp(str, "ModelAny", len)) return CommandArgumentType::ModelAny;
-	if (!_strnicmp(str, "ModelChar", len)) return CommandArgumentType::ModelChar;
-	if (!_strnicmp(str, "ModelObject", len)) return CommandArgumentType::ModelObject;
-	if (!_strnicmp(str, "ModelVehicle", len)) return CommandArgumentType::ModelVehicle;
-	if (!_strnicmp(str, "ScriptId", len)) return CommandArgumentType::ScriptId;
-	if (!_strnicmp(str, "String", len)) return CommandArgumentType::String;
-	if (!_strnicmp(str, "String128", len)) return CommandArgumentType::String128;
-	if (!_strnicmp(str, "ZoneGxt", len)) return CommandArgumentType::ZoneGxt;
+	if (!_strnicmp(str, "any", len)) return CommandArgumentType::Any;
+	if (!_strnicmp(str, "arguments", len)) return CommandArgumentType::Arguments;
+	if (!_strnicmp(str, "bool", len)) return CommandArgumentType::Bool;
+	if (!_strnicmp(str, "float", len)) return CommandArgumentType::Float;
+	if (!_strnicmp(str, "gxt_key", len)) return CommandArgumentType::GxtKey;
+	if (!_strnicmp(str, "int", len)) return CommandArgumentType::Int;
+	if (!_strnicmp(str, "label", len)) return CommandArgumentType::Label;
+	if (!_strnicmp(str, "model_any", len)) return CommandArgumentType::ModelAny;
+	if (!_strnicmp(str, "model_char", len)) return CommandArgumentType::ModelChar;
+	if (!_strnicmp(str, "model_object", len)) return CommandArgumentType::ModelObject;
+	if (!_strnicmp(str, "model_vehicle", len)) return CommandArgumentType::ModelVehicle;
+	if (!_strnicmp(str, "script_id", len)) return CommandArgumentType::ScriptId;
+	if (!_strnicmp(str, "string", len)) return CommandArgumentType::String;
+	if (!_strnicmp(str, "string128", len)) return CommandArgumentType::String128;
+	if (!_strnicmp(str, "zone_key", len)) return CommandArgumentType::ZoneKey;
 	return CommandArgumentType::Other;
 }
 

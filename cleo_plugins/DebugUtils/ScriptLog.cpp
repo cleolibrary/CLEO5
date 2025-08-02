@@ -443,7 +443,7 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::GxtKey:
-            case OpcodeInfoDatabase::CommandArgumentType::ZoneGxt:
+            case OpcodeInfoDatabase::CommandArgumentType::ZoneKey:
             case OpcodeInfoDatabase::CommandArgumentType::String:
             case OpcodeInfoDatabase::CommandArgumentType::String128:
                 dest += (paramInfo.GetBaseDataType() == DT_TEXTLABEL) ? '\'' : '"';
