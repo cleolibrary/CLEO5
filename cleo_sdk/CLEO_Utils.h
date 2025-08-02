@@ -104,7 +104,7 @@ namespace CLEO
         std::vsnprintf(result.data(), result.length() + 1, format, args);
         va_end(args);
 
-        return result;
+        return std::move(result);
     }
 
     static void StringAppendPrintf(std::string& dest, const char* format, ...)
@@ -127,7 +127,7 @@ namespace CLEO
 
     static void StringAppendNum(std::string& dest, int number, int padLen = 0)
     {
-        char buff[16];
+        static char buff[16];
 
         if (number < 0)
         {
@@ -156,7 +156,7 @@ namespace CLEO
     static void StringAppendHex(std::string& dest, DWORD number, int padLen = 0)
     {
         static const char digits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-        char buff[16];
+        static char buff[16];
 
         int i = 0;
         do
@@ -177,7 +177,8 @@ namespace CLEO
 
     static void StringAppendFloat(std::string& dest, float number, int padLen = 0)
     {
-        char buff[64];
+        static char buff[32];
+        
         int len = sprintf_s(buff, "%f", number);
 
         // cut trailing zeros
