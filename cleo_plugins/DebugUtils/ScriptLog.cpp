@@ -446,13 +446,13 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
             case OpcodeInfoDatabase::CommandArgumentType::ZoneKey:
             case OpcodeInfoDatabase::CommandArgumentType::String:
             case OpcodeInfoDatabase::CommandArgumentType::String128:
-                dest += (paramInfo.GetBaseDataType() == DT_TEXTLABEL) ? '\'' : '"';
+                dest += (paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"';
                 dest += paramInfo.GetText();
-                dest += (paramInfo.GetBaseDataType() == DT_TEXTLABEL) ? '\'' : '"';
+                dest += (paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"';
                 break;
             
             case OpcodeInfoDatabase::CommandArgumentType::Int:
-                if (paramInfo.GetBaseDataType() == DT_DWORD || paramInfo.GetBaseDataType() == DT_VAR)
+                if (paramInfo.GetBaseType() == DT_DWORD || paramInfo.GetBaseType() == DT_VAR)
                 {
                     paramInfo.ValueToString(dest);
                 }
