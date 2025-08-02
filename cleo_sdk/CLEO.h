@@ -363,7 +363,7 @@ extern "C"
 	LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread);
 	void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
-	DWORD WINAPI CLEO_GetScriptCleoStackSize(CRunningScript* thread); // get length of current cleo_call chain
+	DWORD WINAPI CLEO_GetCleoCallStackSize(CRunningScript* thread); // get length of current cleo_call chain
 	void WINAPI CLEO_SetThreadCondResult(CRunningScript* thread, BOOL result);
 	void WINAPI CLEO_ThreadJumpAtLabelPtr(CRunningScript* thread, int offset);
 	void WINAPI CLEO_TerminateScript(CRunningScript* thread);
