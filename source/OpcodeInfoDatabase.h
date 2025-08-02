@@ -25,7 +25,7 @@ public:
 		ScriptId,
 		String,
 		String128,
-		ZoneGxt
+		ZoneKey
 	};
 
 	struct CommandArgument
