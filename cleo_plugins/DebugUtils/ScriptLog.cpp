@@ -561,12 +561,12 @@ void ScriptLog::LogFileDelete()
 
 void __fastcall ScriptLog::HOOK_SetConditionResult(CLEO::CRunningScript* script, int dummy, bool state)
 {
+    if (script->NotFlag) state = !state;
+
     g_Instance->m_conditionResultUpdated = true;
     g_Instance->m_conditionResultValue = state;
 
-    // restoring and calling orignal function code is more performance costly than just reimplementing it here
-
-    if (script->NotFlag) state = !state;
+    // restoring and calling orignal function code is more performance costly than reimplementing it here
 
     if (script->LogicalOp == eLogicalOperation::NONE)
     {
@@ -718,13 +718,14 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 {
     SetCurrScript(script);
     m_currScriptCommandCount++;
+
+    if (state == LoggingState::Disabled) return OR_NONE;
+    if (logCustomScriptsOnly && !script->IsCustom()) return OR_NONE;
+
     m_currCommandReturnParams = nullptr;
     m_conditionResultUpdated = false;
     m_conditionResultExpected = script->NotFlag || m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE;
     if (opcode == 0x0AB1) m_conditionResultExpected = false; // cleo_call: condition result set on return
-
-    if (state == LoggingState::Disabled) return OR_NONE;
-    if (logCustomScriptsOnly && !script->IsCustom()) return OR_NONE;
 
     auto oriIP = script->CurrentIP;
 
@@ -926,7 +927,7 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
         else line += ", "; // separator
 
         line += "condition: ";
-        line += (m_conditionResultValue ^ script->NotFlag) ? "true" : "false";
+        line += m_conditionResultValue ? "true" : "false";
 
         hasComment = true;
         hasReturnVal = true;
