@@ -158,7 +158,7 @@ namespace CLEO
         ~ScriptParamInfo() = default;
 
         // generalized data type
-        eDataType GetBaseDataType() const
+        eDataType GetBaseType() const
         {
             switch (type)
             {
@@ -230,18 +230,12 @@ namespace CLEO
         // append to given string
         void ValueToString(std::string& dest)
         {
-            switch (type)
+            auto baseType = GetBaseType();
+
+            switch (baseType)
             {
-                // int
-                case DT_BYTE:
-                    StringAppendNum(dest, value.cParam);
-                    break;
-
-                case DT_WORD:
-                    StringAppendNum(dest, value.wParam);
-                    break;
-
-                case DT_DWORD:
+                case DT_DWORD: // integers
+                case DT_VAR: // unspecified 32 bit
                     if (abs(value.nParam) >= MinValidAddress)
                     {
                         dest += "0x";
@@ -258,10 +252,6 @@ namespace CLEO
 
                 // short string
                 case DT_TEXTLABEL:
-                case DT_VAR_TEXTLABEL:
-                case DT_VAR_TEXTLABEL_ARRAY:
-                case DT_LVAR_TEXTLABEL:
-                case DT_LVAR_TEXTLABEL_ARRAY:
                     dest += '\'';
                     dest += GetText();
                     dest += '\'';
@@ -269,28 +259,9 @@ namespace CLEO
 
                 // long string
                 case DT_STRING:
-                case DT_VARLEN_STRING:
-                case DT_VAR_STRING:
-                case DT_VAR_STRING_ARRAY:
-                case DT_LVAR_STRING:
-                case DT_LVAR_STRING_ARRAY:
                     dest += '\"';
                     dest += GetText();
                     dest += '\"';
-                    break;
-
-                // variables
-                case DT_VAR:
-                case DT_LVAR:
-                case DT_VAR_ARRAY:
-                case DT_LVAR_ARRAY:
-                    if (abs(value.nParam) >= MinValidAddress)
-                    {
-                        dest += "0x";
-                        StringAppendHex(dest, value.nParam);
-                    }
-                    else
-                        StringAppendNum(dest, value.nParam);
                     break;
             }
         }
