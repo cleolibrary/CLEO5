@@ -196,7 +196,7 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         line += "'>";
 
         // call stack info
-        auto cleoStack = CLEO_GetScriptCleoStackSize(script);
+        auto cleoStack = CLEO_GetCleoCallStackSize(script);
         if (cleoStack || script->SP)
         {
             line += '\n';
@@ -763,7 +763,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     for (auto i = script->SP; i > 0; i--) line += Script_Indent;
 
     // cleo_call scope indentation
-    for (auto i = CLEO_GetScriptCleoStackSize(script); i > 0; i--) line += Script_Indent;
+    for (auto i = CLEO_GetCleoCallStackSize(script); i > 0; i--) line += Script_Indent;
 
     // negation
     if (script->NotFlag) line += "not ";

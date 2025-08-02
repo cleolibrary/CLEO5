@@ -159,7 +159,7 @@ extern "C"
         cs->SetWorkDir(path);
     }
 
-    DWORD WINAPI CLEO_GetScriptCleoStackSize(CRunningScript* thread)
+    DWORD WINAPI CLEO_GetCleoCallStackSize(CRunningScript* thread)
     {
         ScmFunction* scmFunc = ScmFunction::Get(thread->GetScmFunction());
         return scmFunc ? 1 + scmFunc->GetCallStackSize() : 0;
