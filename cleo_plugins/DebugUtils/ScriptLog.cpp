@@ -108,7 +108,7 @@ void ScriptLog::LoadConfig(bool keepState)
         }
     }
 
-    int size = GetPrivateProfileInt("ScriptLog", "MaxSize", 100, config.c_str());
+    int size = GetPrivateProfileInt("ScriptLog", "MaxSize", 250, config.c_str());
     size = std::max(size, 0);
     maxFileSize = size;
     maxFileSize *= 1024 * 1024; // to MB
