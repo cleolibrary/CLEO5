@@ -103,6 +103,10 @@ void ScriptLog::LoadConfig(bool keepState)
                 break;
 
             case 2:
+                state = LoggingState::SingleFrame;
+                break;
+
+            case 3:
                 state = LoggingState::Full;
                 break;
         }
@@ -515,10 +519,11 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
         return; // empty
     }
 
-    if (maxFileSize > 0 && fileSize > maxFileSize)
+    bool sizeLimit = maxFileSize > 0 && fileSize > maxFileSize;
+    if (sizeLimit || state == LoggingState::SingleFrame)
     {
         LogFileDelete();
-        LOG_WARNING(0, "CLEO script log file cleared");
+        if (sizeLimit) LOG_WARNING(0, "CLEO script log file cleared");
     }
 
     if (!m_logFile.is_open())
@@ -646,24 +651,32 @@ void ScriptLog::OnGameProcessBefore()
 {
     if (!CTimer::m_UserPause && !CTimer::m_CodePause) m_processingGame = true;
 
-    // 'clog' cheat
+    // 'CLOG' cheat
     if (_strnicmp(CCheat::m_CheatString, "golc", 4) == 0) // reversed order
     {
         CCheat::m_CheatString[0] = '\0'; // consume the cheat
 
-        state = (state == LoggingState::Full) ? LoggingState::OnCrash : LoggingState::Full; // toggle
-        if (state == LoggingState::Full) LoadConfig(true); // refresh config from ini file
+        LogWriteFile(); // flush buffered lines
+        LoadConfig(true); // refresh config from ini file
 
-        if (state == LoggingState::Full)
+        state = (LoggingState)((size_t)state + 1); // next state
+        if (state > LoggingState::Full) state = LoggingState::OnCrash; // warp around
+
+        switch (state)
         {
-            CHud::SetHelpMessage("CLEO script log: ~g~~h~~h~~h~ON~s~", true, false, false);
-            LogLine("Log: ON\n");
-        }
-        else
-        {
-            CHud::SetHelpMessage("CLEO script log: ~r~~h~~h~~h~OFF~s~", true, false, false);
-            LogLine("Log: OFF");
-            LogWriteFile(); // flush
+            case LoggingState::OnCrash:
+                CHud::SetHelpMessage("CLEO script log:~n~~r~~h~~h~~h~Disabled~s~", true, false, false);
+                LogLine("Log switch: Disabled");
+                break;
+
+            case LoggingState::SingleFrame:
+                CHud::SetHelpMessage("CLEO script log:~n~~y~~h~Log single frame~s~", true, false, false);
+                LogLine("Log switch: Log single frame");
+                break;
+
+            case LoggingState::Full:
+                CHud::SetHelpMessage("CLEO script log:~n~~g~~h~~h~~h~Log everything~s~", true, false, false);
+                LogLine("Log switch: Log everything\n");
         }
     }
 
@@ -953,9 +966,9 @@ void ScriptLog::OnDrawingFinished()
     // make sure current script does not persists to next render frame
     SetCurrScript(nullptr);
 
-    if (state == LoggingState::Full) LogWriteFile();
+    if (state >= LoggingState::SingleFrame) LogWriteFile();
 
-    if (state != LoggingState::Full) // keep only current frame
+    if (state < LoggingState::Full) // keep only current frame
     {
         // TODO: thread lock
         if (m_logBuffer->rdbuf()) m_logBuffer->rdbuf()->pubseekpos(0);
@@ -966,7 +979,7 @@ void ScriptLog::OnDrawingFinished()
 
 void ScriptLog::OnMainWindowFocus(bool active)
 {
-    if (active == false && state == LoggingState::Full)
+    if (active == false && state >= LoggingState::SingleFrame)
     {
         LogWriteFile(true); // flush
     }
