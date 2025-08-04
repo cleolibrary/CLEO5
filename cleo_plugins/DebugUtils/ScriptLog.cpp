@@ -18,8 +18,7 @@ using namespace CLEO;
 ScriptLog* ScriptLog::g_Instance = nullptr;
 
 ScriptLog::ScriptLog() :
-    m_logBuffer(Initial_Buff_Size, '\0'),
-    m_logFileBuffer(Initial_Buff_Size, '\0')
+    m_logBuffer(Initial_Buff_Size, '\0')
 {
     assert(g_Instance == nullptr);
     g_Instance = this;
@@ -540,8 +539,9 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
     }
 
     // TODO: thread lock
-    std::swap(m_logBuffer, m_logFileBuffer);
+    //std::swap(m_logBuffer, m_logFileBuffer);
     // unlock
+    std::string& m_logFileBuffer = m_logBuffer; // no double buffering in single thread
 
     if (m_logFileBuffer.empty())
     {
