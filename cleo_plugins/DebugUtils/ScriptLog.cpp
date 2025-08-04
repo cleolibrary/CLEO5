@@ -10,7 +10,6 @@
 #include <CTheScripts.h>
 #include <CTimer.h>
 #include <memory>
-#include <sstream>
 #include <string>
 
 using namespace CLEO;
@@ -18,13 +17,12 @@ using namespace CLEO;
 
 ScriptLog* ScriptLog::g_Instance = nullptr;
 
-ScriptLog::ScriptLog()
+ScriptLog::ScriptLog() :
+    m_logBuffer(Initial_Buff_Size, '\0'),
+    m_logFileBuffer(Initial_Buff_Size, '\0')
 {
     assert(g_Instance == nullptr);
     g_Instance = this;
-
-    m_logBuffer = new std::stringstream(std::string(Initial_Buff_Size, '\0'));
-    m_logFileBuffer = new std::stringstream(std::string(Initial_Buff_Size, '\0'));
 
     m_logFilePath = CLEO_GetGameDirectory();
     m_logFilePath += "\\cleo\\.cleo_script_log.xml";
@@ -70,9 +68,6 @@ ScriptLog::~ScriptLog()
     CLEO_UnregisterCallback(eCallbackId::MainWindowFocus, callbackMainWindowFocus);
 
     LogWriteFile(); // flush to file on exit or crash
-
-    delete m_logBuffer;
-    delete m_logFileBuffer;
 }
 
 size_t ScriptLog::CurrScriptCommandCount() const
@@ -250,17 +245,11 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
     }
 }
 
-void ScriptLog::LogLine(const char* line)
+void ScriptLog::LogLine(const std::string_view& str)
 {
     // TODO: thread lock
-    *m_logBuffer << "\n" << line;
-    // TODO: thread unlock
-}
-
-void ScriptLog::LogLine(const std::string& line)
-{
-    // TODO: thread lock
-    *m_logBuffer << "\n" << line;
+    m_logBuffer += '\n';
+    m_logBuffer += str;
     // TODO: thread unlock
 }
 
@@ -286,17 +275,10 @@ void ScriptLog::LogFormattedLine(const char* format, ...)
     LogLine(line);
 }
 
-void ScriptLog::LogLineAppend(const char* line)
+void ScriptLog::LogLineAppend(const std::string_view& str)
 {
     // TODO: thread lock
-    *m_logBuffer << line;
-    // TODO: thread unlock
-}
-
-void ScriptLog::LogLineAppend(const std::string& line)
-{
-    // TODO: thread lock
-    *m_logBuffer << line;
+    m_logBuffer += str;
     // TODO: thread unlock
 }
 
@@ -507,14 +489,7 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
     std::swap(m_logBuffer, m_logFileBuffer);
     // unlock
 
-    auto buff = m_logFileBuffer->rdbuf();
-    if (!buff)
-    {
-        return; // empty
-    }
-
-    auto len = (size_t)buff->pubseekoff(0, std::ios_base::cur, std::ios_base::out);
-    if (len == 0)
+    if (m_logFileBuffer.empty())
     {
         return; // empty
     }
@@ -534,8 +509,7 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
 
     if (m_logFile.is_open())
     {
-        auto view = buff->_Get_buffer_view(); // view() introduced in C++20
-        m_logFile << std::string_view(view._Ptr, len) << std::endl;
+        m_logFile << m_logFileBuffer;
         fileSize = (size_t)m_logFile.tellp();
     }
     else
@@ -543,8 +517,7 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
         LOG_WARNING(0, "Failed to open script log file!");
     }
 
-    buff->pubseekpos(0);
-    m_logFileBuffer->clear(); // reset flags
+    m_logFile.clear();
 }
 
 void ScriptLog::LogFileDelete()
@@ -971,8 +944,7 @@ void ScriptLog::OnDrawingFinished()
     if (state < LoggingState::Full) // keep only current frame
     {
         // TODO: thread lock
-        if (m_logBuffer->rdbuf()) m_logBuffer->rdbuf()->pubseekpos(0);
-        m_logBuffer->clear(); // reset flags
+        m_logBuffer.clear();
         // TODO: thread unlock
     }
 }

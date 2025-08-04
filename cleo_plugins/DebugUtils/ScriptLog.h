@@ -29,7 +29,7 @@ public:
     bool logOpcodes = false;
 
 private:
-    static constexpr size_t Initial_Buff_Size = 1024 * 1024; // 1 MB
+    static constexpr size_t Initial_Buff_Size = 16 * 1024 * 1024; // 16 MB
     const char* Block_Indent = "    ";
     const char* Script_Indent = "    ";
 
@@ -44,17 +44,15 @@ private:
     BYTE* m_currCommandReturnParams = nullptr;
     void SetCurrScript(CLEO::CRunningScript* script);
     
-    std::stringstream* m_logBuffer;
-    std::stringstream* m_logFileBuffer;
+    std::string m_logBuffer;
+    std::string m_logFileBuffer;
     std::string m_logFilePath;
     std::ofstream m_logFile;
 
-    void LogLine(const char* line);
-    void LogLine(const std::string& line);
+    void LogLine(const std::string_view& str);
     void LogFormattedLine(const char* format, ...); // slow!
     
-    void LogLineAppend(const char* line); // extend last log line
-    void LogLineAppend(const std::string& line); // extend last log line
+    void LogLineAppend(const std::string_view& str); // extend last log line
 
     void LogScriptParam(std::string& dest, CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue) const;
     void LogWriteFile(bool forceUpdate = false);
