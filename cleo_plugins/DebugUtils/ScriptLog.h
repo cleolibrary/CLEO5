@@ -22,7 +22,7 @@ public:
     // config
     void LoadConfig(bool keepState = false);
 
-    enum LoggingState { Disabled, OnCrash, SingleFrame, Full } state = OnCrash;
+    enum LoggingState { Disabled, OnCrash, Full } state = OnCrash;
     size_t maxFileSize = 250 * 1024 * 1024; // 250 MB
     int logCustomScriptsOnly = false;
     bool logOffsets = true;
