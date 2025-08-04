@@ -49,12 +49,18 @@ private:
     std::string m_logFilePath;
     std::ofstream m_logFile;
 
-    void LogLine(const std::string_view& str);
+    inline void LogLine(const std::string_view& str);
     void LogFormattedLine(const char* format, ...); // slow!
     
-    void LogLineAppend(const std::string_view& str); // extend last log line
-
-    void LogScriptParam(std::string& dest, CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue) const;
+    // extend last log line
+    inline void LogAppend(char ch); 
+    inline void LogAppend(const std::string_view& str);
+    inline void LogAppendNum(int number, int padLen = 0);
+    inline void LogAppendHex(int number, int padLen = 0);
+    inline void LogAppendFloat(float number, int padLen = 0);
+    inline void LogAppendSpace(); // add white char separator at end of the line if not present
+    void LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue);
+    
     void LogWriteFile(bool forceUpdate = false);
     void LogFileDelete();
 
