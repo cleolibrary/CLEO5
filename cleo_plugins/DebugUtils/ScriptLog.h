@@ -45,7 +45,6 @@ private:
     void SetCurrScript(CLEO::CRunningScript* script);
     
     std::string m_logBuffer;
-    std::string m_logFileBuffer;
     std::string m_logFilePath;
     std::ofstream m_logFile;
 
