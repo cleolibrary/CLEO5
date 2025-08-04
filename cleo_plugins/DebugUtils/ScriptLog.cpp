@@ -119,9 +119,6 @@ void ScriptLog::LoadConfig(bool keepState)
 
 void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
 {
-    static std::string line; // keep for performance
-    line.clear();
-
     // close previous script's log block
     if (state != LoggingState::Disabled && 
         m_currScript != nullptr && script != m_currScript &&
@@ -129,17 +126,15 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
     {
         if (m_currScriptCommandCount > 0)
         {
-            line += '\n';
-            if (m_processingGame) line += Block_Indent;
-            line += Block_Indent;
-            line += "Executed in ";
-            StringAppendNum(line, size_t(clock() - m_currScriptStartTime) * 1000 / CLOCKS_PER_SEC);
-            line += " ms";
+            if (m_processingGame) LogAppend(Block_Indent);
+            LogAppend(Block_Indent);
+            LogAppend("Executed in ");
+            LogAppendNum(size_t(clock() - m_currScriptStartTime) * 1000 / CLOCKS_PER_SEC);
+            LogAppend(" ms\n");
         }
 
-        line += '\n';
-        if (m_processingGame) line += Block_Indent;
-        line += "</script>\n";
+        if (m_processingGame) LogAppend(Block_Indent);
+        LogAppend("</script>\n");
     }
 
     // start new script's log block
@@ -180,42 +175,43 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             filename = "?";
         }
 
-        line += '\n';
-        if (m_processingGame) line += Block_Indent;
-        line += "<script idx='";
-        StringAppendNum(line, idx);
-        line += "' name='";
-        line += script->GetName();
-        line += "' file='";
-        line += filename;
-        line += "' custom='";
-        line += script->IsCustom() ? "yes" : "no";
-        line += "' mission='";
-        line += script->IsMission() ? "yes" : "no";
-        line += "'>";
+        LogAppend('\n');
+        if (m_processingGame) LogAppend(Block_Indent);
+        LogAppend("<script idx='");
+        LogAppendNum(idx);
+        LogAppend("' name='");
+        LogAppend(script->GetName());
+        LogAppend("' file='");
+        LogAppend(filename);
+        LogAppend("' custom='");
+        LogAppend(script->IsCustom() ? "yes" : "no");
+        LogAppend("' mission='");
+        LogAppend(script->IsMission() ? "yes" : "no");
+        LogAppend("'>");
 
         // call stack info
         auto cleoStack = CLEO_GetCleoCallStackSize(script);
         if (cleoStack || script->SP)
         {
-            line += '\n';
-            if (m_processingGame) line += Block_Indent;
-            line += Block_Indent;
-            line += "Call Stacks depth - cleo_call: ";
-            StringAppendNum(line, cleoStack);
-            line += ", gosub: ";
-            StringAppendNum(line, script->SP);
+            LogAppend('\n');
+            if (m_processingGame) LogAppend(Block_Indent);
+            LogAppend(Block_Indent);
+            LogAppend("Call Stacks depth - cleo_call: ");
+            LogAppendNum(cleoStack);
+            LogAppend(", gosub: ");
+            LogAppendNum(script->SP);
 
             bool savingEnabled = !script->IsCustom() || false; // TODO: check CLEO save enabled for custom script
             if (savingEnabled && cleoStack)
             {
-                line += " \\ BUG: Scrip saving enabled. Saving during cleo_call would result in errors!";
+                LogAppend(" \\ BUG: Scrip saving enabled. Saving during cleo_call would result in errors!");
             }
 
             bool wastedBustedCheck = script->IsMission() && script->bWastedBustedCheck;
+            // TODO: check for R* bug: calls stack can not be empty
             if (wastedBustedCheck && cleoStack)
             {
-                line += " \\ BUG: Mission death-arrest-check active. Executing death-arrest procedure during cleo_call would result in errors!";
+                LogAppend(" \\ BUG: Mission death-arrest-check active. Executing death-arrest procedure during cleo_call would result in errors!");
             }
         }
 
@@ -224,16 +220,16 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         {
             auto pause = script->WakeTime - CTimer::m_snTimeInMilliseconds;
 
-            line += '\n';
-            if (m_processingGame) line += Block_Indent;
-            line += Block_Indent;
-            line += "Sleeping for ";
-            StringAppendNum(line, pause);
-            line += " ms more";
+            LogAppend('\n');
+            if (m_processingGame) LogAppend(Block_Indent);
+            LogAppend(Block_Indent);
+            LogAppend("Sleeping for ");
+            LogAppendNum(pause);
+            LogAppend(" ms more");
         }
-    }
 
-    if (!line.empty()) LogLineAppend(line);
+        LogAppend('\n');
+    }
 
     // update/reset script stats
     if (script != m_currScript || script == nullptr)
@@ -275,14 +271,52 @@ void ScriptLog::LogFormattedLine(const char* format, ...)
     LogLine(line);
 }
 
-void ScriptLog::LogLineAppend(const std::string_view& str)
+inline void ScriptLog::LogAppend(char ch)
+{
+    // TODO: thread lock
+    m_logBuffer += ch;
+    // TODO: thread unlock
+}
+
+void ScriptLog::LogAppend(const std::string_view& str)
 {
     // TODO: thread lock
     m_logBuffer += str;
     // TODO: thread unlock
 }
 
-void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue) const
+inline void ScriptLog::LogAppendNum(int number, int padLen)
+{
+    // TODO: thread lock
+    StringAppendNum(m_logBuffer, number, padLen);
+    // TODO: thread unlock
+}
+
+inline void ScriptLog::LogAppendHex(int number, int padLen)
+{
+    // TODO: thread lock
+    StringAppendHex(m_logBuffer, number, padLen);
+    // TODO: thread unlock
+}
+
+inline void ScriptLog::LogAppendFloat(float number, int padLen)
+{
+    // TODO: thread lock
+    StringAppendFloat(m_logBuffer, number, padLen);
+    // TODO: thread unlock
+}
+
+inline void ScriptLog::LogAppendSpace()
+{
+    // TODO: thread lock
+    if (!m_logBuffer.empty() && m_logBuffer.back() != ' ' && m_logBuffer.back() != '\t')
+    {
+        m_logBuffer += ' ';
+    }
+    // TODO: thread unlock
+}
+
+void ScriptLog::LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue)
 {
     bool hasName = false;
     if (logName)
@@ -290,9 +324,9 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
         if (!command->arguments[paramIdx].name.empty())
         {
             hasName = true;
-            dest += '{';
-            dest += command->arguments[paramIdx].name;
-            dest += '}';
+            LogAppend('{');
+            LogAppend(command->arguments[paramIdx].name);
+            LogAppend('}');
         }
     }
 
@@ -306,8 +340,8 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
         {
             case DT_END:
                 /*hasVariable = true;
-                if (hasName) dest += ' ';
-                dest += "ArgsEnd";*/
+                if (hasName) LogAppend(' ';
+                LogAppend("ArgsEnd";*/
                 break;
 
             case DT_VAR:
@@ -326,10 +360,10 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
             case DT_LVAR_STRING:
             case DT_LVAR_STRING_ARRAY:
                 hasVariable = true;
-                if (hasName) dest += ' ';
-                if (isGlobalVar) dest += '$';
-                StringAppendNum(dest, paramInfo.varIndex);
-                if (!isGlobalVar) dest += '@';
+                if (hasName) LogAppend(' ');
+                if (isGlobalVar) LogAppend('$');
+                LogAppendNum(paramInfo.varIndex);
+                if (!isGlobalVar) LogAppend('@');
 
                 if (paramInfo.arrayType != eArrayType::AT_NONE)
                 {
@@ -337,19 +371,19 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                         paramInfo.arrayFlags & ATF_INDEX_GLOBAL,
                         paramInfo.arrayIndexVar);
 
-                    dest += "[ ";
-                    if (paramInfo.arrayFlags & ATF_INDEX_GLOBAL) dest += '$';
-                    StringAppendNum(dest, paramInfo.arrayIndexVar);
-                    if ((paramInfo.arrayFlags & ATF_INDEX_GLOBAL) == 0) dest += '@';
-                    dest += '(';
+                    LogAppend("[ ");
+                    if (paramInfo.arrayFlags & ATF_INDEX_GLOBAL) LogAppend('$');
+                    LogAppendNum(paramInfo.arrayIndexVar);
+                    if ((paramInfo.arrayFlags & ATF_INDEX_GLOBAL) == 0) LogAppend('@');
+                    LogAppend('(');
                     if (abs(idxVar->nParam) >= MinValidAddress)
                     {
-                        dest += "0x";
-                        StringAppendHex(dest, idxVar->dwParam);
+                        LogAppend("0x");
+                        LogAppendHex(idxVar->dwParam);
                     }
                     else
-                        StringAppendNum(dest, idxVar->nParam);
-                    dest += ") ]";
+                        LogAppendNum(idxVar->nParam);
+                    LogAppend(") ]");
                 }
                 break;
         }
@@ -364,8 +398,8 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
 
     if (logValue)
     {
-        if (hasVariable) dest += '(';
-        else if (hasName) dest += ' ';
+        if (hasVariable) LogAppend('(');
+        else if (hasName) LogAppend(' ');
 
         // pick presentation style according to param type declared in the mode
         switch (command->arguments[paramIdx].type)
@@ -382,32 +416,46 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
                             auto entry = e->GetEntryName(paramInfo.value.nParam);
                             if (entry)
                             {
-                                dest += e->name;
-                                dest += '.';
-                                dest += entry;
+                                LogAppend(e->name);
+                                LogAppend('.');
+                                LogAppend(entry);
                             }
                             else
-                                paramInfo.ValueToString(dest); // print according to param type in script
+                            {
+                                // TODO: thread lock
+                                paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                                // TODO: thread unlock
+                            }
                         }
                         else
-                            paramInfo.ValueToString(dest); // print according to param type in script
+                        {
+                            // TODO: thread lock
+                            paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                            // TODO: thread unlock
+                        }
                     }
                     else // text enums
                     {
                         auto entry = e->GetEntryName(std::string(paramInfo.GetText()).c_str());
                         if (entry)
                         {
-                            dest += e->name;
-                            dest += '.';
-                            dest += entry;
+                            LogAppend(e->name);
+                            LogAppend('.');
+                            LogAppend(entry);
                         }
                         else
-                            paramInfo.ValueToString(dest); // print according to param type in script
+                        {
+                            // TODO: thread lock
+                            paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                            // TODO: thread unlock
+                        }
                     }
                 }
                 else // class or unknown enum
                 {
-                    paramInfo.ValueToString(dest); // print according to param type in script
+                    // TODO: thread lock
+                    paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                    // TODO: thread unlock
                 }
                 break;
             }
@@ -418,59 +466,65 @@ void ScriptLog::LogScriptParam(std::string& dest, CLEO::CRunningScript* script, 
             case OpcodeInfoDatabase::CommandArgumentType::Bool:
                 switch (paramInfo.value.nParam)
                 {
-                    case 0: dest += "false"; break;
-                    case 1: dest += "true"; break;
-                    default: StringAppendNum(dest, paramInfo.value.nParam); break;
+                    case 0: LogAppend("false"); break;
+                    case 1: LogAppend("true"); break;
+                    default: LogAppendNum(paramInfo.value.nParam); break;
                 }
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::Float:
-                StringAppendFloat(dest, paramInfo.value.fParam);
+                LogAppendFloat(paramInfo.value.fParam);
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::GxtKey:
             case OpcodeInfoDatabase::CommandArgumentType::ZoneKey:
             case OpcodeInfoDatabase::CommandArgumentType::String:
             case OpcodeInfoDatabase::CommandArgumentType::String128:
-                dest += (paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"';
-                dest += paramInfo.GetText();
-                dest += (paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"';
+                LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
+                LogAppend(paramInfo.GetText());
+                LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
                 break;
             
             case OpcodeInfoDatabase::CommandArgumentType::Int:
                 if (paramInfo.GetBaseType() == DT_DWORD || paramInfo.GetBaseType() == DT_VAR)
                 {
-                    paramInfo.ValueToString(dest);
+                    // TODO: thread lock
+                    paramInfo.ValueToString(m_logBuffer);
+                    // TODO: thread unlock
                 }
-                else
+                else // expected integer, got something else. Print as hex
                 {
-                    dest += "0x";
-                    StringAppendHex(dest, paramInfo.value.nParam);
+                    LogAppend("0x");
+                    LogAppendHex(paramInfo.value.nParam);
                 }
                 break;
             
             case OpcodeInfoDatabase::CommandArgumentType::Label:
-                dest += "@LABEL_";
-                StringAppendNum(dest, abs(paramInfo.value.nParam));
+                LogAppend("@LABEL_");
+                LogAppendNum(abs(paramInfo.value.nParam));
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::ModelAny:
             case OpcodeInfoDatabase::CommandArgumentType::ModelChar:
             case OpcodeInfoDatabase::CommandArgumentType::ModelObject:
             case OpcodeInfoDatabase::CommandArgumentType::ModelVehicle:
-                StringAppendNum(dest, abs(paramInfo.value.nParam));
+                LogAppendNum(paramInfo.value.nParam);
                 break;
 
             case OpcodeInfoDatabase::CommandArgumentType::ScriptId:
-                dest += "0x";
-                StringAppendHex(dest, paramInfo.value.nParam);
+                LogAppend("0x");
+                LogAppendHex(paramInfo.value.nParam);
                 break;
 
             default:
-                paramInfo.ValueToString(dest); // print according to param type in script
+            {
+                // TODO: thread lock
+                paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                // TODO: thread unlock
+            }
         }
 
-        if (hasVariable) dest += ')';
+        if (hasVariable) LogAppend(')');
     }
 }
 
@@ -617,7 +671,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
         }
     }
 
-    LogLine(""); // separator
+    LogAppend('\n'); // separator
 }
 
 void ScriptLog::OnGameProcessBefore()
@@ -666,14 +720,11 @@ void ScriptLog::OnGameProcessBefore()
             next = next->m_pNext;
         }
 
-        static std::string line; // keep for performance
-        line.clear();
-        line += "<gameProcess frame='";
-        StringAppendNum(line, CTimer::m_FrameCounter);
-        line += "' activeScripts='";
-        StringAppendNum(line, scriptCount);
-        line += "'>";
-        LogLine(line);
+        LogAppend("<gameProcess frame='");
+        LogAppendNum(CTimer::m_FrameCounter);
+        LogAppend("' activeScripts='");
+        LogAppendNum(scriptCount);
+        LogAppend("'>");
     }
 }
 
@@ -715,11 +766,8 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
     auto oriIP = script->CurrentIP;
 
-    static std::string line; // keep for performance
-    line.clear();
-
-    if (m_processingGame) line += Block_Indent; // game processing block indentation
-    if (m_currScript) line += Block_Indent; // script processing block indentation
+    if (m_processingGame) LogAppend(Block_Indent); // game processing block indentation
+    if (m_currScript) LogAppend(Block_Indent); // script processing block indentation
 
     // script offset
     if (logOffsets)
@@ -728,39 +776,38 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
         offset -= sizeof(WORD); // command opcode was already consumed
 
         auto digits = offset <= 0 ? 1 : (int)(log10(offset) + 1);
-        for (int i = 7 - digits; i > 0; i--) line += ' '; // pad to constant width
-        line += '{';
-        StringAppendNum(line, offset);
-        line += "}   ";
+        for (int i = 7 - digits; i > 0; i--) LogAppend(' '); // pad to constant width
+        LogAppend('{');
+        LogAppendNum(offset);
+        LogAppend("}   ");
     }
 
     // command opcode
     if (logOpcodes)
     {
-        line += '{';
-        StringAppendHex(line, opcode | (script->NotFlag ? 0x8000 : 0), 4);
-        line += ":} ";
+        LogAppend('{');
+        LogAppendHex(opcode | (script->NotFlag ? 0x8000 : 0), 4);
+        LogAppend(":} ");
     }
 
     // if block conditions indentation
-    if (m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE) line += Script_Indent;
+    if (m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE) LogAppend(Script_Indent);
 
     // gosub scope indentation
-    for (auto i = script->SP; i > 0; i--) line += Script_Indent;
+    for (auto i = script->SP; i > 0; i--) LogAppend(Script_Indent);
 
     // cleo_call scope indentation
-    for (auto i = CLEO_GetCleoCallStackSize(script); i > 0; i--) line += Script_Indent;
+    for (auto i = CLEO_GetCleoCallStackSize(script); i > 0; i--) LogAppend(Script_Indent);
 
     // negation
-    if (script->NotFlag) line += "not ";
+    if (script->NotFlag) LogAppend("not ");
 
     auto command = m_opcodeDatabase.GetCommand((uint16_t)opcode);
 
     if (command == nullptr) // not documented in database?
     {
-        line += "command_";
-        StringAppendHex(line, opcode, 4);
-        LogLine(line);
+        LogAppend("command_");
+        LogAppendHex(opcode, 4);
         m_prevCommand = (WORD)opcode;
         return OR_NONE;
     }
@@ -779,13 +826,13 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
             {
                 if (i == command->inputArguments) m_currCommandReturnParams = script->CurrentIP; // keep pointer to return params start
 
-                if (!line.empty() && line.back() != ' ') line += ' '; // separator
-                LogScriptParam(line, script, command, i, returnArgCount > 1, true, false);
+                LogAppendSpace();
+                LogAppendScriptParam(script, command, i, returnArgCount > 1, true, false);
             }
         }
         script->CurrentIP = oriIP; // restore original position
 
-        line += " = ";
+        LogAppend(" = ");
     }
     else if(!command->oper.empty() && !command->arguments.empty() && !command->IsComparison())
     {
@@ -795,7 +842,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     // command name
     if (command->oper.empty())
     {
-        line += command->nameLower;
+        LogAppend(command->nameLower);
     }
 
     // command params
@@ -803,35 +850,35 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     {
         ScriptParamInfo paramInfo(script);
         if (paramInfo.value.nParam >= eLogicalOperation::ORS_1)
-            line += " or";
+            LogAppend(" or");
         else
         if (paramInfo.value.nParam >= eLogicalOperation::ANDS_1)
-            line += " and";
+            LogAppend(" and");
     }
     else
     {
         for (size_t i = 0; i < command->inputArguments; i++)
         {
-            if (!line.empty() && line.back() != ' ') line += ' '; // separator
+            LogAppendSpace();
 
             // operator
             if (!command->oper.empty())
             {
                 if (command->inputArguments == 1 && i == 0) // %param
                 {
-                    line += command->oper;
+                    LogAppend(command->oper);
                 }
                 else if (command->inputArguments == 2 && i == 1) // param % param
                 {
-                    line += command->oper;
-                    if (!command->IsComparison() && command->oper.find('=') == std::string::npos) line += '='; // param %= param
-                    line += " ";
+                    LogAppend(command->oper);
+                    if (!command->IsComparison() && command->oper.find('=') == std::string::npos) LogAppend('='); // param %= param
+                    LogAppend(" ");
                 }
             }
 
             if (command->arguments[i].type != OpcodeInfoDatabase::CommandArgumentType::Arguments)
             {
-                LogScriptParam(line, script, command, i, true, true, true);
+                LogAppendScriptParam(script, command, i, true, true, true);
             }
             else // varArgs
             {
@@ -839,8 +886,8 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
                 auto type = script->PeekDataType();
                 while (type != eDataType::DT_END)
                 {
-                    if (!first) line += " ";
-                    LogScriptParam(line, script, command, i, first, true, true);
+                    if (!first) LogAppend(" ");
+                    LogAppendScriptParam(script, command, i, first, true, true);
 
                     first = false;
                     type = script->PeekDataType();
@@ -848,8 +895,6 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
             }
         }
     }
-
-    LogLine(line);
 
     script->CurrentIP = oriIP; // restore original position
     m_prevCommand = (WORD)opcode;
@@ -862,25 +907,26 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
     if (logCustomScriptsOnly && !script->IsCustom()) return result;
     
     auto command = m_opcodeDatabase.GetCommand((uint16_t)opcode);
-    if (!command) return result;
-
-    static std::string line; // keep for performance
-    line.clear();
+    if (!command)
+    {
+        LogAppend('\n');
+        return result;
+    }
 
     // extra annotations
     bool hasComment = false;
 
     if (command->isNop)
     {
-        line += hasComment ? ", " : " // ";
-        line += "NOP command";
+        LogAppend(hasComment ? ", " : " // ");
+        LogAppend("NOP command");
         hasComment = true;
     }
 
     if (m_conditionResultExpected && !m_conditionResultUpdated && opcode != 0x0AB1) // assume cleo_call always sets condition result
     {
-        line += hasComment ? ", " : " // ";
-        line += "BUG: non-logical command";
+        LogAppend(hasComment ? ", " : " // ");
+        LogAppend("BUG: non-logical command");
         hasComment = true;
     }
     
@@ -896,10 +942,10 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
         size_t count = command->oper.empty() ? command->arguments.size() : 1;
         for (; i < count; i++)
         {
-            if (!hasReturnVal) line += hasComment ? " -> " : " // -> ";
-            else line += ", "; // separator
+            if (!hasReturnVal) LogAppend(hasComment ? " -> " : " // -> ");
+            else LogAppend(", "); // separator
 
-            LogScriptParam(line, script, command, i, false, false, true);
+            LogAppendScriptParam(script, command, i, false, false, true);
 
             hasComment = true;
             hasReturnVal = true;
@@ -909,17 +955,17 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
 
     if (m_conditionResultUpdated)
     {
-        if (!hasReturnVal) line += hasComment ? " -> " : " // -> ";
-        else line += ", "; // separator
+        if (!hasReturnVal) LogAppend(hasComment ? " -> " : " // -> ");
+        else LogAppend(", "); // separator
 
-        line += "condition: ";
-        line += m_conditionResultValue ? "true" : "false";
+        LogAppend("condition: ");
+        LogAppend(m_conditionResultValue ? "true" : "false");
 
         hasComment = true;
         hasReturnVal = true;
     }
 
-    if (hasComment) LogLineAppend(line);
+    LogAppend('\n');
 
     return result;
 }
