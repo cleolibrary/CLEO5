@@ -566,7 +566,7 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
         LOG_WARNING(0, "Failed to open script log file!");
     }
 
-    m_logFile.clear();
+    m_logBuffer.clear();
 }
 
 void ScriptLog::LogFileDelete()
