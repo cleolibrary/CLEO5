@@ -108,6 +108,7 @@ void ScriptLog::LoadConfig(bool keepState)
     maxFileSize *= 1024 * 1024; // to MB
 
     logCustomScriptsOnly = GetPrivateProfileInt("ScriptLog", "OnlyCustomScripts", -1, config.c_str());
+    logDebugScriptsOnly = GetPrivateProfileInt("ScriptLog", "OnlyDebugScripts", false, config.c_str()) != 0;
     logOffsets = GetPrivateProfileInt("ScriptLog", "Offsets", 0, config.c_str()) != 0;
     logOpcodes = GetPrivateProfileInt("ScriptLog", "Opcodes", 0, config.c_str()) != 0;
 }
@@ -115,9 +116,8 @@ void ScriptLog::LoadConfig(bool keepState)
 void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
 {
     // close previous script's log block
-    if (state != LoggingState::Disabled && 
-        m_currScript != nullptr && script != m_currScript &&
-        (!logCustomScriptsOnly || m_currScript->IsCustom()))
+    if (m_currScript != nullptr && script != m_currScript &&
+        state != LoggingState::Disabled && m_currScriptLogging)
     {
         if (m_currScriptCommandCount > 0)
         {
@@ -132,10 +132,22 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         LogAppend("</script>\n");
     }
 
+    // update m_currScriptLogging state
+    if (script)
+    {
+        m_currScriptLogging = !logCustomScriptsOnly || script->IsCustom(); // only custom scripts?
+
+        if (m_currScriptLogging && logDebugScriptsOnly) // only debug mode scripts?
+        {
+            m_currScriptLogging = CLEO_GetScriptDebugMode(script) || (*(WORD*)script->GetBytePointer()) == COMMAND_DEBUG_ON; // debug mode on or just about to be enabled
+        }
+    }
+    else
+        m_currScriptLogging = false;
+
     // start new script's log block
-    if (state != LoggingState::Disabled && 
-        script != nullptr && script != m_currScript &&
-        (!logCustomScriptsOnly || script->IsCustom()))
+    if (script != nullptr && script != m_currScript &&
+        state != LoggingState::Disabled && m_currScriptLogging)
     {
         // find index of this script in active scripts queue
         int idx = -1;
@@ -684,12 +696,12 @@ void ScriptLog::OnGameProcessBefore()
         if (state == LoggingState::Full)
         {
             CHud::SetHelpMessage("CLEO script log: ~g~~h~~h~~h~ON~s~", true, false, false);
-            LogLine("Log: ON\n");
+            LogLine("Log: ON\n\n");
         }
         else
         {
             CHud::SetHelpMessage("CLEO script log: ~r~~h~~h~~h~OFF~s~", true, false, false);
-            LogLine("Log: OFF");
+            LogLine("Log: OFF\n\n");
             LogWriteFile(); // flush
         }
     }
@@ -721,7 +733,7 @@ void ScriptLog::OnGameProcessAfter()
 
     if (state != LoggingState::Disabled)
     {
-        if (m_processingGame) LogLine("</gameProcess>\n");
+        if (m_processingGame) LogAppend("</gameProcess>\n\n");
     }
 
     m_processingGame = false;
@@ -743,8 +755,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     SetCurrScript(script);
     m_currScriptCommandCount++;
 
-    if (state == LoggingState::Disabled) return OR_NONE;
-    if (logCustomScriptsOnly && !script->IsCustom()) return OR_NONE;
+    if (state == LoggingState::Disabled || !m_currScriptLogging) return OR_NONE;
 
     m_currCommandReturnParams = nullptr;
     m_conditionResultUpdated = false;
@@ -890,8 +901,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
 CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result)
 {
-    if (state == LoggingState::Disabled) return result;
-    if (logCustomScriptsOnly && !script->IsCustom()) return result;
+    if (state == LoggingState::Disabled || !m_currScriptLogging) return result;
     
     auto command = m_opcodeDatabase.GetCommand((uint16_t)opcode);
     if (!command)
