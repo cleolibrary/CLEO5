@@ -8,7 +8,7 @@ namespace CLEO
     class CCustomOpcodeSystem
     {
     public:
-        static constexpr size_t Opcode_Max_Original = 0x0A4E; // GTA SA
+        static constexpr size_t Opcode_Max_Native = 0x0A4E; // GTA SA
         static constexpr size_t Opcode_Max = 0x7FFF;
         static constexpr size_t Opcode_Table_Size = 100; // opcodes per handler
         
@@ -32,7 +32,7 @@ namespace CLEO
         ~CCustomOpcodeSystem();
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
-
+        static OpcodeResult CallNativeOpcode(CRunningScript* thread, WORD opcode);
         static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
 
         // new/customized opcodes
@@ -64,7 +64,7 @@ namespace CLEO
 
         typedef OpcodeResult(__thiscall* OpcodeHandler)(CRunningScript* thread, WORD opcode);
 
-        static const size_t OriginalOpcodeHandlersCount = (Opcode_Max_Original / Opcode_Table_Size) + 1;
+        static const size_t OriginalOpcodeHandlersCount = (Opcode_Max_Native / Opcode_Table_Size) + 1;
         static OpcodeHandler originalOpcodeHandlers[OriginalOpcodeHandlersCount]; // backuped when patching
 
         static const size_t CustomOpcodeHandlersCount = (Opcode_Max / Opcode_Table_Size) + 1;

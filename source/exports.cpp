@@ -38,6 +38,11 @@ extern "C"
         return CCustomOpcodeSystem::RegisterOpcode(opcode, callback);
     }
 
+    OpcodeResult WINAPI CLEO_CallNativeOpcode(CRunningScript* script, WORD opcode)
+    {
+        return CCustomOpcodeSystem::CallNativeOpcode(script, opcode);
+    }
+
     void WINAPI CLEO_RegisterCallback(eCallbackId id, void* func)
     {
         CleoInstance.AddCallback(id, func);

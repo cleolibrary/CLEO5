@@ -64,7 +64,7 @@ namespace CLEO
 				break; // processed
 		}
 
-		if(result == OR_NONE) // opcode not proccessed yet
+		if (result == OR_NONE) // opcode not proccessed yet
 		{
 			if(opcode > Opcode_Max)
 			{
@@ -74,7 +74,7 @@ namespace CLEO
 			}
 
 			CustomOpcodeHandler handler = customOpcodeProc[opcode];
-			if(handler != nullptr)
+			if (handler != nullptr)
 			{
 				lastCustomOpcode = opcode;
 				result = handler(thread);
@@ -82,24 +82,7 @@ namespace CLEO
 			}
 
 			// Not registered as custom opcode. Call game's original handler
-
-			if (opcode > Opcode_Max_Original)
-			{
-				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
-				if (!extensionMsg.empty()) extensionMsg = " " + extensionMsg;
-
-				SHOW_ERROR("Custom opcode [%04X] not registered!%s\nCalled in script %s\nScript suspended.",
-					opcode,
-					extensionMsg.c_str(),
-					ScriptInfoStr(thread).c_str());
-
-				result = thread->Suspend();
-				return AfterOpcodeExecuted();
-			}
-
-			size_t tableIdx = opcode / Opcode_Table_Size;
-			result = originalOpcodeHandlers[tableIdx](thread, opcode);
-
+			result = CallNativeOpcode(thread, opcode);
 			if(result == OR_ERROR)
 			{
 				auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
@@ -213,6 +196,17 @@ namespace CLEO
 		dst = callback;
 		TRACE("Opcode [%04X] registered", opcode);
 		return true;
+	}
+
+	OpcodeResult CCustomOpcodeSystem::CallNativeOpcode(CRunningScript* thread, WORD opcode)
+	{
+		if (opcode > Opcode_Max_Native)
+		{
+			return OR_ERROR;
+		}
+
+		size_t tableIdx = opcode / Opcode_Table_Size;
+		return originalOpcodeHandlers[tableIdx](thread, opcode);
 	}
 
 	const char* ReadStringParam(CRunningScript *thread, char* buff, int buffSize)
@@ -681,8 +675,7 @@ namespace CLEO
 			return thread->Suspend();
 		}
 
-		size_t tableIdx = 0x0051 / Opcode_Table_Size;
-		return originalOpcodeHandlers[tableIdx](thread, 0x0051); // call game's original
+		return CallNativeOpcode(thread, 0x0051); // call game's original
 	}
 
 	// load_and_launch_mission_internal
@@ -691,8 +684,7 @@ namespace CLEO
 	{
 		CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
 
-		size_t tableIdx = 0x0417 / Opcode_Table_Size;
-		return originalOpcodeHandlers[tableIdx](thread, 0x0417); // call game's original
+		return CallNativeOpcode(thread, 0x0417); // call game's original
 	}
 
 	// stream_custom_script
