@@ -25,6 +25,7 @@ public:
     enum LoggingState { Disabled, OnCrash, Full } state = OnCrash;
     size_t maxFileSize = 250 * 1024 * 1024; // 250 MB
     int logCustomScriptsOnly = false;
+    bool logDebugScriptsOnly = false;
     bool logOffsets = true;
     bool logOpcodes = false;
 
@@ -40,6 +41,7 @@ private:
 
     CLEO::CRunningScript* m_currScript = nullptr;
     clock_t m_currScriptStartTime = 0;
+    bool m_currScriptLogging = true;
     size_t m_currScriptCommandCount = 0;
     BYTE* m_currCommandReturnParams = nullptr;
     void SetCurrScript(CLEO::CRunningScript* script);
