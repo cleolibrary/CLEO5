@@ -14,6 +14,7 @@ public:
     void Draw(bool beforeFade); // draw buffered script draws to screen
 
     RwTexture* GetScriptTexture(CLEO::CRunningScript* script, DWORD slot);
+    void SetScriptTexture(CLEO::CRunningScript* script, DWORD slot, RwTexture* text);
 
 private:
     ScriptDrawsState m_globalDrawingState;
