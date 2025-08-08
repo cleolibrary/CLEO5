@@ -44,6 +44,13 @@
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CRect.cpp">
       <Filter>plugin_sdk</Filter>
     </ClCompile>
+    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CFileLoader.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\common.cpp">
+      <Filter>plugin_sdk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CTextManager.h" />
@@ -56,6 +63,7 @@
     <ClInclude Include="crc32.h" />
     <ClInclude Include="ScriptDrawing.h" />
     <ClInclude Include="ScriptDrawsState.h" />
+    <ClInclude Include="TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="cleo_sdk">
