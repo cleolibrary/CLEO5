@@ -17,7 +17,12 @@ struct ScriptDrawsState
 
     ScriptDrawsState() = default;
     ScriptDrawsState(const ScriptDrawsState&) = delete; // no copying!
-    ~ScriptDrawsState() = default;
+
+    ~ScriptDrawsState()
+    {
+        // CLEO has own texture manager, don't let CSprite2d destructor delete them
+        for (auto& s : sprites) s.m_pTexture = nullptr;
+    }
 
     void Store()
     {

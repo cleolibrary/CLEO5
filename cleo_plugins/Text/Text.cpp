@@ -3,6 +3,7 @@
 #include "CLEO_Utils.h"
 #include "ScriptDrawing.h"
 #include "CTextManager.h"
+#include "TextureManager.h"
 #include <CGame.h>
 #include <CHud.h>
 #include <CMessages.h>
@@ -20,6 +21,7 @@ class Text
 public:
 	static ScriptDrawing scriptDrawing;
 	static CTextManager textManager;
+	static TextureManager textureManager;
 	
 	static char msgBuffLow[MAX_STR_LEN + 1];
 	static char msgBuffHigh[MAX_STR_LEN + 1];
@@ -36,6 +38,10 @@ public:
 		if (!PluginCheckCleoVersion()) return;
 
 		//register opcodes
+		CLEO_RegisterOpcode(0x038F, opcode_038F); // load_sprite
+		CLEO_RegisterOpcode(0x0390, opcode_0390); // load_texture_dictionary
+		CLEO_RegisterOpcode(0x0391, opcode_0391); // remove_texture_dictionary
+
 		CLEO_RegisterOpcode(0x0ACA, opcode_0ACA); // print_help_string
 		CLEO_RegisterOpcode(0x0ACB, opcode_0ACB); // print_big_string
 		CLEO_RegisterOpcode(0x0ACC, opcode_0ACC); // print_string
@@ -122,6 +128,7 @@ public:
 	static void __stdcall OnScriptUnregister(CLEO::CRunningScript* pScript)
 	{
 		scriptDrawing.ScriptUnregister(pScript);
+		textureManager.ScriptUnregister(pScript);
 	}
 
 	static void __stdcall OnScriptDraw(bool beforeFade)
@@ -155,6 +162,58 @@ public:
 		MemPatchJump(gaddrof(CText::Get), &HOOK_CTextGet); // reinstall our hook
 
 		return result;
+	}
+
+	// load_sprite
+	// load_sprite {memorySlot} [int] {spriteName} [string]
+	static OpcodeResult __stdcall opcode_038F(CLEO::CRunningScript* thread)
+	{
+		auto slot = OPCODE_READ_PARAM_INT();
+		OPCODE_READ_PARAM_STRING(spriteName);
+
+		if (slot <= 0 || slot > _countof(CTheScripts::ScriptSprites))
+		{
+			SHOW_ERROR("'memorySlot' argument (%d) out of supported range in script %s \nScript suspended.", slot, ScriptInfoStr(thread).c_str());
+			return thread->Suspend();
+		}
+
+		auto dict = textureManager.GetCurrDictionary(thread);
+		if (dict == nullptr)
+		{
+			SHOW_ERROR("'load_sprite' used without loaded texture dictionary in script %s \nScript suspended.", slot, ScriptInfoStr(thread).c_str());
+			return thread->Suspend();
+		}
+
+		std::transform(_buff_spriteName, _buff_spriteName + strlen(_buff_spriteName), _buff_spriteName, [](unsigned char c) { return tolower(c); });
+		auto tex = RwTexDictionaryFindNamedTexture(dict->txd, spriteName);
+
+		if (tex == nullptr)
+		{
+			LOG_WARNING(thread, "Texture '%s' not found in dictionary `%s`", spriteName, dict->name);
+		}
+
+		scriptDrawing.SetScriptTexture(thread, slot, tex);
+
+		return OR_CONTINUE;
+	}
+
+	// load_texture_dictionary
+	// load_texture_dictionary {name} [string]
+	static OpcodeResult __stdcall opcode_0390(CLEO::CRunningScript* thread)
+	{
+		OPCODE_READ_PARAM_STRING(filename);
+
+		textureManager.GetDictionary(thread, filename);
+		return OR_CONTINUE;
+	}
+
+	// remove_texture_dictionary
+	static OpcodeResult __stdcall opcode_0391(CLEO::CRunningScript* thread)
+	{
+		if (IsLegacyScript(thread)) return OR_CONTINUE; // reproduce CLEO4's lazy solution
+
+		textureManager.FreeDictionaries(thread); // release all used by this script
+		return OR_CONTINUE;
 	}
 
 	//0ACA=1,show_text_box %1d%
@@ -637,6 +696,7 @@ public:
 
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
+TextureManager Text::textureManager;
 char Text::msgBuffLow[MAX_STR_LEN + 1];
 char Text::msgBuffHigh[MAX_STR_LEN + 1];
 char Text::msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
@@ -644,7 +704,7 @@ WORD Text::genericLabelCounter;
 
 // exports
 
-extern "C" __declspec(dllexport) RwTexture * GetScriptTexture(CLEO::CRunningScript* script, DWORD slot)
+extern "C" __declspec(dllexport) RwTexture* GetScriptTexture(CLEO::CRunningScript* script, DWORD slot)
 {
 	return instance.scriptDrawing.GetScriptTexture(script, slot);
 }
