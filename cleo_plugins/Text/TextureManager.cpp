@@ -4,18 +4,12 @@
 
 void TextureManager::Clear()
 {
-	for (auto entry : m_dicts)
+	for (auto& [key, dict] : m_dicts)
 	{
-		if (entry.second.txd != nullptr) RwTexDictionaryDestroy(entry.second.txd);
+		if (dict.txd != nullptr) RwTexDictionaryDestroy(dict.txd); // unload
 	}
 	m_dicts.clear();
 	m_currDict.clear();
-}
-
-void TextureManager::ScriptUnregister(CLEO::CRunningScript* script)
-{
-	FreeDictionaries(script);
-	m_currDict.erase(script);
 }
 
 TextureManager::DictInfo* TextureManager::GetDictionary(CLEO::CRunningScript* script, const char* filename)
@@ -61,34 +55,34 @@ TextureManager::DictInfo* TextureManager::GetCurrDictionary(CLEO::CRunningScript
 	return (m_currDict.find(ref) != m_currDict.end()) ? m_currDict.at(ref) : nullptr;
 }
 
+void TextureManager::ScriptUnregister(CLEO::CRunningScript* script)
+{
+	FreeDictionaries(script);
+	m_currDict.erase(script);
+}
+
 void TextureManager::FreeDictionaries(CLEO::CRunningScript* script)
 {
 	auto ref = GetRefGroup(script);
 	
-	std::unordered_set<std::string> unusedDicts;
-	for (auto& entry : m_dicts)
+	std::unordered_set<DictInfo*> unusedDicts;
+
+	for (auto& [key, dict] : m_dicts)
 	{
-		entry.second.references.erase(ref);
-
-		if (entry.second.references.empty())
-		{
-			// clear ref if used as current dictionary
-			for (auto& curr : m_currDict)
-			{
-				if(curr.second == &entry.second)
-				{
-					curr.second = nullptr;
-				}
-			}
-
-			unusedDicts.insert(entry.first);
-		}
+		dict.references.erase(ref);
+		if (dict.references.empty()) unusedDicts.insert(&dict);
 	}
 
-	for (auto& name : unusedDicts)
+	for (auto unused : unusedDicts)
 	{
-		if (m_dicts[name].txd != nullptr) RwTexDictionaryDestroy(m_dicts[name].txd);
-		m_dicts.erase(name);
+		// clear ref if used as current dictionary
+		for (auto& [key, curr] : m_currDict)
+		{
+			if(curr == unused) curr = nullptr;
+		}
+
+		if (unused->txd != nullptr) RwTexDictionaryDestroy(unused->txd); // unload
+		m_dicts.erase(unused->name);
 	}
 }
 
@@ -120,6 +114,13 @@ void TextureManager::FreeDictionary(CLEO::CRunningScript* script, const char* fi
 		if (m_dicts[name].txd != nullptr) RwTexDictionaryDestroy(m_dicts[name].txd);
 		m_dicts.erase(name);
 	}
+}
+
+CLEO::CRunningScript* TextureManager::GetRefGroup(CLEO::CRunningScript* script)
+{
+	if (script->IsMission()) return (CLEO::CRunningScript*)-1; // mission
+	if (!script->IsCustom()) return (CLEO::CRunningScript*)-2; // native scripts
+	return script;
 }
 
 void TextureManager::ResolveDictionaryFilename(CLEO::CRunningScript* script, const char* filename, std::string& outFilepath, std::string& name)
@@ -171,11 +172,4 @@ void TextureManager::ResolveDictionaryFilename(CLEO::CRunningScript* script, con
 	{
 		FilepathRemoveParent(outFilepath, CLEO_GetGameDirectory());
 	}
-}
-
-CLEO::CRunningScript* TextureManager::GetRefGroup(CLEO::CRunningScript* script)
-{
-	if (script->IsMission()) return (CLEO::CRunningScript*)-1; // mission
-	if (!script->IsCustom()) return (CLEO::CRunningScript*)-2; // native scripts
-	return script;
 }
