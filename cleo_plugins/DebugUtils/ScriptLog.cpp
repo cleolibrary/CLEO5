@@ -323,7 +323,7 @@ inline void ScriptLog::LogAppendSpace()
     // TODO: thread unlock
 }
 
-void ScriptLog::LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue)
+bool ScriptLog::LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue)
 {
     bool hasName = false;
     if (logName)
@@ -339,10 +339,25 @@ void ScriptLog::LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeI
 
     ScriptParamInfo paramInfo(script);
 
+    bool isGlobalVar;
+    switch(paramInfo.type)
+    {
+        case DT_VAR:
+        case DT_VAR_ARRAY:
+        case DT_VAR_TEXTLABEL:
+        case DT_VAR_TEXTLABEL_ARRAY:
+        case DT_VAR_STRING:
+        case DT_VAR_STRING_ARRAY:
+            isGlobalVar = true;
+            break;
+
+        default:
+            isGlobalVar = false;
+    }
+
     bool hasVariable = false;
     if (logVariable)
     {
-        bool isGlobalVar = false;
         switch(paramInfo.type)
         {
             case DT_END:
@@ -357,9 +372,6 @@ void ScriptLog::LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeI
             case DT_VAR_TEXTLABEL_ARRAY:
             case DT_VAR_STRING:
             case DT_VAR_STRING_ARRAY:
-                isGlobalVar = true;
-                [[fallthrough]];
-
             case DT_LVAR:
             case DT_LVAR_ARRAY:
             case DT_LVAR_TEXTLABEL:
@@ -533,6 +545,8 @@ void ScriptLog::LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeI
 
         if (hasVariable) LogAppend(')');
     }
+
+    return isGlobalVar;
 }
 
 void ScriptLog::LogWriteFile(bool forceUpdate)
@@ -910,26 +924,11 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
         return result;
     }
 
-    // extra annotations
     bool hasComment = false;
-
-    if (command->isNop)
-    {
-        LogAppend(hasComment ? ", " : " // ");
-        LogAppend("NOP command");
-        hasComment = true;
-    }
-
-    if (m_conditionResultExpected && !m_conditionResultUpdated && opcode != 0x0AB1) // assume cleo_call always sets condition result
-    {
-        LogAppend(hasComment ? ", " : " // ");
-        LogAppend("BUG: non-logical command");
-        hasComment = true;
-    }
-    
-    // print values of return arguments
     bool hasReturnVal = false;
+    bool warnGlobalVar = false;
 
+    // print values of return arguments
     if (m_currCommandReturnParams != nullptr)
     {
         auto oriIp = script->CurrentIP;
@@ -941,25 +940,48 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* s
         {
             if (!hasReturnVal) LogAppend(hasComment ? " -> " : " // -> ");
             else LogAppend(", "); // separator
-
-            LogAppendScriptParam(script, command, i, false, false, true);
-
             hasComment = true;
+
+            auto isGlobalVar = LogAppendScriptParam(script, command, i, false, false, true);
             hasReturnVal = true;
+
+            if (isGlobalVar && script->IsCustom()) warnGlobalVar = true;
         }
         script->CurrentIP = oriIp;
     }
 
+    // condition result value
     if (m_conditionResultUpdated)
     {
         if (!hasReturnVal) LogAppend(hasComment ? " -> " : " // -> ");
         else LogAppend(", "); // separator
+        hasComment = true;
 
         LogAppend("condition: ");
         LogAppend(m_conditionResultValue ? "true" : "false");
-
-        hasComment = true;
         hasReturnVal = true;
+    }
+
+    // extra annotations
+    if (command->isNop)
+    {
+        LogAppend(hasComment ? ", " : " // ");
+        hasComment = true;
+        LogAppend("NOP command");
+    }
+
+    if (m_conditionResultExpected && !m_conditionResultUpdated && opcode != 0x0AB1) // assume cleo_call always sets condition result
+    {
+        LogAppend(hasComment ? ", " : " // ");
+        hasComment = true;
+        LogAppend("BUG: non-logical command");
+    }
+
+    if (warnGlobalVar)
+    {
+        LogAppend(hasComment ? ", " : " // ");
+        hasComment = true;
+        LogAppend("BUG?: Custom Script writes global variable");
     }
 
     LogAppend('\n');
