@@ -125,6 +125,10 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CFileLoader.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
+    </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CRect.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
@@ -181,6 +185,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClCompile Include="CTextManager.cpp" />
     <ClCompile Include="ScriptDrawing.cpp" />
     <ClCompile Include="Text.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\cleo_sdk\CLEO.h" />
@@ -189,6 +194,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClInclude Include="CTextManager.h" />
     <ClInclude Include="ScriptDrawing.h" />
     <ClInclude Include="ScriptDrawsState.h" />
+    <ClInclude Include="TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />
