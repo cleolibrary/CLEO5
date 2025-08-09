@@ -60,7 +60,7 @@ private:
     inline void LogAppendHex(int number, int padLen = 0);
     inline void LogAppendFloat(float number, int padLen = 0);
     inline void LogAppendSpace(); // add white char separator at end of the line if not present
-    void LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue);
+    bool LogAppendScriptParam(CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue); // return true if param was global variable
     
     void LogWriteFile(bool forceUpdate = false);
     void LogFileDelete();
