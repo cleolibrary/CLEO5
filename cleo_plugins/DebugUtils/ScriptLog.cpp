@@ -222,16 +222,14 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             }
         }
 
-        // 'wait' in progress?
-        if (CTimer::m_snTimeInMilliseconds < script->WakeTime)
+        // 'wait' command in progress?
+        if (script->WakeTime > CTimer::m_snTimeInMilliseconds)
         {
-            auto pause = script->WakeTime - CTimer::m_snTimeInMilliseconds;
-
             LogAppend('\n');
             if (m_processingGame) LogAppend(Block_Indent);
             LogAppend(Block_Indent);
             LogAppend("Sleeping for ");
-            LogAppendNum(pause);
+            LogAppendNum(script->WakeTime - CTimer::m_snTimeInMilliseconds);
             LogAppend(" ms more");
         }
 
