@@ -645,6 +645,12 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
 
     LoadConfig(true);
 
+    // time stamp
+    SYSTEMTIME t;
+    GetLocalTime(&t);
+    char timeStamp[32];
+    sprintf_s(timeStamp, "%02d/%02d/%04d %02d:%02d:%02d.%03d", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
+
     if (CGame::bMissionPackGame)
     {
         // find name of the mission pack
@@ -657,9 +663,10 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
             }
         }
 
-        LogFormattedLine("<newGameSession mPack='%d' mPackName='%s'/>\n", 
+        LogFormattedLine("<newGameSession mPack='%d' mPackName='%s' time='%s'/>",
             FrontEndMenuManager.m_nSelectedMissionPack,
-            packName ? packName : "???"
+            packName ? packName : "???",
+            timeStamp
         );
 
         if (logCustomScriptsOnly == -1) logCustomScriptsOnly = false; // mission pack is custom main. Log it too
@@ -676,14 +683,18 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
 
         if (saveSlot != -1)
         {
-            LogFormattedLine("<newGameSession saveSlot='%d' mainScript='%s'/>\n",
+            LogFormattedLine("<newGameSession saveSlot='%d' mainScript='%s' time='%s'/>",
                 saveSlot + 1, // 1-based index
-                isMainOriginal ? "original" : "modified" );
+                isMainOriginal ? "original" : "modified",
+                timeStamp
+            );
         }
         else
         {
-            LogFormattedLine("<newGameSession mainScript='%s'/>\n",
-                isMainOriginal ? "original" : "modified");
+            LogFormattedLine("<newGameSession mainScript='%s' time='%s'/>",
+                isMainOriginal ? "original" : "modified",
+                timeStamp
+            );
         }
 
         if (logCustomScriptsOnly == -1) // auto detect
@@ -733,7 +744,7 @@ void ScriptLog::OnGameProcessBefore()
             next = next->m_pNext;
         }
 
-        LogAppend("<gameProcess frame='");
+        LogAppend("\n<gameProcess frame='");
         LogAppendNum(CTimer::m_FrameCounter);
         LogAppend("' activeScripts='");
         LogAppendNum(scriptCount);
@@ -747,7 +758,7 @@ void ScriptLog::OnGameProcessAfter()
 
     if (state != LoggingState::Disabled)
     {
-        if (m_processingGame) LogAppend("</gameProcess>\n\n");
+        if (m_processingGame) LogAppend("</gameProcess>\n");
     }
 
     m_processingGame = false;
