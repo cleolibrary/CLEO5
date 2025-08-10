@@ -495,7 +495,7 @@ namespace CLEO
 		// still more var-args available
 		if (thread->PeekDataType() != DT_END)
 		{
-			LOG_WARNING(thread, "More params than slots in formatted string in script %s", ScriptInfoStr(thread).c_str());
+			LOG_WARNING(thread, "More arguments than tokens in format string in script %s", ScriptInfoStr(thread).c_str());
 		}
 		SkipUnusedVarArgs(thread); // skip terminator too
 
@@ -503,7 +503,7 @@ namespace CLEO
 		return (int)written;
 
 	_ReadFormattedString_ArgMissing: // jump here on error
-		LOG_WARNING(thread, "Less params than slots in formatted string in script %s", ScriptInfoStr(thread).c_str());
+		LOG_WARNING(thread, "More tokens in format string than arguments in script %s", ScriptInfoStr(thread).c_str());
 		thread->IncPtr(); // skip vararg terminator
 		outputStr[written] = '\0';
 		return -1; // error

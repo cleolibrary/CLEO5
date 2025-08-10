@@ -44,7 +44,7 @@ public:
 		CLEO_RegisterOpcode(0x0ACF, opcode_0ACF); // print_big_formatted
 		CLEO_RegisterOpcode(0x0AD0, opcode_0AD0); // print_formatted
 		CLEO_RegisterOpcode(0x0AD1, opcode_0AD1); // print_formatted_now
-							    
+
 		CLEO_RegisterOpcode(0x0AD3, opcode_0AD3); // string_format
 		CLEO_RegisterOpcode(0x0AD4, opcode_0AD4); // scan_string
 		CLEO_RegisterOpcode(0x0ADB, opcode_0ADB); // get_name_of_vehicle_model
@@ -266,6 +266,51 @@ public:
 
 		auto readCount = OPCODE_READ_PARAM_OUTPUT_VAR_INT(); // store_to
 
+		// format string tokens processing helper
+		const char* formatPos = format;
+		auto GetNextTokenType = [&]()
+		{
+			while (true)
+			{
+				if (*formatPos == '\0') return DT_END;
+
+				if (*formatPos == '%') // formatting sequence start
+				{
+					if (formatPos[1] == '%' || // escaped % character
+						formatPos[1] == '*') // sscanf non-capturing token
+					{
+						formatPos += 2;
+						continue;
+					}
+
+					while (true)
+					{
+						formatPos++; // next char
+						if (*formatPos == '\0')
+						{
+							SHOW_ERROR("Invalid string format sequence ('%s') in script %s\nScript suspended.", format, ScriptInfoStr(thread).c_str());
+							return DT_INVALID;
+						}
+
+						// width specification
+						if (*formatPos >= '0' && *formatPos <= '9')
+						{
+							formatPos++;
+							continue;
+						}
+
+						switch(*formatPos)
+						{
+							case 's': return DT_STRING;
+							default: return DT_VAR; // any32. TODO: actually parse and verify other types?
+						}
+					}
+				}
+
+				formatPos++;
+			}
+		};
+
 		// collect provided by caller store_to variables
 		size_t outputParamCount = 0;
 		SCRIPT_VAR* outputParams[35];
@@ -280,10 +325,23 @@ public:
 		{
 			auto paramType = thread->PeekDataType();
 
+			auto formatTokenType = GetNextTokenType();
+			if (formatTokenType == DT_INVALID) return thread->Suspend(); // error message already displayed
+
 			if (paramType == DT_END)
 			{
-				outputParams[i] = nullptr;
-				continue;
+				if (formatTokenType != DT_END && !IsLegacyScript(thread))
+				{
+					SHOW_ERROR("More tokens in format string than return variables in script %s\nScript suspended.", format, ScriptInfoStr(thread).c_str());
+					return thread->Suspend();
+				}
+				break;
+			}
+
+			if (formatTokenType == DT_END)
+			{
+				SHOW_ERROR("More return variables than tokens in format string in script %s\nScript suspended.", format, ScriptInfoStr(thread).c_str());
+				return thread->Suspend();
 			}
 
 			if (IsVarString(paramType))
@@ -302,6 +360,11 @@ public:
 					stringParams[i].str.resize(MAX_STR_LEN); // temp storage
 					outputParams[i] = (SCRIPT_VAR*)stringParams[i].str.data();
 				}
+			}
+			else if (formatTokenType == DT_STRING) // `%s`
+			{
+				auto ptr = OPCODE_READ_PARAM_PTR();
+				outputParams[i] = (SCRIPT_VAR*)ptr;
 			}
 			else
 			{

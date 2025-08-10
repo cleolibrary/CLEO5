@@ -12,6 +12,7 @@ function tests
     it("should scan strings", test3)
     it("should report arg count missmatch", test4)
     it("should respect target string size", test5)
+    it("should support non-capturing sequences", test6)
     return
 
     function test1
@@ -42,6 +43,14 @@ function tests
         assert_eqs(1@s, "some")
         assert_eqs(3@s, "testing")
         assert_eqs(5@s, "text")
+        
+        1@ = allocate_memory {size} 64
+        scan_string {string} "some-longer-testing-text 666" {format} "%s%d" {var_nValues} 0@ {var_values} 1@ 2@
+        assert_result_true()
+        assert_eq(0@, 2) // read values count
+        assert_eqs(1@, "some-longer-testing-text")
+        assert_eq(2@, 666)
+        free_memory {address} 1@
     end
     
     function test4
@@ -71,5 +80,19 @@ function tests
         assert_eq(3@, 0x99999999) // unchanged
         assert_eqs(4@v, "second_very_long") // clamped to variable size
         assert_eq(8@, 0xEEEEEEEE) // unchanged
+    end
+    
+    function test6
+        0@ = 0x66666666
+        1@ = 0x77777777
+        2@ = 0x88888888
+        3@ = 0x99999999
+        
+        scan_string {string} "input 1 2 3" {format} "%*s %d %*d %d" {var_nValues} 0@ {var_values} 1@ 2@
+        //assert_result_true()
+        assert_eq(0@, 2) // read values count
+        assert_eq(1@, 1)
+        assert_eq(2@, 3)
+        assert_eq(3@, 0x99999999) // unchanged
     end
 end
