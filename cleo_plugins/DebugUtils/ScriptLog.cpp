@@ -655,11 +655,12 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
     {
         // find name of the mission pack
         const char* packName = nullptr;
-        for (size_t i = 0; i < _countof(FrontEndMenuManager.m_MissionPacks); i++)
+        for (const auto& pack : FrontEndMenuManager.m_MissionPacks)
         {
-            if (FrontEndMenuManager.m_MissionPacks[i].id == FrontEndMenuManager.m_nSelectedMissionPack)
+            if (pack.id == FrontEndMenuManager.m_nSelectedMissionPack)
             {
-                packName = FrontEndMenuManager.m_MissionPacks[i].name;
+                packName = pack.name;
+                break;
             }
         }
 
