@@ -357,12 +357,12 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
         }
         else
         {
-            auto offset = CLEO_GetScriptBaseRelativeOffset((CLEO::CRunningScript*)this, (BYTE*)CCustomOpcodeSystem::lastOpcodePtr);
+            auto offset = CLEO_GetScriptBaseRelativeOffset(this, CScriptEngine::lastOpcodePtr);
             ss << "offset {" << offset << "}"; // Sanny offsets style
             ss << " - ";
-            ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
+            ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CScriptEngine::lastOpcode;
 
-            auto commandName = CleoInstance.OpcodeInfoDb.GetCommandName(CCustomOpcodeSystem::lastOpcode);
+            auto commandName = CleoInstance.OpcodeInfoDb.GetCommandName(CScriptEngine::lastOpcode);
             if (commandName != nullptr)
             {
                 ss << ": " << commandName;
@@ -370,6 +370,18 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
             else
             {
                 ss << ": ...";
+            }
+
+            // add previously executed command info if available
+            if (CScriptEngine::prevOpcode != 0xFFFF)
+            {
+                ss << " \nPreviously called command: ";
+
+                auto commandName = CleoInstance.OpcodeInfoDb.GetCommandName(CScriptEngine::prevOpcode);
+                if (commandName)
+                    ss << commandName;
+                else
+                    ss << "[" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CScriptEngine::prevOpcode << "]";
             }
         }
     }
