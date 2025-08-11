@@ -1,0 +1,18 @@
+{$CLEO .mod}
+
+export function Fibonacci(n: int): int
+    if 
+        n <= 1
+    then
+        return n
+    end
+    
+    int p = n - 1
+    int pp = p - 1
+    
+    p = Fibonacci(p)
+    pp = Fibonacci(pp)
+    
+    int result = p + pp
+    return result
+end

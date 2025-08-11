@@ -1,5 +1,6 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
+import Fibonacci from ".\testModule.mod"
 
 script_name '0AB1'
 test("0AB1 (cleo_call)", tests)
@@ -97,6 +98,8 @@ function tests
     $resultBits = 0xFE // 11111110
     it("should handle OR operation #10", test_operation_or)
     
+    it("should call module export", test2)
+    
     return
 
 
@@ -110,6 +113,12 @@ function tests
         assert_result_true()
         CHECK_BIT(0, 0)
         assert_result_false()
+    end
+    
+    
+    function test2()
+        int n = Fibonacci(7)
+        assert_eq(n, 13)
     end
 
 

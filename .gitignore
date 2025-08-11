@@ -45,3 +45,4 @@ node_modules/
 *.s
 *.cs
 *.cm
+*.mod
