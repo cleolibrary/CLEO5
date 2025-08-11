@@ -27,6 +27,7 @@ namespace CLEO
         inline SCRIPT_VAR* GetVarsPtr() { return LocalVar; }
         inline bool IsOk() const { return m_ok; }
         inline DWORD GetCodeSize() const { return m_codeSize; }
+        inline void SetCodeSize(DWORD size) { m_codeSize = size; }
         inline DWORD GetCodeChecksum() const { return m_codeChecksum; }
         inline void EnableSaving(bool en = true) { m_saveEnabled = en; }
         inline void SetCompatibility(eCLEO_Version ver) { m_compatVer = ver; }

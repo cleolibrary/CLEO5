@@ -2,6 +2,7 @@
 #include "CleoBase.h"
 #include "CModuleSystem.h"
 #include "FileEnumerator.h"
+#include "ScriptUtils.h"
 
 
 using namespace CLEO;
@@ -230,6 +231,13 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
 		return false;
 	}
 
+	// cut Sanny extra info if present
+	auto infoSize = GetExtraInfoSize((BYTE*)data.data(), data.size());
+	if (infoSize)
+	{
+		data.resize(data.size() - infoSize);
+	}
+
 	return true;
 }
 
@@ -244,7 +252,7 @@ const ScriptDataRef CModuleSystem::CModule::GetExport(std::string name)
 	}
 	auto& exp = it->second;
 
-	return { data.data(), exp.offset };
+	return { data.data(), data.size(), exp.offset };
 }
 
 void CModuleSystem::CModule::ModuleExport::Clear()

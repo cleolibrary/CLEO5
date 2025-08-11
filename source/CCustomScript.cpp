@@ -3,6 +3,7 @@
 #include "CleoBase.h"
 #include "crc32.h"
 #include "CScriptEngine.h"
+#include "ScriptUtils.h"
 
 using namespace CLEO;
 
@@ -148,21 +149,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             is.read(reinterpret_cast<char*>(BaseIP), length);
 
             m_codeSize = length;
-
-            // check for extra SCM data at the end
-            static constexpr char SB_Footer_Sig[] = { '_', '_', 'S', 'B', 'F', 'T', 'R', '\0' };
-            if (m_codeSize > (sizeof(SB_Footer_Sig) + sizeof(DWORD)))
-            {
-                auto ptr = reinterpret_cast<BYTE*>(BaseIP) + length; // data end
-                ptr -= sizeof(SB_Footer_Sig);
-                if (memcmp(ptr, &SB_Footer_Sig, sizeof(SB_Footer_Sig)) == 0)
-                {
-                    ptr -= sizeof(DWORD);
-                    auto codeSize = MemRead<DWORD>(ptr);
-
-                    if (codeSize < m_codeSize) m_codeSize = codeSize;
-                }
-            }
+            m_codeSize -= GetExtraInfoSize(reinterpret_cast<BYTE*>(BaseIP), m_codeSize); // just the code without extra SCM data at the end
 
             m_codeChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
 

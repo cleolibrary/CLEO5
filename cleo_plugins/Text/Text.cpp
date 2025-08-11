@@ -338,7 +338,7 @@ public:
 				break;
 			}
 
-			if (formatTokenType == DT_END)
+			if (formatTokenType == DT_END && !IsLegacyScript(thread))
 			{
 				SHOW_ERROR("More return variables than tokens in format string in script %s\nScript suspended.", format, ScriptInfoStr(thread).c_str());
 				return thread->Suspend();

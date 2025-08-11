@@ -5,11 +5,12 @@ namespace CLEO
 	struct ScriptDataRef
 	{
 		char* base = nullptr; // script's base data
+		DWORD size = 0; // available code block size
 		int offset = 0; // address within the script
 
 		bool Valid() const
 		{
-			return base != nullptr;
+			return base != nullptr && size >= sizeof(WORD); // at least one opcode
 		}
 	};
 

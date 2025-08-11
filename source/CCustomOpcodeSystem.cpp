@@ -858,9 +858,11 @@ namespace CLEO
 				return thread->Suspend();
 			}
 
-			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileDir(FS::path(modulePath).parent_path().string().c_str());
-			reinterpret_cast<CCustomScript*>(thread)->SetScriptFileName(FS::path(modulePath).filename().string().c_str());
-			thread->SetBaseIp(scriptRef.base);
+			auto cs = reinterpret_cast<CCustomScript*>(thread);
+			cs->SetScriptFileDir(FS::path(modulePath).parent_path().string().c_str());
+			cs->SetScriptFileName(FS::path(modulePath).filename().string().c_str());
+			cs->SetBaseIp(scriptRef.base);
+			if (cs->IsCustom()) cs->SetCodeSize(scriptRef.size);
 			label = scriptRef.offset;
 		}
 

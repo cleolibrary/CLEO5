@@ -18,6 +18,7 @@ namespace CLEO
 
 		// saved nesting context state
 		void* savedBaseIP;
+		size_t savedCodeSize; // Custom Scripts only
 		BYTE* retnAddress;
 		BYTE* savedStack[8]; // gosub stack
 		WORD savedSP;

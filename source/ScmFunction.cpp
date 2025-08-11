@@ -56,11 +56,13 @@ namespace CLEO
 
 		// create snapshot of current scope
 		savedBaseIP = cs->BaseIP;
+		savedCodeSize = cs->IsCustom() ? cs->GetCodeSize() : -1;
+
 		std::copy(std::begin(cs->Stack), std::end(cs->Stack), std::begin(savedStack));
 		savedSP = cs->SP;
 
 		auto scope = cs->IsMission() ? missionLocals : cs->LocalVar;
-		std::copy(scope, scope + 32, savedTls);
+		std::copy(scope, scope + _countof(CRunningScript::LocalVar), savedTls);
 
 		savedCondResult = cs->bCondResult;
 		savedLogicalOp = cs->LogicalOp;
@@ -83,8 +85,10 @@ namespace CLEO
 	{
 		auto cs = reinterpret_cast<CCustomScript*>(thread);
 
-		// restore parent scope's gosub call stack
 		cs->BaseIP = savedBaseIP;
+		if (cs->IsCustom()) cs->SetCodeSize(savedCodeSize);
+
+		// restore parent scope's gosub call stack
 		std::copy(std::begin(savedStack), std::end(savedStack), std::begin(cs->Stack));
 		cs->SP = savedSP;
 
