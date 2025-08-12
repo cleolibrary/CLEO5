@@ -186,15 +186,34 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         if (m_processingGame) LogAppend(Block_Indent);
         LogAppend("<script idx='");
         LogAppendNum(idx);
+
         LogAppend("' name='");
         LogAppend(script->GetName());
+
         LogAppend("' file='");
         LogAppend(filename);
-        LogAppend("' custom='");
-        LogAppend(script->IsCustom() ? "yes" : "no");
-        LogAppend("' mission='");
-        LogAppend(script->IsMission() ? "yes" : "no");
-        LogAppend("'>");
+
+        LogAppend("' custom=");
+        LogAppend(script->IsCustom() ? "'yes'" : "'no'");
+
+        if(script->IsMission()) LogAppend(" mission='true'");
+        if(CLEO_GetScriptDebugMode(script)) LogAppend(" debug='true'");
+
+        auto ver = CLEO_GetScriptVersion(script);
+        if (ver != eCLEO_Version::CLEO_VER_CUR)
+        {
+            LogAppend(" compat='");
+            switch(ver)
+            {
+                case eCLEO_Version::CLEO_VER_3: LogAppend("CLEO3"); break;
+                case eCLEO_Version::CLEO_VER_4: LogAppend("CLEO4"); break;
+                case eCLEO_Version::CLEO_VER_5: LogAppend("CLEO5"); break;
+                default: LogAppendHex(ver); break;
+            }
+            LogAppend("'");
+        }
+
+        LogAppend(">");
 
         // call stack info
         auto cleoStack = CLEO_GetCleoCallStackSize(script);
@@ -720,12 +739,12 @@ void ScriptLog::OnGameProcessBefore()
         if (state == LoggingState::Full)
         {
             CHud::SetHelpMessage("CLEO script log: ~g~~h~~h~~h~ON~s~", true, false, false);
-            LogLine("Log: ON\n\n");
+            LogLine("Log: ON\n");
         }
         else
         {
             CHud::SetHelpMessage("CLEO script log: ~r~~h~~h~~h~OFF~s~", true, false, false);
-            LogLine("Log: OFF\n\n");
+            LogLine("Log: OFF\n");
             LogWriteFile(); // flush
         }
     }
