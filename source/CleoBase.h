@@ -90,11 +90,10 @@ namespace CLEO
 
         void(__cdecl* GameRestartDebugDisplayTextBuffer_FrontendOrig)() = nullptr;
         static void OnDebugDisplayTextBuffer_Frontend();
-        
 
     private:
         InitStage m_initStage = InitStage::None;
-        bool m_bGameInProgress;
+        bool m_bGameInProgress = false;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 

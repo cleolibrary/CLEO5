@@ -24,15 +24,6 @@ namespace CLEO
         std::string m_workDir;
 
     public:
-        inline SCRIPT_VAR* GetVarsPtr() { return LocalVar; }
-        inline bool IsOk() const { return m_ok; }
-        inline DWORD GetCodeSize() const { return m_codeSize; }
-        inline void SetCodeSize(DWORD size) { m_codeSize = size; }
-        inline DWORD GetCodeChecksum() const { return m_codeChecksum; }
-        inline void EnableSaving(bool en = true) { m_saveEnabled = en; }
-        inline void SetCompatibility(eCLEO_Version ver) { m_compatVer = ver; }
-        inline eCLEO_Version GetCompatibility() const { return m_compatVer; }
-
         CCustomScript(const char* szFileName, bool bIsMiss = false, CRunningScript* parent = nullptr, int label = 0);
         CCustomScript(const CCustomScript&) = delete; // no copying
         ~CCustomScript();
@@ -41,6 +32,18 @@ namespace CLEO
         void RemoveScriptFromList(CRunningScript** queuelist);
 
         void ShutdownThisScript();
+
+        inline bool IsOk() const { return m_ok; }
+        
+        inline DWORD GetCodeSize() const { return m_codeSize; }
+        inline void SetCodeSize(DWORD size) { m_codeSize = size; }
+
+        inline DWORD GetCodeChecksum() const { return m_codeChecksum; }
+
+        inline eCLEO_Version GetCompatibility() const { return m_compatVer; }
+        inline void SetCompatibility(eCLEO_Version ver) { m_compatVer = ver; }
+
+        inline void EnableSaving(bool en = true) { m_saveEnabled = en; }
 
         // debug related utils enabled?
         bool GetDebugMode() const;

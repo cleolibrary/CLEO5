@@ -82,6 +82,9 @@ namespace CLEO
         
         static void __fastcall HOOK_ProcessScript(CLEO::CRunningScript*);
         void(__fastcall* ProcessScript_Orig)(CLEO::CRunningScript*) = nullptr;
+
+        static void __cdecl HOOK_SaveScmData();
+        void(__cdecl* SaveScmData_Orig)() = nullptr;
     };
 
     // reimplemented hook of original game's procedure

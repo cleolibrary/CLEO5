@@ -101,16 +101,6 @@ namespace CLEO
 		return AfterOpcodeExecuted();
 	}
 
-	void CCustomOpcodeSystem::FinalizeScriptObjects()
-	{
-		TRACE("Cleaning up script data...");
-
-		CleoInstance.CallCallbacks(eCallbackId::ScriptsFinalize);
-
-		// clean up after opcode_0AB1
-		ScmFunction::Clear();
-	}
-
 	void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
 	{
 		TRACE("Injecting CustomOpcodeSystem...");
@@ -165,6 +155,16 @@ namespace CLEO
 		CLEO_RegisterOpcode(0x2003, opcode_2003); // cleo_return_fail
 
 		initialized = true;
+	}
+
+	void CCustomOpcodeSystem::GameEnd()
+	{
+		TRACE("Cleaning up script data...");
+
+		CleoInstance.CallCallbacks(eCallbackId::ScriptsFinalize);
+
+		// clean up after opcode_0AB1
+		ScmFunction::Clear();
 	}
 
 	CCustomOpcodeSystem::~CCustomOpcodeSystem()
