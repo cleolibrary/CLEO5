@@ -165,31 +165,31 @@ public:
 	}
 
 	// load_sprite
-	// load_sprite {memorySlot} [int] {spriteName} [string]
+	// load_sprite {spriteSlot} [int] {textureName} [string]
 	static OpcodeResult __stdcall opcode_038F(CLEO::CRunningScript* thread)
 	{
 		auto slot = OPCODE_READ_PARAM_INT();
-		OPCODE_READ_PARAM_STRING(spriteName);
+		OPCODE_READ_PARAM_STRING(texName);
 
 		if (slot <= 0 || slot > _countof(CTheScripts::ScriptSprites))
 		{
-			SHOW_ERROR("'memorySlot' argument (%d) out of supported range in script %s \nScript suspended.", slot, ScriptInfoStr(thread).c_str());
+			SHOW_ERROR("'spriteSlot' argument (%d) out of supported range in script %s \nScript suspended.", slot, ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
 
 		auto dict = textureManager.GetCurrDictionary(thread);
 		if (dict == nullptr)
 		{
-			SHOW_ERROR("'load_sprite' used without loaded texture dictionary in script %s \nScript suspended.", slot, ScriptInfoStr(thread).c_str());
+			SHOW_ERROR("LOAD_SPRITE used without loaded texture dictionary in script %s \nScript suspended.", ScriptInfoStr(thread).c_str());
 			return thread->Suspend();
 		}
 
-		std::transform(_buff_spriteName, _buff_spriteName + strlen(_buff_spriteName), _buff_spriteName, [](unsigned char c) { return tolower(c); });
-		auto tex = RwTexDictionaryFindNamedTexture(dict->txd, spriteName);
+		std::transform(_buff_texName, _buff_texName + strlen(_buff_texName), _buff_texName, [](unsigned char c) { return tolower(c); });
+		auto tex = RwTexDictionaryFindNamedTexture(dict->txd, texName);
 
 		if (tex == nullptr)
 		{
-			LOG_WARNING(thread, "Texture '%s' not found in dictionary `%s`", spriteName, dict->name);
+			LOG_WARNING(thread, "Texture '%s' not found in dictionary `%s`", texName, dict->name);
 		}
 
 		scriptDrawing.SetScriptTexture(thread, slot, tex);
