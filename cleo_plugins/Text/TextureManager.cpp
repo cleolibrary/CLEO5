@@ -21,22 +21,23 @@ TextureManager::DictInfo* TextureManager::GetDictionary(CLEO::CRunningScript* sc
 	if (m_dicts.find(name) == m_dicts.end())
 	{
 		// not present, load from file
-		auto tex = CFileLoader::LoadTexDictionary(filepath.c_str());
-		if (tex == nullptr)
+		auto txd = CFileLoader::LoadTexDictionary(filepath.c_str());
+		if (!txd)
 		{
-			LOG_WARNING(script, "Invalid texture dictionary '%s'", name.c_str());
+			LOG_WARNING(script, "Failed to load texture dictionary '%s'", filepath.c_str());
 			return nullptr;
 		}
 
-		if (tex->texturesInDict.link.next == tex->texturesInDict.link.prev)
+		auto tex = GetFirstTexture(txd);
+		if (!tex)
 		{
-			LOG_WARNING(script, "Failed to load texture dictionary '%s'", name.c_str());
+			LOG_WARNING(script, "Invalid texture dictionary '%s'", filepath.c_str());
 			return nullptr;
 		}
 
 		dict = &m_dicts[name];
 		dict->name = name;
-		dict->txd = tex;
+		dict->txd = txd;
 	}
 	else
 	{
