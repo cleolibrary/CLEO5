@@ -201,9 +201,18 @@ public:
 	// load_texture_dictionary {name} [string]
 	static OpcodeResult __stdcall opcode_0390(CLEO::CRunningScript* thread)
 	{
-		OPCODE_READ_PARAM_STRING(filename);
+		auto oriIP = thread->CurrentIP;
+		OPCODE_READ_PARAM_STRING(name);
 
-		textureManager.GetDictionary(thread, filename);
+		bool load = true;
+		if (!StringEndsWith(name, ".txd", false)) // just dictionary name
+		{
+			thread->CurrentIP = oriIP;
+			CLEO_CallNativeOpcode(thread, 0x0390); // with ModLoader support
+			load = false; // already loaded
+		}
+
+		textureManager.GetDictionary(thread, name, load);
 		return OR_CONTINUE;
 	}
 

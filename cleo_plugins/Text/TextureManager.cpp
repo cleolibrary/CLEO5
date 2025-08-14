@@ -1,6 +1,7 @@
 #include "TextureManager.h"
 #include "CLEO_Utils.h"
-#include <CFileLoader.h>
+#include "CTxdStore.h"
+
 
 void TextureManager::Clear()
 {
@@ -12,7 +13,7 @@ void TextureManager::Clear()
 	m_currDict.clear();
 }
 
-TextureManager::DictInfo* TextureManager::GetDictionary(CLEO::CRunningScript* script, const char* filename)
+TextureManager::DictInfo* TextureManager::GetDictionary(CLEO::CRunningScript* script, const char* filename, bool load)
 {
 	std::string filepath, name;
 	ResolveDictionaryFilename(script, filename, filepath, name);
@@ -20,16 +21,42 @@ TextureManager::DictInfo* TextureManager::GetDictionary(CLEO::CRunningScript* sc
 	DictInfo* dict = nullptr;
 	if (m_dicts.find(name) == m_dicts.end())
 	{
-		// not present, load from file
-		auto txd = CFileLoader::LoadTexDictionary(filepath.c_str());
-		if (!txd)
+		if (load)
+		{
+			auto slot = CTxdStore::FindTxdSlot("script");
+			if (slot == -1) slot = CTxdStore::AddTxdSlot("script");
+
+			if (!CTxdStore::LoadTxd(slot, filepath.c_str()))
+			{
+				CTxdStore::RemoveTxdSlot(slot);
+				LOG_WARNING(script, "Failed to load texture dictionary '%s'", filepath.c_str());
+				return nullptr;
+			}
+		}
+
+		int slot = CTxdStore::FindTxdSlot("script");
+		if (slot == -1)
 		{
 			LOG_WARNING(script, "Failed to load texture dictionary '%s'", filepath.c_str());
 			return nullptr;
 		}
 
-		auto tex = GetFirstTexture(txd);
-		if (!tex)
+		auto entry = CTxdStore::AddRef(slot);
+		if (!entry)
+		{
+			CTxdStore::RemoveTxdSlot(slot);
+			LOG_WARNING(script, "Failed to load texture dictionary '%s'", filepath.c_str());
+			return nullptr;
+		}
+
+		auto txd = entry->m_pRwDictionary;
+
+		// delete slot but keep the dictionary loaded
+		entry->m_pRwDictionary = nullptr; // now we manage dealocation
+		CTxdStore::RemoveRef(slot);
+		CTxdStore::RemoveTxdSlot(slot);
+
+		if (!txd)
 		{
 			LOG_WARNING(script, "Invalid texture dictionary '%s'", filepath.c_str());
 			return nullptr;
@@ -131,7 +158,7 @@ void TextureManager::ResolveDictionaryFilename(CLEO::CRunningScript* script, con
 	oriDir.resize(MAX_PATH);
 	CLEO_ResolvePath(script, oriDir.data(), oriDir.size());
 	oriDir.resize(strlen(oriDir.c_str()));
-	FilepathNormalize(oriDir, true);
+	FilepathNormalize(oriDir);
 	oriDir += '\\';
 
 	// real full path
@@ -149,7 +176,7 @@ void TextureManager::ResolveDictionaryFilename(CLEO::CRunningScript* script, con
 		CLEO_ResolvePath(script, outFilepath.data(), outFilepath.size());
 		outFilepath.resize(strlen(outFilepath.c_str()));
 	}
-	FilepathNormalize(outFilepath, true);
+	FilepathNormalize(outFilepath);
 
 	// path for indexing/display purposes
 	name = outFilepath;

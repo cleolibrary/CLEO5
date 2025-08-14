@@ -23,7 +23,7 @@ public:
 	~TextureManager() = default;
 	void Clear();
 	
-	DictInfo* GetDictionary(CLEO::CRunningScript* script, const char* filename);
+	DictInfo* GetDictionary(CLEO::CRunningScript* script, const char* filename, bool load);
 	DictInfo* GetCurrDictionary(CLEO::CRunningScript* script) const;
 
 	void ScriptUnregister(CLEO::CRunningScript* script);
