@@ -87,23 +87,28 @@ void ScriptDrawing::SetScriptTexture(CLEO::CRunningScript* script, DWORD slot, R
     }
     slot -= 1; // to 0-based index
 
+    RwTexture** dest = nullptr;
     if (script->IsCustom())
     {
         if (script == m_currCustomScript)
         {
-            CTheScripts::ScriptSprites[slot].m_pTexture = tex;
+            dest = &CTheScripts::ScriptSprites[slot].m_pTexture;
         }
         else
         {
             if (m_scriptDrawingStates.find(script) != m_scriptDrawingStates.end())
-                CTheScripts::ScriptSprites[slot].m_pTexture = tex;
+                dest = &CTheScripts::ScriptSprites[slot].m_pTexture;
         }
     }
     else
     {
         if (m_currCustomScript == nullptr)
-            CTheScripts::ScriptSprites[slot].m_pTexture = tex;
+            dest = &CTheScripts::ScriptSprites[slot].m_pTexture;
         else
-            m_globalDrawingState.sprites[slot].m_pTexture = tex;
+            dest = &m_globalDrawingState.sprites[slot].m_pTexture;
     }
+
+    if (*dest != nullptr) RwTextureDestroy(*dest); // release reference
+    if (tex != nullptr) RwTextureAddRef(tex);
+    *dest = tex;
 }
