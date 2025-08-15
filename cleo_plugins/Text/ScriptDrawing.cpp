@@ -62,21 +62,25 @@ RwTexture* ScriptDrawing::GetScriptTexture(CLEO::CRunningScript* script, DWORD s
     }
     slot -= 1; // to 0-based index
 
+    RwTexture* tex = nullptr;
     if (script->IsCustom())
     {
         if (script == m_currCustomScript)
         {
-            return CTheScripts::ScriptSprites[slot].m_pTexture;
+            tex = CTheScripts::ScriptSprites[slot].m_pTexture;
         }
         else
         {
-            return (m_scriptDrawingStates.find(script) != m_scriptDrawingStates.end()) ? CTheScripts::ScriptSprites[slot].m_pTexture : nullptr;
+            tex = (m_scriptDrawingStates.find(script) != m_scriptDrawingStates.end()) ? CTheScripts::ScriptSprites[slot].m_pTexture : nullptr;
         }
     }
     else
     {
-        return (m_currCustomScript == nullptr) ? CTheScripts::ScriptSprites[slot].m_pTexture : m_globalDrawingState.sprites[slot].m_pTexture;
+        tex = (m_currCustomScript == nullptr) ? CTheScripts::ScriptSprites[slot].m_pTexture : m_globalDrawingState.sprites[slot].m_pTexture;
     }
+
+    if (tex) RwTextureAddRef(tex);
+    return tex;
 }
 
 void ScriptDrawing::SetScriptTexture(CLEO::CRunningScript* script, DWORD slot, RwTexture* tex)
