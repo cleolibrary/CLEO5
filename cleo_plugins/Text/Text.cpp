@@ -184,9 +184,10 @@ public:
 			return thread->Suspend();
 		}
 
+		// texture names always lower case in TXD files
 		std::transform(_buff_texName, _buff_texName + strlen(_buff_texName), _buff_texName, [](unsigned char c) { return tolower(c); });
-		auto tex = RwTexDictionaryFindNamedTexture(dict->txd, texName);
 
+		auto tex = RwTexDictionaryFindNamedTexture(dict->txd, texName);
 		if (tex == nullptr)
 		{
 			LOG_WARNING(thread, "Texture '%s' not found in dictionary `%s`", texName, dict->name);

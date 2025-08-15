@@ -13,7 +13,7 @@ public:
 
     void Draw(bool beforeFade); // draw buffered script draws to screen
 
-    RwTexture* GetScriptTexture(CLEO::CRunningScript* script, DWORD slot);
+    RwTexture* GetScriptTexture(CLEO::CRunningScript* script, DWORD slot); // Adds reference, use RwTextureDestroy to release
     void SetScriptTexture(CLEO::CRunningScript* script, DWORD slot, RwTexture* text);
 
 private:
