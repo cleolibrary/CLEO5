@@ -161,7 +161,7 @@ void CLEO::CPluginSystem::LogLoadedPlugins() const
         {
             filename.resize(strlen(filename.data()));
 
-            if (StringEndsWith(filename, ".asi", false) || StringEndsWith(filename, ".cleo", false))
+            if (StringStartsWith(filename, Filepath_Game, false) || StringEndsWith(filename, ".asi", false) || StringEndsWith(filename, ".cleo", false))
             {
                 std::error_code err;
                 auto fileSize = (size_t)FS::file_size(filename, err);
