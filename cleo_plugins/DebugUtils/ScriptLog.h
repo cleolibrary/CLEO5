@@ -65,6 +65,7 @@ private:
     void LogWriteFile(bool forceUpdate = false);
     void LogFileDelete();
 
+    bool m_customMain = false;
     bool m_processingGame = false;
     WORD m_prevCommand = 0xFFFF;
     

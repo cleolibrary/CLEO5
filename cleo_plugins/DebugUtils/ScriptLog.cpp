@@ -132,14 +132,40 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         LogAppend("</script>\n");
     }
 
+    // find index of this script in active scripts queue
+    int scriptIdx = -1;
+    int i = 0;
+    for (auto s = (CLEO::CRunningScript*)CTheScripts::pActiveScripts; s; s = s->Next)
+    {
+        i++; // 1-based display
+        if (s == script)
+        {
+            scriptIdx = i;
+            break;
+        }
+    }
+
     // update m_currScriptLogging state
     if (script)
     {
-        m_currScriptLogging = !logCustomScriptsOnly || script->IsCustom(); // only custom scripts?
+        m_currScriptLogging = true;
 
-        if (m_currScriptLogging && logDebugScriptsOnly) // only debug mode scripts?
+        // custom scripts
+        if (m_currScriptLogging && !script->IsCustom() && scriptIdx != -1) // native scripts in active scripts queue
         {
-            m_currScriptLogging = CLEO_GetScriptDebugMode(script) || (*(WORD*)script->GetBytePointer()) == COMMAND_DEBUG_ON; // debug mode on or just about to be enabled
+            switch(logCustomScriptsOnly)
+            {
+                case -1: m_currScriptLogging = m_customMain; break; // automatic: log if not defaul main.scm
+                case 1: m_currScriptLogging = false; break; // only custom
+                //default: // log all
+            }
+        }
+
+        // debug mode scripts
+        if (m_currScriptLogging && logDebugScriptsOnly)
+        {
+            m_currScriptLogging = CLEO_GetScriptDebugMode(script) || // debug mode on
+                (*(WORD*)script->GetBytePointer()) == COMMAND_DEBUG_ON; // debug mode just about to be enabled
         }
     }
     else
@@ -149,19 +175,6 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
     if (script != nullptr && script != m_currScript &&
         state != LoggingState::Disabled && m_currScriptLogging)
     {
-        // find index of this script in active scripts queue
-        int idx = -1;
-        int i = 0;
-        for (auto s = (CLEO::CRunningScript*)CTheScripts::pActiveScripts; s; s = s->Next)
-        {
-            i++; // 1-based display
-            if (s == script)
-            {
-                idx = i;
-                break;
-            }
-        }
-
         // script file path
         static std::string filename; // keep for performance
 
@@ -185,17 +198,16 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         LogAppend('\n');
         if (m_processingGame) LogAppend(Block_Indent);
         LogAppend("<script idx='");
-        LogAppendNum(idx);
+        LogAppendNum(scriptIdx);
 
         LogAppend("' name='");
         LogAppend(script->GetName());
 
         LogAppend("' file='");
         LogAppend(filename);
+        LogAppend("'");
 
-        LogAppend("' custom=");
-        LogAppend(script->IsCustom() ? "'yes'" : "'no'");
-
+        if(script->IsMission()) LogAppend(" custom='true'");
         if(script->IsMission()) LogAppend(" mission='true'");
         if(CLEO_GetScriptDebugMode(script)) LogAppend(" debug='true'");
 
@@ -234,10 +246,13 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             }
 
             bool wastedBustedCheck = script->IsMission() && script->bWastedBustedCheck;
-            // TODO: check for R* bug: calls stack can not be empty
             if (wastedBustedCheck && cleoStack)
             {
                 LogAppend(" \\ BUG: Mission death-arrest-check active. Executing death-arrest procedure during cleo_call would result in errors!");
+            }
+            else if (wastedBustedCheck && script->SP == 0) // Rockstar's bug?
+            {
+                LogAppend(" \\ BUG: Mission death-arrest-check requires at least one GOSUB level. Executing death-arrest procedure now would result in errors!");
             }
         }
 
@@ -687,7 +702,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
             timeStamp
         );
 
-        if (logCustomScriptsOnly == -1) logCustomScriptsOnly = false; // mission pack is custom main. Log it too
+        m_customMain = true;
     }
     else
     {
@@ -697,27 +712,22 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
         const size_t Orig_Main_Hash = 0xbd4e2fcf;
 
         auto hash = crc32((BYTE*)CTheScripts::ScriptSpace + Orig_Main_Code_Offset, Orig_Main_Size - Orig_Main_Code_Offset);
-        bool isMainOriginal = hash == Orig_Main_Hash; // hash of original main.scm
+        m_customMain = hash != Orig_Main_Hash; // hash of original main.scm
 
         if (saveSlot != -1)
         {
             LogFormattedLine("<newGameSession saveSlot='%d' mainScript='%s' time='%s'/>",
                 saveSlot + 1, // 1-based index
-                isMainOriginal ? "original" : "modified",
+                m_customMain ? "modified" : "original",
                 timeStamp
             );
         }
         else
         {
             LogFormattedLine("<newGameSession mainScript='%s' time='%s'/>",
-                isMainOriginal ? "original" : "modified",
+                m_customMain ? "modified" : "original",
                 timeStamp
             );
-        }
-
-        if (logCustomScriptsOnly == -1) // auto detect
-        {
-            logCustomScriptsOnly = isMainOriginal; // do not log original native scripts
         }
     }
 
