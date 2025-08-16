@@ -871,7 +871,32 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
         {
             if (i < command->inputArguments)
             {
-                ScriptParamInfo paramInfo(script); // just skip
+                if (command->arguments[i].type == OpcodeInfoDatabase::CommandArgumentType::Arguments)
+                {
+                    // when varArg param is present in command SB always compiles all following params as members of the varArg list
+                    // we need to count all provided params and skip only those which are actualy optional
+                    BYTE* argsIP = script->CurrentIP;
+                    int args = 0;
+                    while (true)
+                    {
+                        ScriptParamInfo paramInfo(script); // just skip
+                        if (paramInfo.type != eDataType::DT_END)
+                            args++;
+                        else
+                            break;
+                    }
+
+                    // skip optional args
+                    script->CurrentIP = argsIP;
+                    args -= command->arguments.size() - (i + 1); // substract expected remaining params
+                    while (args > 0)
+                    {
+                        ScriptParamInfo paramInfo(script); // just skip
+                        args--;
+                    }
+                }
+                else
+                    ScriptParamInfo paramInfo(script); // just skip
             }
             else
             {
@@ -943,6 +968,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
                     first = false;
                     type = script->PeekDataType();
                 }
+                script->IncPtr(sizeof(eDataType)); // var args terminator
             }
         }
     }
