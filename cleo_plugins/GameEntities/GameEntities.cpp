@@ -74,7 +74,7 @@ public:
 			auto car = (CVehicle*)cars[i];
 			if (car != nullptr &&
 				car->m_nCreatedBy != eVehicleCreatedBy::MISSION_VEHICLE &&
-				!car->m_nVehicleFlags.bFadeOut)
+				!car->bFadeOut)
 			{
 				foundCar = CPools::GetVehicleRef(car); // get handle
 				break;
@@ -88,7 +88,7 @@ public:
 			auto ped = (CPed*)peds[i];
 			if (ped != nullptr &&
 				ped->m_nCreatedBy == 1 && // random pedestrian
-				!ped->m_nPedFlags.bFadeOut)
+				!ped->bFadeOut)
 			{
 				foundPed = CPools::GetPedRef(ped); // get handle
 				break;
@@ -157,7 +157,7 @@ public:
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
 		auto vehicle = CPools::GetVehicle(handle);
-		auto state = vehicle->m_nVehicleFlags.bSirenOrAlarm;
+		auto state = vehicle->bSirenOrAlarm;
 
 		OPCODE_CONDITION_RESULT(state);
 		return OR_CONTINUE;
@@ -170,7 +170,7 @@ public:
 		auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
 		auto vehicle = CPools::GetVehicle(handle);
-		auto state = vehicle->m_nVehicleFlags.bEngineOn;
+		auto state = vehicle->bEngineOn;
 
 		OPCODE_CONDITION_RESULT(state);
 		return OR_CONTINUE;
@@ -185,7 +185,7 @@ public:
 
 		auto vehicle = CPools::GetVehicle(handle);
 
-		vehicle->m_nVehicleFlags.bEngineOn = (state != false);
+		vehicle->bEngineOn = (state != false);
 		return OR_CONTINUE;
 	}
 
@@ -275,7 +275,7 @@ public:
 		{
 			auto ped = CPools::ms_pPedPool->GetAt(index);
 
-			if (ped == nullptr || ped->m_nPedFlags.bFadeOut)
+			if (ped == nullptr || ped->bFadeOut)
 			{
 				continue; // invalid or about to be deleted
 			}
@@ -342,14 +342,14 @@ public:
 		{
 			auto car = CPools::ms_pVehiclePool->GetAt(index);
 
-			if (car == nullptr || car->m_nVehicleFlags.bFadeOut)
+			if (car == nullptr || car->bFadeOut)
 			{
 				continue; // invalid or about to be deleted
 			}
 
 			if (skipWrecked)
 			{
-				if (car->m_nStatus == STATUS_WRECKED || car->m_nVehicleFlags.bIsDrowning)
+				if (car->m_nStatus == STATUS_WRECKED || car->bIsDrowning)
 				{
 					continue; // wrecked
 				}
