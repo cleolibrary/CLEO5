@@ -45,6 +45,9 @@ namespace CLEO
             case WM_KILLFOCUS:
                 CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
                 break;
+
+            case WM_SETCURSOR:
+                return DefWindowProc(wnd, msg, wparam, lparam); // restore proper handling of ShowCursor
         }
 
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
