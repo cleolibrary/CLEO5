@@ -214,7 +214,7 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         LogAppend(filename);
         LogAppend("'");
 
-        if(script->IsMission()) LogAppend(" custom='true'");
+        if(script->IsCustom()) LogAppend(" custom='true'");
         if(script->IsMission()) LogAppend(" mission='true'");
         if(CLEO_GetScriptDebugMode(script)) LogAppend(" debug='true'");
 
