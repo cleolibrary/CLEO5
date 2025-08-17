@@ -82,6 +82,7 @@ jobs:
         run: |
           @echo Create directories
           mkdir .output\Release\cleo
+          mkdir .output\Release\cleo\.config
           mkdir .output\Release\cleo\cleo_plugins
 
           @echo Copy files
