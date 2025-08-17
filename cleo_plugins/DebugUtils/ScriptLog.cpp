@@ -188,7 +188,14 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             if (!filename.empty()) filename.push_back('\\');
             filename += name;
             FilepathNormalize(filename);
-            FilepathRemoveParent(filename, CLEO_GetGameDirectory());
+
+            if (StringStartsWith(filename, CLEO_GetUserDirectory(), false))
+            {
+                FilepathRemoveParent(filename, CLEO_GetUserDirectory());
+                filename = "user:\\" + filename;
+            }
+            else
+                FilepathRemoveParent(filename, CLEO_GetGameDirectory());
         }
         else
         {
