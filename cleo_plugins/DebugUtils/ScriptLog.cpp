@@ -17,8 +17,7 @@ using namespace CLEO;
 
 ScriptLog* ScriptLog::g_Instance = nullptr;
 
-ScriptLog::ScriptLog() :
-    m_logBuffer(Initial_Buff_Size, '\0')
+ScriptLog::ScriptLog()
 {
     assert(g_Instance == nullptr);
     g_Instance = this;
@@ -46,6 +45,8 @@ ScriptLog::ScriptLog() :
     path = CLEO_GetGameDirectory();
     path += "\\cleo\\.config\\enums.json";
     m_opcodeDatabase.LoadEnums(path.c_str());
+
+    m_logBuffer.reserve(Initial_Buff_Size);
 
     // TODO: start file writer thread
 }
