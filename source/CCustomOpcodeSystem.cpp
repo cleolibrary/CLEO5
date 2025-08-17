@@ -198,6 +198,20 @@ namespace CLEO
 		return true;
 	}
 
+	OpcodeResult _CallNativeOpcode(CRunningScript* thread, void* handler, DWORD opcode)
+	{
+		// wrapped in separate function as otherwise some problems occur in debug builds
+		OpcodeResult result;
+		_asm
+		{
+			push opcode
+			mov ecx, thread
+			call handler
+			mov result, al
+		}
+		return result;
+	}
+
 	OpcodeResult CCustomOpcodeSystem::CallNativeOpcode(CRunningScript* thread, WORD opcode)
 	{
 		if (opcode > Opcode_Max_Native)
@@ -206,7 +220,7 @@ namespace CLEO
 		}
 
 		size_t tableIdx = opcode / Opcode_Table_Size;
-		return originalOpcodeHandlers[tableIdx](thread, opcode);
+		return _CallNativeOpcode(thread, originalOpcodeHandlers[tableIdx], opcode);
 	}
 
 	const char* ReadStringParam(CRunningScript *thread, char* buff, int buffSize)
