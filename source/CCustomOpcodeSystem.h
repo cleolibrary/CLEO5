@@ -23,12 +23,11 @@ namespace CLEO
 
         ScriptDeleteDelegate scriptDeleteDelegate;
 
-        void FinalizeScriptObjects();
-
         CCustomOpcodeSystem() = default;
         CCustomOpcodeSystem(const CCustomOpcodeSystem&) = delete; // no copying
         void Inject(CCodeInjector& inj);
         void Init();
+        void GameEnd();
         ~CCustomOpcodeSystem();
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
