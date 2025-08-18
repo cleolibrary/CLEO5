@@ -424,23 +424,25 @@ namespace CLEO
         auto msg = TraceVArg(CLEO::eLogLevel::Error, format, args);
         va_end(args);
 
-        auto mainWnd = (HWND*)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
-        auto style = GetWindowLong(*mainWnd, GWL_STYLE);
+        auto mainWnd = GetActiveWindow();
+        auto style = GetWindowLong(mainWnd, GWL_STYLE);
         bool fullscreen = (style & (WS_BORDER | WS_CAPTION)) == 0;
 
         if (fullscreen)
         {
-            PostMessage(*mainWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-            ShowWindow(*mainWnd, SW_MINIMIZE);
+            PostMessage(mainWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+            ShowWindow(mainWnd, SW_MINIMIZE);
         }
 
         auto caption = StringPrintf("CLEO v%s", CLEO_GetVersionStr());
-        MessageBoxA(NULL, msg, caption.c_str(), MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
+        ShowCursor(true);
+        MessageBoxA(mainWnd, msg, caption.c_str(), MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
+        ShowCursor(false);
 
         if (fullscreen)
         {
-            PostMessage(*mainWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-            ShowWindow(*mainWnd, SW_RESTORE);
+            PostMessage(mainWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+            ShowWindow(mainWnd, SW_RESTORE);
         }
     }
 
