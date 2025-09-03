@@ -421,6 +421,11 @@ extern "C"
 	LPCSTR WINAPI CLEO_GetUserDirectory(); // absolute game user files directory filepath without trailling path separator
 
 	void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
+
+	DWORD WINAPI CLEO_GetNumberOfCustomScripts();
+	CRunningScript* WINAPI CLEO_GetCustomScriptByIndex(DWORD index); // nullptr if out of range
+	DWORD WINAPI CLEO_GetScriptSize(const CRunningScript* thread); // size of the script in bytes, 0 if unknown
+	bool WINAPI CLEO_GetScriptFileFullPath(const CRunningScript* thread, char* buf, DWORD bufSize); // full absolute path to script file
 }
 
 #pragma pack(push,1)

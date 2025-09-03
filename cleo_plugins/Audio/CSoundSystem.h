@@ -56,6 +56,7 @@ namespace CLEO
         void Pause();
         void Resume();
         void Process();
+        auto GetStreams() const { return streams; }
     };
 
     static bool isNetworkSource(const char* path) { return _strnicmp("http:", path, 5) == 0 || _strnicmp("https:", path, 6) == 0; }

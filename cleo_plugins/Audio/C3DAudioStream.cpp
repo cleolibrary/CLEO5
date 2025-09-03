@@ -5,7 +5,7 @@
 
 using namespace CLEO;
 
-C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
+C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream(filepath)
 {
     // see https://github.com/cleolibrary/CLEO5/pull/230
     static_assert(offsetof(C3DAudioStream, streamInternal) == 4 && alignof(C3DAudioStream) == 4, "C3DAudioStream compatibility with CLEO4 broken!");

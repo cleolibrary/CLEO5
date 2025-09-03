@@ -497,3 +497,109 @@ public:
 } audioInstance;
 
 CSoundSystem Audio::soundSystem;
+
+
+extern "C" {
+
+    __declspec(dllexport) size_t WINAPI GetNumberOfLoadedStreams()
+    {
+		return audioInstance.soundSystem.GetStreams().size();
+    }
+
+    __declspec(dllexport) bool WINAPI GetStreamFilenameByIndex(int index, char* buf, size_t size)
+    {
+		auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size())
+        {
+            return false;
+        }
+        auto it = streams.begin();
+        std::advance(it, index);
+
+		strcpy_s(buf, size, (*it)->GetFilepath().c_str());
+		return true;
+    }
+
+    __declspec(dllexport) float WINAPI GetStreamLengthByIndex(int index)
+    {
+        auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size())
+        {
+            return 0.0f;
+        }
+        auto it = streams.begin();
+        std::advance(it, index);
+        return (*it)->GetLength();
+    }
+
+    __declspec(dllexport) CAudioStream::StreamState WINAPI GetStreamStateByIndex(int index)
+    {
+        auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size())
+        {
+            return CAudioStream::StreamState::Stopped;
+        }
+        auto it = streams.begin();
+        std::advance(it, index);
+        return (*it)->GetState();
+	}
+
+    __declspec(dllexport) bool WINAPI IsStream3dByIndex(int index)
+    {
+        auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size())
+        {
+            return false;
+        }
+        auto it = streams.begin();
+        std::advance(it, index);
+        return (*it)->Is3d();
+	}
+
+    __declspec(dllexport) eStreamType WINAPI GetStreamTypeByIndex(int index)
+    {
+        auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size()) return eStreamType::None;
+        auto it = streams.begin();
+        std::advance(it, index);
+        return (*it)->GetType();
+    }
+
+    __declspec(dllexport) float WINAPI GetStreamVolumeByIndex(int index)
+    {
+        auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size())
+        {
+            return 0.0f;
+        }
+        auto it = streams.begin();
+        std::advance(it, index);
+        return (*it)->GetVolume();
+	}
+
+    __declspec(dllexport) float WINAPI GetStreamSpeedByIndex(int index)
+    {
+        auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size())
+        {
+            return 0.0f;
+        }
+        auto it = streams.begin();
+        std::advance(it, index);
+        return (*it)->GetSpeed();
+    }
+
+	__declspec(dllexport) bool WINAPI IsStreamLoopedByIndex(int index)
+    {
+        auto& streams = audioInstance.soundSystem.GetStreams();
+        if (index < 0 || index >= (int)streams.size())
+        {
+            return false;
+        }
+        auto it = streams.begin();
+        std::advance(it, index);
+        return (*it)->GetLooping();
+	}
+
+
+}

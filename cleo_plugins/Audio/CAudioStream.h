@@ -46,6 +46,7 @@ namespace CLEO
 
         void SetVolume(float value, float transitionTime = 0.0f);
         float GetVolume() const;
+		std::string GetFilepath() const { return filepath; }
 
         // 3d
         virtual bool Is3d() const { return false; }
@@ -65,6 +66,7 @@ namespace CLEO
         float rate = 44100.0f; // file's sampling rate
         CInterpolatedValue speed = { 1.0f };
         CInterpolatedValue volume = { 1.0f };
+	    std::string filepath;
 
         CAudioStream() = default;
         CAudioStream(const CAudioStream&) = delete; // no copying!

@@ -482,5 +482,43 @@ extern "C"
     {
         Debug.Trace(level, msg);
     }
+
+    DWORD WINAPI CLEO_GetNumberOfCustomScripts()
+    {
+        return CleoInstance.ScriptEngine.CustomScripts.size();
+	}
+
+    CRunningScript* WINAPI CLEO_GetCustomScriptByIndex(DWORD index)
+    {
+        if (index < 0 || index >= (int)CleoInstance.ScriptEngine.CustomScripts.size()) 
+        {
+            return nullptr;
+        }
+        auto it = CleoInstance.ScriptEngine.CustomScripts.begin();
+        std::advance(it, index);
+        return *it;
+	}
+   
+    DWORD WINAPI CLEO_GetScriptSize(const CLEO::CRunningScript* thread)
+    {
+        if (!CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
+        {
+            return 0;
+        }
+        auto cs = (CCustomScript*)thread;
+        return cs->GetCodeSize();
+	}
+
+    bool WINAPI CLEO_GetScriptFileFullPath(const CRunningScript* thread, char* buf, DWORD bufSize)
+    {
+        if (!CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
+        {
+            return false;
+        }
+        auto cs = (CCustomScript*)thread;
+        auto path = cs->GetScriptFileFullPath();
+        strcpy_s(buf, bufSize, path.c_str());
+        return true;
+    }
 }
 }

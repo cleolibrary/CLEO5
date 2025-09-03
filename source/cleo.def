@@ -62,3 +62,7 @@ EXPORTS
 	_CLEO_GetScriptBaseRelativeOffset@8		@59
 	_CLEO_GetScmMainData@0					@60
 	_CLEO_CallNativeOpcode@8				@61
+	_CLEO_GetNumberOfCustomScripts@0		@62
+	_CLEO_GetCustomScriptByIndex@4			@63
+	_CLEO_GetScriptSize@4					@64
+	_CLEO_GetScriptFileFullPath@12			@65

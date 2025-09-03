@@ -1001,3 +1001,37 @@ public:
     }
 } Instance;
 
+extern "C" {
+
+    __declspec(dllexport) void WINAPI GetScriptAllocationInfo(CLEO::CRunningScript* script, int& count, int& size)
+    {
+        auto& info = Instance.m_scriptAllocationsInfo[script];
+        count = info.count;
+        size = info.size;
+    }
+
+    __declspec(dllexport) void WINAPI GetMemoryAllocationLimits(int& maxCount, int& maxSize)
+    {
+        maxCount = Instance.m_configLimitAllocationCount;
+        maxSize = Instance.m_configLimitAllocationSize;
+    }
+
+    __declspec(dllexport) size_t WINAPI GetNumberOfLoadedLibraries()
+    {
+        return Instance.m_libraries.size();
+    }
+
+    __declspec(dllexport) bool WINAPI GetLoadedLibraryByIndex(int index, HMODULE& handle, size_t& count)
+    {
+        if (index < 0 || index >= (int)Instance.m_libraries.size())
+        {
+            return false;
+        }
+        auto it = Instance.m_libraries.begin();
+        std::advance(it, index);
+		handle = it->first;
+		count = it->second;
+        return true;
+    }
+
+}
