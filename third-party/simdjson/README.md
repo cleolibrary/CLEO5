@@ -1,7 +1,7 @@
 
-[![Ubuntu 20.04 CI](https://github.com/simdjson/simdjson/workflows/Ubuntu%2020.04%20CI%20(GCC%209)/badge.svg)](https://simdjson.org/plots.html)
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/simdjson.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:simdjson)
-[![][license img]][license]
+[![][license img]][license] [![][licensemit img]][licensemit]
+
 
 [![Doxygen Documentation](https://img.shields.io/badge/docs-doxygen-green.svg)](https://simdjson.github.io/simdjson/)
 
@@ -31,6 +31,7 @@ Table of Contents
 * [Documentation](#documentation)
 * [Godbolt](#godbolt)
 * [Performance results](#performance-results)
+* [Packages](#packages)
 * [Bindings and Ports of simdjson](#bindings-and-ports-of-simdjson)
 * [About simdjson](#about-simdjson)
 * [Funding](#funding)
@@ -61,6 +62,9 @@ Real-world usage
 - [ada-url](https://github.com/ada-url/ada)
 - [fastgron](https://github.com/adamritter/fastgron)
 - [WasmEdge](https://wasmedge.org)
+- [RonDB](https://github.com/logicalclocks/rondb)
+- [GreptimeDB](https://github.com/GreptimeTeam/greptimedb)
+
 
 If you are planning to use simdjson in a product, please work from one of our releases.
 
@@ -143,6 +147,9 @@ speed for [synthetic files over various sizes generated with a script](https://g
 For NDJSON files, we can exceed 3 GB/s with [our  multithreaded parsing functions](https://github.com/simdjson/simdjson/blob/master/doc/parse_many.md).
 
 
+Packages
+------------------------------
+[![Packaging status](https://repology.org/badge/vertical-allrepos/simdjson.svg)](https://repology.org/project/simdjson/versions)
 
 
 Bindings and Ports of simdjson
@@ -167,7 +174,8 @@ We distinguish between "bindings" (which just wrap the C++ code) and a port to a
 - [simdjsone](https://github.com/saleyn/simdjsone): erlang bindings.
 - [lua-simdjson](https://github.com/FourierTransformer/lua-simdjson): lua bindings.
 - [hermes-json](https://hackage.haskell.org/package/hermes-json): haskell bindings.
-- [simdjzon](https://github.com/travisstaloch/simdjzon): zig port.
+- [zimdjson](https://github.com/EzequielRamis/zimdjson): Zig port.
+- [simdjzon](https://github.com/travisstaloch/simdjzon): Zig port.
 - [JSON-Simd](https://github.com/rawleyfowler/JSON-simd): Raku bindings.
 - [JSON::SIMD](https://metacpan.org/pod/JSON::SIMD): Perl bindings; fully-featured JSON module that uses simdjson for decoding.
 - [gemmaJSON](https://github.com/sainttttt/gemmaJSON): Nim JSON parser based on simdjson bindings.
@@ -180,7 +188,7 @@ The simdjson library takes advantage of modern microarchitectures, parallelizing
 instructions, reducing branch misprediction, and reducing data dependency to take advantage of each
 CPU's multiple execution cores.
 
-Our default front-end is called On Demand, and we wrote a paper about it:
+Our default front-end is called On-Demand, and we wrote a paper about it:
 
 - John Keiser, Daniel Lemire, [On-Demand JSON: A Better Way to Parse Documents?](http://arxiv.org/abs/2312.17149), Software: Practice and Experience 54 (6), 2024.
 
@@ -201,11 +209,16 @@ For the video inclined, <br />
 Funding
 -------
 
-The work is supported by the Natural Sciences and Engineering Research Council of Canada under grant
-number RGPIN-2017-03910.
+The work is supported by the Natural Sciences and Engineering Research Council of Canada under grants
+RGPIN-2017-03910 and RGPIN-2024-03787.
 
 [license]: LICENSE
 [license img]: https://img.shields.io/badge/License-Apache%202-blue.svg
+
+
+[licensemit]: LICENSE-MIT
+[licensemit img]: https://img.shields.io/badge/License-MIT-blue.svg
+
 
 Contributing to simdjson
 ------------------------
@@ -216,7 +229,7 @@ Head over to [CONTRIBUTING.md](CONTRIBUTING.md) for information on contributing 
 License
 -------
 
-This code is made available under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.html).
+This code is made available under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.html) as well as under the MIT License. As a user, you can pick the license you prefer.
 
 Under Windows, we build some tools using the windows/dirent_portable.h file (which is outside our library code): it is under the liberal (business-friendly) MIT license.
 
