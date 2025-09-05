@@ -7,11 +7,9 @@
 
 using namespace CLEO;
 
-
 // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
 CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScript* parent, int label)
-    : CRunningScript(), m_saveEnabled(false), m_ok(false),
-    m_compatVer(CLEO_VER_CUR)
+    : CRunningScript(), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR)
 {
     TRACE(""); // separator
     TRACE("Loading custom script '%s'...", szFileName);
@@ -85,9 +83,8 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             // deduce compatibility mode from filetype extension
             if (path.extension() == cs4_ext)
                 m_compatVer = CLEO_VER_4;
-            else
-                if (path.extension() == cs3_ext)
-                    m_compatVer = CLEO_VER_3;
+            else if (path.extension() == cs3_ext)
+                m_compatVer = CLEO_VER_3;
 
             if (m_compatVer == CLEO_VER_CUR && parent != nullptr)
             {
@@ -102,13 +99,12 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
                     if (FS::is_regular_file(compatPath))
                         path = compatPath;
                 }
-                else
-                    if (m_compatVer == CLEO_VER_3)
-                    {
-                        compatPath.replace_extension(cs3_ext);
-                        if (FS::is_regular_file(compatPath))
-                            path = compatPath;
-                    }
+                else if (m_compatVer == CLEO_VER_3)
+                {
+                    compatPath.replace_extension(cs3_ext);
+                    if (FS::is_regular_file(compatPath))
+                        path = compatPath;
+                }
             }
 
             m_scriptFileDir = path.parent_path().string();
@@ -122,7 +118,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             else
             {
                 m_debugMode = CleoInstance.ScriptEngine.NativeScriptsDebugMode; // global setting
-                m_workDir = Filepath_Game; // game root
+                m_workDir = Filepath_Game;                                      // game root
             }
 
             using std::ios;
@@ -140,7 +136,8 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
                 CTheScripts::bAlreadyRunningAMissionScript = 1;
                 CleoInstance.ScriptEngine.missionIndex = -1;
-                BaseIP = CurrentIP = CleoInstance.ScriptEngine.missionBlock; // TODO: there should be check length <= missionBlock size
+                BaseIP = CurrentIP =
+                    CleoInstance.ScriptEngine.missionBlock; // TODO: there should be check length <= missionBlock size
             }
             else
             {
@@ -149,7 +146,8 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             is.read(reinterpret_cast<char*>(BaseIP), length);
 
             m_codeSize = length;
-            m_codeSize -= GetExtraInfoSize(reinterpret_cast<BYTE*>(BaseIP), m_codeSize); // just the code without extra SCM data at the end
+            m_codeSize -= GetExtraInfoSize(reinterpret_cast<BYTE*>(BaseIP),
+                                           m_codeSize); // just the code without extra SCM data at the end
 
             m_codeChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
 
@@ -183,10 +181,12 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
 CCustomScript::~CCustomScript()
 {
-    if (BaseIP && !bIsMission) delete[] BaseIP;
+    if (BaseIP && !bIsMission)
+        delete[] BaseIP;
     CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
 
-    if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
+    if (CleoInstance.ScriptEngine.LastScriptCreated == this)
+        CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
 }
 
 void CCustomScript::AddScriptToList(CRunningScript** queuelist)
@@ -259,7 +259,7 @@ const char* CCustomScript::GetWorkDir() const
 void CCustomScript::SetWorkDir(const char* directory)
 {
     if (directory == nullptr || strlen(directory) == 0)
-        return;  // Already done. Empty path is relative path starting at current work dir
+        return; // Already done. Empty path is relative path starting at current work dir
 
     auto resolved = ResolvePath(directory);
 
@@ -279,17 +279,30 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
     auto fsPath = FS::path(path);
 
     // check for virtual path root
-    enum class VPref { None, Game, User, Script, Cleo, Modules } virtualPrefix = VPref::None;
+    enum class VPref
+    {
+        None,
+        Game,
+        User,
+        Script,
+        Cleo,
+        Modules
+    } virtualPrefix = VPref::None;
     if (!fsPath.empty())
     {
         const auto root = fsPath.begin()->string(); // first path element
         const auto r = root.c_str();
 
-        if (_strcmpi(r, DIR_GAME) == 0) virtualPrefix = VPref::Game;
-        else if (_strcmpi(r, DIR_USER) == 0) virtualPrefix = VPref::User;
-        else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript((CRunningScript*)this)) virtualPrefix = VPref::Script;
-        else if (_strcmpi(r, DIR_CLEO) == 0) virtualPrefix = VPref::Cleo;
-        else if (_strcmpi(r, DIR_MODULES) == 0) virtualPrefix = VPref::Modules;
+        if (_strcmpi(r, DIR_GAME) == 0)
+            virtualPrefix = VPref::Game;
+        else if (_strcmpi(r, DIR_USER) == 0)
+            virtualPrefix = VPref::User;
+        else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript((CRunningScript*)this))
+            virtualPrefix = VPref::Script;
+        else if (_strcmpi(r, DIR_CLEO) == 0)
+            virtualPrefix = VPref::Cleo;
+        else if (_strcmpi(r, DIR_MODULES) == 0)
+            virtualPrefix = VPref::Modules;
     }
 
     // not virtual
@@ -316,12 +329,24 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
     FS::path resolved;
     switch (virtualPrefix)
     {
-        case VPref::User: resolved = Filepath_User; break;
-        case VPref::Script: resolved = GetScriptFileDir(); break;
-        case VPref::Game: resolved = Filepath_Game; break;
-        case VPref::Cleo: resolved = Filepath_Cleo; break;
-        case VPref::Modules: resolved = Filepath_Cleo + "\\cleo_modules"; break;
-        default: resolved = "<error>"; break; // should never happen
+    case VPref::User:
+        resolved = Filepath_User;
+        break;
+    case VPref::Script:
+        resolved = GetScriptFileDir();
+        break;
+    case VPref::Game:
+        resolved = Filepath_Game;
+        break;
+    case VPref::Cleo:
+        resolved = Filepath_Cleo;
+        break;
+    case VPref::Modules:
+        resolved = Filepath_Cleo + "\\cleo_modules";
+        break;
+    default:
+        resolved = "<error>";
+        break; // should never happen
     }
 
     // append all but virtual prefix from original path
@@ -340,7 +365,8 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
     auto threadName = GetName();
     auto fileName = GetScriptFileName();
 
-    if (memcmp(threadName.c_str(), fileName, threadName.length()) != 0) // thread name no longer same as filename (was set with 03A4)
+    if (memcmp(threadName.c_str(), fileName, threadName.length()) !=
+        0) // thread name no longer same as filename (was set with 03A4)
     {
         ss << "'" << threadName << "' from ";
     }
@@ -360,7 +386,8 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
         }
         else
         {
-            auto offset = CLEO_GetScriptBaseRelativeOffset((CLEO::CRunningScript*)this, (BYTE*)CCustomOpcodeSystem::lastOpcodePtr);
+            auto offset = CLEO_GetScriptBaseRelativeOffset((CLEO::CRunningScript*)this,
+                                                           (BYTE*)CCustomOpcodeSystem::lastOpcodePtr);
             ss << "offset {" << offset << "}"; // Sanny offsets style
             ss << " - ";
             ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
@@ -384,7 +411,8 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
                 if (commandName)
                     ss << commandName;
                 else
-                    ss << "[" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::prevOpcode << "]";
+                    ss << "[" << std::hex << std::uppercase << std::setw(4) << std::setfill('0')
+                       << CCustomOpcodeSystem::prevOpcode << "]";
             }
         }
     }

@@ -24,7 +24,8 @@ struct ScriptLog
 
     void ProcessCommand(CRunningScript* thread)
     {
-        if (this->thread != thread) Begin(thread);
+        if (this->thread != thread)
+            Begin(thread);
 
         commandCounter++;
     }
@@ -34,4 +35,3 @@ struct ScriptLog
         return (clock() - startTime) / CLOCKS_PER_SEC;
     }
 };
-
