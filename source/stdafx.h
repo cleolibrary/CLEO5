@@ -4,34 +4,33 @@
 #define WIN32_LEAN_AND_MEAN
 #undef UNICODE
 
-#include <windows.h>
 #include <assert.h>
 #include <ctype.h>
 #include <psapi.h>
 #include <shellapi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <windows.h>
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <filesystem>
-#include <fstream>
-#include <memory>
-#include <array>
 #include <forward_list>
+#include <fstream>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
-#include <vector>
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "..\cleo_sdk\CLEO.h"
 #include "..\cleo_sdk\CLEO_Utils.h"
 
 #include "simdjson.h"
 
-#include <plugin.h>
 #include <CFont.h>
 #include <CGame.h>
 #include <CMenuManager.h>
@@ -45,29 +44,30 @@
 #include <Patch.h>
 #include <RenderWare.h>
 #include <extensions/Screen.h>
-
+#include <plugin.h>
 
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
 
 static std::string GetGameDirectory() // already stored in Filepath_Game
 {
-    std::string path;
-    path.resize(MAX_PATH);
-    GetModuleFileNameA(NULL, path.data(), path.size()); // game exe absolute path
-    path.resize(CLEO::FilepathGetParent(path).length());
-    CLEO::FilepathNormalize(path);
-    return std::move(path);
+  std::string path;
+  path.resize(MAX_PATH);
+  GetModuleFileNameA(NULL, path.data(), path.size()); // game exe absolute path
+  path.resize(CLEO::FilepathGetParent(path).length());
+  CLEO::FilepathNormalize(path);
+  return std::move(path);
 }
 
 static std::string GetUserDirectory() // already stored in Filepath_User
 {
-    static const auto GTA_InitUserDirectories = (char* (__cdecl*)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
+  static const auto GTA_InitUserDirectories = (char *(
+      __cdecl *)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
 
-    std::string path = GTA_InitUserDirectories();
-    CLEO::FilepathNormalize(path);
+  std::string path = GTA_InitUserDirectories();
+  CLEO::FilepathNormalize(path);
 
-    return std::move(path);
+  return std::move(path);
 }
 
 inline const std::string Filepath_Game = GetGameDirectory();

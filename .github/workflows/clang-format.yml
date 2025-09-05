@@ -1,0 +1,21 @@
+name: Clang-Format Checker
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  check-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+
+      - name: Run clang-format style check
+        uses: jidicula/clang-format-action@v4.15.0
+        with:
+          clang-format-version: 20
+          fallback-style: llvm
+          exclude-regex: third_party/.*

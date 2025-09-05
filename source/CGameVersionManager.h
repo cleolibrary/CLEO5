@@ -1,81 +1,69 @@
 #pragma once
 #include "CCodeInjector.h"
 
-namespace CLEO
-{
-    // returned by 0DD5: get_platform opcode
-    enum ePlatform
-    {
-        PLATFORM_NONE,
-        PLATFORM_ANDROID,
-        PLATFORM_PSP,
-        PLATFORM_IOS,
-        PLATFORM_FOS,
-        PLATFORM_XBOX,
-        PLATFORM_PS2,
-        PLATFORM_PS3,
-        PLATFORM_MAC,
-        PLATFORM_WINDOWS
-    };
+namespace CLEO {
+// returned by 0DD5: get_platform opcode
+enum ePlatform {
+  PLATFORM_NONE,
+  PLATFORM_ANDROID,
+  PLATFORM_PSP,
+  PLATFORM_IOS,
+  PLATFORM_FOS,
+  PLATFORM_XBOX,
+  PLATFORM_PS2,
+  PLATFORM_PS3,
+  PLATFORM_MAC,
+  PLATFORM_WINDOWS
+};
 
-    // determines the list of memory adresses, that can be translated 
-    // considering to game version
-    enum eMemoryAddress
-    {
-        // UpdateGameLogics
-        MA_CALL_UPDATE_GAME_LOGICS,
+// determines the list of memory adresses, that can be translated
+// considering to game version
+enum eMemoryAddress {
+  // UpdateGameLogics
+  MA_CALL_UPDATE_GAME_LOGICS,
 
-        // MenuStatusNotifier
-        MA_CALL_CTEXTURE_DRAW_BG_RECT,
+  // MenuStatusNotifier
+  MA_CALL_CTEXTURE_DRAW_BG_RECT,
 
-        // ScriptEngine
-        MA_SCM_BLOCK_REF,
-        MA_MISSION_BLOCK_REF,
-        MA_CALL_INIT_SCM1,
-        MA_CALL_INIT_SCM2,
-        MA_CALL_INIT_SCM3,
-        MA_CALL_SAVE_SCM_DATA,
-        MA_CALL_LOAD_SCM_DATA,
-        MA_CALL_PROCESS_SCRIPT,
-        MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE,
-        MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE,
-        MA_CALL_GAME_SHUTDOWN,
-        MA_CALL_GAME_RESTART_1,
-        MA_CALL_GAME_RESTART_2,
-        MA_CALL_GAME_RESTART_3,
-        MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE,
-        MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND,
+  // ScriptEngine
+  MA_SCM_BLOCK_REF,
+  MA_MISSION_BLOCK_REF,
+  MA_CALL_INIT_SCM1,
+  MA_CALL_INIT_SCM2,
+  MA_CALL_INIT_SCM3,
+  MA_CALL_SAVE_SCM_DATA,
+  MA_CALL_LOAD_SCM_DATA,
+  MA_CALL_PROCESS_SCRIPT,
+  MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE,
+  MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE,
+  MA_CALL_GAME_SHUTDOWN,
+  MA_CALL_GAME_RESTART_1,
+  MA_CALL_GAME_RESTART_2,
+  MA_CALL_GAME_RESTART_3,
+  MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE,
+  MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND,
 
-        // CustomOpcodeSystem
-        MA_OPCODE_HANDLER_REF_1,
-        MA_OPCODE_HANDLER_REF_2,
+  // CustomOpcodeSystem
+  MA_OPCODE_HANDLER_REF_1,
+  MA_OPCODE_HANDLER_REF_2,
 
-        MA_CALL_CREATE_MAIN_WINDOW,
+  MA_CALL_CREATE_MAIN_WINDOW,
 
-        MA_TOTAL,
-    };
+  MA_TOTAL,
+};
 
-    eGameVersion DetermineGameVersion();
+eGameVersion DetermineGameVersion();
 
-    class CGameVersionManager
-    {
-        eGameVersion m_eVersion;
+class CGameVersionManager {
+  eGameVersion m_eVersion;
 
-    public:
-        CGameVersionManager()
-        {
-            m_eVersion = DetermineGameVersion();
-        }
+public:
+  CGameVersionManager() { m_eVersion = DetermineGameVersion(); }
 
-        ~CGameVersionManager()
-        {
-        }
+  ~CGameVersionManager() {}
 
-        eGameVersion GetGameVersion() const
-        {
-            return m_eVersion;
-        }
+  eGameVersion GetGameVersion() const { return m_eVersion; }
 
-        memory_pointer TranslateMemoryAddress(eMemoryAddress addrId) const;
-    };
-}
+  memory_pointer TranslateMemoryAddress(eMemoryAddress addrId) const;
+};
+} // namespace CLEO
