@@ -92,9 +92,9 @@ class FileSystemOperations
     }
 
     // 0A99=1,set_current_directory %1b:userdir/rootdir%
-    static OpcodeResult __stdcall opcode_0A99(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A99(CRunningScript* thread)
     {
-        const char *path;
+        const char* path;
 
         auto paramType = thread->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
@@ -135,7 +135,7 @@ class FileSystemOperations
     }
 
     // 0A9A=3,%3d% = openfile %1d% mode %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_0A9A(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A9A(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -178,7 +178,7 @@ class FileSystemOperations
     }
 
     // 0A9B=1,closefile %1d%
-    static OpcodeResult __stdcall opcode_0A9B(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A9B(CRunningScript* thread)
     {
         auto handle = OPCODE_READ_PARAM_INT();
 
@@ -201,7 +201,7 @@ class FileSystemOperations
     }
 
     // 0A9C=2,get_file_size %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A9C(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A9C(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -212,7 +212,7 @@ class FileSystemOperations
     }
 
     // 0A9D=3,read_from_file %1d% size %2d% store_to %3d%
-    static OpcodeResult __stdcall opcode_0A9D(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A9D(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -232,7 +232,7 @@ class FileSystemOperations
     }
 
     // 0A9E=3,write_to_file %1d% size %2d% from %3d%
-    static OpcodeResult __stdcall opcode_0A9E(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A9E(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -250,7 +250,7 @@ class FileSystemOperations
             return OR_CONTINUE;    // done
         }
 
-        const void *source;
+        const void* source;
         auto paramType = thread->PeekDataType();
         if (IsVariable(paramType))
         {
@@ -290,7 +290,7 @@ class FileSystemOperations
     }
 
     // 0AAB=1,  does_file_exist %1s%
-    static OpcodeResult __stdcall Script_FS_FileExists(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_FileExists(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -302,7 +302,7 @@ class FileSystemOperations
     }
 
     // 0AD5=3,  file_seek %1d% offset %2d% origin %3d% //IF and SET
-    static OpcodeResult __stdcall opcode_0AD5(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD5(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto offset = OPCODE_READ_PARAM_INT();
@@ -315,7 +315,7 @@ class FileSystemOperations
     }
 
     // 0AD6=1,  is_end_of_file_reached %1d%
-    static OpcodeResult __stdcall opcode_0AD6(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD6(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -326,7 +326,7 @@ class FileSystemOperations
     }
 
     // 0AD7=3,  read_string_from_file %1d% to %2d% size %3d% //IF and SET
-    static OpcodeResult __stdcall opcode_0AD7(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD7(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
@@ -369,7 +369,7 @@ class FileSystemOperations
     }
 
     // 0AD8=2,  write_string_to_file %1d% from %2d% //IF and SET
-    static OpcodeResult __stdcall opcode_0AD8(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD8(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(text);
@@ -387,7 +387,7 @@ class FileSystemOperations
     }
 
     // 0AD9=-1,write_formated_text %2d% to_file %1d%
-    static OpcodeResult __stdcall opcode_0AD9(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD9(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
@@ -403,14 +403,14 @@ class FileSystemOperations
     }
 
     // 0ADA=-1,  %3d% = scan_file %1d% format %2d% //IF and SET
-    static OpcodeResult __stdcall opcode_0ADA(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ADA(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         OPCODE_READ_PARAM_STRING(format);
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR_ANY32();
 
         size_t paramCount = 0;
-        SCRIPT_VAR *outputParams[35];
+        SCRIPT_VAR* outputParams[35];
         while (thread->PeekDataType() != eDataType::DT_END)
         {
             // TODO: if target param is string variable it should be handled correctly
@@ -418,7 +418,7 @@ class FileSystemOperations
         }
         CLEO_SkipUnusedVarArgs(thread); // var arg terminator
 
-        result->dwParam = File::scan(handle, format, (void **)&outputParams);
+        result->dwParam = File::scan(handle, format, (void**)&outputParams);
 
         // OPCODE_CONDITION_RESULT(paramCount == result->dwParam);
         OPCODE_CONDITION_RESULT(true);
@@ -426,7 +426,7 @@ class FileSystemOperations
     }
 
     // 0AE4=1,  directory_exist %1s%
-    static OpcodeResult __stdcall Script_FS_DirectoryExists(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_DirectoryExists(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -438,7 +438,7 @@ class FileSystemOperations
     }
 
     // 0AE5=1,  create_directory %1s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CreateDirectory(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_CreateDirectory(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -449,7 +449,7 @@ class FileSystemOperations
     }
 
     // 0AE6=3,  %2d% = find_first_file %1s% get_filename_to %3s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_FindFirstFile(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_FindFirstFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -473,7 +473,7 @@ class FileSystemOperations
     }
 
     // 0AE7=2,%2s% = find_next_file %1d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_FindNextFile(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_FindNextFile(CRunningScript* thread)
     {
         auto handle = (HANDLE)OPCODE_READ_PARAM_INT();
 
@@ -500,7 +500,7 @@ class FileSystemOperations
     }
 
     // 0AE8=1,find_close %1d%
-    static OpcodeResult __stdcall Script_FS_FindClose(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_FindClose(CRunningScript* thread)
     {
         auto handle = (HANDLE)OPCODE_READ_PARAM_INT();
 
@@ -517,7 +517,7 @@ class FileSystemOperations
     }
 
     // 0B00=1,  delete_file %1s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_DeleteFile(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_DeleteFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -527,7 +527,7 @@ class FileSystemOperations
         return OR_CONTINUE;
     }
 
-    static BOOL DeleteDir(const char *path)
+    static BOOL DeleteDir(const char* path)
     {
         char mask[MAX_PATH];
         HANDLE hSearch = NULL;
@@ -572,7 +572,7 @@ class FileSystemOperations
     }
 
     // 0B01=1, delete_directory %1s% with_all_files_and_subdirectories %2d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_DeleteDirectory(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_DeleteDirectory(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
         auto deleteContents = OPCODE_READ_PARAM_BOOL();
@@ -594,7 +594,7 @@ class FileSystemOperations
     }
 
     // 0B02=2, move_file %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_MoveFile(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_MoveFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -614,7 +614,7 @@ class FileSystemOperations
     }
 
     // 0B03=2, move_directory %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_MoveDir(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_MoveDir(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -634,7 +634,7 @@ class FileSystemOperations
     }
 
     // 0B04=2, copy_file %1s% to %2s% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CopyFile(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_CopyFile(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -652,7 +652,7 @@ class FileSystemOperations
     }
 
     // 0B05=2,  copy_directory %1d% to %2d% //IF and SET
-    static OpcodeResult __stdcall Script_FS_CopyDir(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_FS_CopyDir(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filepath);
         OPCODE_READ_PARAM_FILEPATH(newFilepath);
@@ -672,7 +672,7 @@ class FileSystemOperations
     }
 
     // 2300=2,get_file_position %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_2300(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2300(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
 
@@ -683,7 +683,7 @@ class FileSystemOperations
     }
 
     // 2301=3,read_block_from_file %1d% size %2d% buffer %3d% // IF and SET
-    static OpcodeResult __stdcall opcode_2301(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2301(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -714,7 +714,7 @@ class FileSystemOperations
     }
 
     // 2302=3,  write_block_to_file %1d% size %2d% address %3d% // IF and SET
-    static OpcodeResult __stdcall opcode_2302(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2302(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILE_HANDLE(handle);
         auto size = OPCODE_READ_PARAM_INT();
@@ -740,7 +740,7 @@ class FileSystemOperations
     }
 
     // 2303=2,%2s% = resolve_filepath %1s%
-    static OpcodeResult __stdcall opcode_2303(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2303(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(path); // it also resolves the path to absolute form
 
@@ -749,7 +749,7 @@ class FileSystemOperations
     }
 
     // 2304=3,%3s% = get_script_filename %1d% full_path %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_2304(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2304(CRunningScript* thread)
     {
         auto script = OPCODE_READ_PARAM_INT();
         auto fullPath = OPCODE_READ_PARAM_BOOL();
@@ -763,7 +763,7 @@ class FileSystemOperations
             OPCODE_VALIDATE_POINTER(script);
         }
 
-        const char *filename = CLEO_GetScriptFilename((CRunningScript *)script);
+        const char* filename = CLEO_GetScriptFilename((CRunningScript*)script);
         if (filename == nullptr)
         {
             OPCODE_SKIP_PARAMS(1);
@@ -780,7 +780,7 @@ class FileSystemOperations
             std::string absolute = ".\\";
             absolute += filename;
             absolute.resize(MAX_STR_LEN);
-            CLEO_ResolvePath((CRunningScript *)script, absolute.data(), MAX_STR_LEN);
+            CLEO_ResolvePath((CRunningScript*)script, absolute.data(), MAX_STR_LEN);
             OPCODE_WRITE_PARAM_STRING(absolute.c_str());
         }
 
@@ -790,7 +790,7 @@ class FileSystemOperations
 
     // 2305=8,  get_file_write_time %1s% year %2d% month %3d% day %3d% hour %4d% minute %5d% second %6d% milisecond %7d%
     // // IF and SET
-    static OpcodeResult __stdcall opcode_2305(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2305(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(path);
 

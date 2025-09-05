@@ -108,18 +108,18 @@ class Text
         textManager.Clear();
     }
 
-    static bool __stdcall OnScriptBeforeProcess(CLEO::CRunningScript *pScript)
+    static bool __stdcall OnScriptBeforeProcess(CLEO::CRunningScript* pScript)
     {
         scriptDrawing.ScriptProcessingBegin(pScript);
         return true;
     }
 
-    static void __stdcall OnScriptAfterProcess(CLEO::CRunningScript *pScript)
+    static void __stdcall OnScriptAfterProcess(CLEO::CRunningScript* pScript)
     {
         scriptDrawing.ScriptProcessingEnd(pScript);
     }
 
-    static void __stdcall OnScriptUnregister(CLEO::CRunningScript *pScript)
+    static void __stdcall OnScriptUnregister(CLEO::CRunningScript* pScript)
     {
         scriptDrawing.ScriptUnregister(pScript);
     }
@@ -141,7 +141,7 @@ class Text
     }
 
     // hook of game's CText::Get
-    static const char *__fastcall HOOK_CTextGet(CText *text, int dummy, const char *gxt)
+    static const char* __fastcall HOOK_CTextGet(CText* text, int dummy, const char* gxt)
     {
         if ((gxt[0] == '\0') || (gxt[0] == ' '))
             return "";
@@ -160,7 +160,7 @@ class Text
     }
 
     // 0ACA=1,show_text_box %1d%
-    static OpcodeResult __stdcall opcode_0ACA(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ACA(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
 
@@ -169,7 +169,7 @@ class Text
     }
 
     // 0ACB=3,show_styled_text %1d% time %2d% style %3d%
-    static OpcodeResult __stdcall opcode_0ACB(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ACB(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
@@ -182,7 +182,7 @@ class Text
     }
 
     // 0ACC=2,show_text_lowpriority %1d% time %2d%
-    static OpcodeResult __stdcall opcode_0ACC(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ACC(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
@@ -193,7 +193,7 @@ class Text
     }
 
     // 0ACD=2,show_text_highpriority %1d% time %2d%
-    static OpcodeResult __stdcall opcode_0ACD(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ACD(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
@@ -204,7 +204,7 @@ class Text
     }
 
     // 0ACE=-1,show_formatted_text_box %1d%
-    static OpcodeResult __stdcall opcode_0ACE(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ACE(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
@@ -213,7 +213,7 @@ class Text
     }
 
     // 0ACF=-1,show_formatted_styled_text %1d% time %2d% style %3d%
-    static OpcodeResult __stdcall opcode_0ACF(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ACF(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
@@ -227,7 +227,7 @@ class Text
     }
 
     // 0AD0=-1,show_formatted_text_lowpriority %1d% time %2d%
-    static OpcodeResult __stdcall opcode_0AD0(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD0(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
@@ -239,7 +239,7 @@ class Text
     }
 
     // 0AD1=-1,show_formatted_text_highpriority %1d% time %2d%
-    static OpcodeResult __stdcall opcode_0AD1(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD1(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
@@ -251,7 +251,7 @@ class Text
     }
 
     // 0AD3=-1,string %1d% format %2d% ...
-    static OpcodeResult __stdcall opcode_0AD3(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD3(CLEO::CRunningScript* thread)
     {
         auto result = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
@@ -261,7 +261,7 @@ class Text
     }
 
     // 0AD4=-1,%3d% = scan_string %1d% format %2d%  //IF and SET
-    static OpcodeResult __stdcall opcode_0AD4(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD4(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(src);
         OPCODE_READ_PARAM_STRING(format);
@@ -269,7 +269,7 @@ class Text
         auto readCount = OPCODE_READ_PARAM_OUTPUT_VAR_INT(); // store_to
 
         // format string tokens processing helper
-        const char *formatPos = format;
+        const char* formatPos = format;
         auto GetNextTokenType = [&]()
         {
             while (true)
@@ -319,7 +319,7 @@ class Text
 
         // collect provided by caller store_to variables
         size_t outputParamCount = 0;
-        SCRIPT_VAR *outputParams[35];
+        SCRIPT_VAR* outputParams[35];
         struct StringParamDesc
         {
             bool used = false;
@@ -367,13 +367,13 @@ class Text
                     stringParams[i].target = OPCODE_READ_PARAM_OUTPUT_VAR_STRING();
 
                     stringParams[i].str.resize(MAX_STR_LEN); // temp storage
-                    outputParams[i] = (SCRIPT_VAR *)stringParams[i].str.data();
+                    outputParams[i] = (SCRIPT_VAR*)stringParams[i].str.data();
                 }
             }
             else if (formatTokenType == DT_STRING) // `%s`
             {
                 auto ptr = OPCODE_READ_PARAM_PTR();
-                outputParams[i] = (SCRIPT_VAR *)ptr;
+                outputParams[i] = (SCRIPT_VAR*)ptr;
             }
             else
             {
@@ -394,7 +394,7 @@ class Text
             outputParams[29], outputParams[30], outputParams[31], outputParams[32], outputParams[33], outputParams[34]);
 
         // transfer string params to target variables
-        for (auto &p : stringParams)
+        for (auto& p : stringParams)
         {
             if (p.used)
                 OPCODE_WRITE_PARAM_VAR_STRING(p.target, p.str.c_str());
@@ -405,16 +405,16 @@ class Text
     }
 
     // 0ADB=2,%2d% = car_model %1d% name
-    static OpcodeResult __stdcall opcode_0ADB(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ADB(CLEO::CRunningScript* thread)
     {
         auto modelIndex = OPCODE_READ_PARAM_UINT();
 
-        CVehicleModelInfo *model;
+        CVehicleModelInfo* model;
         // if 1.0 US, prefer GetModelInfo function  makes it compatible with fastman92's limit adjuster
         if (CLEO_GetGameVersion() == CLEO::GV_US10)
-            model = plugin::CallAndReturn<CVehicleModelInfo *, 0x403DA0, int>(modelIndex);
+            model = plugin::CallAndReturn<CVehicleModelInfo*, 0x403DA0, int>(modelIndex);
         else
-            model = reinterpret_cast<CVehicleModelInfo *>(CModelInfo::ms_modelInfoPtrs[modelIndex]);
+            model = reinterpret_cast<CVehicleModelInfo*>(CModelInfo::ms_modelInfoPtrs[modelIndex]);
 
         auto str = std::string(std::string_view(model->m_szGameName, sizeof(model->m_szGameName))); // to proper cstr
 
@@ -423,7 +423,7 @@ class Text
     }
 
     // 0ADE=2,%2d% = text_by_GXT_entry %1d%
-    static OpcodeResult __stdcall opcode_0ADE(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ADE(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
 
@@ -441,7 +441,7 @@ class Text
     }
 
     // 0ADF=2,add_dynamic_GXT_entry %1d% text %2d%
-    static OpcodeResult __stdcall opcode_0ADF(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ADF(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
         OPCODE_READ_PARAM_STRING(txt);
@@ -451,7 +451,7 @@ class Text
     }
 
     // 0AE0=1,remove_dynamic_GXT_entry %1d%
-    static OpcodeResult __stdcall opcode_0AE0(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AE0(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
 
@@ -460,7 +460,7 @@ class Text
     }
 
     // 0AED=3,%3d% = float %1d% to_string_format %2d%
-    static OpcodeResult __stdcall opcode_0AED(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AED(CLEO::CRunningScript* thread)
     {
         // this opcode is useless now
         auto val = OPCODE_READ_PARAM_FLOAT();
@@ -474,7 +474,7 @@ class Text
     }
 
     // 2600=1,  is_text_empty %1s%
-    static OpcodeResult __stdcall opcode_2600(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2600(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(str);
 
@@ -483,7 +483,7 @@ class Text
     }
 
     // 2601=3,  is_text_equal %1s% another %2s% ignore_case %3d%
-    static OpcodeResult __stdcall opcode_2601(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2601(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(a);
         OPCODE_READ_PARAM_STRING(b);
@@ -496,7 +496,7 @@ class Text
     }
 
     // 2602=3,  is_text_in_text %1s% sub_text %2s% ignore_case %3d%
-    static OpcodeResult __stdcall opcode_2602(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2602(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(str);
         OPCODE_READ_PARAM_STRING(substr);
@@ -515,7 +515,7 @@ class Text
     }
 
     // 2603=3,  is_text_prefix %1s% prefix %2s% ignore_case %3d%
-    static OpcodeResult __stdcall opcode_2603(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2603(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(str);
         OPCODE_READ_PARAM_STRING(prefix);
@@ -529,7 +529,7 @@ class Text
     }
 
     // 2604=3,  is_text_sufix %1s% sufix %2s% ignore_case %3d%
-    static OpcodeResult __stdcall opcode_2604(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2604(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(str);
         OPCODE_READ_PARAM_STRING(sufix);
@@ -552,7 +552,7 @@ class Text
     }
 
     // 2605=-1,display_text_formatted offset_left %1d% offset_top %2d% format %3d% args
-    static OpcodeResult __stdcall opcode_2605(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2605(CLEO::CRunningScript* thread)
     {
         auto posX = OPCODE_READ_PARAM_FLOAT();
         auto posY = OPCODE_READ_PARAM_FLOAT();
@@ -572,7 +572,7 @@ class Text
 
         textManager.AddFxt(gxt, text);
 
-        auto &draw = CTheScripts::IntroTextLines[CTheScripts::NumberOfIntroTextLinesThisFrame];
+        auto& draw = CTheScripts::IntroTextLines[CTheScripts::NumberOfIntroTextLinesThisFrame];
         memcpy(&draw.xPosition, &posX, sizeof(draw.xPosition)); // invalid type in Plugin SDK. Just copy memory
         memcpy(&draw.yPosition, &posY, sizeof(draw.yPosition));
         strcpy_s(draw.text, gxt);
@@ -583,7 +583,7 @@ class Text
     }
 
     // 2606=1,  load_fxt %1d%
-    static OpcodeResult __stdcall opcode_2606(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2606(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -593,7 +593,7 @@ class Text
             std::ifstream stream(filename);
             added = textManager.ParseFxtFile(stream, true, false);
         }
-        catch (std::exception &ex)
+        catch (std::exception& ex)
         {
             LOG_WARNING(0, "Loading of FXT file '%s' failed: \n%s", filename, ex.what());
         }
@@ -603,7 +603,7 @@ class Text
     }
 
     // 2607=1,  unload_fxt %1d%
-    static OpcodeResult __stdcall opcode_2607(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2607(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
@@ -613,7 +613,7 @@ class Text
             std::ifstream stream(filename);
             removed = textManager.ParseFxtFile(stream, true, true);
         }
-        catch (std::exception &ex)
+        catch (std::exception& ex)
         {
             LOG_WARNING(0, "Unloading of FXT file '%s' failed: \n%s", filename, ex.what());
         }
@@ -623,7 +623,7 @@ class Text
     }
 
     // 2608=3,get_text_length %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_2608(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2608(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(str);
 
@@ -634,7 +634,7 @@ class Text
     }
 
     // 2609=-1,add_text_label_formatted %1d% args %2d%
-    static OpcodeResult __stdcall opcode_2609(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2609(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
         OPCODE_READ_PARAM_STRING_FORMATTED(str);
@@ -654,7 +654,7 @@ WORD Text::genericLabelCounter;
 
 // exports
 
-extern "C" __declspec(dllexport) RwTexture *GetScriptTexture(CLEO::CRunningScript *script, DWORD slot)
+extern "C" __declspec(dllexport) RwTexture* GetScriptTexture(CLEO::CRunningScript* script, DWORD slot)
 {
     return instance.scriptDrawing.GetScriptTexture(script, slot);
 }

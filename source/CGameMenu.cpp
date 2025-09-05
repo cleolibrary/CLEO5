@@ -5,7 +5,7 @@
 
 namespace CLEO
 {
-void CGameMenu::Inject(CCodeInjector &inj)
+void CGameMenu::Inject(CCodeInjector& inj)
 {
     TRACE("Injecting MenuStatusNotifier...");
     inj.ReplaceFunction(HOOK_DrawMenuBackground,
@@ -13,7 +13,7 @@ void CGameMenu::Inject(CCodeInjector &inj)
                         &DrawMenuBackground_Orig);
 }
 
-void __fastcall CGameMenu::HOOK_DrawMenuBackground(CSprite2d *texture, int dummy, CRect *rect, RwRGBA *color)
+void __fastcall CGameMenu::HOOK_DrawMenuBackground(CSprite2d* texture, int dummy, CRect* rect, RwRGBA* color)
 {
     CleoInstance.Start(CCleoInstance::InitStage::OnDraw); // late initialization
 

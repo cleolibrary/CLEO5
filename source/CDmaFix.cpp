@@ -6,10 +6,10 @@
 
 namespace CLEO
 {
-void CDmaFix::Inject(CCodeInjector &inj)
+void CDmaFix::Inject(CCodeInjector& inj)
 {
     TRACE("Injecting DmaFix...");
-    CGameVersionManager &gvm = CleoInstance.VersionManager;
+    CGameVersionManager& gvm = CleoInstance.VersionManager;
     switch (gvm.GetGameVersion())
     {
     case GV_EU10:

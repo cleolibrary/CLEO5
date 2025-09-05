@@ -4,7 +4,7 @@ namespace CLEO
 {
 struct ScriptDataRef
 {
-    char *base = nullptr; // script's base data
+    char* base = nullptr; // script's base data
     DWORD size = 0;       // available code block size
     int offset = 0;       // address within the script
 
@@ -18,19 +18,19 @@ class CModuleSystem
 {
   public:
     CModuleSystem() = default;
-    CModuleSystem(const CModuleSystem &) = delete; // no copying
+    CModuleSystem(const CModuleSystem&) = delete; // no copying
 
     void Clear();
 
     // registers module reference. Needs to be released with ReleaseModuleRef
     const ScriptDataRef GetExport(std::string modulePath, std::string_view exportName);
 
-    bool LoadFile(const char *const path);      // single file
-    bool LoadDirectory(const char *const path); // all modules in directory
+    bool LoadFile(const char* const path);      // single file
+    bool LoadDirectory(const char* const path); // all modules in directory
     bool LoadCleoModules();                     // all in cleo\cleo_modules
 
   private:
-    static void NormalizePath(std::string &path);
+    static void NormalizePath(std::string& path);
 
     class CModule
     {
@@ -42,9 +42,9 @@ class CModuleSystem
             int offset = 0; // address within module's data
 
             void Clear();
-            bool LoadFromFile(std::ifstream &file);
+            bool LoadFromFile(std::ifstream& file);
 
-            static void NormalizeName(std::string &name);
+            static void NormalizeName(std::string& name);
         };
 
         std::string filepath; // source file
@@ -53,12 +53,12 @@ class CModuleSystem
 
       public:
         CModule() = default;
-        CModule(const CModule &) = delete; // no copying
+        CModule(const CModule&) = delete; // no copying
         ~CModule() = default;
 
         void Clear();
-        const char *GetFilepath() const;
-        bool LoadFromFile(const char *path);
+        const char* GetFilepath() const;
+        bool LoadFromFile(const char* path);
         const ScriptDataRef GetExport(std::string name);
     };
 

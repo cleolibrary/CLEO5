@@ -18,7 +18,7 @@ class CAudioStream
         Paused,
     };
 
-    CAudioStream(const char *filepath); // filesystem or URL
+    CAudioStream(const char* filepath); // filesystem or URL
     virtual ~CAudioStream();
 
     bool IsOk() const;
@@ -52,9 +52,9 @@ class CAudioStream
     {
         return false;
     }
-    virtual void Set3dPosition(const CVector &pos);
+    virtual void Set3dPosition(const CVector& pos);
     virtual void Set3dSourceSize(float radius);
-    virtual void SetHost(CEntity *placable, const CVector &offset);
+    virtual void SetHost(CEntity* placable, const CVector& offset);
 
     virtual void Process();
     virtual float CalculateVolume();
@@ -70,7 +70,7 @@ class CAudioStream
     CInterpolatedValue volume = {1.0f};
 
     CAudioStream() = default;
-    CAudioStream(const CAudioStream &) = delete; // no copying!
+    CAudioStream(const CAudioStream&) = delete; // no copying!
 };
 #pragma pack(pop)
 } // namespace CLEO

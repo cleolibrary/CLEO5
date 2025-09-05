@@ -57,7 +57,7 @@ void CPluginSystem::LoadPlugins()
 
             // case insensitive search in already listed plugin names
             auto found = std::find_if(names.begin(), names.end(),
-                                      [&](const std::string &s) { return _stricmp(s.c_str(), name.c_str()) == 0; });
+                                      [&](const std::string& s) { return _stricmp(s.c_str(), name.c_str()) == 0; });
 
             // duplicated?
             if (found != names.end())
@@ -121,7 +121,7 @@ void CPluginSystem::UnloadPlugins()
 
     TRACE(""); // separator
     TRACE("Unloading CLEO plugins:");
-    for (const auto &plugin : plugins)
+    for (const auto& plugin : plugins)
     {
         TRACE(" - Unloading '%s' at 0x%08X", plugin.name.c_str(), plugin.handle);
         FreeLibrary(plugin.handle);
@@ -156,7 +156,7 @@ void CLEO::CPluginSystem::LogLoadedPlugins() const
     TRACE(""); // separator
     TRACE("Loaded plugins summary:");
 
-    for (const auto &m : modules)
+    for (const auto& m : modules)
     {
         std::string filename(512, '\0');
         if (GetModuleFileName(m, filename.data(), filename.size()))

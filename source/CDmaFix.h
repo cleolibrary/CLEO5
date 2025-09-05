@@ -6,6 +6,6 @@ namespace CLEO
 class CDmaFix
 {
   public:
-    void Inject(CCodeInjector &inj);
+    void Inject(CCodeInjector& inj);
 };
 } // namespace CLEO

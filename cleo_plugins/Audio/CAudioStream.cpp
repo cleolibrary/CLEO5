@@ -6,7 +6,7 @@
 
 using namespace CLEO;
 
-CAudioStream::CAudioStream(const char *filepath)
+CAudioStream::CAudioStream(const char* filepath)
 {
     // see https://github.com/cleolibrary/CLEO5/pull/230
     static_assert(offsetof(CAudioStream, streamInternal) == 4 && alignof(CAudioStream) == 4,
@@ -270,7 +270,7 @@ void CAudioStream::Process()
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_FREQ, freq);
 }
 
-void CAudioStream::Set3dPosition(const CVector &pos)
+void CAudioStream::Set3dPosition(const CVector& pos)
 {
     // not applicable for 2d audio
 }
@@ -280,7 +280,7 @@ void CAudioStream::Set3dSourceSize(float radius)
     // not applicable for 2d audio
 }
 
-void CAudioStream::SetHost(CEntity *placable, const CVector &offset)
+void CAudioStream::SetHost(CEntity* placable, const CVector& offset)
 {
     // not applicable for 2d audio
 }

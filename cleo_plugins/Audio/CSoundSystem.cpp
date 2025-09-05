@@ -21,7 +21,7 @@ float CSoundSystem::masterSpeed = 1.0f;
 float CSoundSystem::masterVolumeSfx = 1.0f;
 float CSoundSystem::masterVolumeMusic = 1.0f;
 
-void EnumerateBassDevices(int &total, int &enabled, int &default_device)
+void EnumerateBassDevices(int& total, int& enabled, int& default_device)
 {
     TRACE("Listing audio devices:");
 
@@ -143,9 +143,9 @@ bool CSoundSystem::Initialized()
     return initialized;
 }
 
-CAudioStream *CSoundSystem::CreateStream(const char *filename, bool in3d)
+CAudioStream* CSoundSystem::CreateStream(const char* filename, bool in3d)
 {
-    CAudioStream *result = in3d ? new C3DAudioStream(filename) : new CAudioStream(filename);
+    CAudioStream* result = in3d ? new C3DAudioStream(filename) : new CAudioStream(filename);
     if (!result->IsOk())
     {
         delete result;
@@ -156,7 +156,7 @@ CAudioStream *CSoundSystem::CreateStream(const char *filename, bool in3d)
     return result;
 }
 
-void CSoundSystem::DestroyStream(CAudioStream *stream)
+void CSoundSystem::DestroyStream(CAudioStream* stream)
 {
     if (streams.erase(stream))
         delete stream;
@@ -164,7 +164,7 @@ void CSoundSystem::DestroyStream(CAudioStream *stream)
         TRACE("Unloading of stream that is not in list of loaded streams");
 }
 
-bool CSoundSystem::HasStream(CAudioStream *stream)
+bool CSoundSystem::HasStream(CAudioStream* stream)
 {
     return streams.find(stream) != streams.end();
 }

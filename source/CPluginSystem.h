@@ -22,7 +22,7 @@ class CPluginSystem
 
   public:
     CPluginSystem() = default;
-    CPluginSystem(const CPluginSystem &) = delete; // no copying
+    CPluginSystem(const CPluginSystem&) = delete; // no copying
     ~CPluginSystem();
 
     void LoadPlugins();

@@ -11,7 +11,7 @@ using namespace plugin;
 class MemoryOperations
 {
   public:
-    std::unordered_map<void *, size_t> m_allocations;
+    std::unordered_map<void*, size_t> m_allocations;
     std::unordered_map<HMODULE, size_t> m_libraries;
 
     // keep track of per-script memory allocations
@@ -20,7 +20,7 @@ class MemoryOperations
         int count;
         int size;
     };
-    std::unordered_map<CLEO::CRunningScript *, AllocationInfo> m_scriptAllocationsInfo;
+    std::unordered_map<CLEO::CRunningScript*, AllocationInfo> m_scriptAllocationsInfo;
     int m_configLimitAllocationCount;
     int m_configLimitAllocationSize;
 
@@ -109,10 +109,10 @@ class MemoryOperations
 
         // release loaded dlls
         size_t libCount = std::count_if(Instance.m_libraries.begin(), Instance.m_libraries.end(),
-                                        [](auto &entry) { return entry.second; });
+                                        [](auto& entry) { return entry.second; });
         TRACE("");
         TRACE("Cleaning up %d loaded libraries:", libCount);
-        for (auto &entry : Instance.m_libraries)
+        for (auto& entry : Instance.m_libraries)
         {
             if (entry.second == 0)
                 continue;
@@ -131,24 +131,24 @@ class MemoryOperations
         Instance.m_libraries.clear();
     }
 
-    void RegisterMemoryAllocation(CLEO::CRunningScript *thread, void *address, size_t size)
+    void RegisterMemoryAllocation(CLEO::CRunningScript* thread, void* address, size_t size)
     {
         m_allocations[address] = size;
-        auto &info = m_scriptAllocationsInfo[thread];
+        auto& info = m_scriptAllocationsInfo[thread];
         info.count++;
         info.size += size;
     }
 
-    void UnregisterMemoryAllocation(CLEO::CRunningScript *thread, void *address)
+    void UnregisterMemoryAllocation(CLEO::CRunningScript* thread, void* address)
     {
-        auto &info = m_scriptAllocationsInfo[thread];
+        auto& info = m_scriptAllocationsInfo[thread];
         info.count--;
         info.size -= m_allocations[address];
         m_allocations.erase(address);
     }
 
     // opcodes 0AA5 - 0AA8
-    static OpcodeResult CallFunctionGeneric(CLEO::CRunningScript *thread, void *func, void *obj, int numArg, int numPop,
+    static OpcodeResult CallFunctionGeneric(CLEO::CRunningScript* thread, void* func, void* obj, int numArg, int numPop,
                                             bool returnArg)
     {
         auto inputArgCount = (int)CLEO_GetVarArgCount(thread) - returnArg; // return slot not counted as input argument
@@ -179,7 +179,7 @@ class MemoryOperations
         auto scriptParams = CLEO_GetOpcodeParamsArray();
         for (size_t i = 0; i < std::min<size_t>(numArg, inputArgCount); i++)
         {
-            auto &param = arguments[i];
+            auto& param = arguments[i];
 
             auto paramType = thread->PeekDataType();
             if (IsImmString(paramType) || IsVarString(paramType))
@@ -225,7 +225,7 @@ class MemoryOperations
             }
         }
 
-        SCRIPT_VAR *arguments_end = arguments + numArg;
+        SCRIPT_VAR* arguments_end = arguments + numArg;
         numPop *= 4; // bytes peer argument
         DWORD result;
         int oriSp, postSp; // stack validation
@@ -276,7 +276,7 @@ class MemoryOperations
 
             if (IsVarString(paramType))
             {
-                OPCODE_WRITE_PARAM_STRING((char *)result);
+                OPCODE_WRITE_PARAM_STRING((char*)result);
             }
             else
             {
@@ -298,7 +298,7 @@ class MemoryOperations
     }
 
     // 0459=1,terminate_all_scripts_with_this_name %1s%
-    static OpcodeResult __stdcall opcode_0459(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0459(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(threadName);
 
@@ -316,14 +316,14 @@ class MemoryOperations
     }
 
     // 0A8C=4,write_memory %1d% size %2d% value %3d% virtual_protect %4d%
-    static OpcodeResult __stdcall opcode_0A8C(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A8C(CLEO::CRunningScript* thread)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
         auto size = OPCODE_READ_PARAM_INT();
 
         // value param
-        const void *source;
+        const void* source;
         auto paramType = thread->PeekDataType();
         bool sourceText = false;
         if (IsVariable(paramType) || IsVarString(paramType))
@@ -380,7 +380,7 @@ class MemoryOperations
             if (size == 2 || size == 4)
                 memcpy(address, source, size);
             else
-                memset(address, *((int *)source), size);
+                memset(address, *((int*)source), size);
         }
         else
         {
@@ -391,7 +391,7 @@ class MemoryOperations
     }
 
     // 0A8D=4,read_memory %1d% size %2d% virtual_protect %3d% store_to %4d%
-    static OpcodeResult __stdcall opcode_0A8D(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A8D(CLEO::CRunningScript* thread)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
@@ -424,7 +424,7 @@ class MemoryOperations
     }
 
     // 0A96=2,get_ped_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A96(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A96(CLEO::CRunningScript* thread)
     {
         // collect params
         auto handle = OPCODE_READ_PARAM_UINT();
@@ -444,7 +444,7 @@ class MemoryOperations
     }
 
     // 0A97=2,get_vehicle_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A97(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A97(CLEO::CRunningScript* thread)
     {
         // collect params
         auto handle = OPCODE_READ_PARAM_UINT();
@@ -464,7 +464,7 @@ class MemoryOperations
     }
 
     // 0A98=2,get_object_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0A98(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A98(CLEO::CRunningScript* thread)
     {
         // collect params
         auto handle = OPCODE_READ_PARAM_UINT();
@@ -484,14 +484,14 @@ class MemoryOperations
     }
 
     // 0A9F=1, get_this_script_struct store_to %1d%
-    static OpcodeResult __stdcall opcode_0A9F(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0A9F(CLEO::CRunningScript* thread)
     {
         OPCODE_WRITE_PARAM_PTR(thread);
         return OR_CONTINUE;
     }
 
     // 0AA2=2, load_dynamic_library %1s% store_to %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_0AA2(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AA2(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(path);
 
@@ -520,7 +520,7 @@ class MemoryOperations
     }
 
     // 0AA3=1,free_library %1h%
-    static OpcodeResult __stdcall opcode_0AA3(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AA3(CLEO::CRunningScript* thread)
     {
         auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
 
@@ -544,9 +544,9 @@ class MemoryOperations
     }
 
     // 0AA4=3, get_proc_address %1d% library %2d% result %3d% // IF and SET
-    static OpcodeResult __stdcall opcode_0AA4(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AA4(CLEO::CRunningScript* thread)
     {
-        void *funcPtr = nullptr;
+        void* funcPtr = nullptr;
 
         auto paramType = thread->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
@@ -554,14 +554,14 @@ class MemoryOperations
             auto procedure = OPCODE_READ_PARAM_UINT(); // text pointer or export index - see GetProcAddress docs
             auto module = (HMODULE)OPCODE_READ_PARAM_PTR();
 
-            funcPtr = (void *)GetProcAddress(module, (LPCSTR)procedure);
+            funcPtr = (void*)GetProcAddress(module, (LPCSTR)procedure);
         }
         else
         {
             OPCODE_READ_PARAM_STRING(name);
             auto module = (HMODULE)OPCODE_READ_PARAM_PTR();
 
-            funcPtr = (void *)GetProcAddress(module, name);
+            funcPtr = (void*)GetProcAddress(module, name);
         }
 
         OPCODE_WRITE_PARAM_PTR(funcPtr);
@@ -570,7 +570,7 @@ class MemoryOperations
     }
 
     // 0AA5=-1,call %1d% num_params %2h% pop %3h%
-    static OpcodeResult __stdcall opcode_0AA5(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AA5(CLEO::CRunningScript* thread)
     {
         auto func = OPCODE_READ_PARAM_PTR();
         auto numArgs = OPCODE_READ_PARAM_INT();
@@ -580,19 +580,19 @@ class MemoryOperations
     }
 
     // 0AA6=-1,call_method %1d% struct %2d% num_params %3h% pop %4h%
-    static OpcodeResult __stdcall opcode_0AA6(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AA6(CLEO::CRunningScript* thread)
     {
         auto func = OPCODE_READ_PARAM_PTR();
 
-        void *obj = nullptr;
+        void* obj = nullptr;
         if (!IsLegacyScript(thread))
         {
             obj = OPCODE_READ_PARAM_PTR();
         }
         else
         {
-            obj = (void *)OPCODE_READ_PARAM_INT(); // at least one mod used 0AA6 with 0 as struct argument (effectively
-                                                   // turning it into 0AA5 opcode...)
+            obj = (void*)OPCODE_READ_PARAM_INT(); // at least one mod used 0AA6 with 0 as struct argument (effectively
+                                                  // turning it into 0AA5 opcode...)
         }
 
         auto numArgs = OPCODE_READ_PARAM_INT();
@@ -602,7 +602,7 @@ class MemoryOperations
     }
 
     // 0AA7=-1,call_function_return %1d% num_params %2h% pop %3h%
-    static OpcodeResult __stdcall opcode_0AA7(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AA7(CLEO::CRunningScript* thread)
     {
         auto func = OPCODE_READ_PARAM_PTR();
         auto numArgs = OPCODE_READ_PARAM_INT();
@@ -612,18 +612,18 @@ class MemoryOperations
     }
 
     // 0AA8=-1,call_method_return %1d% struct %2d% num_params %3h% pop %4h%
-    static OpcodeResult __stdcall opcode_0AA8(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AA8(CLEO::CRunningScript* thread)
     {
         auto func = OPCODE_READ_PARAM_PTR();
 
-        void *obj = nullptr;
+        void* obj = nullptr;
         if (!IsLegacyScript(thread))
         {
             obj = OPCODE_READ_PARAM_PTR();
         }
         else
         {
-            obj = (void *)OPCODE_READ_PARAM_INT(); // some mods got creative and used it as way to set ECX
+            obj = (void*)OPCODE_READ_PARAM_INT(); // some mods got creative and used it as way to set ECX
         }
 
         auto numArgs = OPCODE_READ_PARAM_INT();
@@ -633,7 +633,7 @@ class MemoryOperations
     }
 
     // 0AAA=2,  get_script_struct_named %1d% pointer %2d% // IF and SET
-    static OpcodeResult __stdcall opcode_0AAA(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AAA(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(name);
 
@@ -645,7 +645,7 @@ class MemoryOperations
     }
 
     // 0ABA=1,terminate_all_custom_scripts_with_this_name %1d%
-    static OpcodeResult __stdcall opcode_0ABA(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ABA(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(threadName);
 
@@ -666,12 +666,12 @@ class MemoryOperations
     }
 
     // 0AC6=2,get_label_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AC6(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AC6(CLEO::CRunningScript* thread)
     {
         auto label = OPCODE_READ_PARAM_INT();
 
         // perform
-        void *ptr = nullptr;
+        void* ptr = nullptr;
         if (label < 0)
             ptr = thread->GetBasePointer() - label;
         else
@@ -682,7 +682,7 @@ class MemoryOperations
     }
 
     // 0AC7=2,get_var_pointer %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AC7(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AC7(CLEO::CRunningScript* thread)
     {
         auto resultType = thread->PeekDataType();
         if (!IsVariable(resultType) && !IsVarString(resultType))
@@ -699,7 +699,7 @@ class MemoryOperations
     }
 
     // 0AC8=2,  allocate_memory size %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AC8(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AC8(CLEO::CRunningScript* thread)
     {
         // collect params
         int size = OPCODE_READ_PARAM_INT();
@@ -713,7 +713,7 @@ class MemoryOperations
         }
 
         // perform
-        void *mem = calloc(size, 1);
+        void* mem = calloc(size, 1);
         if (mem)
         {
             DWORD oldProtect;
@@ -721,7 +721,7 @@ class MemoryOperations
 
             Instance.RegisterMemoryAllocation(thread, mem, size);
 
-            const auto &info = Instance.m_scriptAllocationsInfo[thread];
+            const auto& info = Instance.m_scriptAllocationsInfo[thread];
             if (Instance.m_configLimitAllocationSize > 0 && info.size > Instance.m_configLimitAllocationSize)
             {
                 LOG_WARNING(thread, "%d MB of memory currently allocated by script %s", info.size / (1024 * 1024),
@@ -743,7 +743,7 @@ class MemoryOperations
     }
 
     // 0AC9=1,free_memory %1d%
-    static OpcodeResult __stdcall opcode_0AC9(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AC9(CLEO::CRunningScript* thread)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
@@ -764,7 +764,7 @@ class MemoryOperations
     }
 
     // 0AE9=1,pop_float store_to %1d%
-    static OpcodeResult __stdcall opcode_0AE9(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AE9(CLEO::CRunningScript* thread)
     {
         float result;
         _asm fstp result
@@ -774,10 +774,10 @@ class MemoryOperations
     }
 
     // 0AEA=2,get_ped_ref %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AEA(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AEA(CLEO::CRunningScript* thread)
     {
         // collect params
-        auto ptr = (CPed *)OPCODE_READ_PARAM_PTR();
+        auto ptr = (CPed*)OPCODE_READ_PARAM_PTR();
 
         int handle = -1;
         if (!CPools::ms_pPedPool->IsObjectValid(ptr))
@@ -793,9 +793,9 @@ class MemoryOperations
     }
 
     // 0AEB=2,get_vehicle_ref %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AEB(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AEB(CLEO::CRunningScript* thread)
     {
-        auto ptr = (CVehicle *)OPCODE_READ_PARAM_PTR();
+        auto ptr = (CVehicle*)OPCODE_READ_PARAM_PTR();
 
         int handle = -1;
         if (!CPools::ms_pVehiclePool->IsObjectValid(ptr))
@@ -811,9 +811,9 @@ class MemoryOperations
     }
 
     // 0AEC=2,get_object_ref %1d% store_to %2d%
-    static OpcodeResult __stdcall opcode_0AEC(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AEC(CLEO::CRunningScript* thread)
     {
-        auto ptr = (CObject *)OPCODE_READ_PARAM_PTR();
+        auto ptr = (CObject*)OPCODE_READ_PARAM_PTR();
 
         int handle = -1;
         if (!CPools::ms_pObjectPool->IsObjectValid(ptr))
@@ -829,10 +829,10 @@ class MemoryOperations
     }
 
     // 2400=3,copy_memory %1d% to %2d% size %3d%
-    static OpcodeResult __stdcall opcode_2400(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2400(CLEO::CRunningScript* thread)
     {
-        auto src = (BYTE *)OPCODE_READ_PARAM_PTR();
-        auto trg = (BYTE *)OPCODE_READ_PARAM_PTR();
+        auto src = (BYTE*)OPCODE_READ_PARAM_PTR();
+        auto trg = (BYTE*)OPCODE_READ_PARAM_PTR();
         auto size = OPCODE_READ_PARAM_INT();
 
         if (size == 0)
@@ -846,14 +846,14 @@ class MemoryOperations
             return thread->Suspend();
         }
 
-        memmove((void *)trg, (void *)src, size);
+        memmove((void*)trg, (void*)src, size);
         return OR_CONTINUE;
     }
 
     // 2401=4,read_memory_with_offset %1d% offset %2d% size %3d% store_to %4d%
-    static OpcodeResult __stdcall opcode_2401(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2401(CLEO::CRunningScript* thread)
     {
-        auto ptr = (BYTE *)OPCODE_READ_PARAM_PTR();
+        auto ptr = (BYTE*)OPCODE_READ_PARAM_PTR();
         auto offset = OPCODE_READ_PARAM_INT();
         auto size = OPCODE_READ_PARAM_INT();
 
@@ -881,14 +881,14 @@ class MemoryOperations
                 size = sizeof(result);
             }
             if (size > 0)
-                memcpy(&result, (void *)(ptr + offset), size);
+                memcpy(&result, (void*)(ptr + offset), size);
 
             OPCODE_WRITE_PARAM_ANY32(result);
             return OR_CONTINUE;
         }
         else if (IsVarString(resultType))
         {
-            std::string str(std::string_view((char *)ptr + offset, size)); // null terminated
+            std::string str(std::string_view((char*)ptr + offset, size)); // null terminated
             OPCODE_WRITE_PARAM_STRING(str.c_str());
             return OR_CONTINUE;
         }
@@ -899,9 +899,9 @@ class MemoryOperations
     }
 
     // 2402=4,write_memory_with_offset %1d% offset %2d% size %3d% value %4d%
-    static OpcodeResult __stdcall opcode_2402(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2402(CLEO::CRunningScript* thread)
     {
-        auto ptr = (BYTE *)OPCODE_READ_PARAM_PTR();
+        auto ptr = (BYTE*)OPCODE_READ_PARAM_PTR();
         auto offset = OPCODE_READ_PARAM_INT();
         auto size = OPCODE_READ_PARAM_INT();
 
@@ -951,7 +951,7 @@ class MemoryOperations
     }
 
     // 2403=1,forget_memory %1d%
-    static OpcodeResult __stdcall opcode_2403(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2403(CLEO::CRunningScript* thread)
     {
         // collect params
         auto address = OPCODE_READ_PARAM_PTR();
@@ -970,7 +970,7 @@ class MemoryOperations
     }
 
     // 2404=1,get_script_struct_just_created %1d%
-    static OpcodeResult __stdcall opcode_2404(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2404(CLEO::CRunningScript* thread)
     {
         auto head = thread;
         while (head->Previous)
@@ -983,9 +983,9 @@ class MemoryOperations
     }
 
     // 2405=1,  is_script_running %1d%
-    static OpcodeResult __stdcall opcode_2405(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2405(CLEO::CRunningScript* thread)
     {
-        auto address = (CLEO::CRunningScript *)OPCODE_READ_PARAM_INT(); // allow invalid pointers too
+        auto address = (CLEO::CRunningScript*)OPCODE_READ_PARAM_INT(); // allow invalid pointers too
 
         auto running = CLEO_IsScriptRunning(address);
 
@@ -994,7 +994,7 @@ class MemoryOperations
     }
 
     // 2406=1,  get_script_struct_from_filename %1s%
-    static OpcodeResult __stdcall opcode_2406(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2406(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(filename);
 
@@ -1006,7 +1006,7 @@ class MemoryOperations
     }
 
     // 2407=3,  is_memory_equal address_a %1d% address_b %2d% size %d3%
-    static OpcodeResult __stdcall opcode_2407(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2407(CLEO::CRunningScript* thread)
     {
         auto addressA = OPCODE_READ_PARAM_PTR();
         auto addressB = OPCODE_READ_PARAM_PTR();
@@ -1031,9 +1031,9 @@ class MemoryOperations
     }
 
     // 2408=1,terminate_script %1d%
-    static OpcodeResult __stdcall opcode_2408(CLEO::CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2408(CLEO::CRunningScript* thread)
     {
-        auto address = (CLEO::CRunningScript *)OPCODE_READ_PARAM_PTR();
+        auto address = (CLEO::CRunningScript*)OPCODE_READ_PARAM_PTR();
 
         CLEO_TerminateScript(address);
 

@@ -12,13 +12,13 @@ ScreenLog::ScreenLog()
 
 void ScreenLog::Init()
 {
-    auto ConfigReadHex = [](const char *section, const char *key, DWORD defValue, const char *filename)
+    auto ConfigReadHex = [](const char* section, const char* key, DWORD defValue, const char* filename)
     {
         char buff[32] = {0};
         if (!GetPrivateProfileString(section, key, "", buff, sizeof(buff), filename))
             return defValue;
 
-        char *end;
+        char* end;
         DWORD result = strtoul(buff, &end, 16);
 
         if (*end != '\0')
@@ -46,7 +46,7 @@ void ScreenLog::Init()
         CRGBA(ConfigReadHex("ScreenLog", "ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt(), config.c_str()));
 }
 
-void ScreenLog::Add(eLogLevel level, const char *msg)
+void ScreenLog::Add(eLogLevel level, const char* msg)
 {
     if (level > this->level)
     {
@@ -128,7 +128,7 @@ void ScreenLog::Draw()
 
     // count total lines
     int lines = 0;
-    for (auto &entry : entries)
+    for (auto& entry : entries)
     {
         lines += CountLines(entry.msg);
     }
@@ -138,7 +138,7 @@ void ScreenLog::Draw()
     float rowTime = -0.001f * timeFadeout;
     for (auto it = entries.rbegin(); it != entries.rend(); it++) // draw from oldest
     {
-        auto &entry = *it;
+        auto& entry = *it;
 
         if (entry.timeLeft > 0.0f)
         {
@@ -184,7 +184,7 @@ void ScreenLog::Draw()
     CFont::PrintString(0.0f, -500.0f, "_~n~_~n~_");
 }
 
-void ScreenLog::DrawLine(const char *msg, size_t row)
+void ScreenLog::DrawLine(const char* msg, size_t row)
 {
     CFont::SetBackground(false, false);
     CFont::SetWrapx(99999999.0f); // no line wrap
@@ -211,7 +211,7 @@ void ScreenLog::DrawLine(const char *msg, size_t row)
     CFont::PrintString(posX, posY, msg);
 }
 
-size_t ScreenLog::CountLines(std::string &msg)
+size_t ScreenLog::CountLines(std::string& msg)
 {
     size_t lines = 1;
 

@@ -4,7 +4,7 @@
 using namespace std;
 using namespace simdjson;
 
-bool OpcodeInfoDatabase::Load(const char *filepath)
+bool OpcodeInfoDatabase::Load(const char* filepath)
 {
     Clear();
 
@@ -18,7 +18,7 @@ bool OpcodeInfoDatabase::Load(const char *filepath)
         return false;
     }
 
-    const char *version;
+    const char* version;
     if (root["meta"]["version"].get_c_str().get(version))
     {
         TRACE("Invalid opcodes database '%s' file.", filepath);
@@ -32,11 +32,11 @@ bool OpcodeInfoDatabase::Load(const char *filepath)
         return false;
     }
 
-    for (auto &e : ext)
+    for (auto& e : ext)
     {
         Extension extension;
 
-        const char *name;
+        const char* name;
         if (e["name"].get_c_str().get(name))
         {
             continue; // invalid extension
@@ -49,7 +49,7 @@ bool OpcodeInfoDatabase::Load(const char *filepath)
             continue; // invalid extension
         }
 
-        for (auto &c : commands)
+        for (auto& c : commands)
         {
             bool unsupported;
             if (!c["attrs"]["is_unsupported"].get_bool().get(unsupported) && unsupported)
@@ -57,13 +57,13 @@ bool OpcodeInfoDatabase::Load(const char *filepath)
                 continue; // command defined as unsupported
             }
 
-            const char *commandId;
+            const char* commandId;
             if (c["id"].get_c_str().get(commandId))
             {
                 continue; // invalid command
             }
 
-            const char *commandName;
+            const char* commandName;
             if (c["name"].get_c_str().get(commandName))
             {
                 continue; // invalid command
@@ -77,15 +77,15 @@ bool OpcodeInfoDatabase::Load(const char *filepath)
             auto id = (uint16_t)idLong;
 
             extension.opcodes.emplace(piecewise_construct, make_tuple(id), make_tuple(id, commandName));
-            auto &opcode = extension.opcodes.at(id);
+            auto& opcode = extension.opcodes.at(id);
 
             // read arguments info
             dom::array inputArgs;
             if (!c["input"].get_array().get(inputArgs))
             {
-                for (auto &p : inputArgs)
+                for (auto& p : inputArgs)
                 {
-                    const char *argName;
+                    const char* argName;
                     if (!p["name"].get_c_str().get(argName))
                     {
                         opcode.arguments.emplace_back(argName);
@@ -111,14 +111,14 @@ void OpcodeInfoDatabase::Clear()
     extensions.clear();
 }
 
-const char *OpcodeInfoDatabase::GetExtensionName(uint16_t opcode) const
+const char* OpcodeInfoDatabase::GetExtensionName(uint16_t opcode) const
 {
     if (ok)
     {
-        for (auto &entry : extensions)
+        for (auto& entry : extensions)
         {
-            auto &extension = entry.second;
-            auto &opcodes = extension.opcodes;
+            auto& extension = entry.second;
+            auto& opcodes = extension.opcodes;
 
             if (opcodes.find(opcode) != opcodes.end())
             {
@@ -130,16 +130,16 @@ const char *OpcodeInfoDatabase::GetExtensionName(uint16_t opcode) const
     return nullptr;
 }
 
-const char *OpcodeInfoDatabase::GetExtensionName(const char *commandName) const
+const char* OpcodeInfoDatabase::GetExtensionName(const char* commandName) const
 {
     if (ok)
     {
-        for (auto &entry : extensions)
+        for (auto& entry : extensions)
         {
-            auto &extension = entry.second;
-            auto &opcodes = extension.opcodes;
+            auto& extension = entry.second;
+            auto& opcodes = extension.opcodes;
 
-            for (auto &opcode : opcodes)
+            for (auto& opcode : opcodes)
             {
                 if (_strcmpi(commandName, opcode.second.name.c_str()) == 0)
                 {
@@ -152,16 +152,16 @@ const char *OpcodeInfoDatabase::GetExtensionName(const char *commandName) const
     return nullptr;
 }
 
-uint16_t OpcodeInfoDatabase::GetOpcode(const char *commandName) const
+uint16_t OpcodeInfoDatabase::GetOpcode(const char* commandName) const
 {
     if (ok)
     {
-        for (auto &entry : extensions)
+        for (auto& entry : extensions)
         {
-            auto &extension = entry.second;
-            auto &opcodes = extension.opcodes;
+            auto& extension = entry.second;
+            auto& opcodes = extension.opcodes;
 
-            for (auto &opcode : opcodes)
+            for (auto& opcode : opcodes)
             {
                 if (_strcmpi(commandName, opcode.second.name.c_str()) == 0)
                 {
@@ -174,13 +174,13 @@ uint16_t OpcodeInfoDatabase::GetOpcode(const char *commandName) const
     return 0xFFFF;
 }
 
-const char *OpcodeInfoDatabase::GetCommandName(uint16_t opcode) const
+const char* OpcodeInfoDatabase::GetCommandName(uint16_t opcode) const
 {
     if (ok)
     {
-        for (auto &entry : extensions)
+        for (auto& entry : extensions)
         {
-            auto &opcodes = entry.second.opcodes;
+            auto& opcodes = entry.second.opcodes;
 
             if (opcodes.find(opcode) != opcodes.end())
             {
@@ -192,13 +192,13 @@ const char *OpcodeInfoDatabase::GetCommandName(uint16_t opcode) const
     return nullptr;
 }
 
-const char *OpcodeInfoDatabase::GetArgumentName(uint16_t opcode, size_t paramIdx) const
+const char* OpcodeInfoDatabase::GetArgumentName(uint16_t opcode, size_t paramIdx) const
 {
     if (ok)
     {
-        for (auto &entry : extensions)
+        for (auto& entry : extensions)
         {
-            auto &opcodes = entry.second.opcodes;
+            auto& opcodes = entry.second.opcodes;
 
             if (opcodes.find(opcode) != opcodes.end())
             {

@@ -7,7 +7,7 @@ using namespace CLEO;
 
 // In case of naked file names without parent path INI file APIs searchs in Windows directory. Add leading ".\" to
 // prevent that.
-static void fixIniFilepath(char *buff)
+static void fixIniFilepath(char* buff)
 {
     if (!std::filesystem::path(buff).has_parent_path())
     {
@@ -22,7 +22,7 @@ static void fixIniFilepath(char *buff)
     fixIniFilepath(_buff_##_varName)
 
 #define OPCODE_READ_PARAM_STRING_OR_ZERO(_varName)                                                                     \
-    const char *##_varName;                                                                                            \
+    const char*##_varName;                                                                                             \
     if (IsLegacyScript(thread) && IsImmInteger(thread->PeekDataType()) && CLEO_PeekIntOpcodeParam(thread) == 0)        \
     {                                                                                                                  \
         CLEO_SkipOpcodeParams(thread, 1);                                                                              \
@@ -57,7 +57,7 @@ class IniFiles
         CLEO_RegisterOpcode(0x2801, Script_InifileDeleteKey);
     }
 
-    static OpcodeResult __stdcall Script_InifileGetInt(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileGetInt(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     0AF0=4,%4d% = get_int_from_ini_file %1s% section %2s% key %3s%
@@ -70,7 +70,7 @@ class IniFiles
         char buff[32];
         if (GetPrivateProfileString(section, key, NULL, buff, sizeof(buff), path))
         {
-            char *str;
+            char* str;
             int base;
             if (StringStartsWith(buff, "0x", false)) // hex int
             {
@@ -84,7 +84,7 @@ class IniFiles
             }
 
             // parse
-            char *end;
+            char* end;
             int value = strtol(str, &end, base);
             if (end != str ||           // at least one number character consumed
                 IsLegacyScript(thread)) // old CLEO reported success anyway with value 0
@@ -109,7 +109,7 @@ class IniFiles
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_InifileWriteInt(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileWriteInt(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     0AF1=4,write_int %1d% to_ini_file %2s% section %3s% key %4s%
@@ -128,7 +128,7 @@ class IniFiles
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_InifileGetFloat(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileGetFloat(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     0AF2=4,%4d% = get_float_from_ini_file %1s% section %2s% key %3s%
@@ -169,7 +169,7 @@ class IniFiles
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_InifileWriteFloat(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileWriteFloat(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     0AF3=4,write_float %1d% to_ini_file %2s% section %3s% key %4s%
@@ -188,7 +188,7 @@ class IniFiles
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_InifileReadString(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileReadString(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     0AF4=4,%4d% = read_string_from_ini_file %1s% section %2s% key %3s%
@@ -212,7 +212,7 @@ class IniFiles
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_InifileWriteString(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileWriteString(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     0AF5=4,write_string %1s% to_ini_file %2s% section %3s% key %4s%
@@ -229,7 +229,7 @@ class IniFiles
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_InifileDeleteSection(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileDeleteSection(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     2800=2,delete_section_from_ini_file %1s% section %2s%
@@ -244,7 +244,7 @@ class IniFiles
         return OR_CONTINUE;
     }
 
-    static OpcodeResult __stdcall Script_InifileDeleteKey(CRunningScript *thread)
+    static OpcodeResult __stdcall Script_InifileDeleteKey(CRunningScript* thread)
     /****************************************************************
     Opcode Format
     2801=3,delete_key_from_ini_file %1s% section %2s%

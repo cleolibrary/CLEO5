@@ -15,9 +15,9 @@ using namespace std;
 class GameEntities
 {
   public:
-    std::map<CRunningScript *, int> charSearchState;   // for get_random_char_in_sphere_no_save_recursive
-    std::map<CRunningScript *, int> carSearchState;    // for get_random_car_in_sphere_no_save_recursive
-    std::map<CRunningScript *, int> objectSearchState; // for get_random_object_in_sphere_no_save_recursive
+    std::map<CRunningScript*, int> charSearchState;   // for get_random_char_in_sphere_no_save_recursive
+    std::map<CRunningScript*, int> carSearchState;    // for get_random_car_in_sphere_no_save_recursive
+    std::map<CRunningScript*, int> objectSearchState; // for get_random_object_in_sphere_no_save_recursive
 
     GameEntities()
     {
@@ -56,7 +56,7 @@ class GameEntities
 
     // store_closest_entities
     // [var carHandle: Car], [var charHandle: Char] = store_closest_entities [Char]
-    static OpcodeResult __stdcall opcode_0AB5(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AB5(CRunningScript* thread)
     {
         auto pedHandle = OPCODE_READ_PARAM_PED_HANDLE();
 
@@ -69,10 +69,10 @@ class GameEntities
         }
 
         DWORD foundCar = -1;
-        const auto &cars = ped->m_pIntelligence->m_vehicleScanner.m_apEntities;
+        const auto& cars = ped->m_pIntelligence->m_vehicleScanner.m_apEntities;
         for (size_t i = 0; i < std::size(cars); i++)
         {
-            auto car = (CVehicle *)cars[i];
+            auto car = (CVehicle*)cars[i];
             if (car != nullptr && car->m_nCreatedBy != eVehicleCreatedBy::MISSION_VEHICLE && !car->bFadeOut)
             {
                 foundCar = CPools::GetVehicleRef(car); // get handle
@@ -81,10 +81,10 @@ class GameEntities
         }
 
         DWORD foundPed = -1;
-        const auto &peds = ped->m_pIntelligence->m_pedScanner.m_apEntities;
+        const auto& peds = ped->m_pIntelligence->m_pedScanner.m_apEntities;
         for (size_t i = 0; i < std::size(peds); i++)
         {
-            auto ped = (CPed *)peds[i];
+            auto ped = (CPed*)peds[i];
             if (ped != nullptr && ped->m_nCreatedBy == 1 && // random pedestrian
                 !ped->bFadeOut)
             {
@@ -100,7 +100,7 @@ class GameEntities
 
     // get_target_blip_coords
     // [var x: float], [var y: float], [var z: float] = get_target_blip_coords (logical)
-    static OpcodeResult __stdcall opcode_0AB6(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AB6(CRunningScript* thread)
     {
         auto blipIdx = CRadar::GetActualBlipArrayIndex(FrontEndMenuManager.m_nTargetBlipIndex);
         if (blipIdx == -1)
@@ -124,7 +124,7 @@ class GameEntities
 
     // get_car_number_of_gears
     // [var numGear: int] = get_car_number_of_gears [Car]
-    static OpcodeResult __stdcall opcode_0AB7(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AB7(CRunningScript* thread)
     {
         auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -137,7 +137,7 @@ class GameEntities
 
     // get_car_current_gear
     // [var gear: int] = get_car_current_gear [Car]
-    static OpcodeResult __stdcall opcode_0AB8(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AB8(CRunningScript* thread)
     {
         auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -150,7 +150,7 @@ class GameEntities
 
     // is_car_siren_on
     // is_car_siren_on [Car] (logical)
-    static OpcodeResult __stdcall opcode_0ABD(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ABD(CRunningScript* thread)
     {
         auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -163,7 +163,7 @@ class GameEntities
 
     // is_car_engine_on
     // is_car_engine_on [Car] (logical)
-    static OpcodeResult __stdcall opcode_0ABE(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ABE(CRunningScript* thread)
     {
         auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
@@ -176,7 +176,7 @@ class GameEntities
 
     // cleo_set_car_engine_on
     // cleo_set_car_engine_on [Car] {state} [bool]
-    static OpcodeResult __stdcall opcode_0ABF(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ABF(CRunningScript* thread)
     {
         auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
         auto state = OPCODE_READ_PARAM_BOOL();
@@ -189,7 +189,7 @@ class GameEntities
 
     // get_char_player_is_targeting
     // [var handle: Char] = get_char_player_is_targeting [Player] (logical)
-    static OpcodeResult __stdcall opcode_0AD2(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AD2(CRunningScript* thread)
     {
         auto playerId = OPCODE_READ_PARAM_PLAYER_ID();
 
@@ -197,7 +197,7 @@ class GameEntities
 
         auto target = ped->m_pPlayerTargettedPed;
         if (target == nullptr)
-            target = (CPed *)ped->m_pTargetedObject;
+            target = (CPed*)ped->m_pTargetedObject;
 
         if (target == nullptr || target->m_nType != ENTITY_TYPE_PED)
         {
@@ -215,7 +215,7 @@ class GameEntities
 
     // spawn_vehicle_by_cheating
     // spawn_vehicle_by_cheating {modelId} [model_vehicle]
-    static OpcodeResult __stdcall opcode_0ADD(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ADD(CRunningScript* thread)
     {
         auto modelIndex = OPCODE_READ_PARAM_INT();
 
@@ -225,7 +225,7 @@ class GameEntities
             return OR_CONTINUE; // modelIndex is not vehicle
         }
 
-        auto veh = (CVehicleModelInfo *)model;
+        auto veh = (CVehicleModelInfo*)model;
         switch (veh->m_nVehicleType)
         {
         case VEHICLE_AUTOMOBILE:
@@ -254,7 +254,7 @@ class GameEntities
     // get_random_char_in_sphere_no_save_recursive
     // [var handle: Char] = get_random_char_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius}
     // [float] {findNext} [bool] {filter} [int] (logical)
-    static OpcodeResult __stdcall opcode_0AE1(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AE1(CRunningScript* thread)
     {
         CVector center = {};
         center.x = OPCODE_READ_PARAM_FLOAT();
@@ -267,11 +267,11 @@ class GameEntities
         bool skipDead = (filter == 1);
         bool skipPlayer = (filter != -1);
 
-        int &searchIdx = Instance.charSearchState[thread];
+        int& searchIdx = Instance.charSearchState[thread];
         if (!findNext)
             searchIdx = 0;
 
-        CPed *found = nullptr;
+        CPed* found = nullptr;
         for (int index = searchIdx; index < CPools::ms_pPedPool->m_nSize; index++)
         {
             auto ped = CPools::ms_pPedPool->GetAt(index);
@@ -326,7 +326,7 @@ class GameEntities
     // get_random_car_in_sphere_no_save_recursive
     // [var handle: Car] = get_random_car_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius}
     // [float] {findNext} [bool] {skipWrecked} [bool] (logical)
-    static OpcodeResult __stdcall opcode_0AE2(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AE2(CRunningScript* thread)
     {
         CVector center = {};
         center.x = OPCODE_READ_PARAM_FLOAT();
@@ -336,11 +336,11 @@ class GameEntities
         auto findNext = OPCODE_READ_PARAM_BOOL();
         auto skipWrecked = OPCODE_READ_PARAM_BOOL();
 
-        int &searchIdx = Instance.carSearchState[thread];
+        int& searchIdx = Instance.carSearchState[thread];
         if (!findNext)
             searchIdx = 0;
 
-        CVehicle *found = nullptr;
+        CVehicle* found = nullptr;
         for (int index = searchIdx; index < CPools::ms_pVehiclePool->m_nSize; index++)
         {
             auto car = CPools::ms_pVehiclePool->GetAt(index);
@@ -390,7 +390,7 @@ class GameEntities
     // get_random_object_in_sphere_no_save_recursive
     // [var handle: Object] = get_random_object_in_sphere_no_save_recursive {x} [float] {y} [float] {z} [float] {radius}
     // [float] {findNext} [bool] (logical)
-    static OpcodeResult __stdcall opcode_0AE3(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AE3(CRunningScript* thread)
     {
         CVector center = {};
         center.x = OPCODE_READ_PARAM_FLOAT();
@@ -399,11 +399,11 @@ class GameEntities
         auto radius = OPCODE_READ_PARAM_FLOAT();
         auto findNext = OPCODE_READ_PARAM_BOOL();
 
-        int &searchIdx = Instance.objectSearchState[thread];
+        int& searchIdx = Instance.objectSearchState[thread];
         if (!findNext)
             searchIdx = 0;
 
-        CObject *found = nullptr;
+        CObject* found = nullptr;
         for (int index = searchIdx; index < CPools::ms_pObjectPool->m_nSize; index++)
         {
             auto object = CPools::ms_pObjectPool->GetAt(index);

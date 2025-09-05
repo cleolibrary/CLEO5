@@ -35,7 +35,7 @@ static const unsigned long crcTable[256] = {
     0xbdbdf21cUL, 0xcabac28aUL, 0x53b39330UL, 0x24b4a3a6UL, 0xbad03605UL, 0xcdd70693UL, 0x54de5729UL, 0x23d967bfUL,
     0xb3667a2eUL, 0xc4614ab8UL, 0x5d681b02UL, 0x2a6f2b94UL, 0xb40bbe37UL, 0xc30c8ea1UL, 0x5a05df1bUL, 0x2d02ef8dUL};
 
-unsigned long crc32FromUpcaseString(const char *str)
+unsigned long crc32FromUpcaseString(const char* str)
 {
     unsigned long crc = 0xFFFFFFFF;
     while (*str)
@@ -43,12 +43,12 @@ unsigned long crc32FromUpcaseString(const char *str)
     return crc;
 }
 
-unsigned long crc32FromUpcaseStdString(const std::string &str)
+unsigned long crc32FromUpcaseStdString(const std::string& str)
 {
     return crc32FromUpcaseString(str.c_str());
 }
 
-unsigned long crc32FromString(const char *str)
+unsigned long crc32FromString(const char* str)
 {
     unsigned long crc = 0xFFFFFFFF;
     while (*str)
@@ -56,12 +56,12 @@ unsigned long crc32FromString(const char *str)
     return crc;
 }
 
-unsigned long crc32FromStdString(const std::string &str)
+unsigned long crc32FromStdString(const std::string& str)
 {
     return crc32FromString(str.c_str());
 }
 
-unsigned long crc32(const unsigned char *buf, unsigned long len)
+unsigned long crc32(const unsigned char* buf, unsigned long len)
 {
     unsigned long crc = 0xFFFFFFFF;
     for (unsigned i = 0; i < len; i++)

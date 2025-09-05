@@ -8,39 +8,39 @@
 
 template <typename T, typename U> inline void MemWrite(U p, const T v)
 {
-    *(T *)p = v;
+    *(T*)p = v;
 }
 template <typename T, typename U> inline void MemWrite(U p, const T v, int n)
 {
-    memcpy((void *)p, &v, n);
+    memcpy((void*)p, &v, n);
 }
 template <typename T, typename U> inline T MemRead(U p)
 {
-    return *(T *)p;
+    return *(T*)p;
 }
 template <typename T, typename U> inline void MemFill(U p, T v, int n)
 {
-    memset((void *)p, (int)v, n);
+    memset((void*)p, (int)v, n);
 }
 template <typename T, typename U> inline void MemCopy(U p, const T v)
 {
-    memcpy((void *)p, &v, sizeof(T));
+    memcpy((void*)p, &v, sizeof(T));
 }
 template <typename T, typename U> inline void MemCopy(U p, const T v, int n)
 {
-    memcpy((void *)p, &v, n);
+    memcpy((void*)p, &v, n);
 }
-template <typename T, typename U> inline void MemCopy(U p, const T *v)
+template <typename T, typename U> inline void MemCopy(U p, const T* v)
 {
-    memcpy((void *)p, v, sizeof(T));
+    memcpy((void*)p, v, sizeof(T));
 }
-template <typename T, typename U> inline void MemCopy(U p, const T *v, int n)
+template <typename T, typename U> inline void MemCopy(U p, const T* v, int n)
 {
-    memcpy((void *)p, v, n);
+    memcpy((void*)p, v, n);
 }
 
 // Write a jump to v to the address at p and copy the replaced jump address to r
-template <typename T, typename U> inline void MemJump(U p, const T v, T *r = nullptr)
+template <typename T, typename U> inline void MemJump(U p, const T v, T* r = nullptr)
 {
     if (r != nullptr)
     {
@@ -52,7 +52,7 @@ template <typename T, typename U> inline void MemJump(U p, const T v, T *r = nul
 }
 
 // Write a call to v to the address at p and copy the replaced call address to r
-template <typename T, typename U> inline void MemCall(U p, const T v, T *r = nullptr)
+template <typename T, typename U> inline void MemCall(U p, const T v, T* r = nullptr)
 {
     if (r != nullptr)
     {
@@ -72,7 +72,7 @@ template <typename T, typename U> T MemReadOffsetPtr(U p)
 // Read absolute target address of jump or call instruction
 template <typename T, typename U> T MemReadInstrucionDestination(U p)
 {
-    auto ptr = (BYTE *)p;
+    auto ptr = (BYTE*)p;
     BYTE opcode = *ptr;
     ptr++;
 

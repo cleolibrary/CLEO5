@@ -15,7 +15,7 @@ const ScriptDataRef CModuleSystem::GetExport(std::string modulePath, std::string
 {
     NormalizePath(modulePath);
 
-    auto &it = modules.find(modulePath);
+    auto& it = modules.find(modulePath);
     if (it == modules.end()) // module not loaded yet?
     {
         if (!LoadFile(modulePath.c_str()))
@@ -30,13 +30,13 @@ const ScriptDataRef CModuleSystem::GetExport(std::string modulePath, std::string
             return {};
         }
     }
-    auto &module = it->second;
+    auto& module = it->second;
 
     auto e = module.GetExport(std::string(exportName));
     return e;
 }
 
-bool CModuleSystem::LoadFile(const char *path)
+bool CModuleSystem::LoadFile(const char* path)
 {
     std::string normalizedPath(path);
     NormalizePath(normalizedPath);
@@ -49,10 +49,10 @@ bool CModuleSystem::LoadFile(const char *path)
     return true;
 }
 
-bool CModuleSystem::LoadDirectory(const char *path)
+bool CModuleSystem::LoadDirectory(const char* path)
 {
     bool result = true;
-    FilesWalk(path, ".s", [&](const char *fullPath, const char *filename) { result &= LoadFile(fullPath); });
+    FilesWalk(path, ".s", [&](const char* fullPath, const char* filename) { result &= LoadFile(fullPath); });
 
     return result;
 }
@@ -63,9 +63,9 @@ bool CModuleSystem::LoadCleoModules()
     return LoadDirectory(path.c_str());
 }
 
-void CModuleSystem::NormalizePath(std::string &path)
+void CModuleSystem::NormalizePath(std::string& path)
 {
-    for (char &c : path)
+    for (char& c : path)
     {
         // standarize path separators
         if (c == '/')
@@ -83,12 +83,12 @@ void CModuleSystem::CModule::Clear()
     exports.clear();
 }
 
-const char *CModuleSystem::CModule::GetFilepath() const
+const char* CModuleSystem::CModule::GetFilepath() const
 {
     return filepath.c_str();
 }
 
-bool CModuleSystem::CModule::LoadFromFile(const char *path)
+bool CModuleSystem::CModule::LoadFromFile(const char* path)
 {
     Clear();
     filepath = path;
@@ -114,7 +114,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char *path)
     } segment;
 #pragma pack(pop)
 
-    file.read((char *)&segment, sizeof(segment));
+    file.read((char*)&segment, sizeof(segment));
     if (file.fail())
     {
         LOG_WARNING(0, "Module '%s' file header read error", path);
@@ -143,7 +143,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char *path)
     bool result = false; // no custom header found yet
     while (file.tellg() < segment.jumpAddress)
     {
-        file.read((char *)&header, sizeof(header));
+        file.read((char*)&header, sizeof(header));
         if (file.fail() || file.tellg() > segment.jumpAddress) // read past the segment end
         {
             LOG_WARNING(0, "Module '%s' load error. Invalid custom header", path);
@@ -226,7 +226,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char *path)
     }
 
     // cut Sanny extra info if present
-    auto infoSize = GetExtraInfoSize((BYTE *)data.data(), data.size());
+    auto infoSize = GetExtraInfoSize((BYTE*)data.data(), data.size());
     if (infoSize)
     {
         data.resize(data.size() - infoSize);
@@ -239,12 +239,12 @@ const ScriptDataRef CModuleSystem::CModule::GetExport(std::string name)
 {
     ModuleExport::NormalizeName(name);
 
-    auto &it = exports.find(name);
+    auto& it = exports.find(name);
     if (it == exports.end())
     {
         return {};
     }
-    auto &exp = it->second;
+    auto& exp = it->second;
 
     return {data.data(), data.size(), exp.offset};
 }
@@ -255,7 +255,7 @@ void CModuleSystem::CModule::ModuleExport::Clear()
     offset = 0;
 }
 
-bool CModuleSystem::CModule::ModuleExport::LoadFromFile(std::ifstream &file)
+bool CModuleSystem::CModule::ModuleExport::LoadFromFile(std::ifstream& file)
 {
     if (!file.good())
     {
@@ -271,7 +271,7 @@ bool CModuleSystem::CModule::ModuleExport::LoadFromFile(std::ifstream &file)
     NormalizeName(name);
 
     // address
-    file.read((char *)&offset, 4);
+    file.read((char*)&offset, 4);
     if (file.fail())
     {
         return false;
@@ -279,7 +279,7 @@ bool CModuleSystem::CModule::ModuleExport::LoadFromFile(std::ifstream &file)
 
     // input arg count
     unsigned char inParamCount;
-    file.read((char *)&inParamCount, 1);
+    file.read((char*)&inParamCount, 1);
     if (file.fail())
     {
         return false;
@@ -294,7 +294,7 @@ bool CModuleSystem::CModule::ModuleExport::LoadFromFile(std::ifstream &file)
 
     // return value count
     unsigned char outParamCount;
-    file.read((char *)&outParamCount, 1);
+    file.read((char*)&outParamCount, 1);
     if (file.fail())
     {
         return false;
@@ -317,9 +317,9 @@ bool CModuleSystem::CModule::ModuleExport::LoadFromFile(std::ifstream &file)
     return true; // done
 }
 
-void CModuleSystem::CModule::ModuleExport::NormalizeName(std::string &name)
+void CModuleSystem::CModule::ModuleExport::NormalizeName(std::string& name)
 {
-    for (auto &ch : name)
+    for (auto& ch : name)
     {
         ch = std::tolower(ch);
     }

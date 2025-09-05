@@ -6,16 +6,16 @@
 
 namespace CLEO
 {
-CRunningScript *CCustomOpcodeSystem::lastScript = nullptr;
+CRunningScript* CCustomOpcodeSystem::lastScript = nullptr;
 WORD CCustomOpcodeSystem::lastOpcode = 0xFFFF;
-WORD *CCustomOpcodeSystem::lastOpcodePtr = nullptr;
+WORD* CCustomOpcodeSystem::lastOpcodePtr = nullptr;
 WORD CCustomOpcodeSystem::lastCustomOpcode = 0;
 std::string CCustomOpcodeSystem::lastErrorMsg = {};
 WORD CCustomOpcodeSystem::prevOpcode = 0xFFFF;
 BYTE CCustomOpcodeSystem::handledParamCount = 0;
 
 // opcode handler for custom opcodes
-OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript *thread, int dummy, WORD opcode)
+OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode)
 {
     OpcodeResult result = OR_NONE;
 
@@ -23,10 +23,10 @@ OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript 
     {
         // execute registered callbacks
         OpcodeResult callbackResult = OR_NONE;
-        for (void *func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessAfter))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessAfter))
         {
-            typedef OpcodeResult WINAPI callback(CRunningScript *, DWORD, OpcodeResult);
-            auto res = ((callback *)func)(thread, opcode, result);
+            typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
+            auto res = ((callback*)func)(thread, opcode, result);
 
             callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
         }
@@ -37,16 +37,16 @@ OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript 
     prevOpcode = (thread != lastScript) ? 0xFFFF : lastOpcode;
     lastScript = thread;
     lastOpcode = opcode;
-    lastOpcodePtr = (WORD *)thread->GetBytePointer() - 1; // rewind to the opcode start
+    lastOpcodePtr = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
     handledParamCount = 0;
 
     // prevent past code execution
     if (thread->IsCustom() && !IsLegacyScript(thread))
     {
-        auto cs = (CCustomScript *)thread;
+        auto cs = (CCustomScript*)thread;
         auto endPos = cs->GetBasePointer() + cs->GetCodeSize();
-        if ((BYTE *)lastOpcodePtr == endPos ||
-            (BYTE *)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
+        if ((BYTE*)lastOpcodePtr == endPos ||
+            (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
         {
             SHOW_ERROR_COMPAT("Code execution past script end in script %s\nThis usually happens when [004E] command "
                               "is missing.\nScript suspended.",
@@ -57,10 +57,10 @@ OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript 
     }
 
     // execute registered callbacks
-    for (void *func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessBefore))
+    for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessBefore))
     {
-        typedef OpcodeResult WINAPI callback(CRunningScript *, DWORD);
-        result = ((callback *)func)(thread, opcode);
+        typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
+        result = ((callback*)func)(thread, opcode);
 
         if (result != OR_NONE)
             break; // processed
@@ -113,14 +113,14 @@ void CCustomOpcodeSystem::FinalizeScriptObjects()
     ScmFunction::Clear();
 }
 
-void CCustomOpcodeSystem::Inject(CCodeInjector &inj)
+void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
 {
     TRACE("Injecting CustomOpcodeSystem...");
-    CGameVersionManager &gvm = CleoInstance.VersionManager;
+    CGameVersionManager& gvm = CleoInstance.VersionManager;
 
     // replace all handlers in original table
     // store original opcode handlers for later use
-    auto handlersTable = (OpcodeHandler *)::CRunningScript::CommandHandlerTable;
+    auto handlersTable = (OpcodeHandler*)::CRunningScript::CommandHandlerTable;
     for (size_t i = 0; i < OriginalOpcodeHandlersCount; i++)
     {
         originalOpcodeHandlers[i] = handlersTable[i];
@@ -190,7 +190,7 @@ bool CCustomOpcodeSystem::RegisterOpcode(WORD opcode, CustomOpcodeHandler callba
         return false;
     }
 
-    CustomOpcodeHandler &dst = customOpcodeProc[opcode];
+    CustomOpcodeHandler& dst = customOpcodeProc[opcode];
     if (*dst != nullptr)
     {
         LOG_WARNING(0, "Opcode [%04X] already registered! Replacing...", opcode);
@@ -201,7 +201,7 @@ bool CCustomOpcodeSystem::RegisterOpcode(WORD opcode, CustomOpcodeHandler callba
     return true;
 }
 
-OpcodeResult _CallNativeOpcode(CRunningScript *thread, void *handler, DWORD opcode)
+OpcodeResult _CallNativeOpcode(CRunningScript* thread, void* handler, DWORD opcode)
 {
     // wrapped in separate function as otherwise some problems occur in debug builds
     OpcodeResult result;
@@ -215,7 +215,7 @@ OpcodeResult _CallNativeOpcode(CRunningScript *thread, void *handler, DWORD opco
     return result;
 }
 
-OpcodeResult CCustomOpcodeSystem::CallNativeOpcode(CRunningScript *thread, WORD opcode)
+OpcodeResult CCustomOpcodeSystem::CallNativeOpcode(CRunningScript* thread, WORD opcode)
 {
     if (opcode > Opcode_Max_Native)
     {
@@ -226,7 +226,7 @@ OpcodeResult CCustomOpcodeSystem::CallNativeOpcode(CRunningScript *thread, WORD 
     return _CallNativeOpcode(thread, originalOpcodeHandlers[tableIdx], opcode);
 }
 
-const char *ReadStringParam(CRunningScript *thread, char *buff, int buffSize)
+const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize)
 {
     if (buffSize > 0)
         buff[buffSize - 1] = '\0';                              // buffer always terminated
@@ -234,13 +234,13 @@ const char *ReadStringParam(CRunningScript *thread, char *buff, int buffSize)
 }
 
 // write output\result string parameter
-bool WriteStringParam(CRunningScript *thread, const char *str)
+bool WriteStringParam(CRunningScript* thread, const char* str)
 {
     auto target = GetStringParamWriteBuffer(thread);
     return WriteStringParam(target, str);
 }
 
-bool WriteStringParam(const StringParamBufferInfo &target, const char *str)
+bool WriteStringParam(const StringParamBufferInfo& target, const char* str)
 {
     CCustomOpcodeSystem::lastErrorMsg.clear();
 
@@ -278,7 +278,7 @@ bool WriteStringParam(const StringParamBufferInfo &target, const char *str)
     return true;
 }
 
-StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript *thread)
+StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread)
 {
     StringParamBufferInfo result;
     CCustomOpcodeSystem::lastErrorMsg.clear();
@@ -311,7 +311,7 @@ StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript *thread)
         case DT_LVAR_TEXTLABEL:
         case DT_VAR_TEXTLABEL_ARRAY:
         case DT_LVAR_TEXTLABEL_ARRAY:
-            result.data = (char *)CScriptEngine::GetScriptParamPointer(thread);
+            result.data = (char*)CScriptEngine::GetScriptParamPointer(thread);
             result.size = 8;
             result.needTerminator = false;
             return result;
@@ -321,7 +321,7 @@ StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript *thread)
         case DT_LVAR_STRING:
         case DT_VAR_STRING_ARRAY:
         case DT_LVAR_STRING_ARRAY:
-            result.data = (char *)CScriptEngine::GetScriptParamPointer(thread);
+            result.data = (char*)CScriptEngine::GetScriptParamPointer(thread);
             result.size = 16;
             result.needTerminator = false;
             return result;
@@ -334,11 +334,11 @@ StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript *thread)
 }
 
 // perform 'sprintf'-operation for parameters, passed through SCM
-int ReadFormattedString(CRunningScript *thread, char *outputStr, DWORD len, const char *format)
+int ReadFormattedString(CRunningScript* thread, char* outputStr, DWORD len, const char* format)
 {
     unsigned int written = 0;
-    const char *iter = format;
-    char *outIter = outputStr;
+    const char* iter = format;
+    char* outIter = outputStr;
     char bufa[MAX_STR_LEN + 1], fmtbufa[64], *fmta;
 
     // invalid input arguments
@@ -394,7 +394,7 @@ int ReadFormattedString(CRunningScript *thread, char *outputStr, DWORD len, cons
                         CScriptEngine::GetScriptParams(thread, 1);
                         _itoa_s(opcodeParams[0].dwParam, bufa, 10);
 
-                        char *buffiter = bufa;
+                        char* buffiter = bufa;
                         while (*buffiter)
                             *fmta++ = *buffiter++;
                     }
@@ -418,7 +418,7 @@ int ReadFormattedString(CRunningScript *thread, char *outputStr, DWORD len, cons
                         CScriptEngine::GetScriptParams(thread, 1);
                         _itoa_s(opcodeParams[0].dwParam, bufa, 10);
 
-                        char *buffiter = bufa;
+                        char* buffiter = bufa;
                         while (*buffiter)
                             *fmta++ = *buffiter++;
                     }
@@ -437,7 +437,7 @@ int ReadFormattedString(CRunningScript *thread, char *outputStr, DWORD len, cons
                     if (thread->PeekDataType() == DT_END)
                         goto _ReadFormattedString_ArgMissing;
 
-                    const char *str = ReadStringParam(thread, bufa, sizeof(bufa));
+                    const char* str = ReadStringParam(thread, bufa, sizeof(bufa));
                     if (str == nullptr) // read error
                     {
                         static const char none[] = "(INVALID_STR)";
@@ -495,7 +495,7 @@ int ReadFormattedString(CRunningScript *thread, char *outputStr, DWORD len, cons
                             sprintf_s(bufa, fmtbufa, opcodeParams[0].pParam);
                         }
                     }
-                    char *bufaiter = bufa;
+                    char* bufaiter = bufa;
                     while (*bufaiter)
                     {
                         if (written++ >= len)
@@ -538,12 +538,12 @@ _ReadFormattedString_ArgMissing: // jump here on error
     return -1; // error
 }
 
-OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, CRunningScript *thread, bool returnArgs,
+OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs,
                                                     DWORD returnArgCount, bool strictArgCount)
 {
-    auto cs = reinterpret_cast<CCustomScript *>(thread);
+    auto cs = reinterpret_cast<CCustomScript*>(thread);
 
-    ScmFunction *scmFunc = ScmFunction::Get(cs->GetScmFunction());
+    ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
     if (scmFunc == nullptr)
     {
         SHOW_ERROR("Invalid Cleo Call reference. [%04X] possibly used without preceding [0AB1] in script %s\nScript "
@@ -575,7 +575,7 @@ OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, CRunningScript 
 
         for (DWORD i = 0; i < returnArgCount; i++)
         {
-            SCRIPT_VAR *arg = arguments + i;
+            SCRIPT_VAR* arg = arguments + i;
             argumentIsStr[i] = false;
 
             auto paramType = (eDataType)*thread->GetBytePointer();
@@ -630,9 +630,9 @@ OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, CRunningScript 
         // set return args
         for (DWORD i = 0; i < std::min<DWORD>(returnArgCount, returnSlotCount); i++)
         {
-            auto arg = (SCRIPT_VAR *)thread->GetBytePointer();
+            auto arg = (SCRIPT_VAR*)thread->GetBytePointer();
 
-            auto paramType = *(eDataType *)arg;
+            auto paramType = *(eDataType*)arg;
             if (IsVarString(paramType))
             {
                 OPCODE_WRITE_PARAM_STRING(arguments[i].pcParam);
@@ -660,7 +660,7 @@ OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(WORD opcode, CRunningScript 
     return OR_CONTINUE;
 }
 
-void SkipUnusedVarArgs(CRunningScript *thread)
+void SkipUnusedVarArgs(CRunningScript* thread)
 {
     while (thread->PeekDataType() != DT_END)
         CLEO_SkipOpcodeParams(thread, 1);
@@ -668,7 +668,7 @@ void SkipUnusedVarArgs(CRunningScript *thread)
     thread->IncPtr(); // skip terminator
 }
 
-DWORD GetVarArgCount(CRunningScript *thread)
+DWORD GetVarArgCount(CRunningScript* thread)
 {
     // store state
     const auto ip = thread->GetBytePointer();
@@ -693,14 +693,14 @@ DWORD GetVarArgCount(CRunningScript *thread)
 /************************************************************************/
 
 // terminate_this_script
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_004E(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_004E(CRunningScript* thread)
 {
     CleoInstance.ScriptEngine.RemoveScript(thread);
     return OR_INTERRUPT;
 }
 
 // GOSUB return
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript* thread)
 {
     if (thread->SP == 0 && !IsLegacyScript(thread)) // CLEO5 - allow use of GOSUB `return` to exit cleo calls too
     {
@@ -720,7 +720,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript *thread)
 
 // load_and_launch_mission_internal
 // load_and_launch_mission_internal {index} [int]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript* thread)
 {
     CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
 
@@ -729,11 +729,11 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0417(CRunningScript *thread)
 
 // stream_custom_script
 // stream_custom_script {scriptFileName} [string] [arguments]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A92(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A92(CRunningScript* thread)
 {
     OPCODE_READ_PARAM_STRING(path);
 
-    auto filename = reinterpret_cast<CCustomScript *>(thread)->ResolvePath(
+    auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(
         path, DIR_CLEO); // legacy: default search location is game\cleo directory
     TRACE("[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
@@ -742,7 +742,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A92(CRunningScript *thread)
     if (cs && cs->IsOk())
     {
         CleoInstance.ScriptEngine.AddCustomScript(cs);
-        ((::CRunningScript *)thread)->ReadParametersForNewlyStartedScript((::CRunningScript *)cs);
+        ((::CRunningScript*)thread)->ReadParametersForNewlyStartedScript((::CRunningScript*)cs);
     }
     else
     {
@@ -756,9 +756,9 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A92(CRunningScript *thread)
 }
 
 // terminate_this_custom_script
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A93(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A93(CRunningScript* thread)
 {
-    CCustomScript *cs = reinterpret_cast<CCustomScript *>(thread);
+    CCustomScript* cs = reinterpret_cast<CCustomScript*>(thread);
     if (thread->IsMission() || !cs->IsCustom())
     {
         LOG_WARNING(0, "Incorrect usage of opcode [0A93] in script '%s'. Use [004E] instead.",
@@ -772,11 +772,11 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A93(CRunningScript *thread)
 
 // load_and_launch_custom_mission
 // load_and_launch_custom_mission {scriptFileName} [string] [arguments]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A94(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A94(CRunningScript* thread)
 {
     OPCODE_READ_PARAM_STRING(path);
 
-    auto filename = reinterpret_cast<CCustomScript *>(thread)->ResolvePath(
+    auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(
         path, DIR_CLEO); // legacy: default search location is game\cleo directory
     filename += ".cm";   // add custom mission extension
     TRACE("[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(),
@@ -789,8 +789,8 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A94(CRunningScript *thread)
         CleoInstance.ScriptEngine.AddCustomScript(cs);
         CTheScripts::WipeLocalVariableMemoryForMissionScript();
         auto fakeScriptAddress =
-            (BYTE *)missionLocals - offsetof(CRunningScript, LocalVar); // TODO: maybe copy params ourself instead?
-        ((::CRunningScript *)thread)->ReadParametersForNewlyStartedScript((::CRunningScript *)fakeScriptAddress);
+            (BYTE*)missionLocals - offsetof(CRunningScript, LocalVar); // TODO: maybe copy params ourself instead?
+        ((::CRunningScript*)thread)->ReadParametersForNewlyStartedScript((::CRunningScript*)fakeScriptAddress);
     }
     else
     {
@@ -805,18 +805,18 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A94(CRunningScript *thread)
 }
 
 // save_this_custom_script
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A95(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0A95(CRunningScript* thread)
 {
     if (thread->IsCustom())
     {
-        reinterpret_cast<CCustomScript *>(thread)->EnableSaving();
+        reinterpret_cast<CCustomScript*>(thread)->EnableSaving();
     }
     return OR_CONTINUE;
 }
 
 // gosub_if_false
 // gosub_if_false [label]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA0(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA0(CRunningScript* thread)
 {
     auto offset = OPCODE_READ_PARAM_INT();
 
@@ -829,7 +829,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA0(CRunningScript *thread)
 }
 
 // return_if_false
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA1(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA1(CRunningScript* thread)
 {
     if (thread->GetConditionResult())
         return OR_CONTINUE;
@@ -847,7 +847,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA1(CRunningScript *thread)
 
 // is_game_version_original
 // is_game_version_original (logical)
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA9(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA9(CRunningScript* thread)
 {
     auto gameVer = CleoInstance.VersionManager.GetGameVersion();
     auto scriptVer = CLEO_GetScriptVersion(thread);
@@ -860,7 +860,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AA9(CRunningScript *thread)
 
 // cleo_call
 // cleo_call [label] {numParams} [int] {params} [arguments]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript* thread)
 {
     int label = 0;
     std::string moduleTxt;
@@ -883,7 +883,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
         return thread->Suspend();
     }
 
-    ScmFunction *scmFunc = new ScmFunction(thread);
+    ScmFunction* scmFunc = new ScmFunction(thread);
 
     // parse module reference text
     if (!moduleTxt.empty())
@@ -900,7 +900,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
 
         // get module's file absolute path
         auto modulePath = std::string(strModule);
-        modulePath = reinterpret_cast<CCustomScript *>(thread)->ResolvePath(
+        modulePath = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(
             modulePath.c_str(), DIR_SCRIPT); // by default search relative to current script location
 
         // get export reference
@@ -912,7 +912,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
             return thread->Suspend();
         }
 
-        auto cs = reinterpret_cast<CCustomScript *>(thread);
+        auto cs = reinterpret_cast<CCustomScript*>(thread);
         cs->SetScriptFileDir(FS::path(modulePath).parent_path().string().c_str());
         cs->SetScriptFileName(FS::path(modulePath).filename().string().c_str());
         cs->SetBaseIp(scriptRef.base);
@@ -958,14 +958,14 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
     scmFunc->callArgCount = (BYTE)nParams;
 
     static SCRIPT_VAR arguments[32];
-    SCRIPT_VAR *locals = thread->IsMission() ? missionLocals : thread->GetVarPtr();
-    SCRIPT_VAR *localsEnd = locals + 32;
-    SCRIPT_VAR *storedLocals = scmFunc->savedTls;
+    SCRIPT_VAR* locals = thread->IsMission() ? missionLocals : thread->GetVarPtr();
+    SCRIPT_VAR* localsEnd = locals + 32;
+    SCRIPT_VAR* storedLocals = scmFunc->savedTls;
 
     // collect arguments
     for (DWORD i = 0; i < nParams; i++)
     {
-        SCRIPT_VAR *arg = arguments + i;
+        SCRIPT_VAR* arg = arguments + i;
 
         auto paramType = thread->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
@@ -984,7 +984,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
             char tmp[MAX_STR_LEN + 1];
             auto str = ReadStringParam(thread, tmp, sizeof(tmp));
             scmFunc->stringParams.emplace_back(str);
-            arg->pcParam = (char *)scmFunc->stringParams.back().c_str();
+            arg->pcParam = (char*)scmFunc->stringParams.back().c_str();
         }
         else
         {
@@ -1016,7 +1016,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript *thread)
 
 // cleo_return
 // cleo_return {numRet} [int] {retParams} [arguments]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(CRunningScript* thread)
 {
     auto returnParamCount = OPCODE_PEEK_VARARG_COUNT();
     if (returnParamCount)
@@ -1049,7 +1049,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB2(CRunningScript *thread)
 
 // set_cleo_shared_var
 // set_cleo_shared_var {index} [int] {value} [any]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB3(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB3(CRunningScript* thread)
 {
     auto varIdx = OPCODE_READ_PARAM_INT();
 
@@ -1067,7 +1067,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB3(CRunningScript *thread)
 
 // get_cleo_shared_var
 // [var result: any] = get_cleo_shared_var {index} [int]
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB4(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB4(CRunningScript* thread)
 {
     auto varIdx = OPCODE_READ_PARAM_INT();
 
@@ -1085,7 +1085,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB4(CRunningScript *thread)
 
 // get_platform
 // [var platform: Platform] = get_platform
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0DD5(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0DD5(CRunningScript* thread)
 {
     OPCODE_WRITE_PARAM_INT(PLATFORM_WINDOWS);
     return OR_CONTINUE;
@@ -1093,11 +1093,11 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0DD5(CRunningScript *thread)
 
 // get_cleo_arg_count
 // [var count: int] = get_cleo_arg_count
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2000(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2000(CRunningScript* thread)
 {
-    auto cs = reinterpret_cast<CCustomScript *>(thread);
+    auto cs = reinterpret_cast<CCustomScript*>(thread);
 
-    ScmFunction *scmFunc = ScmFunction::Get(cs->GetScmFunction());
+    ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
     if (scmFunc == nullptr)
     {
         SHOW_ERROR("Quering argument count without preceding CLEO function call in script %s\nScript suspended.",
@@ -1111,7 +1111,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2000(CRunningScript *thread)
 
 // cleo_return_with
 // cleo_return_with {conditionResult} [bool] {retArgs} [arguments] (logical)
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(CRunningScript* thread)
 {
     auto argCount = OPCODE_PEEK_VARARG_COUNT();
     if (argCount < 1)
@@ -1130,7 +1130,7 @@ OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2002(CRunningScript *thread)
 
 // cleo_return_fail
 // cleo_return_fail [arguments] (logical)
-OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2003(CRunningScript *thread)
+OpcodeResult __stdcall CCustomOpcodeSystem::opcode_2003(CRunningScript* thread)
 {
     auto argCount = OPCODE_PEEK_VARARG_COUNT();
     if (argCount != 0) // argument(s) not supported yet

@@ -15,10 +15,10 @@ class ScreenLog
     ScreenLog();
 
     void Init();
-    void Add(eLogLevel level, const char *msg);
+    void Add(eLogLevel level, const char* msg);
     void Clear();
     void Draw();
-    void DrawLine(const char *msg, size_t row = 0);
+    void DrawLine(const char* msg, size_t row = 0);
 
   private:
     eLogLevel level;
@@ -49,7 +49,7 @@ class ScreenLog
         {
         }
 
-        Entry(eLogLevel level, const char *msg) : level(level), repeats(1)
+        Entry(eLogLevel level, const char* msg) : level(level), repeats(1)
         {
             if (msg != nullptr)
             {
@@ -109,18 +109,18 @@ class ScreenLog
             timeLeft = std::max(timeLeft, 0.001f * ScreenLog::timeDisplay); // not shorter than defined in config
         }
 
-        const char *GetMsg(bool prefix = true) const
+        const char* GetMsg(bool prefix = true) const
         {
             return msg.c_str() + (prefix ? msgStartPos : Repeat_Prefix_Len);
         }
 
-        bool operator==(const Entry &other) const
+        bool operator==(const Entry& other) const
         {
             return level == other.level && !strcmp(GetMsg(false), other.GetMsg(false));
         }
     };
 
-    static size_t CountLines(std::string &msg);
+    static size_t CountLines(std::string& msg);
     static DWORD GetTime();
 
     std::deque<Entry> entries;

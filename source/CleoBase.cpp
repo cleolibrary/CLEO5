@@ -27,7 +27,7 @@ HWND CCleoInstance::OnCreateMainWnd(HINSTANCE hinst)
     auto window = CleoInstance.CreateMainWnd_Orig(hinst); // call original
 
     // redirect window handling procedure
-    *((size_t *)&CleoInstance.MainWndProc_Orig) = GetWindowLongPtr(window, GWLP_WNDPROC); // store original address
+    *((size_t*)&CleoInstance.MainWndProc_Orig) = GetWindowLongPtr(window, GWLP_WNDPROC); // store original address
     SetWindowLongPtr(window, GWLP_WNDPROC, (LONG)OnMainWndProc);
 
     return window;
@@ -166,7 +166,7 @@ void CCleoInstance::Start(InitStage stage)
     {
         TRACE("CLEO initialization: Phase 2");
 
-        const_cast<std::string &>(Filepath_User) =
+        const_cast<std::string&>(Filepath_User) =
             GetUserDirectory(); // force update now, as it could be modifed by PortableGTA.asi
 
         ScriptEngine.InjectLate(CodeInjector);
@@ -226,47 +226,47 @@ void CCleoInstance::GameEnd()
     saveSlot = -1;
 }
 
-void CCleoInstance::AddCallback(eCallbackId id, void *func)
+void CCleoInstance::AddCallback(eCallbackId id, void* func)
 {
     m_callbacks[id].insert(func);
 }
 
-void CCleoInstance::RemoveCallback(eCallbackId id, void *func)
+void CCleoInstance::RemoveCallback(eCallbackId id, void* func)
 {
     m_callbacks[id].erase(func);
 }
 
-const std::set<void *> &CCleoInstance::GetCallbacks(eCallbackId id)
+const std::set<void*>& CCleoInstance::GetCallbacks(eCallbackId id)
 {
     return m_callbacks[id];
 }
 
 void CCleoInstance::CallCallbacks(eCallbackId id)
 {
-    for (void *func : GetCallbacks(id))
+    for (void* func : GetCallbacks(id))
     {
         typedef void WINAPI callback(void);
-        ((callback *)func)();
+        ((callback*)func)();
     }
 }
 
 void CCleoInstance::CallCallbacks(eCallbackId id, DWORD arg)
 {
-    for (void *func : GetCallbacks(id))
+    for (void* func : GetCallbacks(id))
     {
         typedef void WINAPI callback(DWORD);
-        ((callback *)func)(arg);
+        ((callback*)func)(arg);
     }
 }
 
-void WINAPI CLEO_ResolvePath(CLEO::CRunningScript *thread, char *inOutPath, DWORD pathMaxLen)
+void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
 {
     if (thread == nullptr || inOutPath == nullptr || pathMaxLen < 2)
     {
         return; // invalid param
     }
 
-    auto resolved = reinterpret_cast<CCustomScript *>(thread)->ResolvePath(inOutPath);
+    auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
 
     if (resolved.length() >= pathMaxLen)
         resolved.resize(pathMaxLen - 1); // and terminator character
@@ -287,7 +287,7 @@ void WINAPI CLEO_StringListFree(StringList list)
     }
 }
 
-StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript *thread, const char *searchPath, BOOL listDirs,
+StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs,
                                      BOOL listFiles)
 {
     if (searchPath == nullptr)
@@ -301,7 +301,7 @@ StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript *thread, const char *s
     if (!fsSearchPath.is_absolute())
     {
         if (thread != nullptr)
-            fsSearchPath = ((CCustomScript *)thread)->GetWorkDir() / fsSearchPath;
+            fsSearchPath = ((CCustomScript*)thread)->GetWorkDir() / fsSearchPath;
         else
             fsSearchPath = Filepath_Game / fsSearchPath;
     }

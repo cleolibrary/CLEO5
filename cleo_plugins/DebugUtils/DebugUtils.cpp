@@ -22,9 +22,9 @@ class DebugUtils
 
     struct PausedScriptInfo
     {
-        CRunningScript *ptr;
+        CRunningScript* ptr;
         std::string msg;
-        PausedScriptInfo(CRunningScript *ptr, const char *msg) : ptr(ptr), msg(msg)
+        PausedScriptInfo(CRunningScript* ptr, const char* msg) : ptr(ptr), msg(msg)
         {
         }
     };
@@ -101,7 +101,7 @@ class DebugUtils
 
     static void WINAPI OnDrawingFinished()
     {
-        auto GTA_GetKeyState = (SHORT(__stdcall *)(
+        auto GTA_GetKeyState = (SHORT(__stdcall*)(
             int))0x0081E64C; // use ingame function as GetKeyState might look like keylogger to some AV software
 
         // log messages
@@ -185,7 +185,7 @@ class DebugUtils
         currScript.Clear(); // make sure current script log does not persists to next render frame
     }
 
-    static bool WINAPI OnScriptProcess(CRunningScript *thread)
+    static bool WINAPI OnScriptProcess(CRunningScript* thread)
     {
         currScript.Begin(thread);
 
@@ -200,7 +200,7 @@ class DebugUtils
         return true;
     }
 
-    static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript *thread, DWORD opcode)
+    static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* thread, DWORD opcode)
     {
         currScript.ProcessCommand(thread);
 
@@ -240,7 +240,7 @@ class DebugUtils
         return OR_NONE;
     }
 
-    static void WINAPI OnLog(eLogLevel level, const char *msg)
+    static void WINAPI OnLog(eLogLevel level, const char* msg)
     {
         screenLog.Add(level, msg);
     }
@@ -248,7 +248,7 @@ class DebugUtils
     // ---------------------------------------------- opcodes -------------------------------------------------
 
     // 00C3=0, debug_on
-    static OpcodeResult __stdcall Opcode_DebugOn(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_DebugOn(CRunningScript* thread)
     {
         CLEO_SetScriptDebugMode(thread, true);
 
@@ -256,7 +256,7 @@ class DebugUtils
     }
 
     // 00C4=0, debug_off
-    static OpcodeResult __stdcall Opcode_DebugOff(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_DebugOff(CRunningScript* thread)
     {
         CLEO_SetScriptDebugMode(thread, false);
 
@@ -264,7 +264,7 @@ class DebugUtils
     }
 
     // 2100=-1, breakpoint ...
-    static OpcodeResult __stdcall Opcode_Breakpoint(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_Breakpoint(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -313,7 +313,7 @@ class DebugUtils
     }
 
     // 2101=-1, trace %1s% ...
-    static OpcodeResult __stdcall Opcode_Trace(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_Trace(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -329,7 +329,7 @@ class DebugUtils
     }
 
     // 2102=-1, log_to_file %1s% timestamp %2d% text %3s% ...
-    static OpcodeResult __stdcall Opcode_LogToFile(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_LogToFile(CRunningScript* thread)
     {
         auto filestr = CLEO_ReadStringOpcodeParam(thread);
 
@@ -355,7 +355,7 @@ class DebugUtils
                      .first;
         }
 
-        auto &file = it->second;
+        auto& file = it->second;
         if (!file.good())
         {
             std::ostringstream ss;
@@ -386,7 +386,7 @@ class DebugUtils
     }
 
     // 0662=1, printstring %1s%
-    static OpcodeResult __stdcall Opcode_PrintString(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_PrintString(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -402,7 +402,7 @@ class DebugUtils
     }
 
     // 0663=1, printint %1s% %2d%
-    static OpcodeResult __stdcall Opcode_PrintInt(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_PrintInt(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {
@@ -421,7 +421,7 @@ class DebugUtils
     }
 
     // 0664=1, printfloat %1s% %2f%
-    static OpcodeResult __stdcall Opcode_PrintFloat(CRunningScript *thread)
+    static OpcodeResult __stdcall Opcode_PrintFloat(CRunningScript* thread)
     {
         if (!CLEO_GetScriptDebugMode(thread))
         {

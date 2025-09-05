@@ -8,7 +8,7 @@
 using namespace CLEO;
 
 // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
-CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScript *parent, int label)
+CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScript* parent, int label)
     : CRunningScript(), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR)
 {
     TRACE(""); // separator
@@ -28,7 +28,7 @@ CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScrip
             if (!parent->IsCustom())
                 throw std::logic_error("Only custom threads can spawn children threads from label");
 
-            auto cs = (CCustomScript *)parent;
+            auto cs = (CCustomScript*)parent;
 
             m_compatVer = cs->GetCompatibility();
             m_debugMode = cs->GetDebugMode();
@@ -112,8 +112,8 @@ CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScrip
 
             if (parent != nullptr)
             {
-                m_debugMode = ((CCustomScript *)parent)->GetDebugMode();
-                m_workDir = ((CCustomScript *)parent)->GetWorkDir();
+                m_debugMode = ((CCustomScript*)parent)->GetDebugMode();
+                m_workDir = ((CCustomScript*)parent)->GetWorkDir();
             }
             else
             {
@@ -143,13 +143,13 @@ CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScrip
             {
                 BaseIP = CurrentIP = new BYTE[length];
             }
-            is.read(reinterpret_cast<char *>(BaseIP), length);
+            is.read(reinterpret_cast<char*>(BaseIP), length);
 
             m_codeSize = length;
-            m_codeSize -= GetExtraInfoSize(reinterpret_cast<BYTE *>(BaseIP),
+            m_codeSize -= GetExtraInfoSize(reinterpret_cast<BYTE*>(BaseIP),
                                            m_codeSize); // just the code without extra SCM data at the end
 
-            m_codeChecksum = crc32(reinterpret_cast<BYTE *>(BaseIP), length);
+            m_codeChecksum = crc32(reinterpret_cast<BYTE*>(BaseIP), length);
 
             // thread name from filename
             auto threadNamePath = path;
@@ -169,7 +169,7 @@ CCustomScript::CCustomScript(const char *szFileName, bool bIsMiss, CRunningScrip
         CleoInstance.ScriptEngine.LastScriptCreated = this;
         m_ok = true;
     }
-    catch (std::exception &e)
+    catch (std::exception& e)
     {
         LOG_WARNING(0, "Error during loading of custom script '%s' occured.\nError message: %s", szFileName, e.what());
     }
@@ -189,19 +189,19 @@ CCustomScript::~CCustomScript()
         CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
 }
 
-void CCustomScript::AddScriptToList(CRunningScript **queuelist)
+void CCustomScript::AddScriptToList(CRunningScript** queuelist)
 {
-    ((::CRunningScript *)this)->AddScriptToList((::CRunningScript **)queuelist); // CRunningScript from Plugin SDK
+    ((::CRunningScript*)this)->AddScriptToList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
 }
 
-void CCustomScript::RemoveScriptFromList(CRunningScript **queuelist)
+void CCustomScript::RemoveScriptFromList(CRunningScript** queuelist)
 {
-    ((::CRunningScript *)this)->RemoveScriptFromList((::CRunningScript **)queuelist); // CRunningScript from Plugin SDK
+    ((::CRunningScript*)this)->RemoveScriptFromList((::CRunningScript**)queuelist); // CRunningScript from Plugin SDK
 }
 
 void CCustomScript::ShutdownThisScript()
 {
-    ((::CRunningScript *)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
+    ((::CRunningScript*)this)->ShutdownThisScript(); // CRunningScript from Plugin SDK
 }
 
 bool CCustomScript::GetDebugMode() const
@@ -217,12 +217,12 @@ void CCustomScript::SetDebugMode(bool enabled)
         m_debugMode = enabled;
 }
 
-const char *CCustomScript::GetScriptFileDir() const
+const char* CCustomScript::GetScriptFileDir() const
 {
     return bIsCustom ? m_scriptFileDir.c_str() : CleoInstance.ScriptEngine.MainScriptFileDir.c_str();
 }
 
-void CCustomScript::SetScriptFileDir(const char *directory)
+void CCustomScript::SetScriptFileDir(const char* directory)
 {
     if (!bIsCustom)
         CleoInstance.ScriptEngine.MainScriptFileDir = directory;
@@ -230,12 +230,12 @@ void CCustomScript::SetScriptFileDir(const char *directory)
         m_scriptFileDir = directory;
 }
 
-const char *CCustomScript::GetScriptFileName() const
+const char* CCustomScript::GetScriptFileName() const
 {
     return bIsCustom ? m_scriptFileName.c_str() : CleoInstance.ScriptEngine.MainScriptFileName.c_str();
 }
 
-void CCustomScript::SetScriptFileName(const char *filename)
+void CCustomScript::SetScriptFileName(const char* filename)
 {
     if (!bIsCustom)
         CleoInstance.ScriptEngine.MainScriptFileName = filename;
@@ -251,12 +251,12 @@ std::string CCustomScript::GetScriptFileFullPath() const
     return path;
 }
 
-const char *CCustomScript::GetWorkDir() const
+const char* CCustomScript::GetWorkDir() const
 {
     return bIsCustom ? m_workDir.c_str() : CleoInstance.ScriptEngine.MainScriptCurWorkDir.c_str();
 }
 
-void CCustomScript::SetWorkDir(const char *directory)
+void CCustomScript::SetWorkDir(const char* directory)
 {
     if (directory == nullptr || strlen(directory) == 0)
         return; // Already done. Empty path is relative path starting at current work dir
@@ -269,7 +269,7 @@ void CCustomScript::SetWorkDir(const char *directory)
         m_workDir = resolved;
 }
 
-std::string CCustomScript::ResolvePath(const char *path, const char *customWorkDir) const
+std::string CCustomScript::ResolvePath(const char* path, const char* customWorkDir) const
 {
     if (path == nullptr)
     {
@@ -297,7 +297,7 @@ std::string CCustomScript::ResolvePath(const char *path, const char *customWorkD
             virtualPrefix = VPref::Game;
         else if (_strcmpi(r, DIR_USER) == 0)
             virtualPrefix = VPref::User;
-        else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript((CRunningScript *)this))
+        else if (_strcmpi(r, DIR_SCRIPT) == 0 && !IsLegacyScript((CRunningScript*)this))
             virtualPrefix = VPref::Script;
         else if (_strcmpi(r, DIR_CLEO) == 0)
             virtualPrefix = VPref::Cleo;
@@ -386,8 +386,8 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
         }
         else
         {
-            auto offset = CLEO_GetScriptBaseRelativeOffset((CLEO::CRunningScript *)this,
-                                                           (BYTE *)CCustomOpcodeSystem::lastOpcodePtr);
+            auto offset = CLEO_GetScriptBaseRelativeOffset((CLEO::CRunningScript*)this,
+                                                           (BYTE*)CCustomOpcodeSystem::lastOpcodePtr);
             ss << "offset {" << offset << "}"; // Sanny offsets style
             ss << " - ";
             ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;

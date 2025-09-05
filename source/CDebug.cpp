@@ -5,7 +5,7 @@
 CDebug Debug;
 using namespace CLEO;
 
-void CDebug::Trace(CLEO::eLogLevel level, const char *msg)
+void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
 {
     std::lock_guard<std::mutex> guard(mutex);
 
@@ -16,7 +16,7 @@ void CDebug::Trace(CLEO::eLogLevel level, const char *msg)
 #endif
 
     // censor user name in paths like "C:\Users\xxx\Documents..."
-    const char *UsersDir = "\\users\\";
+    const char* UsersDir = "\\users\\";
     std::string msgStr = msg;
     StringToLower(msgStr);
     auto usersDirPos = strstr(msgStr.c_str(), UsersDir);
@@ -39,10 +39,10 @@ void CDebug::Trace(CLEO::eLogLevel level, const char *msg)
     // output to callbacks
     if (CleoInstance.IsStarted())
     {
-        for (void *func : CleoInstance.GetCallbacks(eCallbackId::Log))
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::Log))
         {
-            typedef void WINAPI callback(eLogLevel, const char *);
-            ((callback *)func)(level, msg);
+            typedef void WINAPI callback(eLogLevel, const char*);
+            ((callback*)func)(level, msg);
         }
     }
 

@@ -6,3 +6,4 @@ ColumnLimit: 120
 AllowShortIfStatementsOnASingleLine: false
 SortIncludes: false
 BreakBeforeBraces: Allman
+PointerAlignment: Left

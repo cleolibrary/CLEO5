@@ -4,7 +4,7 @@
 namespace CLEO
 {
 // check for extra SCM data at the end of script block
-static DWORD GetExtraInfoSize(BYTE *scriptData, DWORD size)
+static DWORD GetExtraInfoSize(BYTE* scriptData, DWORD size)
 {
     static constexpr char SB_Footer_Sig[] = {'_', '_', 'S', 'B', 'F', 'T', 'R', '\0'};
 
@@ -17,7 +17,7 @@ static DWORD GetExtraInfoSize(BYTE *scriptData, DWORD size)
         return 0; // signature not present
 
     ptr -= sizeof(DWORD);
-    auto codeSize = *reinterpret_cast<DWORD *>(ptr);
+    auto codeSize = *reinterpret_cast<DWORD*>(ptr);
     if (codeSize > size)
         return 0; // error: reported size greater than script block
 

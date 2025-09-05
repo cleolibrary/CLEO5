@@ -3,7 +3,7 @@
 
 namespace CLEO
 {
-const char *__fastcall GetScriptStringParam(CRunningScript *thread, int dummy, char *buff, int buffLen)
+const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
 {
     if (buff == nullptr || buffLen < 0)
     {
@@ -20,7 +20,7 @@ const char *__fastcall GetScriptStringParam(CRunningScript *thread, int dummy, c
     // integer address to text buffer
     if (IsImmInteger(paramType) || isVariableInt)
     {
-        auto str = (char *)CLEO_PeekIntOpcodeParam(thread);
+        auto str = (char*)CLEO_PeekIntOpcodeParam(thread);
         CLEO_SkipOpcodeParams(thread, 1);
 
         if ((size_t)str <= MinValidAddress)
@@ -44,7 +44,7 @@ const char *__fastcall GetScriptStringParam(CRunningScript *thread, int dummy, c
         DWORD length = *thread->GetBytePointer(); // as unsigned byte!
         thread->IncPtr(1);                        // length info
 
-        char *str = (char *)thread->GetBytePointer();
+        char* str = (char*)thread->GetBytePointer();
         thread->IncPtr(length); // text data
 
         memcpy(buff, str, std::min(buffLen, (int)length));
@@ -55,7 +55,7 @@ const char *__fastcall GetScriptStringParam(CRunningScript *thread, int dummy, c
     else if (IsImmString(paramType))
     {
         thread->IncPtr(1); // already processed paramType
-        auto str = (char *)thread->GetBytePointer();
+        auto str = (char*)thread->GetBytePointer();
 
         switch (paramType)
         {
@@ -86,7 +86,7 @@ const char *__fastcall GetScriptStringParam(CRunningScript *thread, int dummy, c
         case DT_VAR_TEXTLABEL_ARRAY:
         case DT_LVAR_TEXTLABEL_ARRAY:
         {
-            auto str = (char *)CScriptEngine::GetScriptParamPointer(thread);
+            auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
             memcpy(buff, str, std::min(buffLen, 8));
             if (buffLen > 8)
                 buff[8] = '\0'; // add terminator if possible
@@ -99,7 +99,7 @@ const char *__fastcall GetScriptStringParam(CRunningScript *thread, int dummy, c
         case DT_VAR_STRING_ARRAY:
         case DT_LVAR_STRING_ARRAY:
         {
-            auto str = (char *)CScriptEngine::GetScriptParamPointer(thread);
+            auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
             memcpy(buff, str, std::min(buffLen, 16));
             if (buffLen > 16)
                 buff[16] = '\0'; // add terminator if possible
@@ -152,9 +152,9 @@ struct ThreadSavingInfo
     ptrdiff_t ip_diff;
     char threadName[8];
 
-    ThreadSavingInfo(CCustomScript *cs)
+    ThreadSavingInfo(CCustomScript* cs)
         : hash(cs->m_codeChecksum), condResult(cs->bCondResult), logicalOp(cs->LogicalOp),
-          notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE *>(cs->BaseIP))
+          notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
     {
         sleepTime = cs->WakeTime >= CTimer::m_snTimeInMilliseconds ? 0 : cs->WakeTime - CTimer::m_snTimeInMilliseconds;
         std::copy(cs->LocalVar, cs->LocalVar + 32, tls);
@@ -162,7 +162,7 @@ struct ThreadSavingInfo
         std::copy(cs->Name, cs->Name + 8, threadName);
     }
 
-    void Apply(CCustomScript *cs)
+    void Apply(CCustomScript* cs)
     {
         cs->m_codeChecksum = hash;
         std::copy(tls, tls + 32, cs->LocalVar);
@@ -171,7 +171,7 @@ struct ThreadSavingInfo
         cs->WakeTime = CTimer::m_snTimeInMilliseconds + sleepTime;
         cs->LogicalOp = logicalOp;
         cs->NotFlag = notFlag;
-        cs->CurrentIP = reinterpret_cast<BYTE *>(cs->BaseIP) + ip_diff;
+        cs->CurrentIP = reinterpret_cast<BYTE*>(cs->BaseIP) + ip_diff;
         std::copy(threadName, threadName + 8, cs->Name);
         cs->EnableSaving(true);
     }
@@ -183,24 +183,24 @@ struct ThreadSavingInfo
 
 SCRIPT_VAR CScriptEngine::CleoVariables[0x400];
 
-template <typename T> void inline ReadBinary(std::istream &s, T &buf)
+template <typename T> void inline ReadBinary(std::istream& s, T& buf)
 {
-    s.read(reinterpret_cast<char *>(&buf), sizeof(T));
+    s.read(reinterpret_cast<char*>(&buf), sizeof(T));
 }
 
-template <typename T> void inline ReadBinary(std::istream &s, T *buf, size_t size)
+template <typename T> void inline ReadBinary(std::istream& s, T* buf, size_t size)
 {
-    s.read(reinterpret_cast<char *>(buf), sizeof(T) * size);
+    s.read(reinterpret_cast<char*>(buf), sizeof(T) * size);
 }
 
-template <typename T> void inline WriteBinary(std::ostream &s, const T &data)
+template <typename T> void inline WriteBinary(std::ostream& s, const T& data)
 {
-    s.write(reinterpret_cast<const char *>(&data), sizeof(T));
+    s.write(reinterpret_cast<const char*>(&data), sizeof(T));
 }
 
-template <typename T> void inline WriteBinary(std::ostream &s, const T *data, size_t size)
+template <typename T> void inline WriteBinary(std::ostream& s, const T* data, size_t size)
 {
-    s.write(reinterpret_cast<const char *>(data), sizeof(T) * size);
+    s.write(reinterpret_cast<const char*>(data), sizeof(T) * size);
 }
 
 void __cdecl CScriptEngine::HOOK_DrawScriptText(char beforeFade)
@@ -208,31 +208,31 @@ void __cdecl CScriptEngine::HOOK_DrawScriptText(char beforeFade)
     DrawScriptText_Orig(beforeFade);
 
     // run registered callbacks
-    for (void *func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
+    for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptDraw))
     {
         typedef void WINAPI callback(bool);
-        ((callback *)func)(beforeFade != 0);
+        ((callback*)func)(beforeFade != 0);
     }
 }
 
-SCRIPT_VAR *CScriptEngine::GetScriptParamPointer(CRunningScript *thread)
+SCRIPT_VAR* CScriptEngine::GetScriptParamPointer(CRunningScript* thread)
 {
     auto type = DT_DWORD; // thread->PeekDataType(); // ignored in GetPointerToScriptVariable anyway
-    auto ptr = ((::CRunningScript *)thread)->GetPointerToScriptVariable(type);
+    auto ptr = ((::CRunningScript*)thread)->GetPointerToScriptVariable(type);
     CleoInstance.OpcodeSystem
         .handledParamCount++; // TODO: hook game's GetPointerToScriptVariable so this is always incremented?
-    return (SCRIPT_VAR *)ptr;
+    return (SCRIPT_VAR*)ptr;
 }
 
-void CScriptEngine::GetScriptParams(CRunningScript *script, BYTE count)
+void CScriptEngine::GetScriptParams(CRunningScript* script, BYTE count)
 {
-    ((::CRunningScript *)script)->CollectParameters(count);
+    ((::CRunningScript*)script)->CollectParameters(count);
     CleoInstance.OpcodeSystem.handledParamCount += count;
 }
 
-void CScriptEngine::SetScriptParams(CRunningScript *script, BYTE count)
+void CScriptEngine::SetScriptParams(CRunningScript* script, BYTE count)
 {
-    ((::CRunningScript *)script)->StoreParameters(count);
+    ((::CRunningScript*)script)->StoreParameters(count);
     CleoInstance.OpcodeSystem.handledParamCount += count;
 }
 
@@ -244,16 +244,16 @@ void CScriptEngine::DrawScriptText_Orig(char beforeFade)
         CleoInstance.ScriptEngine.DrawScriptTextAfterFade_Orig(beforeFade);
 }
 
-void __fastcall CScriptEngine::HOOK_ProcessScript(CLEO::CRunningScript *pScript)
+void __fastcall CScriptEngine::HOOK_ProcessScript(CLEO::CRunningScript* pScript)
 {
     CleoInstance.ScriptEngine.GameBegin(); // all initialized and ready to process scripts
 
     // run registered callbacks
     bool process = true;
-    for (void *func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcessBefore))
+    for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcessBefore))
     {
-        typedef bool WINAPI callback(CRunningScript *);
-        process = process && ((callback *)func)(pScript);
+        typedef bool WINAPI callback(CRunningScript*);
+        process = process && ((callback*)func)(pScript);
     }
 
     if (process)
@@ -262,24 +262,24 @@ void __fastcall CScriptEngine::HOOK_ProcessScript(CLEO::CRunningScript *pScript)
     }
 
     // run registered callbacks
-    for (void *func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcessAfter))
+    for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptProcessAfter))
     {
-        typedef void WINAPI callback(CRunningScript *);
-        ((callback *)func)(pScript);
+        typedef void WINAPI callback(CRunningScript*);
+        ((callback*)func)(pScript);
     }
 }
 
-void CScriptEngine::Inject(CCodeInjector &inj)
+void CScriptEngine::Inject(CCodeInjector& inj)
 {
     TRACE("Injecting ScriptEngine: Phase 1");
-    CGameVersionManager &gvm = CleoInstance.VersionManager;
+    CGameVersionManager& gvm = CleoInstance.VersionManager;
 
     // Global Events crashfix
     // inj.MemoryWrite(0xA9AF6C, 0, 4);
 
-    opcodeParams = (SCRIPT_VAR *)ScriptParams; // from Plugin SDK's TheScripts.h
-    missionLocals = (SCRIPT_VAR *)CTheScripts::LocalVariablesForCurrentMission;
-    staticThreads = (CRunningScript *)CTheScripts::ScriptsArray;
+    opcodeParams = (SCRIPT_VAR*)ScriptParams; // from Plugin SDK's TheScripts.h
+    missionLocals = (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission;
+    staticThreads = (CRunningScript*)CTheScripts::ScriptsArray;
 
     // Protect script dependencies
     inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
@@ -293,10 +293,10 @@ void CScriptEngine::Inject(CCodeInjector &inj)
     inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
 }
 
-void CScriptEngine::InjectLate(CCodeInjector &inj)
+void CScriptEngine::InjectLate(CCodeInjector& inj)
 {
     TRACE("Injecting ScriptEngine: Phase 2");
-    CGameVersionManager &gvm = CleoInstance.VersionManager;
+    CGameVersionManager& gvm = CleoInstance.VersionManager;
 
     // limit adjusters support: get adresses from (possibly) patched references
     inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), scmBlock);
@@ -309,15 +309,15 @@ CScriptEngine::~CScriptEngine()
 }
 
 CleoSafeHeader safe_header;
-ThreadSavingInfo *safe_info;
-unsigned long *stopped_info;
+ThreadSavingInfo* safe_info;
+unsigned long* stopped_info;
 std::unique_ptr<ThreadSavingInfo[]> safe_info_utilizer;
 std::unique_ptr<unsigned long[]> stopped_info_utilizer;
 
 void CScriptEngine::GameBegin()
 {
-    auto &activeScriptsListHead =
-        (CRunningScript *&)CTheScripts::pActiveScripts; // reference, but with type casted to CLEO's CRunningScript
+    auto& activeScriptsListHead =
+        (CRunningScript*&)CTheScripts::pActiveScripts; // reference, but with type casted to CLEO's CRunningScript
 
     if (gameInProgress)
         return; // already started
@@ -431,7 +431,7 @@ void CScriptEngine::LoadCustomScripts()
     {
         TRACE("Starting CLEO scripts...");
 
-        for (const auto &path : found)
+        for (const auto& path : found)
         {
             LoadScript(path.c_str());
         }
@@ -442,7 +442,7 @@ void CScriptEngine::LoadCustomScripts()
     }
 }
 
-CCustomScript *CScriptEngine::LoadScript(const char *szFilePath)
+CCustomScript* CScriptEngine::LoadScript(const char* szFilePath)
 {
     auto cs = new CCustomScript(szFilePath);
 
@@ -487,9 +487,9 @@ CCustomScript *CScriptEngine::LoadScript(const char *szFilePath)
     return cs;
 }
 
-CCustomScript *CScriptEngine::CreateCustomScript(CRunningScript *fromThread, const char *script_name, int label)
+CCustomScript* CScriptEngine::CreateCustomScript(CRunningScript* fromThread, const char* script_name, int label)
 {
-    auto filename = reinterpret_cast<CCustomScript *>(fromThread)
+    auto filename = reinterpret_cast<CCustomScript*>(fromThread)
                         ->ResolvePath(script_name, DIR_CLEO); // legacy: default search location is game\cleo directory
 
     if (label != 0) // create from label
@@ -509,7 +509,7 @@ CCustomScript *CScriptEngine::CreateCustomScript(CRunningScript *fromThread, con
     {
         AddCustomScript(cs);
         if (fromThread)
-            ((::CRunningScript *)fromThread)->ReadParametersForNewlyStartedScript((::CRunningScript *)cs);
+            ((::CRunningScript*)fromThread)->ReadParametersForNewlyStartedScript((::CRunningScript*)cs);
     }
     else
     {
@@ -565,7 +565,7 @@ void CScriptEngine::LoadState(int saveSlot)
             memset(CleoVariables, 0, sizeof(CleoVariables));
         }
     }
-    catch (std::exception &ex)
+    catch (std::exception& ex)
     {
         TRACE("Loading of cleo safe '%s' failed: %s", saveFile.c_str(), ex.what());
         safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
@@ -577,9 +577,9 @@ void CScriptEngine::SaveState()
 {
     try
     {
-        std::list<CCustomScript *> savedThreads;
+        std::list<CCustomScript*> savedThreads;
         std::for_each(CustomScripts.begin(), CustomScripts.end(),
-                      [this, &savedThreads](CCustomScript *cs)
+                      [this, &savedThreads](CCustomScript* cs)
                       {
                           if (cs->m_saveEnabled)
                               savedThreads.push_back(cs);
@@ -602,7 +602,7 @@ void CScriptEngine::SaveState()
             WriteBinary(ss, CleoVariables, 0x400);
 
             std::for_each(savedThreads.begin(), savedThreads.end(),
-                          [&savedThreads, &ss](CCustomScript *cs)
+                          [&savedThreads, &ss](CCustomScript* cs)
                           {
                               ThreadSavingInfo savingInfo(cs);
                               WriteBinary(ss, savingInfo);
@@ -619,18 +619,18 @@ void CScriptEngine::SaveState()
             TRACE("Failed to write save file '%s'!", safe_name);
         }
     }
-    catch (std::exception &ex)
+    catch (std::exception& ex)
     {
         TRACE("Saving failed. %s", ex.what());
     }
 }
 
-CRunningScript *CScriptEngine::FindScriptNamed(const char *threadName, bool standardScripts, bool customScripts,
+CRunningScript* CScriptEngine::FindScriptNamed(const char* threadName, bool standardScripts, bool customScripts,
                                                size_t resultIndex)
 {
     if (standardScripts)
     {
-        for (auto script = (CRunningScript *)CTheScripts::pActiveScripts; script; script = script->GetNext())
+        for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script; script = script->GetNext())
         {
             if (script->IsCustom())
             {
@@ -676,18 +676,18 @@ CRunningScript *CScriptEngine::FindScriptNamed(const char *threadName, bool stan
     return nullptr;
 }
 
-CRunningScript *CScriptEngine::FindScriptByFilename(const char *path, size_t resultIndex)
+CRunningScript* CScriptEngine::FindScriptByFilename(const char* path, size_t resultIndex)
 {
     if (path == nullptr)
         return nullptr;
 
     auto pathLen = strlen(path);
-    auto CheckScript = [&](CRunningScript *script)
+    auto CheckScript = [&](CRunningScript* script)
     {
         if (script == nullptr)
             return false;
 
-        auto cs = (CCustomScript *)script;
+        auto cs = (CCustomScript*)script;
         std::string scriptPath = cs->GetScriptFileFullPath();
 
         if (scriptPath.length() < pathLen)
@@ -706,7 +706,7 @@ CRunningScript *CScriptEngine::FindScriptByFilename(const char *path, size_t res
     };
 
     // standard scripts
-    for (auto script = (CRunningScript *)CTheScripts::pActiveScripts; script; script = script->GetNext())
+    for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script; script = script->GetNext())
     {
         if (CheckScript(script))
         {
@@ -741,9 +741,9 @@ CRunningScript *CScriptEngine::FindScriptByFilename(const char *path, size_t res
     return nullptr;
 }
 
-bool CScriptEngine::IsActiveScriptPtr(const CRunningScript *ptr) const
+bool CScriptEngine::IsActiveScriptPtr(const CRunningScript* ptr) const
 {
-    for (auto script = (CRunningScript *)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
+    for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
     {
         if (script == ptr)
             return ptr->IsActive();
@@ -758,15 +758,15 @@ bool CScriptEngine::IsActiveScriptPtr(const CRunningScript *ptr) const
     return false;
 }
 
-bool CScriptEngine::IsValidScriptPtr(const CRunningScript *ptr) const
+bool CScriptEngine::IsValidScriptPtr(const CRunningScript* ptr) const
 {
-    for (auto script = (CRunningScript *)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
+    for (auto script = (CRunningScript*)CTheScripts::pActiveScripts; script != nullptr; script = script->GetNext())
     {
         if (script == ptr)
             return true;
     }
 
-    for (auto script = (CLEO::CRunningScript *)CTheScripts::pIdleScripts; script != nullptr; script = script->GetNext())
+    for (auto script = (CLEO::CRunningScript*)CTheScripts::pIdleScripts; script != nullptr; script = script->GetNext())
     {
         if (script == ptr)
             return true;
@@ -787,7 +787,7 @@ bool CScriptEngine::IsValidScriptPtr(const CRunningScript *ptr) const
     return false;
 }
 
-void CScriptEngine::AddCustomScript(CCustomScript *cs)
+void CScriptEngine::AddCustomScript(CCustomScript* cs)
 {
     if (cs->IsMission())
     {
@@ -800,42 +800,42 @@ void CScriptEngine::AddCustomScript(CCustomScript *cs)
         CustomScripts.push_back(cs);
     }
 
-    cs->AddScriptToList((CRunningScript **)&CTheScripts::pActiveScripts);
+    cs->AddScriptToList((CRunningScript**)&CTheScripts::pActiveScripts);
     cs->SetActive(true);
 
     // run registered callbacks
-    for (void *func : CleoInstance.GetCallbacks(eCallbackId::ScriptRegister))
+    for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptRegister))
     {
-        typedef void WINAPI callback(CCustomScript *);
-        ((callback *)func)(cs);
+        typedef void WINAPI callback(CCustomScript*);
+        ((callback*)func)(cs);
     }
 }
 
-void CScriptEngine::RemoveScript(CRunningScript *script)
+void CScriptEngine::RemoveScript(CRunningScript* script)
 {
     if (script->IsMission())
         CTheScripts::bAlreadyRunningAMissionScript = false;
 
     if (script->IsCustom())
     {
-        RemoveCustomScript((CCustomScript *)script);
+        RemoveCustomScript((CCustomScript*)script);
     }
     else // native script
     {
-        auto cs = (CCustomScript *)script;
-        cs->RemoveScriptFromList((CRunningScript **)&CTheScripts::pActiveScripts);
-        cs->AddScriptToList((CRunningScript **)&CTheScripts::pIdleScripts);
+        auto cs = (CCustomScript*)script;
+        cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
+        cs->AddScriptToList((CRunningScript**)&CTheScripts::pIdleScripts);
         cs->ShutdownThisScript();
     }
 }
 
-void CScriptEngine::RemoveCustomScript(CCustomScript *cs)
+void CScriptEngine::RemoveCustomScript(CCustomScript* cs)
 {
     // run registered callbacks
-    for (void *func : CleoInstance.GetCallbacks(eCallbackId::ScriptUnregister))
+    for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptUnregister))
     {
-        typedef void WINAPI callback(CCustomScript *);
-        ((callback *)func)(cs);
+        typedef void WINAPI callback(CCustomScript*);
+        ((callback*)func)(cs);
     }
 
     if (cs == CustomMission)
@@ -855,7 +855,7 @@ void CScriptEngine::RemoveCustomScript(CCustomScript *cs)
     }
 
     cs->SetActive(false);
-    cs->RemoveScriptFromList((CRunningScript **)&CTheScripts::pActiveScripts);
+    cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
     CustomScripts.remove(cs);
 
     if (cs->m_saveEnabled && !cs->IsMission())
@@ -885,7 +885,7 @@ void CScriptEngine::RemoveAllCustomScripts(void)
         RemoveCustomScript(CustomScripts.back());
     }
 
-    for (auto &script : ScriptsWaitingForDelete)
+    for (auto& script : ScriptsWaitingForDelete)
     {
         TRACE(" Deleting inactive script named '%s'", script->GetName().c_str());
         delete script;
@@ -897,9 +897,9 @@ void CScriptEngine::UnregisterAllCustomScripts()
 {
     TRACE("Unregistering all custom scripts");
     std::for_each(CustomScripts.begin(), CustomScripts.end(),
-                  [this](CCustomScript *cs)
+                  [this](CCustomScript* cs)
                   {
-                      cs->RemoveScriptFromList((CRunningScript **)&CTheScripts::pActiveScripts);
+                      cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
                       cs->SetActive(false);
                   });
 }
@@ -908,9 +908,9 @@ void CScriptEngine::ReregisterAllCustomScripts()
 {
     TRACE("Reregistering all custom scripts");
     std::for_each(CustomScripts.begin(), CustomScripts.end(),
-                  [this](CCustomScript *cs)
+                  [this](CCustomScript* cs)
                   {
-                      cs->AddScriptToList((CRunningScript **)&CTheScripts::pActiveScripts);
+                      cs->AddScriptToList((CRunningScript**)&CTheScripts::pActiveScripts);
                       cs->SetActive(true);
                   });
 }

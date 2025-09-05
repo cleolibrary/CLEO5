@@ -18,12 +18,12 @@ CTextManager::CTextManager() : fxts(1, crc32FromUpcaseStdString)
 {
 }
 
-const char *CTextManager::Get(const char *key)
+const char* CTextManager::Get(const char* key)
 {
     return TheText.Get(key);
 }
 
-bool CTextManager::AddFxt(const char *key, const char *value, bool dynamic)
+bool CTextManager::AddFxt(const char* key, const char* value, bool dynamic)
 {
     auto fxt = fxts.find(key);
 
@@ -50,12 +50,12 @@ bool CTextManager::AddFxt(const char *key, const char *value, bool dynamic)
     return true;
 }
 
-bool CTextManager::RemoveFxt(const char *key)
+bool CTextManager::RemoveFxt(const char* key)
 {
     return fxts.erase(key) != 0;
 }
 
-const char *CTextManager::LocateFxt(const char *key)
+const char* CTextManager::LocateFxt(const char* key)
 {
     std::string str = key;
     std::transform(str.begin(), str.end(), str.begin(), ::toupper);
@@ -111,7 +111,7 @@ void CTextManager::LoadFxts()
             auto result = ParseFxtFile(stream);
             TRACE(" Added %d new FXT entries from file '%s'", result, list.strings[i]);
         }
-        catch (std::exception &ex)
+        catch (std::exception& ex)
         {
             LOG_WARNING(0, " Loading of FXT file '%s' failed: \n%s", list.strings[i], ex.what());
         }
@@ -126,11 +126,11 @@ void CTextManager::Clear()
     fxts.clear();
 }
 
-CTextManager::FxtEntry::FxtEntry(const char *_text, bool _static) : text(_text), is_static(_static)
+CTextManager::FxtEntry::FxtEntry(const char* _text, bool _static) : text(_text), is_static(_static)
 {
 }
 
-size_t CTextManager::ParseFxtFile(std::istream &stream, bool dynamic, bool remove)
+size_t CTextManager::ParseFxtFile(std::istream& stream, bool dynamic, bool remove)
 {
     static char buf[0x100];
     char *key_iterator, *value_iterator, *value_start, *key_start;

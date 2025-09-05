@@ -54,12 +54,12 @@ bool File::isLegacy(DWORD handle)
     return (handle & 0x1) == 0;
 }
 
-FILE *File::handleToFile(DWORD handle)
+FILE* File::handleToFile(DWORD handle)
 {
-    return (FILE *)(handle & ~0x1);
+    return (FILE*)(handle & ~0x1);
 }
 
-DWORD File::fileToHandle(FILE *file, bool legacy)
+DWORD File::fileToHandle(FILE* file, bool legacy)
 {
     if (file == nullptr)
         return 0;
@@ -82,7 +82,7 @@ void File::updateState(DWORD handle)
 
 bool File::flush(DWORD handle)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return false;
 
@@ -103,7 +103,7 @@ bool File::flush(DWORD handle)
     return result == 0;
 }
 
-DWORD File::open(const char *filename, const char *mode, bool legacy)
+DWORD File::open(const char* filename, const char* mode, bool legacy)
 {
     // validate the mode argument
     if (!legacy)
@@ -155,7 +155,7 @@ DWORD File::open(const char *filename, const char *mode, bool legacy)
         }
     }
 
-    FILE *file = nullptr;
+    FILE* file = nullptr;
     if (legacy)
     {
         _asm
@@ -175,7 +175,7 @@ DWORD File::open(const char *filename, const char *mode, bool legacy)
 
 void File::close(DWORD handle)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return;
 
@@ -194,7 +194,7 @@ void File::close(DWORD handle)
 
 bool File::isOk(DWORD handle)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return false;
 
@@ -225,7 +225,7 @@ DWORD File::getSize(DWORD handle)
 
 bool File::seek(DWORD handle, int offset, DWORD orign)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return false;
 
@@ -251,7 +251,7 @@ bool File::seek(DWORD handle, int offset, DWORD orign)
 
 DWORD File::getPos(DWORD handle)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return 0;
 
@@ -274,7 +274,7 @@ DWORD File::getPos(DWORD handle)
 
 bool File::isEndOfFile(DWORD handle)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return true;
 
@@ -295,9 +295,9 @@ bool File::isEndOfFile(DWORD handle)
     return result != 0;
 }
 
-DWORD File::read(DWORD handle, void *buffer, DWORD size)
+DWORD File::read(DWORD handle, void* buffer, DWORD size)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return 0;
 
@@ -326,7 +326,7 @@ DWORD File::read(DWORD handle, void *buffer, DWORD size)
 
 char File::readChar(DWORD handle)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return 0;
 
@@ -349,13 +349,13 @@ char File::readChar(DWORD handle)
     return result;
 }
 
-char *File::readString(DWORD handle, char *buffer, DWORD bufferSize)
+char* File::readString(DWORD handle, char* buffer, DWORD bufferSize)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return nullptr;
 
-    char *result = nullptr;
+    char* result = nullptr;
     if (isLegacy(handle))
     {
         _asm
@@ -376,9 +376,9 @@ char *File::readString(DWORD handle, char *buffer, DWORD bufferSize)
     return result;
 }
 
-DWORD File::write(DWORD handle, const void *buffer, DWORD size)
+DWORD File::write(DWORD handle, const void* buffer, DWORD size)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return 0;
 
@@ -405,9 +405,9 @@ DWORD File::write(DWORD handle, const void *buffer, DWORD size)
     return writen;
 }
 
-bool File::writeString(DWORD handle, const char *text)
+bool File::writeString(DWORD handle, const char* text)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return 0;
 
@@ -431,9 +431,9 @@ bool File::writeString(DWORD handle, const char *text)
     return result >= 0;
 }
 
-DWORD File::scan(DWORD handle, const char *format, void **outputParams)
+DWORD File::scan(DWORD handle, const char* format, void** outputParams)
 {
-    FILE *file = handleToFile(handle);
+    FILE* file = handleToFile(handle);
     if (file == nullptr)
         return 0;
 
@@ -443,7 +443,7 @@ DWORD File::scan(DWORD handle, const char *format, void **outputParams)
         // fscanf for game file streams not existent in game's code. Emulate it
 
         size_t paramCount = 0;
-        const char *f = format;
+        const char* f = format;
         while (*f != '\0')
         {
             if (*f == '%')

@@ -5,10 +5,10 @@
 
 namespace CLEO
 {
-ScmFunction *ScmFunction::store[Store_Size] = {0};
+ScmFunction* ScmFunction::store[Store_Size] = {0};
 size_t ScmFunction::allocationPlace = 0;
 
-ScmFunction *ScmFunction::Get(unsigned short idx)
+ScmFunction* ScmFunction::Get(unsigned short idx)
 {
     if (idx >= Store_Size)
         return nullptr;
@@ -18,7 +18,7 @@ ScmFunction *ScmFunction::Get(unsigned short idx)
 
 void ScmFunction::Clear()
 {
-    for each (ScmFunction *scmFunc in store)
+    for each (ScmFunction* scmFunc in store)
     {
         if (scmFunc != nullptr)
             delete scmFunc;
@@ -26,7 +26,7 @@ void ScmFunction::Clear()
     ScmFunction::allocationPlace = 0;
 }
 
-void *ScmFunction::operator new(size_t size)
+void* ScmFunction::operator new(size_t size)
 {
     size_t start_search = allocationPlace;
     while (store[allocationPlace] != nullptr) // find first unused position in store
@@ -39,21 +39,21 @@ void *ScmFunction::operator new(size_t size)
             throw std::bad_alloc(); // the store is filled up
         }
     }
-    ScmFunction *obj = reinterpret_cast<ScmFunction *>(::operator new(size));
+    ScmFunction* obj = reinterpret_cast<ScmFunction*>(::operator new(size));
     store[allocationPlace] = obj;
     return obj;
 }
 
-void ScmFunction::operator delete(void *mem)
+void ScmFunction::operator delete(void* mem)
 {
-    store[reinterpret_cast<ScmFunction *>(mem)->thisScmFunctionId] = nullptr;
+    store[reinterpret_cast<ScmFunction*>(mem)->thisScmFunctionId] = nullptr;
     ::operator delete(mem);
 }
 
-ScmFunction::ScmFunction(CLEO::CRunningScript *thread)
-    : prevScmFunctionId(reinterpret_cast<CCustomScript *>(thread)->GetScmFunction())
+ScmFunction::ScmFunction(CLEO::CRunningScript* thread)
+    : prevScmFunctionId(reinterpret_cast<CCustomScript*>(thread)->GetScmFunction())
 {
-    auto cs = reinterpret_cast<CCustomScript *>(thread);
+    auto cs = reinterpret_cast<CCustomScript*>(thread);
 
     // create snapshot of current scope
     savedBaseIP = cs->BaseIP;
@@ -82,9 +82,9 @@ ScmFunction::ScmFunction(CLEO::CRunningScript *thread)
     cs->SetScmFunction(thisScmFunctionId = (unsigned short)allocationPlace);
 }
 
-void ScmFunction::Return(CRunningScript *thread)
+void ScmFunction::Return(CRunningScript* thread)
 {
-    auto cs = reinterpret_cast<CCustomScript *>(thread);
+    auto cs = reinterpret_cast<CCustomScript*>(thread);
 
     cs->BaseIP = savedBaseIP;
     if (cs->IsCustom())

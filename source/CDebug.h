@@ -21,7 +21,7 @@ class CDebug
         CLEO::Trace(CLEO::eLogLevel::Default, "Log finished.");
     }
 
-    void Trace(CLEO::eLogLevel level, const char *msg);
+    void Trace(CLEO::eLogLevel level, const char* msg);
 
   private:
     unsigned int lastFrame = -1;

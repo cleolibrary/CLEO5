@@ -86,12 +86,12 @@ OPCODE_WRITE_PARAM_STRING_INFO(info, value) // write param using info object rev
 OPCODE_READ_PARAM_OUTPUT_VAR_STRING OPCODE_WRITE_PARAM_PTR(value) // memory address
 */
 
-static bool IsLegacyScript(CLEO::CRunningScript *thread)
+static bool IsLegacyScript(CLEO::CRunningScript* thread)
 {
     return CLEO_GetScriptVersion(thread) < CLEO_VER_5;
 }
 
-static std::string StringPrintf(const char *format, ...)
+static std::string StringPrintf(const char* format, ...)
 {
     va_list args;
 
@@ -146,7 +146,7 @@ static bool StringEndsWith(const std::string_view str, const std::string_view su
     }
 }
 
-static void StringSplit(const std::string_view str, const std::string_view delimiters, std::vector<std::string> &output)
+static void StringSplit(const std::string_view str, const std::string_view delimiters, std::vector<std::string>& output)
 {
     size_t prevPos = 0;
     while (true)
@@ -173,7 +173,7 @@ static void StringSplit(const std::string_view str, const std::string_view delim
 }
 
 // erase GTA's text formatting sequences like ~r~
-static void StringRemoveFormatting(std::string &str)
+static void StringRemoveFormatting(std::string& str)
 {
     size_t pos = 0;
     while (true)
@@ -205,12 +205,12 @@ static void StringRemoveFormatting(std::string &str)
     }
 }
 
-static void StringToLower(std::string &str)
+static void StringToLower(std::string& str)
 {
     std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return tolower(c); });
 }
 
-static std::string ScriptInfoStr(CLEO::CRunningScript *thread)
+static std::string ScriptInfoStr(CLEO::CRunningScript* thread)
 {
     std::string info(1024, '\0');
     CLEO_GetScriptInfoStr(thread, true, info.data(), info.length());
@@ -219,7 +219,7 @@ static std::string ScriptInfoStr(CLEO::CRunningScript *thread)
 
 // Normalize filepath, collapse all parent directory references, trim path separators at front and back. Input should be
 // path without expandable %variables%
-static void FilepathNormalize(std::string &path, bool normalizeCase = true)
+static void FilepathNormalize(std::string& path, bool normalizeCase = true)
 {
     if (path.empty())
         return;
@@ -272,7 +272,7 @@ static void FilepathNormalize(std::string &path, bool normalizeCase = true)
 // strip parent prefix from filepath if present
 // 1. FilepathRemoveParent("C:\game\cleo\1.cs", "C:\game") => cleo\1.cs
 // 2. FilepathRemoveParent("C:cleo\1.cs", "C:") => cleo\1.cs
-static void FilepathRemoveParent(std::string &path, const std::string_view base)
+static void FilepathRemoveParent(std::string& path, const std::string_view base)
 {
     if (path.length() < base.length())
         return; // can not hold that prefix
@@ -314,7 +314,7 @@ static std::string GetConfigFilename()
 }
 
 // does normalized file path points inside game directories? (game root or user files)
-static bool FilepathIsSafe(CLEO::CRunningScript *thread, const char *path)
+static bool FilepathIsSafe(CLEO::CRunningScript* thread, const char* path)
 {
     if (strchr(path, '%') != nullptr)
     {
@@ -402,7 +402,7 @@ static bool IsPlayerIdValid(int id)
     return false;
 }
 
-static const char *TraceVArg(CLEO::eLogLevel level, const char *format, va_list args)
+static const char* TraceVArg(CLEO::eLogLevel level, const char* format, va_list args)
 {
     static char szBuf[1024];
     vsprintf_s(szBuf, format, args); // put params into format
@@ -410,7 +410,7 @@ static const char *TraceVArg(CLEO::eLogLevel level, const char *format, va_list 
     return szBuf;
 }
 
-static void Trace(CLEO::eLogLevel level, const char *format, ...)
+static void Trace(CLEO::eLogLevel level, const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -418,7 +418,7 @@ static void Trace(CLEO::eLogLevel level, const char *format, ...)
     va_end(args);
 }
 
-static void Trace(const CLEO::CRunningScript *thread, CLEO::eLogLevel level, const char *format, ...)
+static void Trace(const CLEO::CRunningScript* thread, CLEO::eLogLevel level, const char* format, ...)
 {
     if (thread != nullptr && CLEO_GetScriptVersion(thread) < CLEO::eCLEO_Version::CLEO_VER_5)
     {
@@ -431,14 +431,14 @@ static void Trace(const CLEO::CRunningScript *thread, CLEO::eLogLevel level, con
     va_end(args);
 }
 
-static void ShowError(const char *format, ...)
+static void ShowError(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
     auto msg = TraceVArg(CLEO::eLogLevel::Error, format, args);
     va_end(args);
 
-    auto mainWnd = (HWND *)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
+    auto mainWnd = (HWND*)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
     auto style = GetWindowLong(*mainWnd, GWL_STYLE);
     bool fullscreen = (style & (WS_BORDER | WS_CAPTION)) == 0;
 
@@ -482,20 +482,20 @@ static std::string GetParamInfo(int offset = 0)
 
 struct StringParamBufferInfo
 {
-    char *data = nullptr;
+    char* data = nullptr;
     int size = 0;
     BOOL needTerminator = false;
 };
 
 class MemPatch
 {
-    void *address = nullptr;
+    void* address = nullptr;
     std::vector<char> buffer;
 
   public:
     MemPatch() = default;
 
-    MemPatch(void *src, size_t size) : address(src), buffer(size)
+    MemPatch(void* src, size_t size) : address(src), buffer(size)
     {
         memcpy(buffer.data(), src, size);
     }
@@ -509,30 +509,30 @@ class MemPatch
     }
 };
 
-static MemPatch MemPatchJump(size_t position, void *jumpTarget)
+static MemPatch MemPatchJump(size_t position, void* jumpTarget)
 {
-    MemPatch original((void *)position, 5);
+    MemPatch original((void*)position, 5);
 
-    *(BYTE *)position = 0xE9; // asm: jmp
+    *(BYTE*)position = 0xE9; // asm: jmp
     position += sizeof(BYTE);
 
-    *(DWORD *)position = (DWORD)jumpTarget - position - 4;
+    *(DWORD*)position = (DWORD)jumpTarget - position - 4;
 
     return original;
 }
 
-static void *MemPatchCall(size_t position, void *newFunction)
+static void* MemPatchCall(size_t position, void* newFunction)
 {
-    *(BYTE *)position = 0xE8; // asm: call
+    *(BYTE*)position = 0xE8; // asm: call
     position += sizeof(BYTE);
 
-    DWORD original = *(DWORD *)position + position + 4;
-    *(DWORD *)position = (DWORD)newFunction - position - 4;
+    DWORD original = *(DWORD*)position + position + 4;
+    *(DWORD*)position = (DWORD)newFunction - position - 4;
 
-    return (void *)original;
+    return (void*)original;
 }
 
-template <typename T> static StringList CreateStringList(const T &container)
+template <typename T> static StringList CreateStringList(const T& container)
 {
     StringList result;
     result.count = 0;
@@ -540,11 +540,11 @@ template <typename T> static StringList CreateStringList(const T &container)
 
     if (container.size() > 0)
     {
-        result.strings = (char **)malloc(container.size() * sizeof(DWORD)); // array of pointers
-        for (const std::string &s : container)
+        result.strings = (char**)malloc(container.size() * sizeof(DWORD)); // array of pointers
+        for (const std::string& s : container)
         {
             auto size = s.length() + 1; // and terminator character
-            auto str = (char *)malloc(size);
+            auto str = (char*)malloc(size);
             memcpy(str, s.c_str(), size);
 
             result.strings[result.count] = str;
@@ -587,11 +587,11 @@ const size_t MinValidAddress =
 #define OPCODE_CONDITION_RESULT(value) CLEO_SetThreadCondResult(thread, value);
 
 // opcode param handling utils internal
-static SCRIPT_VAR *_paramsArray = nullptr;
+static SCRIPT_VAR* _paramsArray = nullptr;
 static eDataType _lastParamType = eDataType::DT_END;
 static eArrayDataType _lastParamArrayType = eArrayDataType::ADT_NONE;
 
-static SCRIPT_VAR &_readParam(CRunningScript *thread)
+static SCRIPT_VAR& _readParam(CRunningScript* thread)
 {
     _lastParamType = thread->PeekDataType();
     _lastParamArrayType = thread->PeekArrayType();
@@ -602,9 +602,9 @@ static SCRIPT_VAR &_readParam(CRunningScript *thread)
     return _paramsArray[0];
 }
 
-static SCRIPT_VAR &_readParamFloat(CRunningScript *thread)
+static SCRIPT_VAR& _readParamFloat(CRunningScript* thread)
 {
-    auto &var = _readParam(thread);
+    auto& var = _readParam(thread);
 
     // people tend to use '0' instead '0.0' when providing literal float params in scripts
     // binary these are equal, so can be allowed
@@ -620,7 +620,7 @@ static SCRIPT_VAR &_readParamFloat(CRunningScript *thread)
     return var;
 }
 
-static SCRIPT_VAR *_readParamVariable(CRunningScript *thread)
+static SCRIPT_VAR* _readParamVariable(CRunningScript* thread)
 {
     _lastParamType = thread->PeekDataType();
     _lastParamArrayType = thread->PeekArrayType();
@@ -628,7 +628,7 @@ static SCRIPT_VAR *_readParamVariable(CRunningScript *thread)
     return CLEO_GetPointerToScriptVariable(thread);
 }
 
-static StringParamBufferInfo _readParamStringInfo(CRunningScript *thread)
+static StringParamBufferInfo _readParamStringInfo(CRunningScript* thread)
 {
     _lastParamType = thread->PeekDataType();
     _lastParamArrayType = thread->PeekArrayType();
@@ -638,7 +638,7 @@ static StringParamBufferInfo _readParamStringInfo(CRunningScript *thread)
     return result;
 }
 
-static void _writeParamPtr(CRunningScript *thread, void *valuePtr)
+static void _writeParamPtr(CRunningScript* thread, void* valuePtr)
 {
     _lastParamType = thread->PeekDataType();
     _lastParamArrayType = thread->PeekArrayType();
@@ -649,7 +649,7 @@ static void _writeParamPtr(CRunningScript *thread, void *valuePtr)
     CLEO_RecordOpcodeParams(thread, 1);
 }
 
-template <typename T> static void _writeParam(CRunningScript *thread, T value)
+template <typename T> static void _writeParam(CRunningScript* thread, T value)
 {
     _lastParamType = thread->PeekDataType();
     _lastParamArrayType = thread->PeekArrayType();
@@ -711,7 +711,7 @@ static inline bool _paramWasVariable()
     return IsVariable(_lastParamType);
 }
 
-static const char *_readParamText(CRunningScript *thread, char *buffer, size_t bufferSize)
+static const char* _readParamText(CRunningScript* thread, char* buffer, size_t bufferSize)
 {
     _lastParamType = thread->PeekDataType();
     _lastParamArrayType = thread->PeekArrayType();
@@ -754,7 +754,7 @@ static const char *_readParamText(CRunningScript *thread, char *buffer, size_t b
     return str;
 }
 
-static bool _writeParamText(CLEO::CRunningScript *thread, const StringParamBufferInfo &target, const char *str)
+static bool _writeParamText(CLEO::CRunningScript* thread, const StringParamBufferInfo& target, const char* str)
 {
     if (str != nullptr && (size_t)str <= MinValidAddress)
     {
@@ -793,7 +793,7 @@ static bool _writeParamText(CLEO::CRunningScript *thread, const StringParamBuffe
     return true;
 }
 
-static bool _writeParamText(CRunningScript *thread, const char *str)
+static bool _writeParamText(CRunningScript* thread, const char* str)
 {
     _lastParamType = thread->PeekDataType();
     _lastParamArrayType = thread->PeekArrayType();
@@ -934,7 +934,7 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
 
 #define OPCODE_READ_PARAM_STRING(_varName)                                                                             \
     char _buff_##_varName[MAX_STR_LEN + 1];                                                                            \
-    const char *##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1);                                \
+    const char*##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1);                                 \
     if (!_paramWasString())                                                                                            \
     {                                                                                                                  \
         return OpcodeResult::OR_INTERRUPT;                                                                             \
@@ -942,7 +942,7 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
 
 #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen)                                                                \
     char _buff_##_varName[_maxLen + 1];                                                                                \
-    const char *##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1);                                    \
+    const char*##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1);                                     \
     if (##_varName != nullptr)                                                                                         \
         ##_varName = _buff_##_varName;                                                                                 \
     if (!_paramWasString())                                                                                            \
@@ -952,13 +952,13 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
 
 #define OPCODE_READ_PARAM_STRING_FORMATTED(_varName)                                                                   \
     char _buff_format_##_varName[MAX_STR_LEN + 1];                                                                     \
-    const char *_format_##_varName = _readParamText(thread, _buff_format_##_varName, MAX_STR_LEN + 1);                 \
+    const char* _format_##_varName = _readParamText(thread, _buff_format_##_varName, MAX_STR_LEN + 1);                 \
     if (!_paramWasString())                                                                                            \
     {                                                                                                                  \
         return OpcodeResult::OR_INTERRUPT;                                                                             \
     }                                                                                                                  \
     char _varName[2 * MAX_STR_LEN + 1];                                                                                \
-    char *_varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName));        \
+    char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName));        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
         SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(thread).c_str());  \
@@ -967,7 +967,7 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
 
 #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName)                                                                \
     char _varName[2 * MAX_STR_LEN + 1];                                                                                \
-    char *_varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                        \
+    char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
         SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(thread).c_str());  \
@@ -976,7 +976,7 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
 
 #define OPCODE_READ_PARAM_FILEPATH(_varName)                                                                           \
     char _buff_##_varName[512];                                                                                        \
-    const char *##_varName = _readParamText(thread, _buff_##_varName, 512);                                            \
+    const char*##_varName = _readParamText(thread, _buff_##_varName, 512);                                             \
     if (##_varName != nullptr)                                                                                         \
         ##_varName = _buff_##_varName;                                                                                 \
     if (_paramWasString())                                                                                             \
@@ -1081,7 +1081,7 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
     }
 
 #define OPCODE_READ_PARAM_OUTPUT_VAR_INT()                                                                             \
-    (int *)_readParamVariable(thread);                                                                                 \
+    (int*)_readParamVariable(thread);                                                                                  \
     if (!_paramWasVariable())                                                                                          \
     {                                                                                                                  \
         SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",           \
@@ -1098,7 +1098,7 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
     }
 
 #define OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT()                                                                           \
-    (float *)_readParamVariable(thread);                                                                               \
+    (float*)_readParamVariable(thread);                                                                                \
     if (!_paramWasVariable())                                                                                          \
     {                                                                                                                  \
         SHOW_ERROR("Output argument %s expected to be variable float, got %s in script %s\nScript suspended.",         \
@@ -1230,7 +1230,7 @@ static bool _writeParamText(CRunningScript *thread, const char *str)
     }
 
 #define OPCODE_WRITE_PARAM_PTR(_value)                                                                                 \
-    _writeParamPtr(thread, (void *)_value);                                                                            \
+    _writeParamPtr(thread, (void*)_value);                                                                             \
     if (!_paramWasInt(true))                                                                                           \
     {                                                                                                                  \
         SHOW_ERROR("Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",           \

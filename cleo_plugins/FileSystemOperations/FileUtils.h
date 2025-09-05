@@ -8,7 +8,7 @@ class File
   public:
     static void initialize(CLEO::eGameVersion version);
 
-    static DWORD open(const char *filename, const char *mode, bool legacy);
+    static DWORD open(const char* filename, const char* mode, bool legacy);
     static void close(DWORD handle);
 
     static bool isOk(DWORD handle);
@@ -18,17 +18,17 @@ class File
     static DWORD getPos(DWORD handle);
     static bool isEndOfFile(DWORD handle);
 
-    static DWORD read(DWORD handle, void *buffer, DWORD size);
+    static DWORD read(DWORD handle, void* buffer, DWORD size);
     static char readChar(DWORD handle);
-    static char *readString(DWORD handle, char *buffer, DWORD bufferSize);
+    static char* readString(DWORD handle, char* buffer, DWORD bufferSize);
 
-    static DWORD write(DWORD handle, const void *buffer, DWORD size);
-    static bool writeString(DWORD handle, const char *text);
-    static DWORD scan(DWORD handle, const char *format, void **outputParams);
+    static DWORD write(DWORD handle, const void* buffer, DWORD size);
+    static bool writeString(DWORD handle, const char* text);
+    static DWORD scan(DWORD handle, const char* format, void** outputParams);
     static bool flush(DWORD handle);
 
     static bool isLegacy(DWORD handle); // Legacy modes for CLEO 3
-    static FILE *handleToFile(DWORD handle);
+    static FILE* handleToFile(DWORD handle);
 
   private:
     static DWORD FUNC_fopen;
@@ -45,6 +45,6 @@ class File
     static DWORD FUNC_feof;
     static DWORD FUNC_ferror;
 
-    static DWORD fileToHandle(FILE *file, bool legacy);
+    static DWORD fileToHandle(FILE* file, bool legacy);
     static void updateState(DWORD handle);
 };

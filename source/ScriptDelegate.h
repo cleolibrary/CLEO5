@@ -18,9 +18,9 @@ struct ScriptDeleteDelegate
         funcs.erase(std::remove(funcs.begin(), funcs.end(), mFunc), funcs.end());
     }
 
-    void operator()(CRunningScript *script)
+    void operator()(CRunningScript* script)
     {
-        for (auto &f : funcs)
+        for (auto& f : funcs)
             f(script);
     }
 };

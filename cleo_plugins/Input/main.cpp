@@ -16,7 +16,7 @@ class Input
     static constexpr BYTE Key_Flag_Down = 0x80; // top bit
 
   public:
-    std::array<BYTE, Key_Code_Max + 1> *keyStatesCurr, *keyStatesPrev;
+    std::array<BYTE, Key_Code_Max + 1>*keyStatesCurr, *keyStatesPrev;
 
     Input()
     {
@@ -125,7 +125,7 @@ class Input
 
     // is_key_pressed
     // is_key_pressed {keyCode} [KeyCode] (logical)
-    static OpcodeResult __stdcall opcode_0AB0(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0AB0(CRunningScript* thread)
     {
         auto key = OPCODE_READ_PARAM_INT();
 
@@ -150,7 +150,7 @@ class Input
 
     // test_cheat
     // test_cheat {input} [string] (logical)
-    static OpcodeResult __stdcall opcode_0ADC(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_0ADC(CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(text, sizeof(CCheat::m_CheatString));
 
@@ -175,7 +175,7 @@ class Input
 
     // is_key_just_pressed
     // is_key_just_pressed {keyCode} [KeyCode] (logical)
-    static OpcodeResult __stdcall opcode_2080(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2080(CRunningScript* thread)
     {
         auto key = OPCODE_READ_PARAM_INT();
 
@@ -200,7 +200,7 @@ class Input
 
     // get_key_pressed_in_range
     // [var keyCode: KeyCode] = get_key_pressed_in_range {minKeyCode} [KeyCode] {maxKeyCode} [KeyCode] (logical)
-    static OpcodeResult __stdcall opcode_2081(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2081(CRunningScript* thread)
     {
         auto keyMin = OPCODE_READ_PARAM_INT();
         auto keyMax = OPCODE_READ_PARAM_INT();
@@ -237,7 +237,7 @@ class Input
 
     // get_key_just_pressed_in_range
     // [var keyCode: KeyCode] = get_key_just_pressed_in_range {minKeyCode} [KeyCode] {maxKeyCode} [KeyCode] (logical)
-    static OpcodeResult __stdcall opcode_2082(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2082(CRunningScript* thread)
     {
         auto keyMin = OPCODE_READ_PARAM_INT();
         auto keyMax = OPCODE_READ_PARAM_INT();
@@ -275,7 +275,7 @@ class Input
 
     // emulate_key_press
     // emulate_key_press {keyCode} [KeyCode]
-    static OpcodeResult __stdcall opcode_2083(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2083(CRunningScript* thread)
     {
         auto key = OPCODE_READ_PARAM_INT();
 
@@ -297,7 +297,7 @@ class Input
 
     // emulate_key_release
     // emulate_key_release {keyCode} [KeyCode]
-    static OpcodeResult __stdcall opcode_2084(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2084(CRunningScript* thread)
     {
         auto key = OPCODE_READ_PARAM_INT();
 
@@ -319,7 +319,7 @@ class Input
 
     // get_controller_key
     // [var keyCode: KeyCode] = get_controller_key {action} [ControllerAction] {altKeyIdx} [int] (logical)
-    static OpcodeResult __stdcall opcode_2085(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2085(CRunningScript* thread)
     {
         auto actionId = OPCODE_READ_PARAM_INT();
         auto altKeyIdx = OPCODE_READ_PARAM_INT();
@@ -337,13 +337,13 @@ class Input
             return thread->Suspend();
         }
 
-        auto &action = ControlsManager.m_actions[actionId];
+        auto& action = ControlsManager.m_actions[actionId];
 
         // sort associated keys by priority
         std::map<unsigned int, DWORD> mapping;
         for (size_t i = 0; i < _countof(action.keys); i++)
         {
-            auto &k = action.keys[i];
+            auto& k = action.keys[i];
 
             if (k.keyCode == 0 || k.priority == 0) // key not assigned
                 continue;
@@ -569,12 +569,12 @@ class Input
 
     // get_key_name
     // [var name: string] = get_key_name {keyCode} [KeyCode] (logical)
-    static OpcodeResult __stdcall opcode_2086(CRunningScript *thread)
+    static OpcodeResult __stdcall opcode_2086(CRunningScript* thread)
     {
         auto key = OPCODE_READ_PARAM_INT();
 
         static char buff[32];
-        const char *name = nullptr;
+        const char* name = nullptr;
 
         if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'Z'))
         {

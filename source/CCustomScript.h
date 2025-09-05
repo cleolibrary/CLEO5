@@ -14,8 +14,8 @@ class CCustomScript : public CRunningScript
     bool m_saveEnabled;
     bool m_ok;
     eCLEO_Version m_compatVer;
-    CCustomScript *m_parentScript;
-    std::list<CCustomScript *> m_childScripts;
+    CCustomScript* m_parentScript;
+    std::list<CCustomScript*> m_childScripts;
 
     bool m_debugMode; // debug opcodes enabled
 
@@ -24,7 +24,7 @@ class CCustomScript : public CRunningScript
     std::string m_workDir;
 
   public:
-    inline SCRIPT_VAR *GetVarsPtr()
+    inline SCRIPT_VAR* GetVarsPtr()
     {
         return LocalVar;
     }
@@ -57,12 +57,12 @@ class CCustomScript : public CRunningScript
         return m_compatVer;
     }
 
-    CCustomScript(const char *szFileName, bool bIsMiss = false, CRunningScript *parent = nullptr, int label = 0);
-    CCustomScript(const CCustomScript &) = delete; // no copying
+    CCustomScript(const char* szFileName, bool bIsMiss = false, CRunningScript* parent = nullptr, int label = 0);
+    CCustomScript(const CCustomScript&) = delete; // no copying
     ~CCustomScript();
 
-    void AddScriptToList(CRunningScript **queuelist);
-    void RemoveScriptFromList(CRunningScript **queuelist);
+    void AddScriptToList(CRunningScript** queuelist);
+    void RemoveScriptFromList(CRunningScript** queuelist);
 
     void ShutdownThisScript();
 
@@ -71,22 +71,22 @@ class CCustomScript : public CRunningScript
     void SetDebugMode(bool enabled);
 
     // absolute path to directory where script's source file is located
-    const char *GetScriptFileDir() const;
-    void SetScriptFileDir(const char *directory);
+    const char* GetScriptFileDir() const;
+    void SetScriptFileDir(const char* directory);
 
     // filename with type extension of script's source file
-    const char *GetScriptFileName() const;
-    void SetScriptFileName(const char *filename);
+    const char* GetScriptFileName() const;
+    void SetScriptFileName(const char* filename);
 
     // absolute path to the script file
     std::string GetScriptFileFullPath() const;
 
     // current working directory of this script. Can be changed ith 0A99
-    const char *GetWorkDir() const;
-    void SetWorkDir(const char *directory);
+    const char* GetWorkDir() const;
+    void SetWorkDir(const char* directory);
 
     // create absolute file path
-    std::string ResolvePath(const char *path, const char *customWorkDir = nullptr) const;
+    std::string ResolvePath(const char* path, const char* customWorkDir = nullptr) const;
 
     // get short info text about script
     std::string GetInfoStr(bool currLineInfo = true) const;
