@@ -3,7 +3,7 @@
 
 class CDebug
 {
-public:
+  public:
     CDebug() : m_hFile(Filepath_Log)
     {
         Trace(CLEO::eLogLevel::Default, "Log started.");
@@ -20,13 +20,13 @@ public:
         CLEO::Trace(CLEO::eLogLevel::Default, ""); // separator
         CLEO::Trace(CLEO::eLogLevel::Default, "Log finished.");
     }
-    
-    void Trace(CLEO::eLogLevel level, const char* msg);
-    
-private:
+
+    void Trace(CLEO::eLogLevel level, const char *msg);
+
+  private:
     unsigned int lastFrame = -1;
     std::mutex mutex;
     std::ofstream m_hFile;
- };
+};
 
 extern CDebug Debug;

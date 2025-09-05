@@ -12,13 +12,13 @@ ScreenLog::ScreenLog()
 
 void ScreenLog::Init()
 {
-    auto ConfigReadHex = [](const char* section, const char* key, DWORD defValue, const char* filename)
+    auto ConfigReadHex = [](const char *section, const char *key, DWORD defValue, const char *filename)
     {
-        char buff[32] = { 0 };
+        char buff[32] = {0};
         if (!GetPrivateProfileString(section, key, "", buff, sizeof(buff), filename))
             return defValue;
 
-        char* end;
+        char *end;
         DWORD result = strtoul(buff, &end, 16);
 
         if (*end != '\0')
@@ -38,12 +38,15 @@ void ScreenLog::Init()
     fontSize = 0.01f * GetPrivateProfileInt("ScreenLog", "FontSize", 60, config.c_str());
     fontStyle = (eFontStyle)GetPrivateProfileInt("ScreenLog", "FontStyle", eFontStyle::FONT_SUBTITLES, config.c_str());
 
-    fontColor[(size_t)eLogLevel::Error] = CRGBA(ConfigReadHex("ScreenLog", "ColorError", fontColor[(size_t)eLogLevel::Error].ToInt(), config.c_str()));
-    fontColor[(size_t)eLogLevel::Debug] = CRGBA(ConfigReadHex("ScreenLog", "ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt(), config.c_str()));
-    fontColor[(size_t)eLogLevel::Default] = CRGBA(ConfigReadHex("ScreenLog", "ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt(), config.c_str()));
+    fontColor[(size_t)eLogLevel::Error] =
+        CRGBA(ConfigReadHex("ScreenLog", "ColorError", fontColor[(size_t)eLogLevel::Error].ToInt(), config.c_str()));
+    fontColor[(size_t)eLogLevel::Debug] =
+        CRGBA(ConfigReadHex("ScreenLog", "ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt(), config.c_str()));
+    fontColor[(size_t)eLogLevel::Default] =
+        CRGBA(ConfigReadHex("ScreenLog", "ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt(), config.c_str()));
 }
 
-void ScreenLog::Add(eLogLevel level, const char* msg)
+void ScreenLog::Add(eLogLevel level, const char *msg)
 {
     if (level > this->level)
     {
@@ -51,7 +54,7 @@ void ScreenLog::Add(eLogLevel level, const char* msg)
     }
 
     Entry entry(level, msg);
-    if(!entries.empty() && entries.front() == entry)
+    if (!entries.empty() && entries.front() == entry)
     {
         entries.front().Repeat(); // duplicated
     }
@@ -60,13 +63,14 @@ void ScreenLog::Add(eLogLevel level, const char* msg)
         entries.push_front(std::move(entry));
 
         bool full = entries.size() >= maxMessages;
-        if (full) entries.resize(maxMessages);
+        if (full)
+            entries.resize(maxMessages);
 
         // update scroll pos
         float sizeY = fontSize * RsGlobal.maximumHeight / 448.0f;
         size_t lines = CountLines(std::string(msg));
 
-        if(!full)
+        if (!full)
             scrollOffset += 18.0f * lines * sizeY;
         else
             scrollOffset = 0.0f; // do not animate if list was full
@@ -93,9 +97,9 @@ void ScreenLog::Draw()
     prevTime = currTime;
 
     // clean up expired entries
-    while(!entries.empty())
+    while (!entries.empty())
     {
-        if(entries.back().timeLeft < (-0.001f * timeFadeout))
+        if (entries.back().timeLeft < (-0.001f * timeFadeout))
             entries.pop_back();
         else
             break;
@@ -124,7 +128,7 @@ void ScreenLog::Draw()
 
     // count total lines
     int lines = 0;
-    for (auto& entry : entries)
+    for (auto &entry : entries)
     {
         lines += CountLines(entry.msg);
     }
@@ -132,13 +136,13 @@ void ScreenLog::Draw()
     float elapsed = 0.001f * (CTimer::m_snTimeInMilliseconds - CTimer::m_snPreviousTimeInMilliseconds);
     float elapsedAlt = elapsed;
     float rowTime = -0.001f * timeFadeout;
-    for(auto it = entries.rbegin(); it != entries.rend(); it++) // draw from oldest
+    for (auto it = entries.rbegin(); it != entries.rend(); it++) // draw from oldest
     {
-        auto& entry = *it;
+        auto &entry = *it;
 
-        if(entry.timeLeft > 0.0f)
+        if (entry.timeLeft > 0.0f)
         {
-            if(entry.timeLeft < elapsedAlt)
+            if (entry.timeLeft < elapsedAlt)
                 entry.timeLeft = 0.0f; // do not skip fade
             else
                 entry.timeLeft -= elapsedAlt;
@@ -149,7 +153,7 @@ void ScreenLog::Draw()
         elapsedAlt *= 0.98f; // keep every next line longer
 
         rowTime = std::max(rowTime, entry.timeLeft); // carred on from older entries
-        
+
         BYTE alpha = 255;
         if (rowTime < 0)
         {
@@ -177,10 +181,10 @@ void ScreenLog::Draw()
 
     // for some reason last string on print list is always drawn incorrectly
     // Walkaround: add one extra dummy line then
-    CFont::PrintString(0.0f, -500.0f, "_~n~_~n~_"); 
+    CFont::PrintString(0.0f, -500.0f, "_~n~_~n~_");
 }
 
-void ScreenLog::DrawLine(const char* msg, size_t row)
+void ScreenLog::DrawLine(const char *msg, size_t row)
 {
     CFont::SetBackground(false, false);
     CFont::SetWrapx(99999999.0f); // no line wrap
@@ -195,8 +199,8 @@ void ScreenLog::DrawLine(const char* msg, size_t row)
 
     CFont::SetOrientation(ALIGN_RIGHT);
     float posX = (float)RsGlobal.maximumWidth - 15.0f * sizeX;
-    
-    //if(FrontEndMenuManager.m_bHudOn)
+
+    // if(FrontEndMenuManager.m_bHudOn)
     float posY = 0.25f * RsGlobal.maximumHeight;
     posY += 18.0f * sizeY * row;
 
@@ -207,7 +211,7 @@ void ScreenLog::DrawLine(const char* msg, size_t row)
     CFont::PrintString(posX, posY, msg);
 }
 
-size_t ScreenLog::CountLines(std::string& msg)
+size_t ScreenLog::CountLines(std::string &msg)
 {
     size_t lines = 1;
 
@@ -225,7 +229,6 @@ size_t ScreenLog::CountLines(std::string& msg)
 
 DWORD ScreenLog::GetTime()
 {
-    //return GetTickCount();
+    // return GetTickCount();
     return CTimer::m_snPreviousTimeInMillisecondsNonClipped;
 }
-

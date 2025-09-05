@@ -7,7 +7,7 @@ static bool CleoSingletonChecked = false;
 // search for CLEO.asi modules loaded, terminate game if duplicate found
 static void CleoSingletonCheck()
 {
-    if(!CleoSingletonChecked)
+    if (!CleoSingletonChecked)
     {
         MODULEENTRY32 module;
         module.dwSize = sizeof(MODULEENTRY32);
@@ -23,10 +23,11 @@ static void CleoSingletonCheck()
                 {
                     count++;
 
-                    if(count > 1)
+                    if (count > 1)
                     {
                         CloseHandle(snapshot);
-                        MessageBox(NULL, "Another copy of CLEO.asi is already loaded!\nPlease remove duplicated files.", "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
+                        MessageBox(NULL, "Another copy of CLEO.asi is already loaded!\nPlease remove duplicated files.",
+                                   "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK);
                         exit(1); // terminate the game
                         break;
                     }
@@ -39,4 +40,3 @@ static void CleoSingletonCheck()
         CleoSingletonChecked = true;
     }
 }
-

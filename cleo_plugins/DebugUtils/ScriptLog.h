@@ -4,11 +4,11 @@
 
 struct ScriptLog
 {
-    CRunningScript* thread = nullptr;
+    CRunningScript *thread = nullptr;
     clock_t startTime = 0;
     size_t commandCounter = 0;
 
-    void Begin(CRunningScript* thread)
+    void Begin(CRunningScript *thread)
     {
         this->thread = thread;
         startTime = clock();
@@ -22,9 +22,10 @@ struct ScriptLog
         commandCounter = 0;
     }
 
-    void ProcessCommand(CRunningScript* thread)
+    void ProcessCommand(CRunningScript *thread)
     {
-        if (this->thread != thread) Begin(thread);
+        if (this->thread != thread)
+            Begin(thread);
 
         commandCounter++;
     }
@@ -34,4 +35,3 @@ struct ScriptLog
         return (clock() - startTime) / CLOCKS_PER_SEC;
     }
 };
-

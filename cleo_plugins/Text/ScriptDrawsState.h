@@ -2,21 +2,20 @@
 #include <CTheScripts.h>
 #include <array>
 
-
 struct ScriptDrawsState
 {
     eUseTextCommandState useTextCommands = eUseTextCommandState::DISABLED;
 
     WORD textsCount = 0;
     std::array<tScriptText, _countof(CTheScripts::IntroTextLines)> texts;
-    
+
     WORD rectanglesCount = 0;
     std::array<tScriptRectangle, _countof(CTheScripts::IntroRectangles)> rectangles;
 
     std::array<CSprite2d, _countof(CTheScripts::ScriptSprites)> sprites;
 
     ScriptDrawsState() = default;
-    ScriptDrawsState(const ScriptDrawsState&) = delete; // no copying!
+    ScriptDrawsState(const ScriptDrawsState &) = delete; // no copying!
     ~ScriptDrawsState() = default;
 
     void Store()
@@ -48,21 +47,19 @@ struct ScriptDrawsState
         }
         else
         {
-            CTheScripts::UseTextCommands = (useTextCommands == eUseTextCommandState::DISABLE_NEXT_FRAME) ? eUseTextCommandState::DISABLED : useTextCommands;
+            CTheScripts::UseTextCommands = (useTextCommands == eUseTextCommandState::DISABLE_NEXT_FRAME)
+                                               ? eUseTextCommandState::DISABLED
+                                               : useTextCommands;
 
             // texts
             CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
-            std::fill(
-                CTheScripts::IntroTextLines,
-                CTheScripts::IntroTextLines + _countof(CTheScripts::IntroTextLines),
-                tScriptText());
+            std::fill(CTheScripts::IntroTextLines, CTheScripts::IntroTextLines + _countof(CTheScripts::IntroTextLines),
+                      tScriptText());
 
             // rectangles
             CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
-            std::fill(
-                CTheScripts::IntroRectangles,
-                CTheScripts::IntroRectangles + _countof(CTheScripts::IntroRectangles),
-                tScriptRectangle());
+            std::fill(CTheScripts::IntroRectangles,
+                      CTheScripts::IntroRectangles + _countof(CTheScripts::IntroRectangles), tScriptRectangle());
         }
 
         // loaded textures

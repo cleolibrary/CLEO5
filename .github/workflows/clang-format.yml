@@ -1,0 +1,21 @@
+name: Clang-Format Checker
+
+on:
+  push:
+    branches: master
+  pull_request:
+    branches: master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v5
+
+    - name: Clang-Format Check
+      uses: DoozyX/clang-format-lint-action@v0.20
+      with:
+        exclude: './third-party'
+        clangFormatVersion: 20

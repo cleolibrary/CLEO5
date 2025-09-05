@@ -46,7 +46,6 @@
 #include <RenderWare.h>
 #include <extensions/Screen.h>
 
-
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
 
@@ -62,7 +61,8 @@ static std::string GetGameDirectory() // already stored in Filepath_Game
 
 static std::string GetUserDirectory() // already stored in Filepath_User
 {
-    static const auto GTA_InitUserDirectories = (char* (__cdecl*)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
+    static const auto GTA_InitUserDirectories =
+        (char *(__cdecl *)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
 
     std::string path = GTA_InitUserDirectories();
     CLEO::FilepathNormalize(path);

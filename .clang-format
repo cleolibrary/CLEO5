@@ -1,0 +1,8 @@
+BasedOnStyle: Microsoft
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 120
+AllowShortIfStatementsOnASingleLine: false
+SortIncludes: false
+BreakBeforeBraces: Allman

@@ -2,7 +2,7 @@
 
 class CInterpolatedValue
 {
-public:
+  public:
     CInterpolatedValue(float value)
     {
         currValue = value;
@@ -10,7 +10,10 @@ public:
         step = 0.0f;
     }
 
-    float value() const { return currValue; }
+    float value() const
+    {
+        return currValue;
+    }
 
     void setValue(float target, float transitionTime)
     {
@@ -48,7 +51,7 @@ public:
         currValue = targetValue;
     }
 
-private:
+  private:
     float currValue = 0.0f;
     float targetValue = 0.0f;
     float step = 0.0f;

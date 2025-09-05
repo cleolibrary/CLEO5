@@ -3,9 +3,9 @@
 
 namespace CLEO
 {
-    class CDmaFix
-    {
-    public:
-        void Inject(CCodeInjector& inj);
-    };
-}
+class CDmaFix
+{
+  public:
+    void Inject(CCodeInjector &inj);
+};
+} // namespace CLEO

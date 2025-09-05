@@ -5,19 +5,22 @@
 
 using namespace CLEO;
 
-C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
+C3DAudioStream::C3DAudioStream(const char *filepath) : CAudioStream()
 {
     // see https://github.com/cleolibrary/CLEO5/pull/230
-    static_assert(offsetof(C3DAudioStream, streamInternal) == 4 && alignof(C3DAudioStream) == 4, "C3DAudioStream compatibility with CLEO4 broken!");
+    static_assert(offsetof(C3DAudioStream, streamInternal) == 4 && alignof(C3DAudioStream) == 4,
+                  "C3DAudioStream compatibility with CLEO4 broken!");
 
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
-        TRACE("Loading of 3d-audiostream '%s' failed. Support of network sources was disabled in SA.Audio.ini", filepath);
+        TRACE("Loading of 3d-audiostream '%s' failed. Support of network sources was disabled in SA.Audio.ini",
+              filepath);
         return;
     }
 
     unsigned flags = BASS_SAMPLE_3D | BASS_SAMPLE_MONO | BASS_SAMPLE_SOFTWARE | BASS_STREAM_PRESCAN;
-    if (CSoundSystem::useFloatAudio) flags |= BASS_SAMPLE_FLOAT;
+    if (CSoundSystem::useFloatAudio)
+        flags |= BASS_SAMPLE_FLOAT;
 
     if (!(streamInternal = BASS_StreamCreateFile(FALSE, filepath, 0, 0, flags)) &&
         !(streamInternal = BASS_StreamCreateURL(filepath, 0, flags, nullptr, nullptr)))
@@ -32,7 +35,7 @@ C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
     ok = true;
 }
 
-void C3DAudioStream::Set3dPosition(const CVector& pos)
+void C3DAudioStream::Set3dPosition(const CVector &pos)
 {
     host = nullptr;
     hostType = ENTITY_TYPE_NOTHING;
@@ -44,7 +47,7 @@ void C3DAudioStream::Set3dSourceSize(float radius)
     this->radius = std::max<float>(radius, 0.01f);
 }
 
-void C3DAudioStream::SetHost(CEntity* host, const CVector& offset)
+void C3DAudioStream::SetHost(CEntity *host, const CVector &offset)
 {
     if (host != nullptr)
     {
@@ -68,7 +71,8 @@ void C3DAudioStream::Process()
     // position and velocity
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormaliseAndMag();
-    float inFactor = (float)CalculateDistanceDecay(radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(
+        radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
 
     // stereo panning
     float sign = dot(CSoundSystem::direction, relPos) > 0.0f ? 1.0f : -1.0f;
@@ -89,16 +93,25 @@ float C3DAudioStream::CalculateVolume()
 
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormaliseAndMag();
-    float inFactor = (float)CalculateDistanceDecay(radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(
+        radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
 
     double vol = Volume_3D_Adjust;
 
     switch (type)
     {
-        case SoundEffect: vol *= CSoundSystem::masterVolumeSfx; break;
-        case Music: vol *= CSoundSystem::masterVolumeMusic; break;
-        case UserInterface: vol *= CSoundSystem::masterVolumeSfx; break;
-        default: vol *= 1.0f; break;
+    case SoundEffect:
+        vol *= CSoundSystem::masterVolumeSfx;
+        break;
+    case Music:
+        vol *= CSoundSystem::masterVolumeMusic;
+        break;
+    case UserInterface:
+        vol *= CSoundSystem::masterVolumeSfx;
+        break;
+    default:
+        vol *= 1.0f;
+        break;
     }
 
     // distance decay
@@ -114,9 +127,10 @@ float C3DAudioStream::CalculateVolume()
     }
 
     // music volume lowering in cutscenes, when characters talk, mission sounds are played etc.
-    if (type == Music) 
+    if (type == Music)
     {
-        if (TheCamera.m_bWideScreenOn) vol *= 0.25f;
+        if (TheCamera.m_bWideScreenOn)
+            vol *= 0.25f;
     }
 
     // stream's volume
@@ -130,10 +144,17 @@ float C3DAudioStream::CalculateSpeed()
     float masterSpeed;
     switch (type)
     {
-        case SoundEffect: masterSpeed = CSoundSystem::masterSpeed; break;
-        case Music: masterSpeed = CSoundSystem::masterSpeed; break;
-        case UserInterface: masterSpeed = 1.0f; break;
-        default: masterSpeed = 1.0f;
+    case SoundEffect:
+        masterSpeed = CSoundSystem::masterSpeed;
+        break;
+    case Music:
+        masterSpeed = CSoundSystem::masterSpeed;
+        break;
+    case UserInterface:
+        masterSpeed = 1.0f;
+        break;
+    default:
+        masterSpeed = 1.0f;
     }
 
     return masterSpeed * speed.value();
@@ -151,7 +172,7 @@ double C3DAudioStream::CalculateDistanceDecay(float radius, float distance)
     return exp(-0.013 * pow(distance, 1.4)); // more natural feeling
 }
 
-float C3DAudioStream::CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos)
+float C3DAudioStream::CalculateDirectionDecay(const CVector &listenerDir, const CVector &relativePos)
 {
     float factor = dot(listenerDir, relativePos);
     factor = 0.6f + 0.4f * factor; // 0.2 to 1.0
@@ -164,23 +185,24 @@ void C3DAudioStream::UpdatePosition()
 
     if (host != nullptr)
     {
-        if (hostType == ENTITY_TYPE_NOTHING) return;
+        if (hostType == ENTITY_TYPE_NOTHING)
+            return;
 
         // host despawned?
         bool hostValid = false;
         switch (hostType)
         {
-            case ENTITY_TYPE_OBJECT:
-                hostValid = CPools::ms_pObjectPool->IsObjectValid((CObject*)host);
-                break;
+        case ENTITY_TYPE_OBJECT:
+            hostValid = CPools::ms_pObjectPool->IsObjectValid((CObject *)host);
+            break;
 
-            case ENTITY_TYPE_PED:
-                hostValid = CPools::ms_pPedPool->IsObjectValid((CPed*)host);
-                break;
+        case ENTITY_TYPE_PED:
+            hostValid = CPools::ms_pPedPool->IsObjectValid((CPed *)host);
+            break;
 
-            case ENTITY_TYPE_VEHICLE:
-                hostValid = CPools::ms_pVehiclePool->IsObjectValid((CVehicle*)host);
-                break;
+        case ENTITY_TYPE_VEHICLE:
+            hostValid = CPools::ms_pVehiclePool->IsObjectValid((CVehicle *)host);
+            break;
         }
         if (!hostValid)
         {
@@ -190,7 +212,7 @@ void C3DAudioStream::UpdatePosition()
             return;
         }
 
-        RwV3dTransformPoint((RwV3d*)&position, (RwV3d*)&offset, (RwMatrix*)host->GetMatrix());
+        RwV3dTransformPoint((RwV3d *)&position, (RwV3d *)&offset, (RwMatrix *)host->GetMatrix());
     }
     else // world offset
     {

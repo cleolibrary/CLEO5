@@ -2,7 +2,6 @@
 #include "CPluginSystem.h"
 #include "CleoBase.h"
 
-
 using namespace CLEO;
 
 CPluginSystem::~CPluginSystem()
@@ -12,7 +11,8 @@ CPluginSystem::~CPluginSystem()
 
 void CPluginSystem::LoadPlugins()
 {
-    if (pluginsLoaded) return; // already done
+    if (pluginsLoaded)
+        return; // already done
 
     std::set<std::string> names;
     std::vector<std::string> paths;
@@ -20,7 +20,8 @@ void CPluginSystem::LoadPlugins()
 
     // get blacklist from config
     auto blacklistStr = std::string(512, '\0');
-    GetPrivateProfileString("General", "PluginBlacklist", "", blacklistStr.data(), blacklistStr.size(), Filepath_Config.c_str());
+    GetPrivateProfileString("General", "PluginBlacklist", "", blacklistStr.data(), blacklistStr.size(),
+                            Filepath_Config.c_str());
     blacklistStr.resize(strlen(blacklistStr.data()));
     StringToLower(blacklistStr);
     std::vector<std::string> blacklist;
@@ -41,7 +42,7 @@ void CPluginSystem::LoadPlugins()
                 continue; // file already skipped
 
             auto name = FS::path(files.strings[i]).filename().string();
-            name = name.substr(prefix.length()); // cut off prefix
+            name = name.substr(prefix.length());             // cut off prefix
             name.resize(name.length() - extension.length()); // cut off extension
 
             // on blacklist?
@@ -55,9 +56,8 @@ void CPluginSystem::LoadPlugins()
             }
 
             // case insensitive search in already listed plugin names
-            auto found = std::find_if(names.begin(), names.end(), [&](const std::string& s) {
-                return _stricmp(s.c_str(), name.c_str()) == 0;
-            });
+            auto found = std::find_if(names.begin(), names.end(),
+                                      [&](const std::string &s) { return _stricmp(s.c_str(), name.c_str()) == 0; });
 
             // duplicated?
             if (found != names.end())
@@ -78,7 +78,8 @@ void CPluginSystem::LoadPlugins()
     TRACE(""); // separator
     TRACE("Listing CLEO plugins:");
     ScanPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "SA.", ".cleo");
-    ScanPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "", ".cleo"); // legacy plugins in new location
+    ScanPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "",
+                   ".cleo");                    // legacy plugins in new location
     ScanPluginsDir(Filepath_Cleo, "", ".cleo"); // legacy plugins in old location
 
     // reverse order, so opcodes from CLEO5 plugins can overwrite opcodes from legacy plugins
@@ -115,11 +116,12 @@ void CPluginSystem::LoadPlugins()
 
 void CPluginSystem::UnloadPlugins()
 {
-    if (!pluginsLoaded) return;
+    if (!pluginsLoaded)
+        return;
 
     TRACE(""); // separator
     TRACE("Unloading CLEO plugins:");
-    for (const auto& plugin : plugins)
+    for (const auto &plugin : plugins)
     {
         TRACE(" - Unloading '%s' at 0x%08X", plugin.name.c_str(), plugin.handle);
         FreeLibrary(plugin.handle);
@@ -154,14 +156,15 @@ void CLEO::CPluginSystem::LogLoadedPlugins() const
     TRACE(""); // separator
     TRACE("Loaded plugins summary:");
 
-    for (const auto& m : modules)
+    for (const auto &m : modules)
     {
         std::string filename(512, '\0');
         if (GetModuleFileName(m, filename.data(), filename.size()))
         {
             filename.resize(strlen(filename.data()));
 
-            if (StringStartsWith(filename, Filepath_Game, false) || StringEndsWith(filename, ".asi", false) || StringEndsWith(filename, ".cleo", false))
+            if (StringStartsWith(filename, Filepath_Game, false) || StringEndsWith(filename, ".asi", false) ||
+                StringEndsWith(filename, ".cleo", false))
             {
                 std::error_code err;
                 auto fileSize = (size_t)FS::file_size(filename, err);
@@ -175,4 +178,3 @@ void CLEO::CPluginSystem::LogLoadedPlugins() const
 
     TRACE(""); // separator
 }
-

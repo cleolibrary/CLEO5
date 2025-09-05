@@ -6,10 +6,11 @@
 
 using namespace CLEO;
 
-CAudioStream::CAudioStream(const char* filepath)
+CAudioStream::CAudioStream(const char *filepath)
 {
     // see https://github.com/cleolibrary/CLEO5/pull/230
-    static_assert(offsetof(CAudioStream, streamInternal) == 4 && alignof(CAudioStream) == 4, "CAudioStream compatibility with CLEO4 broken!");
+    static_assert(offsetof(CAudioStream, streamInternal) == 4 && alignof(CAudioStream) == 4,
+                  "CAudioStream compatibility with CLEO4 broken!");
 
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
@@ -18,7 +19,8 @@ CAudioStream::CAudioStream(const char* filepath)
     }
 
     unsigned flags = BASS_SAMPLE_SOFTWARE | BASS_STREAM_PRESCAN;
-    if (CSoundSystem::useFloatAudio) flags |= BASS_SAMPLE_FLOAT;
+    if (CSoundSystem::useFloatAudio)
+        flags |= BASS_SAMPLE_FLOAT;
 
     if (!(streamInternal = BASS_StreamCreateFile(FALSE, filepath, 0, 0, flags)) &&
         !(streamInternal = BASS_StreamCreateURL(filepath, 0, flags, 0, nullptr)))
@@ -33,13 +35,15 @@ CAudioStream::CAudioStream(const char* filepath)
 
 CAudioStream::~CAudioStream()
 {
-    if (streamInternal) BASS_StreamFree(streamInternal);
+    if (streamInternal)
+        BASS_StreamFree(streamInternal);
 }
 
 void CAudioStream::Play()
 {
-    if (state == Stopped) BASS_ChannelSetPosition(streamInternal, 0, BASS_POS_BYTE); // rewind
-    state = PlayingInactive; // needs to be processed
+    if (state == Stopped)
+        BASS_ChannelSetPosition(streamInternal, 0, BASS_POS_BYTE); // rewind
+    state = PlayingInactive;                                       // needs to be processed
 }
 
 void CAudioStream::Pause(bool changeState)
@@ -87,7 +91,8 @@ void CAudioStream::SetProgress(float value)
 float CAudioStream::GetProgress() const
 {
     auto bytePos = BASS_ChannelGetPosition(streamInternal, BASS_POS_BYTE);
-    if (bytePos == -1) bytePos = 0; // error or not available yet
+    if (bytePos == -1)
+        bytePos = 0; // error or not available yet
     auto pos = BASS_ChannelBytes2Seconds(streamInternal, bytePos);
 
     auto byteTotal = BASS_ChannelGetLength(streamInternal, BASS_POS_BYTE);
@@ -123,7 +128,8 @@ float CAudioStream::GetVolume() const
 
 void CAudioStream::SetSpeed(float value, float transitionTime)
 {
-    if (value > 0.0f && transitionTime > 0.0f) Resume();
+    if (value > 0.0f && transitionTime > 0.0f)
+        Resume();
     speed.setValue(std::max(value, 0.0f), transitionTime);
 }
 
@@ -134,16 +140,16 @@ float CAudioStream::GetSpeed() const
 
 void CLEO::CAudioStream::SetType(eStreamType value)
 {
-    switch(value)
+    switch (value)
     {
-        case eStreamType::SoundEffect:
-        case eStreamType::Music:
-        case eStreamType::UserInterface:
-            type = value;
-            break;
+    case eStreamType::SoundEffect:
+    case eStreamType::Music:
+    case eStreamType::UserInterface:
+        type = value;
+        break;
 
-        default:
-            type = None;
+    default:
+        type = None;
     }
 }
 
@@ -156,24 +162,35 @@ float CAudioStream::CalculateVolume()
 {
     float vol = 1.0f;
 
-    switch(type)
+    switch (type)
     {
-        case SoundEffect: vol *= CSoundSystem::masterVolumeSfx; break;
-        case Music: vol *= CSoundSystem::masterVolumeMusic; break;
-        case UserInterface: vol *= CSoundSystem::masterVolumeSfx; break;
+    case SoundEffect:
+        vol *= CSoundSystem::masterVolumeSfx;
+        break;
+    case Music:
+        vol *= CSoundSystem::masterVolumeMusic;
+        break;
+    case UserInterface:
+        vol *= CSoundSystem::masterVolumeSfx;
+        break;
     }
 
     // screen black fade
     switch (type)
     {
-        case SoundEffect: vol *= AEAudioHardware.m_fEffectsFaderScalingFactor; break;
-        case Music: vol *= AEAudioHardware.m_fMusicFaderScalingFactor; break;
+    case SoundEffect:
+        vol *= AEAudioHardware.m_fEffectsFaderScalingFactor;
+        break;
+    case Music:
+        vol *= AEAudioHardware.m_fMusicFaderScalingFactor;
+        break;
     }
 
     // music volume lowering in cutscenes, when characters talk, mission sounds are played etc.
     if (type == Music)
     {
-        if (TheCamera.m_bWideScreenOn) vol *= 0.25f;
+        if (TheCamera.m_bWideScreenOn)
+            vol *= 0.25f;
     }
 
     // stream's volume
@@ -187,10 +204,17 @@ float CAudioStream::CalculateSpeed()
     float masterSpeed;
     switch (type)
     {
-        case SoundEffect: masterSpeed = CSoundSystem::masterSpeed; break;
-        case Music: masterSpeed = TheCamera.m_bWideScreenOn ? 1.0f : CSoundSystem::masterSpeed; break;
-        case UserInterface: masterSpeed = 1.0f; break;
-        default: masterSpeed = 1.0f;
+    case SoundEffect:
+        masterSpeed = CSoundSystem::masterSpeed;
+        break;
+    case Music:
+        masterSpeed = TheCamera.m_bWideScreenOn ? 1.0f : CSoundSystem::masterSpeed;
+        break;
+    case UserInterface:
+        masterSpeed = 1.0f;
+        break;
+    default:
+        masterSpeed = 1.0f;
     }
 
     return speed.value() * masterSpeed;
@@ -235,7 +259,8 @@ void CAudioStream::Process()
         Pause();
     }
 
-    if (state != Playing) return; // done
+    if (state != Playing)
+        return; // done
 
     float volume = CalculateVolume();
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_VOL, volume);
@@ -245,7 +270,7 @@ void CAudioStream::Process()
     BASS_ChannelSetAttribute(streamInternal, BASS_ATTRIB_FREQ, freq);
 }
 
-void CAudioStream::Set3dPosition(const CVector& pos)
+void CAudioStream::Set3dPosition(const CVector &pos)
 {
     // not applicable for 2d audio
 }
@@ -255,7 +280,7 @@ void CAudioStream::Set3dSourceSize(float radius)
     // not applicable for 2d audio
 }
 
-void CAudioStream::SetHost(CEntity* placable, const CVector& offset)
+void CAudioStream::SetHost(CEntity *placable, const CVector &offset)
 {
     // not applicable for 2d audio
 }
