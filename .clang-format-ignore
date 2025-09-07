@@ -1,3 +1,6 @@
+# Paths must be in Unix format to work with the CI workflow
+# Local script (./clang-format.bat) converts them to Windows format
+
 ./tests
 ./third-party
 ./examples
