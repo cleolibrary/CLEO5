@@ -33,6 +33,9 @@ jobs:
         id: custom_build
         run: node.exe .github/workflows/tag-custom-build.js
 
+      - name: Validate Formatting
+        uses: DoozyX/clang-format-lint-action@v0.20
+
       - name: Core - Build
         shell: cmd
         run: |
