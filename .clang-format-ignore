@@ -2,6 +2,6 @@
 ./third-party
 ./examples
 .vscode
-.vscode
+.vs
 .output
 .github
