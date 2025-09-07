@@ -2,12 +2,12 @@
 
 class CInterpolatedValue
 {
-public:
+  public:
     CInterpolatedValue(float value)
     {
-        currValue = value;
+        currValue   = value;
         targetValue = value;
-        step = 0.0f;
+        step        = 0.0f;
     }
 
     float value() const { return currValue; }
@@ -43,13 +43,10 @@ public:
         }
     }
 
-    void finish()
-    {
-        currValue = targetValue;
-    }
+    void finish() { currValue = targetValue; }
 
-private:
-    float currValue = 0.0f;
+  private:
+    float currValue   = 0.0f;
     float targetValue = 0.0f;
-    float step = 0.0f;
+    float step        = 0.0f;
 };

@@ -18,8 +18,8 @@ namespace CLEO
         std::list<PluginEntry> plugins;
         bool pluginsLoaded = false;
 
-    public:
-        CPluginSystem() = default;
+      public:
+        CPluginSystem()                     = default;
         CPluginSystem(const CPluginSystem&) = delete; // no copying
         ~CPluginSystem();
 
@@ -29,4 +29,4 @@ namespace CLEO
 
         void LogLoadedPlugins() const;
     };
-}
+} // namespace CLEO

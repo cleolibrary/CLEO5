@@ -2,7 +2,6 @@
 #include "CleoBase.h"
 #include "Singleton.h"
 
-
 namespace CLEO
 {
     CCleoInstance CleoInstance;
@@ -38,13 +37,13 @@ namespace CLEO
     {
         switch (msg)
         {
-            case WM_ACTIVATE:
-                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
-                break;
+        case WM_ACTIVATE:
+            CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
+            break;
 
-            case WM_KILLFOCUS:
-                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
-                break;
+        case WM_KILLFOCUS:
+            CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
+            break;
         }
 
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
@@ -103,13 +102,13 @@ namespace CLEO
     void __cdecl CCleoInstance::OnDebugDisplayTextBuffer_Idle()
     {
         CleoInstance.GameRestartDebugDisplayTextBuffer_IdleOrig(); // call original
-        CleoInstance.CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::DrawingFinished);  // execute registered callbacks
     }
 
     void __cdecl CCleoInstance::OnDebugDisplayTextBuffer_Frontend()
     {
         CleoInstance.GameRestartDebugDisplayTextBuffer_FrontendOrig(); // call original
-        CleoInstance.CallCallbacks(eCallbackId::DrawingFinished); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::DrawingFinished);      // execute registered callbacks
     }
 
     void CCleoInstance::Start(InitStage stage)
@@ -136,35 +135,63 @@ namespace CLEO
             OpcodeSystem.Inject(CodeInjector);
             ScriptEngine.Inject(CodeInjector);
 
-            CodeInjector.ReplaceFunction(OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig);
+            CodeInjector.ReplaceFunction(
+                OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig
+            );
 
-            CodeInjector.ReplaceFunction(OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig);
-            CodeInjector.ReplaceFunction(OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig);
-            CodeInjector.ReplaceFunction(OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig);
+            CodeInjector.ReplaceFunction(
+                OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig
+            );
+            CodeInjector.ReplaceFunction(
+                OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig
+            );
+            CodeInjector.ReplaceFunction(
+                OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig
+            );
 
-            CodeInjector.ReplaceFunction(OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown_Orig);
+            CodeInjector.ReplaceFunction(
+                OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown_Orig
+            );
 
-            CodeInjector.ReplaceFunction(OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1_Orig);
-            CodeInjector.ReplaceFunction(OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2_Orig);
-            CodeInjector.ReplaceFunction(OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3_Orig);
+            CodeInjector.ReplaceFunction(
+                OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1_Orig
+            );
+            CodeInjector.ReplaceFunction(
+                OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2_Orig
+            );
+            CodeInjector.ReplaceFunction(
+                OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3_Orig
+            );
 
             OpcodeSystem.Init();
             PluginSystem.LoadPlugins();
         }
-        
+
         // delayed until menu background drawing
         if (stage == InitStage::OnDraw)
         {
             TRACE("CLEO initialization: Phase 2");
 
-            const_cast<std::string&>(Filepath_User) = GetUserDirectory(); // force update now, as it could be modifed by PortableGTA.asi
+            const_cast<std::string&>(Filepath_User) =
+                GetUserDirectory(); // force update now, as it could be modifed by PortableGTA.asi
 
             ScriptEngine.InjectLate(CodeInjector);
 
             CodeInjector.InjectFunction(GetScriptStringParam, gaddrof(::CRunningScript::ReadTextLabelFromScript));
-            CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Idle, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE), &GameRestartDebugDisplayTextBuffer_IdleOrig);
-            CodeInjector.ReplaceFunction(OnDebugDisplayTextBuffer_Frontend, VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND), &GameRestartDebugDisplayTextBuffer_FrontendOrig);
-            CodeInjector.ReplaceFunction(OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS), &UpdateGameLogics_Orig);
+            CodeInjector.ReplaceFunction(
+                OnDebugDisplayTextBuffer_Idle,
+                VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE),
+                &GameRestartDebugDisplayTextBuffer_IdleOrig
+            );
+            CodeInjector.ReplaceFunction(
+                OnDebugDisplayTextBuffer_Frontend,
+                VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND),
+                &GameRestartDebugDisplayTextBuffer_FrontendOrig
+            );
+            CodeInjector.ReplaceFunction(
+                OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS),
+                &UpdateGameLogics_Orig
+            );
 
             PluginSystem.LogLoadedPlugins();
         }
@@ -250,8 +277,7 @@ namespace CLEO
 
         auto resolved = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(inOutPath);
 
-        if (resolved.length() >= pathMaxLen)
-            resolved.resize(pathMaxLen - 1); // and terminator character
+        if (resolved.length() >= pathMaxLen) resolved.resize(pathMaxLen - 1); // and terminator character
 
         std::memcpy(inOutPath, resolved.c_str(), resolved.length() + 1); // with terminator
     }
@@ -269,13 +295,12 @@ namespace CLEO
         }
     }
 
-    StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+    StringList WINAPI
+    CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
     {
-        if (searchPath == nullptr)
-            return {}; // invalid param
+        if (searchPath == nullptr) return {}; // invalid param
 
-        if (!listDirs && !listFiles)
-            return {}; // nothing to list, done
+        if (!listDirs && !listFiles) return {}; // nothing to list, done
 
         // make absolute
         auto fsSearchPath = FS::path(searchPath);
@@ -287,19 +312,16 @@ namespace CLEO
                 fsSearchPath = Filepath_Game / fsSearchPath;
         }
 
-        WIN32_FIND_DATA wfd = { 0 };
-        HANDLE hSearch = FindFirstFile(fsSearchPath.string().c_str(), &wfd);
-        if (hSearch == INVALID_HANDLE_VALUE)
-            return {}; // nothing found
+        WIN32_FIND_DATA wfd = {0};
+        HANDLE hSearch      = FindFirstFile(fsSearchPath.string().c_str(), &wfd);
+        if (hSearch == INVALID_HANDLE_VALUE) return {}; // nothing found
 
         std::set<std::string> found;
         do
         {
-            if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) 
-                continue; // skip directories
+            if (!listDirs && (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) continue; // skip directories
 
-            if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-                continue; // skip files
+            if (!listFiles && !(wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) continue; // skip files
 
             auto path = FS::path(wfd.cFileName);
             if (!path.is_absolute()) // keep absolute in case somebody hooked the APIs to return so
@@ -312,5 +334,4 @@ namespace CLEO
 
         return CreateStringList(found);
     }
-}
-
+} // namespace CLEO

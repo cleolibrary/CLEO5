@@ -8,11 +8,19 @@
 using namespace CLEO;
 using namespace plugin;
 
-#define VALIDATE_STREAM() if(stream != nullptr && !soundSystem.HasStream(stream)) { SHOW_ERROR("Invalid or already closed '0x%X' audio stream handle param in script %s \nScript suspended.", stream, ScriptInfoStr(thread).c_str()); return thread->Suspend(); }
+#define VALIDATE_STREAM()                                                                                              \
+    if (stream != nullptr && !soundSystem.HasStream(stream))                                                           \
+    {                                                                                                                  \
+        SHOW_ERROR(                                                                                                    \
+            "Invalid or already closed '0x%X' audio stream handle param in script %s \nScript suspended.", stream,     \
+            ScriptInfoStr(thread).c_str()                                                                              \
+        );                                                                                                             \
+        return thread->Suspend();                                                                                      \
+    }
 
-class Audio 
+class Audio
 {
-public:
+  public:
     static CSoundSystem soundSystem;
 
     enum eStreamAction
@@ -32,7 +40,7 @@ public:
         CLEO_RegisterOpcode(0x0AAD, opcode_0AAD); // set_audio_stream_state
         CLEO_RegisterOpcode(0x0AAE, opcode_0AAE); // remove_audio_stream
         CLEO_RegisterOpcode(0x0AAF, opcode_0AAF); // get_audiostream_length
-        
+
         CLEO_RegisterOpcode(0x0AB9, opcode_0AB9); // get_audio_stream_state
 
         CLEO_RegisterOpcode(0x0ABB, opcode_0ABB); // get_audio_stream_volume
@@ -78,20 +86,11 @@ public:
         CLEO_UnregisterCallback(eCallbackId::MainWindowFocus, OnMainWindowFocus);
     }
 
-    static void __stdcall OnGameBegin(DWORD saveSlot)
-    {
-        soundSystem.Init();
-    }
+    static void __stdcall OnGameBegin(DWORD saveSlot) { soundSystem.Init(); }
 
-    static void __stdcall OnGameProcessAfter()
-    {
-        soundSystem.Process();
-    }
+    static void __stdcall OnGameProcessAfter() { soundSystem.Process(); }
 
-    static void __stdcall OnGameEnd()
-    {
-        soundSystem.Clear();
-    }
+    static void __stdcall OnGameEnd() { soundSystem.Clear(); }
 
     static void __stdcall OnDrawingFinished()
     {
@@ -107,14 +106,12 @@ public:
             soundSystem.Pause();
     }
 
- 
-    //0AAC=2,  %2d% = load_audiostream %1d%  // IF and SET
+    // 0AAC=2,  %2d% = load_audiostream %1d%  // IF and SET
     static OpcodeResult __stdcall opcode_0AAC(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(path, 511);
 
-        if (!isNetworkSource(path))
-            CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path));
+        if (!isNetworkSource(path)) CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path));
 
         auto ptr = soundSystem.CreateStream(path);
 
@@ -128,42 +125,55 @@ public:
         return OR_CONTINUE;
     }
 
-    //0AAD=2,set_audiostream %1d% perform_action %2d%
+    // 0AAD=2,set_audiostream %1d% perform_action %2d%
     static OpcodeResult __stdcall opcode_0AAD(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM()
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM()
         auto action = OPCODE_READ_PARAM_INT();
 
         if (stream)
         {
             switch (action)
             {
-                case eStreamAction::Stop: stream->Stop(); break;
-                case eStreamAction::Play: stream->Play(); break;
-                case eStreamAction::Pause: stream->Pause(); break;
-                case eStreamAction::Resume: stream->Resume(); break;
-                default:
-                    LOG_WARNING(thread, "Unknown AudioStreamAction (%d) in script %s", action, ScriptInfoStr(thread).c_str());
+            case eStreamAction::Stop:
+                stream->Stop();
+                break;
+            case eStreamAction::Play:
+                stream->Play();
+                break;
+            case eStreamAction::Pause:
+                stream->Pause();
+                break;
+            case eStreamAction::Resume:
+                stream->Resume();
+                break;
+            default:
+                LOG_WARNING(
+                    thread, "Unknown AudioStreamAction (%d) in script %s", action, ScriptInfoStr(thread).c_str()
+                );
             }
         }
 
         return OR_CONTINUE;
     }
 
-    //0AAE=1,release_audiostream %1d%
+    // 0AAE=1,release_audiostream %1d%
     static OpcodeResult __stdcall opcode_0AAE(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         if (stream) soundSystem.DestroyStream(stream);
 
         return OR_CONTINUE;
     }
 
-    //0AAF=2,%2d% = get_audiostream_length %1d%
+    // 0AAF=2,%2d% = get_audiostream_length %1d%
     static OpcodeResult __stdcall opcode_0AAF(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto length = 0.0f;
         if (stream) length = stream->GetLength();
@@ -172,10 +182,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //0AB9=2,get_audio_stream_state %1d% store_to %2d%
+    // 0AB9=2,get_audio_stream_state %1d% store_to %2d%
     static OpcodeResult __stdcall opcode_0AB9(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto state = CAudioStream::StreamState::Stopped;
         if (stream) state = stream->GetState();
@@ -184,10 +195,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //0ABB=2,%2d% = get_audio_stream_volume %1d%
+    // 0ABB=2,%2d% = get_audio_stream_volume %1d%
     static OpcodeResult __stdcall opcode_0ABB(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto volume = 0.0f;
         if (stream) volume = stream->GetVolume();
@@ -196,10 +208,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //0ABC=2,set_audiostream %1d% volume %2d%
+    // 0ABC=2,set_audiostream %1d% volume %2d%
     static OpcodeResult __stdcall opcode_0ABC(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto volume = OPCODE_READ_PARAM_FLOAT();
 
         if (stream) stream->SetVolume(volume);
@@ -207,10 +220,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //0AC0=2,loop_audiostream %1d% flag %2d%
+    // 0AC0=2,loop_audiostream %1d% flag %2d%
     static OpcodeResult __stdcall opcode_0AC0(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto loop = OPCODE_READ_PARAM_BOOL();
 
         if (stream) stream->SetLooping(loop);
@@ -218,13 +232,12 @@ public:
         return OR_CONTINUE;
     }
 
-    //0AC1=2,%2d% = load_audiostream_with_3d_support %1d% //IF and SET
+    // 0AC1=2,%2d% = load_audiostream_with_3d_support %1d% //IF and SET
     static OpcodeResult __stdcall opcode_0AC1(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_LEN(path, 511);
 
-        if (!isNetworkSource(path))
-            CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path));
+        if (!isNetworkSource(path)) CLEO_ResolvePath(thread, _buff_path, sizeof(_buff_path));
 
         auto ptr = soundSystem.CreateStream(path, true);
 
@@ -238,14 +251,18 @@ public:
         return OR_CONTINUE;
     }
 
-    //0AC2=4,set_3d_audiostream %1d% position %2d% %3d% %4d%
+    // 0AC2=4,set_3d_audiostream %1d% position %2d% %3d% %4d%
     static OpcodeResult __stdcall opcode_0AC2(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(
+                thread, "3d audio stream command used with non-3d audio stream in script %s",
+                ScriptInfoStr(thread).c_str()
+            );
         }
 
         CVector pos;
@@ -258,70 +275,83 @@ public:
         return OR_CONTINUE;
     }
 
-    //0AC3=2,link_3d_audiostream %1d% to_object %2d%
+    // 0AC3=2,link_3d_audiostream %1d% to_object %2d%
     static OpcodeResult __stdcall opcode_0AC3(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto handle = OPCODE_READ_PARAM_OBJECT_HANDLE();
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(
+                thread, "3d audio stream command used with non-3d audio stream in script %s",
+                ScriptInfoStr(thread).c_str()
+            );
         }
 
         if (stream)
         {
             auto object = CPools::GetObject(handle);
-            stream->SetHost(object, { 0.0f, 0.0f, 0.0f });
+            stream->SetHost(object, {0.0f, 0.0f, 0.0f});
         }
 
         return OR_CONTINUE;
     }
 
-    //0AC4=2,link_3d_audiostream %1d% to_actor %2d%
+    // 0AC4=2,link_3d_audiostream %1d% to_actor %2d%
     static OpcodeResult __stdcall opcode_0AC4(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto handle = OPCODE_READ_PARAM_PED_HANDLE();
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(
+                thread, "3d audio stream command used with non-3d audio stream in script %s",
+                ScriptInfoStr(thread).c_str()
+            );
         }
 
         if (stream)
         {
             auto ped = CPools::GetPed(handle);
-            stream->SetHost(ped, { 0.0f, 0.0f, 0.0f });
+            stream->SetHost(ped, {0.0f, 0.0f, 0.0f});
         }
 
         return OR_CONTINUE;
     }
 
-    //0AC5=2,link_3d_audiostream %1d% to_vehicle %2d%
+    // 0AC5=2,link_3d_audiostream %1d% to_vehicle %2d%
     static OpcodeResult __stdcall opcode_0AC5(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto handle = OPCODE_READ_PARAM_VEHICLE_HANDLE();
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
+            LOG_WARNING(
+                thread, "3d audio stream command used with non-3d audio stream in script %s",
+                ScriptInfoStr(thread).c_str()
+            );
         }
 
         if (stream)
         {
             auto vehicle = CPools::GetVehicle(handle);
-            stream->SetHost(vehicle, { 0.0f, 0.0f, 0.0f });
-         }
+            stream->SetHost(vehicle, {0.0f, 0.0f, 0.0f});
+        }
 
         return OR_CONTINUE;
     }
 
-    //2500=1,  is_audio_stream_playing %1d%
+    // 2500=1,  is_audio_stream_playing %1d%
     static OpcodeResult __stdcall opcode_2500(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto state = CAudioStream::StreamState::Stopped;
         if (stream) state = stream->GetState();
@@ -330,10 +360,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //2501=2,%2d% = get_audiostream_duration %1d%
+    // 2501=2,%2d% = get_audiostream_duration %1d%
     static OpcodeResult __stdcall opcode_2501(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto length = 0.0f;
         if (stream)
@@ -351,10 +382,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //2502=2,get_audio_stream_speed %1d% store_to %2d%
+    // 2502=2,get_audio_stream_speed %1d% store_to %2d%
     static OpcodeResult __stdcall opcode_2502(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto speed = 0.0f;
         if (stream) speed = stream->GetSpeed();
@@ -363,10 +395,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //2503=2,set_audio_stream_speed %1d% speed %2d%
+    // 2503=2,set_audio_stream_speed %1d% speed %2d%
     static OpcodeResult __stdcall opcode_2503(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto speed = OPCODE_READ_PARAM_FLOAT();
 
         if (stream) stream->SetSpeed(speed);
@@ -374,34 +407,37 @@ public:
         return OR_CONTINUE;
     }
 
-    //2504=3,set_audio_stream_volume_with_transition %1d% volume %2d% time_ms %2d%
+    // 2504=3,set_audio_stream_volume_with_transition %1d% volume %2d% time_ms %2d%
     static OpcodeResult __stdcall opcode_2504(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto volume = OPCODE_READ_PARAM_FLOAT();
-        auto time = OPCODE_READ_PARAM_INT();
+        auto time   = OPCODE_READ_PARAM_INT();
 
         if (stream) stream->SetVolume(volume, 0.001f * time);
 
         return OR_CONTINUE;
     }
 
-    //2505=3,set_audio_stream_speed_with_transition %1d% speed %2d% time_ms %2d%
+    // 2505=3,set_audio_stream_speed_with_transition %1d% speed %2d% time_ms %2d%
     static OpcodeResult __stdcall opcode_2505(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto speed = OPCODE_READ_PARAM_FLOAT();
-        auto time = OPCODE_READ_PARAM_INT();
+        auto time  = OPCODE_READ_PARAM_INT();
 
         if (stream) stream->SetSpeed(speed, 0.001f * time);
 
         return OR_CONTINUE;
     }
 
-    //2506=2,set_audio_stream_source_size %1d% radius %2d%
+    // 2506=2,set_audio_stream_source_size %1d% radius %2d%
     static OpcodeResult __stdcall opcode_2506(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto radius = OPCODE_READ_PARAM_FLOAT();
 
         if (stream) stream->Set3dSourceSize(radius);
@@ -409,10 +445,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //2507=2,get_audio_stream_progress %1d% store_to %2d%
+    // 2507=2,get_audio_stream_progress %1d% store_to %2d%
     static OpcodeResult __stdcall opcode_2507(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto progress = 0.0f;
         if (stream) progress = stream->GetProgress();
@@ -421,10 +458,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //2508=2,set_audio_stream_progress %1d% speed %2d%
+    // 2508=2,set_audio_stream_progress %1d% speed %2d%
     static OpcodeResult __stdcall opcode_2508(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto speed = OPCODE_READ_PARAM_FLOAT();
 
         if (stream) stream->SetProgress(speed);
@@ -432,10 +470,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //2509=2,get_audio_stream_type %1d% store_to %2d%
+    // 2509=2,get_audio_stream_type %1d% store_to %2d%
     static OpcodeResult __stdcall opcode_2509(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto type = eStreamType::None;
         if (stream) type = stream->GetType();
@@ -444,10 +483,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //250A=2,set_audio_stream_type %1d% type %2d%
+    // 250A=2,set_audio_stream_type %1d% type %2d%
     static OpcodeResult __stdcall opcode_250A(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto type = OPCODE_READ_PARAM_INT();
 
         if (stream) stream->SetType((eStreamType)type);
@@ -455,10 +495,11 @@ public:
         return OR_CONTINUE;
     }
 
-    //250B=2,get_audio_stream_progress_seconds %1d% store_to %2d%
+    // 250B=2,get_audio_stream_progress_seconds %1d% store_to %2d%
     static OpcodeResult __stdcall opcode_250B(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
 
         auto progress = 0.0f;
         if (stream)
@@ -471,16 +512,17 @@ public:
         return OR_CONTINUE;
     }
 
-    //250C=2,set_audio_stream_progress_seconds %1d% value %2d%
+    // 250C=2,set_audio_stream_progress_seconds %1d% value %2d%
     static OpcodeResult __stdcall opcode_250C(CLEO::CRunningScript* thread)
     {
-        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT(); VALIDATE_STREAM();
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        VALIDATE_STREAM();
         auto progress = OPCODE_READ_PARAM_FLOAT();
 
         if (stream)
         {
             float len = stream->GetLength();
-            if(len > 0.0f)
+            if (len > 0.0f)
             {
                 progress /= len;
             }

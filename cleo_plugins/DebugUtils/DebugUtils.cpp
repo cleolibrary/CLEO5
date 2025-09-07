@@ -17,11 +17,11 @@ using namespace plugin;
 
 class DebugUtils
 {
-public:
+  public:
     static ScreenLog screenLog;
 
-    struct PausedScriptInfo 
-    { 
+    struct PausedScriptInfo
+    {
         CRunningScript* ptr;
         std::string msg;
         PausedScriptInfo(CRunningScript* ptr, const char* msg) : ptr(ptr), msg(msg) {}
@@ -35,9 +35,9 @@ public:
     static size_t configLimitTime;
 
     // breakpoint continue keys
-    static const int KeyFirst = VK_F5;
+    static const int KeyFirst    = VK_F5;
     static const size_t KeyCount = 8; // F5 to F12
-    static bool keysReleased; // none of continue keys was pressed during previous frame
+    static bool keysReleased;         // none of continue keys was pressed during previous frame
 
     static std::map<std::string, std::ofstream> logFiles;
 
@@ -45,9 +45,9 @@ public:
     {
         if (!PluginCheckCleoVersion()) return;
 
-        auto config = GetConfigFilename();
+        auto config        = GetConfigFilename();
         configLimitCommand = GetPrivateProfileInt("Limits", "Command", 2000000, config.c_str()); // 2 milion commands
-        configLimitTime = GetPrivateProfileInt("Limits", "Time", 5, config.c_str()); // 5 seconds
+        configLimitTime    = GetPrivateProfileInt("Limits", "Time", 5, config.c_str());          // 5 seconds
 
         // register opcodes
         CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
@@ -57,7 +57,7 @@ public:
         CLEO_RegisterOpcode(0x2102, Opcode_LogToFile);
 
         // original Rockstar's script debugging opcodes
-        if(GetPrivateProfileInt("General", "LegacyDebugOpcodes", 0, config.c_str()) != 0)
+        if (GetPrivateProfileInt("General", "LegacyDebugOpcodes", 0, config.c_str()) != 0)
         {
             CLEO_RegisterOpcode(0x0662, Opcode_PrintString);
             CLEO_RegisterOpcode(0x0663, Opcode_PrintInt);
@@ -85,10 +85,7 @@ public:
 
     // ---------------------------------------------- event callbacks -------------------------------------------------
 
-    static void WINAPI OnGameBegin(DWORD saveSlot)
-    {
-        screenLog.Clear();
-    }
+    static void WINAPI OnGameBegin(DWORD saveSlot) { screenLog.Clear(); }
 
     static void WINAPI OnScriptsFinalize()
     {
@@ -98,26 +95,26 @@ public:
 
     static void WINAPI OnDrawingFinished()
     {
-        auto GTA_GetKeyState = (SHORT (__stdcall*)(int))0x0081E64C; // use ingame function as GetKeyState might look like keylogger to some AV software
+        // use ingame function as GetKeyState might look like keylogger to some AV software
+        auto GTA_GetKeyState = (SHORT(__stdcall*)(int))0x0081E64C;
 
         // log messages
         screenLog.Draw();
 
         // draw active breakpoints list
-        if (!pausedScripts.empty() &&
-            (CTimer::m_FrameCounter & 0xE) != 0) // flashing
+        if (!pausedScripts.empty() && (CTimer::m_FrameCounter & 0xE) != 0) // flashing
         {
             for (size_t i = 0; i < pausedScripts.size(); i++)
             {
                 std::ostringstream ss;
                 ss << "Script '" << pausedScripts[i].ptr->GetName() << "' breakpoint";
 
-                if(!pausedScripts[i].msg.empty()) // named breakpoint
+                if (!pausedScripts[i].msg.empty()) // named breakpoint
                 {
                     ss << " '" << pausedScripts[i].msg << "'";
                 }
 
-                if(i < KeyCount)
+                if (i < KeyCount)
                 {
                     ss << " (F" << 5 + i << ")";
                 }
@@ -131,7 +128,7 @@ public:
         }
 
         // update keys state
-        if(!keysReleased)
+        if (!keysReleased)
         {
             keysReleased = true;
             for (size_t i = 0; i < KeyCount; i++)
@@ -158,7 +155,8 @@ public:
                     {
                         std::stringstream ss;
                         ss << "Script breakpoint ";
-                        if (!pausedScripts[i].msg.empty()) ss << "'" << pausedScripts[i].msg << "' "; // TODO: restore color if custom was used in name
+                        if (!pausedScripts[i].msg.empty())
+                            ss << "'" << pausedScripts[i].msg << "' "; // TODO: restore color if custom was used in name
                         ss << "released in '" << pausedScripts[i].ptr->GetName() << "'";
                         CLEO_Log(eLogLevel::Debug, ss.str().c_str());
                     }
@@ -213,7 +211,12 @@ public:
             }
             limitStr = StringPrintf("%d%s", limit, limitStr.c_str());
 
-            SHOW_ERROR("Over %s commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Command' property in %s.ini file and restart the game.", limitStr.c_str(), ScriptInfoStr(thread).c_str(), TARGET_NAME);
+            SHOW_ERROR(
+                "Over %s commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO "
+                "suspended this script.\n\nTo supress this error, increase 'Command' property in %s.ini file and "
+                "restart the game.",
+                limitStr.c_str(), ScriptInfoStr(thread).c_str(), TARGET_NAME
+            );
             return thread->Suspend();
         }
 
@@ -222,7 +225,12 @@ public:
         {
             if (configLimitTime > 0 && currScript.GetElapsedSeconds() > configLimitTime)
             {
-                SHOW_ERROR("Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and restart the game.", configLimitTime, ScriptInfoStr(thread).c_str(), TARGET_NAME);
+                SHOW_ERROR(
+                    "Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO "
+                    "suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and "
+                    "restart the game.",
+                    configLimitTime, ScriptInfoStr(thread).c_str(), TARGET_NAME
+                );
                 return thread->Suspend();
             }
         }
@@ -230,10 +238,7 @@ public:
         return OR_NONE;
     }
 
-    static void WINAPI OnLog(eLogLevel level, const char* msg)
-    {
-        screenLog.Add(level, msg);
-    }
+    static void WINAPI OnLog(eLogLevel level, const char* msg) { screenLog.Add(level, msg); }
 
     // ---------------------------------------------- opcodes -------------------------------------------------
 
@@ -262,12 +267,12 @@ public:
             return OR_CONTINUE;
         }
 
-        bool blocking = true; // pause entire game logic
+        bool blocking    = true; // pause entire game logic
         std::string name = "";
 
         // bool param - blocking
         auto paramType = thread->PeekDataType();
-        if(paramType == DT_BYTE)
+        if (paramType == DT_BYTE)
         {
             blocking = CLEO_GetIntOpcodeParam(thread) != 0;
         }
@@ -292,7 +297,7 @@ public:
         ss << " captured in '" << thread->GetName() << "'";
         CLEO_Log(eLogLevel::Debug, ss.str().c_str());
 
-        if(blocking)
+        if (blocking)
         {
             CLEO_Log(eLogLevel::Debug, "Game paused");
             CTimer::m_CodePause = true;
@@ -325,9 +330,9 @@ public:
         // normalized absolute filepath
         std::string filename(MAX_PATH, '\0');
         const size_t len = strlen(filestr);
-        for(size_t i = 0; i < len; i++)
+        for (size_t i = 0; i < len; i++)
         {
-            if(filestr[i] == '/')
+            if (filestr[i] == '/')
                 filename[i] = '\\';
             else
                 filename[i] = std::tolower(filestr[i]);
@@ -336,13 +341,18 @@ public:
         filename.resize(strlen(filename.data())); // clip to actual cstr len
 
         auto it = logFiles.find(filename);
-        if(it == logFiles.end()) // not opened yet
+        if (it == logFiles.end()) // not opened yet
         {
-            it = logFiles.emplace(std::piecewise_construct, std::make_tuple(filename), std::make_tuple(filename, std::ios_base::app)).first;
+            it = logFiles
+                     .emplace(
+                         std::piecewise_construct, std::make_tuple(filename),
+                         std::make_tuple(filename, std::ios_base::app)
+                     )
+                     .first;
         }
 
         auto& file = it->second;
-        if(!file.good())
+        if (!file.good())
         {
             std::ostringstream ss;
             ss << "Failed to open log file '" << filename << "'";
@@ -353,12 +363,15 @@ public:
         }
 
         // time stamp
-        if(CLEO_GetIntOpcodeParam(thread) != 0)
+        if (CLEO_GetIntOpcodeParam(thread) != 0)
         {
             SYSTEMTIME t;
             GetLocalTime(&t);
             static char szBuf[64];
-            sprintf_s(szBuf, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
+            sprintf_s(
+                szBuf, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond,
+                t.wMilliseconds
+            );
             file << szBuf;
         }
 
@@ -395,7 +408,7 @@ public:
             return OR_CONTINUE;
         }
 
-        auto text = CLEO_ReadStringOpcodeParam(thread);
+        auto text  = CLEO_ReadStringOpcodeParam(thread);
         auto value = CLEO_GetIntOpcodeParam(thread);
 
         std::ostringstream ss;
@@ -414,7 +427,7 @@ public:
             return OR_CONTINUE;
         }
 
-        auto text = CLEO_ReadStringOpcodeParam(thread);
+        auto text  = CLEO_ReadStringOpcodeParam(thread);
         auto value = CLEO_GetFloatOpcodeParam(thread);
 
         std::ostringstream ss;
@@ -432,4 +445,3 @@ size_t DebugUtils::configLimitCommand;
 size_t DebugUtils::configLimitTime;
 bool DebugUtils::keysReleased = true;
 std::map<std::string, std::ofstream> DebugUtils::logFiles;
-

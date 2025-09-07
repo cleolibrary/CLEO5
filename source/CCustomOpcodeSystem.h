@@ -7,23 +7,23 @@ namespace CLEO
 {
     class CCustomOpcodeSystem
     {
-    public:
+      public:
         static constexpr size_t Opcode_Max_Native = 0x0A4E; // GTA SA
-        static constexpr size_t Opcode_Max = 0x7FFF;
+        static constexpr size_t Opcode_Max        = 0x7FFF;
         static constexpr size_t Opcode_Table_Size = 100; // opcodes per handler
-        
+
         // most recently processed
         static CRunningScript* lastScript;
         static WORD lastOpcode;
         static WORD* lastOpcodePtr;
         static WORD lastCustomOpcode;
         static std::string lastErrorMsg;
-        static WORD prevOpcode; // previous
+        static WORD prevOpcode;        // previous
         static BYTE handledParamCount; // read/writen since current opcode handling started
 
         ScriptDeleteDelegate scriptDeleteDelegate;
 
-        CCustomOpcodeSystem() = default;
+        CCustomOpcodeSystem()                           = default;
         CCustomOpcodeSystem(const CCustomOpcodeSystem&) = delete; // no copying
         void Inject(CCodeInjector& inj);
         void Init();
@@ -32,7 +32,10 @@ namespace CLEO
 
         static bool RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
         static OpcodeResult CallNativeOpcode(CRunningScript* thread, WORD opcode);
-        static OpcodeResult CleoReturnGeneric(WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0, bool strictArgCount = true);
+        static OpcodeResult CleoReturnGeneric(
+            WORD opcode, CRunningScript* thread, bool returnArgs = false, DWORD returnArgCount = 0,
+            bool strictArgCount = true
+        );
 
         // new/customized opcodes
         static OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
@@ -58,7 +61,7 @@ namespace CLEO
         static OpcodeResult __stdcall opcode_2002(CRunningScript* thread); // cleo_return_with
         static OpcodeResult __stdcall opcode_2003(CRunningScript* thread); // cleo_return_fail
 
-    private:
+      private:
         bool initialized = false;
 
         typedef OpcodeResult(__thiscall* OpcodeHandler)(CRunningScript* thread, WORD opcode);
@@ -69,14 +72,15 @@ namespace CLEO
         static const size_t CustomOpcodeHandlersCount = (Opcode_Max / Opcode_Table_Size) + 1;
         static OpcodeHandler customOpcodeHandlers[CustomOpcodeHandlersCount]; // original + new opcodes
 
-        static OpcodeResult __fastcall customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode); // universal CLEO's opcode handler
+        // universal CLEO's opcode handler
+        static OpcodeResult __fastcall customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode);
 
         static CustomOpcodeHandler customOpcodeProc[Opcode_Max + 1]; // procedure for each opcode
     };
 
-    // Read null-terminated string into the buffer
-    // returns pointer to string or nullptr on fail
-    // WARNING: returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source)
+    // Read null-terminated string into the buffer and returns pointer to string or nullptr on fail
+    // WARNING:
+    // returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source)
     const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize);
 
     StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
@@ -86,5 +90,5 @@ namespace CLEO
     bool WriteStringParam(const StringParamBufferInfo& target, const char* str);
 
     void SkipUnusedVarArgs(CRunningScript* thread); // for var-args opcodes
-    DWORD GetVarArgCount(CRunningScript* thread); // for var-args opcodes
-}
+    DWORD GetVarArgCount(CRunningScript* thread);   // for var-args opcodes
+} // namespace CLEO

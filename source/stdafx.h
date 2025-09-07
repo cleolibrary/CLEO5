@@ -46,7 +46,6 @@
 #include <RenderWare.h>
 #include <extensions/Screen.h>
 
-
 // global constant paths. Initialize before anything else
 namespace FS = std::filesystem;
 
@@ -62,7 +61,8 @@ static std::string GetGameDirectory() // already stored in Filepath_Game
 
 static std::string GetUserDirectory() // already stored in Filepath_User
 {
-    static const auto GTA_InitUserDirectories = (char* (__cdecl*)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
+    static const auto GTA_InitUserDirectories =
+        (char*(__cdecl*)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
 
     std::string path = GTA_InitUserDirectories();
     CLEO::FilepathNormalize(path);
@@ -70,8 +70,8 @@ static std::string GetUserDirectory() // already stored in Filepath_User
     return std::move(path);
 }
 
-inline const std::string Filepath_Game = GetGameDirectory();
-inline const std::string Filepath_User = GetUserDirectory();
-inline const std::string Filepath_Cleo = Filepath_Game + "\\cleo";
+inline const std::string Filepath_Game   = GetGameDirectory();
+inline const std::string Filepath_User   = GetUserDirectory();
+inline const std::string Filepath_Cleo   = Filepath_Game + "\\cleo";
 inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
-inline const std::string Filepath_Log = Filepath_Game + "\\cleo.log";
+inline const std::string Filepath_Log    = Filepath_Game + "\\cleo.log";
