@@ -16,7 +16,7 @@ namespace CLEO
 
         // Unprotect image - make .text and .rdata section writeable
         auto pImageBase = (BYTE*)dwLoadOffset;
-        auto pDosHeader      = (PIMAGE_DOS_HEADER)dwLoadOffset;
+        auto pDosHeader = (PIMAGE_DOS_HEADER)dwLoadOffset;
         auto pNtHeader  = (PIMAGE_NT_HEADERS)(pImageBase + pDosHeader->e_lfanew);
         auto pSection   = IMAGE_FIRST_SECTION(pNtHeader);
 
