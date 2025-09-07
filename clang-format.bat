@@ -5,8 +5,17 @@ setlocal enabledelayedexpansion
 
 set "ignore_files="
 for /f "delims=" %%i in (./.clang-format-ignore) do (
-    set "ignore_files=!ignore_files! %%i"
+    set "ignore_file=%%i"
+
+    @rem Convert Unix path to Windows
+    set "ignore_file=!ignore_file:/=\!"
+    set "ignore_file=!ignore_file:~1!"
+    set "ignore_files=!ignore_files! !ignore_file!"
 )
+
+echo Ignored files:
+echo !ignore_files!
+echo.
 
 for %%e in (cpp h c hpp) do (
     for /r %%f in (*.%%e) do (
