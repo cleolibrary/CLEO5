@@ -16,6 +16,7 @@ on:
       - '**.vcproj'
       - '**.vcxproj.filters'
       - '**.sln'
+      - '**.yml'
 
 jobs:
   Validate_Code_Formatting:
@@ -28,6 +29,8 @@ jobs:
 
       - name: clang-format
         uses: DoozyX/clang-format-lint-action@v0.20
+        with:
+          clangFormatVersion: 20
 
   Test_Build:
     runs-on: windows-2022

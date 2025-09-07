@@ -1,6 +1,6 @@
-tests
-third-party
-examples
+./tests
+./third-party
+./examples
 .vscode
 .vscode
 .output
