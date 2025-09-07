@@ -95,9 +95,8 @@ class DebugUtils
 
     static void WINAPI OnDrawingFinished()
     {
-        auto GTA_GetKeyState = (SHORT(__stdcall*)(
-            int
-        ))0x0081E64C; // use ingame function as GetKeyState might look like keylogger to some AV software
+        // use ingame function as GetKeyState might look like keylogger to some AV software
+        auto GTA_GetKeyState = (SHORT(__stdcall*)(int))0x0081E64C;
 
         // log messages
         screenLog.Draw();
