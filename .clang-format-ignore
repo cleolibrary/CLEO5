@@ -6,3 +6,12 @@
 \.output
 \.github
 \cleo_plugins\Audio\bass
+
+.\tests
+.\third-party
+.\examples
+.\.vscode
+.\.vs
+.\.output
+.\.github
+.\cleo_plugins\Audio\bass
