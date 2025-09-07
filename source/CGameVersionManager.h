@@ -18,7 +18,7 @@ namespace CLEO
         PLATFORM_WINDOWS
     };
 
-    // determines the list of memory adresses, that can be translated 
+    // determines the list of memory adresses, that can be translated
     // considering to game version
     enum eMemoryAddress
     {
@@ -60,21 +60,10 @@ namespace CLEO
     {
         eGameVersion m_eVersion;
 
-    public:
-        CGameVersionManager()
-        {
-            m_eVersion = DetermineGameVersion();
-        }
-
-        ~CGameVersionManager()
-        {
-        }
-
-        eGameVersion GetGameVersion() const
-        {
-            return m_eVersion;
-        }
-
+      public:
+        CGameVersionManager() { m_eVersion = DetermineGameVersion(); }
+        ~CGameVersionManager() {}
+        eGameVersion GetGameVersion() const { return m_eVersion; }
         memory_pointer TranslateMemoryAddress(eMemoryAddress addrId) const;
     };
-}
+} // namespace CLEO

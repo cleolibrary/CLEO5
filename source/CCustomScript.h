@@ -23,7 +23,7 @@ namespace CLEO
         std::string m_scriptFileName;
         std::string m_workDir;
 
-    public:
+      public:
         CCustomScript(const char* szFileName, bool bIsMiss = false, CRunningScript* parent = nullptr, int label = 0);
         CCustomScript(const CCustomScript&) = delete; // no copying
         ~CCustomScript();
@@ -34,7 +34,7 @@ namespace CLEO
         void ShutdownThisScript();
 
         inline bool IsOk() const { return m_ok; }
-        
+
         inline DWORD GetCodeSize() const { return m_codeSize; }
         inline void SetCodeSize(DWORD size) { m_codeSize = size; }
 
@@ -70,5 +70,4 @@ namespace CLEO
         // get short info text about script
         std::string GetInfoStr(bool currLineInfo = true) const;
     };
-}
-
+} // namespace CLEO

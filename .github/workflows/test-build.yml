@@ -16,8 +16,22 @@ on:
       - '**.vcproj'
       - '**.vcxproj.filters'
       - '**.sln'
+      - '**.yml'
 
 jobs:
+  Validate_Code_Formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+
+      - name: clang-format
+        uses: DoozyX/clang-format-lint-action@v0.20
+        with:
+          clangFormatVersion: 20
+
   Test_Build:
     runs-on: windows-2022
     steps:

@@ -4,8 +4,8 @@
 
 namespace CLEO
 {
-    memory_pointer MemoryAddresses[MA_TOTAL][GV_TOTAL] =
-    {
+    memory_pointer MemoryAddresses[MA_TOTAL][GV_TOTAL] = {
+        // clang-format off
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x0053E981,	memory_und, 0x0053E981, 0x0053EE21, 0x00551174 },		// MA_CALL_UPDATE_GAME_LOGICS,
 
@@ -35,6 +35,8 @@ namespace CLEO
 
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x007487A8,	memory_und, 0x007487F8, 0x0074907C, 0x0078276D },		// MA_CALL_CREATE_MAIN_WINDOW,
+
+        // clang-format on
     };
 
     eGameVersion DetermineGameVersion()
@@ -57,4 +59,4 @@ namespace CLEO
     {
         return MemoryAddresses[addrId][GetGameVersion()];
     }
-}
+} // namespace CLEO

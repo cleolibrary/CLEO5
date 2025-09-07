@@ -2,7 +2,6 @@
 #include "CDebug.h"
 #include "CleoBase.h"
 
-
 CDebug Debug;
 using namespace CLEO;
 
@@ -18,14 +17,15 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
 
     // censor user name in paths like "C:\Users\xxx\Documents..."
     const char* UsersDir = "\\users\\";
-    std::string msgStr = msg;
+    std::string msgStr   = msg;
     StringToLower(msgStr);
     auto usersDirPos = strstr(msgStr.c_str(), UsersDir);
     if (usersDirPos != nullptr)
     {
         size_t userBegin = (size_t)(usersDirPos - msgStr.c_str()) + strlen(UsersDir);
-        
-        size_t userEnd = msgStr.find_first_of("\\/*\"<>:|?", userBegin); // till next path separator or any invalid filepath character
+
+        // till next path separator or any invalid filepath character
+        size_t userEnd = msgStr.find_first_of("\\/*\"<>:|?", userBegin);
         if (userEnd == std::string::npos)
         {
             userEnd = msgStr.length();
@@ -52,11 +52,14 @@ void CDebug::Trace(CLEO::eLogLevel level, const char* msg)
         // time stamp
         SYSTEMTIME t;
         GetLocalTime(&t);
-        //void(__stdcall * GTA_GetLocalTime)(LPSYSTEMTIME lpSystemTime) = memory_pointer(0x0081E514); // use ingame function instead as GetLocalTime seems to be considered suspicious by some AV software
-        //GTA_GetLocalTime(&t);
+        // void(__stdcall * GTA_GetLocalTime)(LPSYSTEMTIME lpSystemTime) = memory_pointer(0x0081E514); // use ingame
+        // function instead as GetLocalTime seems to be considered suspicious by some AV software GTA_GetLocalTime(&t);
 
         char timestampStr[32];
-        sprintf_s(timestampStr, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
+        sprintf_s(
+            timestampStr, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute,
+            t.wSecond, t.wMilliseconds
+        );
         m_hFile << timestampStr;
 
         // add separator line if frame rendered since last log entry

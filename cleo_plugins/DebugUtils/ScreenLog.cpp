@@ -12,17 +12,14 @@ ScreenLog::ScreenLog()
 
 void ScreenLog::Init()
 {
-    auto ConfigReadHex = [](const char* section, const char* key, DWORD defValue, const char* filename)
-    {
-        char buff[32] = { 0 };
-        if (!GetPrivateProfileString(section, key, "", buff, sizeof(buff), filename))
-            return defValue;
+    auto ConfigReadHex = [](const char* section, const char* key, DWORD defValue, const char* filename) {
+        char buff[32] = {0};
+        if (!GetPrivateProfileString(section, key, "", buff, sizeof(buff), filename)) return defValue;
 
         char* end;
         DWORD result = strtoul(buff, &end, 16);
 
-        if (*end != '\0')
-            return defValue; // any invalid char
+        if (*end != '\0') return defValue; // any invalid char
 
         return result;
     };
@@ -30,17 +27,20 @@ void ScreenLog::Init()
     // load settings from ini file
     auto config = GetConfigFilename();
 
-    level = (eLogLevel)GetPrivateProfileInt("ScreenLog", "Level", (DWORD)eLogLevel::None, config.c_str());
+    level       = (eLogLevel)GetPrivateProfileInt("ScreenLog", "Level", (DWORD)eLogLevel::None, config.c_str());
     maxMessages = GetPrivateProfileInt("ScreenLog", "MessagesMax", 40, config.c_str());
     timeDisplay = GetPrivateProfileInt("ScreenLog", "MessageTime", 6000, config.c_str());
     timeFadeout = 3000;
 
-    fontSize = 0.01f * GetPrivateProfileInt("ScreenLog", "FontSize", 60, config.c_str());
+    fontSize  = 0.01f * GetPrivateProfileInt("ScreenLog", "FontSize", 60, config.c_str());
     fontStyle = (eFontStyle)GetPrivateProfileInt("ScreenLog", "FontStyle", eFontStyle::FONT_SUBTITLES, config.c_str());
 
-    fontColor[(size_t)eLogLevel::Error] = CRGBA(ConfigReadHex("ScreenLog", "ColorError", fontColor[(size_t)eLogLevel::Error].ToInt(), config.c_str()));
-    fontColor[(size_t)eLogLevel::Debug] = CRGBA(ConfigReadHex("ScreenLog", "ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt(), config.c_str()));
-    fontColor[(size_t)eLogLevel::Default] = CRGBA(ConfigReadHex("ScreenLog", "ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt(), config.c_str()));
+    fontColor[(size_t)eLogLevel::Error] =
+        CRGBA(ConfigReadHex("ScreenLog", "ColorError", fontColor[(size_t)eLogLevel::Error].ToInt(), config.c_str()));
+    fontColor[(size_t)eLogLevel::Debug] =
+        CRGBA(ConfigReadHex("ScreenLog", "ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt(), config.c_str()));
+    fontColor[(size_t)eLogLevel::Default] =
+        CRGBA(ConfigReadHex("ScreenLog", "ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt(), config.c_str()));
 }
 
 void ScreenLog::Add(eLogLevel level, const char* msg)
@@ -51,7 +51,7 @@ void ScreenLog::Add(eLogLevel level, const char* msg)
     }
 
     Entry entry(level, msg);
-    if(!entries.empty() && entries.front() == entry)
+    if (!entries.empty() && entries.front() == entry)
     {
         entries.front().Repeat(); // duplicated
     }
@@ -63,10 +63,10 @@ void ScreenLog::Add(eLogLevel level, const char* msg)
         if (full) entries.resize(maxMessages);
 
         // update scroll pos
-        float sizeY = fontSize * RsGlobal.maximumHeight / 448.0f;
+        float sizeY  = fontSize * RsGlobal.maximumHeight / 448.0f;
         size_t lines = CountLines(std::string(msg));
 
-        if(!full)
+        if (!full)
             scrollOffset += 18.0f * lines * sizeY;
         else
             scrollOffset = 0.0f; // do not animate if list was full
@@ -93,9 +93,9 @@ void ScreenLog::Draw()
     prevTime = currTime;
 
     // clean up expired entries
-    while(!entries.empty())
+    while (!entries.empty())
     {
-        if(entries.back().timeLeft < (-0.001f * timeFadeout))
+        if (entries.back().timeLeft < (-0.001f * timeFadeout))
             entries.pop_back();
         else
             break;
@@ -114,8 +114,8 @@ void ScreenLog::Draw()
     CFont::SetProportional(true);
 
     const float aspect = (float)RsGlobal.maximumWidth / RsGlobal.maximumHeight;
-    float sizeX = fontSize * 0.58f * RsGlobal.maximumWidth / 640.0f / aspect;
-    float sizeY = fontSize * RsGlobal.maximumHeight / 448.0f;
+    float sizeX        = fontSize * 0.58f * RsGlobal.maximumWidth / 640.0f / aspect;
+    float sizeY        = fontSize * RsGlobal.maximumHeight / 448.0f;
     CFont::SetScale(sizeX, sizeY);
 
     CFont::SetOrientation(ALIGN_LEFT);
@@ -129,16 +129,16 @@ void ScreenLog::Draw()
         lines += CountLines(entry.msg);
     }
 
-    float elapsed = 0.001f * (CTimer::m_snTimeInMilliseconds - CTimer::m_snPreviousTimeInMilliseconds);
+    float elapsed    = 0.001f * (CTimer::m_snTimeInMilliseconds - CTimer::m_snPreviousTimeInMilliseconds);
     float elapsedAlt = elapsed;
-    float rowTime = -0.001f * timeFadeout;
-    for(auto it = entries.rbegin(); it != entries.rend(); it++) // draw from oldest
+    float rowTime    = -0.001f * timeFadeout;
+    for (auto it = entries.rbegin(); it != entries.rend(); it++) // draw from oldest
     {
         auto& entry = *it;
 
-        if(entry.timeLeft > 0.0f)
+        if (entry.timeLeft > 0.0f)
         {
-            if(entry.timeLeft < elapsedAlt)
+            if (entry.timeLeft < elapsedAlt)
                 entry.timeLeft = 0.0f; // do not skip fade
             else
                 entry.timeLeft -= elapsedAlt;
@@ -149,20 +149,20 @@ void ScreenLog::Draw()
         elapsedAlt *= 0.98f; // keep every next line longer
 
         rowTime = std::max(rowTime, entry.timeLeft); // carred on from older entries
-        
+
         BYTE alpha = 255;
         if (rowTime < 0)
         {
             float fadeProgress = -rowTime / (0.001f * timeFadeout);
-            fadeProgress = std::clamp(fadeProgress, 0.0f, 1.0f);
-            fadeProgress = 1.0f - fadeProgress; // fade out
-            fadeProgress = sqrtf(fadeProgress);
-            alpha = (BYTE)(fadeProgress * 0xFF);
+            fadeProgress       = std::clamp(fadeProgress, 0.0f, 1.0f);
+            fadeProgress       = 1.0f - fadeProgress; // fade out
+            fadeProgress       = sqrtf(fadeProgress);
+            alpha              = (BYTE)(fadeProgress * 0xFF);
         };
 
         auto color = fontColor[(size_t)entry.level];
-        alpha = std::min(alpha, color.a);
-        color.a = alpha;
+        alpha      = std::min(alpha, color.a);
+        color.a    = alpha;
 
         CFont::SetColor(color);
 
@@ -177,7 +177,7 @@ void ScreenLog::Draw()
 
     // for some reason last string on print list is always drawn incorrectly
     // Walkaround: add one extra dummy line then
-    CFont::PrintString(0.0f, -500.0f, "_~n~_~n~_"); 
+    CFont::PrintString(0.0f, -500.0f, "_~n~_~n~_");
 }
 
 void ScreenLog::DrawLine(const char* msg, size_t row)
@@ -189,14 +189,14 @@ void ScreenLog::DrawLine(const char* msg, size_t row)
     CFont::SetProportional(true);
 
     const float aspect = (float)RsGlobal.maximumWidth / RsGlobal.maximumHeight;
-    float sizeX = fontSize * 0.55f * RsGlobal.maximumWidth / 640.0f / aspect;
-    float sizeY = fontSize * RsGlobal.maximumHeight / 448.0f;
+    float sizeX        = fontSize * 0.55f * RsGlobal.maximumWidth / 640.0f / aspect;
+    float sizeY        = fontSize * RsGlobal.maximumHeight / 448.0f;
     CFont::SetScale(sizeX, sizeY);
 
     CFont::SetOrientation(ALIGN_RIGHT);
     float posX = (float)RsGlobal.maximumWidth - 15.0f * sizeX;
-    
-    //if(FrontEndMenuManager.m_bHudOn)
+
+    // if(FrontEndMenuManager.m_bHudOn)
     float posY = 0.25f * RsGlobal.maximumHeight;
     posY += 18.0f * sizeY * row;
 
@@ -225,7 +225,6 @@ size_t ScreenLog::CountLines(std::string& msg)
 
 DWORD ScreenLog::GetTime()
 {
-    //return GetTickCount();
+    // return GetTickCount();
     return CTimer::m_snPreviousTimeInMillisecondsNonClipped;
 }
-

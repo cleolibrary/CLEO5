@@ -14,7 +14,7 @@ namespace CLEO
 {
     class CCleoInstance
     {
-    public:
+      public:
         enum InitStage : size_t
         {
             None,
@@ -24,15 +24,15 @@ namespace CLEO
         };
 
         // order here defines init and deinit order!
-        CDmaFix					DmaFix;
-        CGameMenu				GameMenu;
-        CCodeInjector			CodeInjector;
-        CPluginSystem			PluginSystem;
-        CGameVersionManager		VersionManager;
-        CScriptEngine			ScriptEngine;
-        CCustomOpcodeSystem		OpcodeSystem;
-        CModuleSystem			ModuleSystem;
-        OpcodeInfoDatabase		OpcodeInfoDb;
+        CDmaFix DmaFix;
+        CGameMenu GameMenu;
+        CCodeInjector CodeInjector;
+        CPluginSystem PluginSystem;
+        CGameVersionManager VersionManager;
+        CScriptEngine ScriptEngine;
+        CCustomOpcodeSystem OpcodeSystem;
+        CModuleSystem ModuleSystem;
+        OpcodeInfoDatabase OpcodeInfoDb;
 
         int saveSlot = -1; // -1 if not loaded from save
 
@@ -91,12 +91,11 @@ namespace CLEO
         void(__cdecl* GameRestartDebugDisplayTextBuffer_FrontendOrig)() = nullptr;
         static void OnDebugDisplayTextBuffer_Frontend();
 
-    private:
-        InitStage m_initStage = InitStage::None;
+      private:
+        InitStage m_initStage  = InitStage::None;
         bool m_bGameInProgress = false;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 
     extern CCleoInstance CleoInstance;
-}
-
+} // namespace CLEO
