@@ -3,10 +3,9 @@
 #include "ScriptDrawsState.h"
 #include <map>
 
-
 class ScriptDrawing
 {
-public:
+  public:
     void ScriptProcessingBegin(CLEO::CRunningScript* script);
     void ScriptProcessingEnd(CLEO::CRunningScript* script);
     void ScriptUnregister(CLEO::CRunningScript* script);
@@ -15,9 +14,8 @@ public:
 
     RwTexture* GetScriptTexture(CLEO::CRunningScript* script, DWORD slot);
 
-private:
+  private:
     ScriptDrawsState m_globalDrawingState;
-    CLEO::CRunningScript* m_currCustomScript = nullptr; // currently processed script
+    CLEO::CRunningScript* m_currCustomScript = nullptr;                      // currently processed script
     std::map<CLEO::CRunningScript*, ScriptDrawsState> m_scriptDrawingStates; // buffered script draws
 };
-

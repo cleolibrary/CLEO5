@@ -105,9 +105,6 @@
     <ClCompile Include="source\CPluginSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CCheat.cpp">
-      <Filter>third_party\plugin_sdk</Filter>
-    </ClCompile>
     <ClCompile Include="third-party\simdjson\simdjson.cpp">
       <Filter>third_party\simdjson</Filter>
     </ClCompile>
@@ -197,6 +194,7 @@
     <ClInclude Include="source\CCustomScript.h">
       <Filter>source\core</Filter>
     </ClInclude>
+    <ClInclude Include="source\ScriptUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source\cleo.def">

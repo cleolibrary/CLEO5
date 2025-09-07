@@ -47,4 +47,4 @@ namespace CLEO
             SHOW_ERROR("CDmaFix::Inject(): Unimplemented game version.");
         }
     }
-}
+} // namespace CLEO

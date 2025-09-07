@@ -23,7 +23,7 @@ namespace CLEO
         std::string m_scriptFileName;
         std::string m_workDir;
 
-    public:
+      public:
         inline SCRIPT_VAR* GetVarsPtr() { return LocalVar; }
         inline bool IsOk() const { return m_ok; }
         inline DWORD GetCodeSize() const { return m_codeSize; }
@@ -67,5 +67,4 @@ namespace CLEO
         // get short info text about script
         std::string GetInfoStr(bool currLineInfo = true) const;
     };
-}
-
+} // namespace CLEO

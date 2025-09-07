@@ -6,10 +6,10 @@
 
 namespace CLEO
 {
-#pragma pack(push,4)
+#pragma pack(push, 4)
     class CAudioStream
     {
-    public:
+      public:
         enum StreamState
         {
             Stopped = -1,
@@ -57,17 +57,17 @@ namespace CLEO
         virtual float CalculateVolume();
         virtual float CalculateSpeed();
 
-    protected:
-        HSTREAM streamInternal = 0;
-        StreamState state = Paused;
-        eStreamType type = eStreamType::SoundEffect;
-        bool ok = false;
-        float rate = 44100.0f; // file's sampling rate
-        CInterpolatedValue speed = { 1.0f };
-        CInterpolatedValue volume = { 1.0f };
+      protected:
+        HSTREAM streamInternal    = 0;
+        StreamState state         = Paused;
+        eStreamType type          = eStreamType::SoundEffect;
+        bool ok                   = false;
+        float rate                = 44100.0f; // file's sampling rate
+        CInterpolatedValue speed  = {1.0f};
+        CInterpolatedValue volume = {1.0f};
 
-        CAudioStream() = default;
+        CAudioStream()                    = default;
         CAudioStream(const CAudioStream&) = delete; // no copying!
     };
 #pragma pack(pop)
-}
+} // namespace CLEO

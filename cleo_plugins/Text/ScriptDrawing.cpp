@@ -6,7 +6,6 @@
 
 using namespace CLEO;
 
-
 void ScriptDrawing::ScriptProcessingBegin(CLEO::CRunningScript* script)
 {
     if (!script->IsCustom()) return;
@@ -36,14 +35,16 @@ void ScriptDrawing::ScriptUnregister(CLEO::CRunningScript* script)
 
 void ScriptDrawing::Draw(bool beforeFade)
 {
-    if (std::all_of(m_scriptDrawingStates.cbegin(), m_scriptDrawingStates.cend(), [](auto& p) { return p.second.IsEmpty(); }))
+    if (std::all_of(m_scriptDrawingStates.cbegin(), m_scriptDrawingStates.cend(), [](auto& p) {
+            return p.second.IsEmpty();
+        }))
     {
         return; // no custom scripts with draws
     }
 
     m_globalDrawingState.Store();
 
-    for(auto& [script, state] : m_scriptDrawingStates)
+    for (auto& [script, state] : m_scriptDrawingStates)
     {
         if (state.IsEmpty()) continue;
 
@@ -70,11 +71,14 @@ RwTexture* ScriptDrawing::GetScriptTexture(CLEO::CRunningScript* script, DWORD s
         }
         else
         {
-            return (m_scriptDrawingStates.find(script) != m_scriptDrawingStates.end()) ? CTheScripts::ScriptSprites[slot].m_pTexture : nullptr;
+            return (m_scriptDrawingStates.find(script) != m_scriptDrawingStates.end())
+                       ? CTheScripts::ScriptSprites[slot].m_pTexture
+                       : nullptr;
         }
     }
     else
     {
-        return (m_currCustomScript == nullptr) ? CTheScripts::ScriptSprites[slot].m_pTexture : m_globalDrawingState.sprites[slot].m_pTexture;
+        return (m_currCustomScript == nullptr) ? CTheScripts::ScriptSprites[slot].m_pTexture
+                                               : m_globalDrawingState.sprites[slot].m_pTexture;
     }
 }

@@ -8,10 +8,13 @@ namespace CLEO
     void CGameMenu::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting MenuStatusNotifier...");
-        inj.ReplaceFunction(HOOK_DrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT), &DrawMenuBackground_Orig);
+        inj.ReplaceFunction(
+            HOOK_DrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT),
+            &DrawMenuBackground_Orig
+        );
     }
 
-    void __fastcall CGameMenu::HOOK_DrawMenuBackground(CSprite2d* texture, int dummy, CRect* rect, RwRGBA *color)
+    void __fastcall CGameMenu::HOOK_DrawMenuBackground(CSprite2d* texture, int dummy, CRect* rect, RwRGBA* color)
     {
         CleoInstance.Start(CCleoInstance::InitStage::OnDraw); // late initialization
 
@@ -23,21 +26,20 @@ namespace CLEO
         CFont::SetProportional(true);
         CFont::SetOrientation(ALIGN_LEFT);
 
-        CFont::SetColor({ 0xAD, 0xCE, 0xC4, 0xFF });
+        CFont::SetColor({0xAD, 0xCE, 0xC4, 0xFF});
         CFont::SetEdge(1);
-        CFont::SetDropColor({ 0x00, 0x00, 0x00, 0xFF });
+        CFont::SetDropColor({0x00, 0x00, 0x00, 0xFF});
 
-        const float fontSize = 0.5f / 448.0f;
-        const float aspect = (float)RsGlobal.maximumWidth / RsGlobal.maximumHeight;
+        const float fontSize      = 0.5f / 448.0f;
+        const float aspect        = (float)RsGlobal.maximumWidth / RsGlobal.maximumHeight;
         const float subtextHeight = 0.75f; // factor of first line height
-        float sizeX = fontSize * 0.5f / aspect * RsGlobal.maximumWidth;
-        float sizeY = fontSize * RsGlobal.maximumHeight;
+        float sizeX               = fontSize * 0.5f / aspect * RsGlobal.maximumWidth;
+        float sizeY               = fontSize * RsGlobal.maximumHeight;
+        float posX                = 25.0f * sizeX;                          // left margin
+        float posY                = RsGlobal.maximumHeight - 15.0f * sizeY; // bottom margin
+        auto cs_count             = CleoInstance.ScriptEngine.WorkingScriptsCount();
+        auto plugin_count         = CleoInstance.PluginSystem.GetNumPlugins();
 
-        float posX = 25.0f * sizeX; // left margin
-        float posY = RsGlobal.maximumHeight - 15.0f * sizeY; // bottom margin
-
-        auto cs_count = CleoInstance.ScriptEngine.WorkingScriptsCount();
-        auto plugin_count = CleoInstance.PluginSystem.GetNumPlugins();
         if (cs_count || plugin_count)
         {
             posY -= 15.0f * sizeY; // add space for bottom text
@@ -67,4 +69,4 @@ namespace CLEO
             CFont::PrintString(posX, posY - 15.0f * sizeY, text.str().c_str());
         }
     }
-}
+} // namespace CLEO

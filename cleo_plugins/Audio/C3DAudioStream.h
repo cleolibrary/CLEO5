@@ -5,7 +5,7 @@ namespace CLEO
 {
     class C3DAudioStream : public CAudioStream
     {
-    public:
+      public:
         C3DAudioStream(const char* filepath);
 
         // overloaded actions
@@ -17,22 +17,21 @@ namespace CLEO
         virtual float CalculateVolume();
         virtual float CalculateSpeed();
 
-    protected:
+      protected:
         const float Volume_3D_Adjust = 0.5f; // match other ingame sound sources
         static double CalculateDistanceDecay(float radius, float distance);
         static float CalculateDirectionDecay(const CVector& listenerDir, const CVector& relativePos);
 
-        CEntity* host = nullptr;
+        CEntity* host        = nullptr;
         eEntityType hostType = ENTITY_TYPE_NOTHING;
-        CVector offset = { 0.0f, 0.0f, 0.0f }; // offset in relation to host
-        float radius = 0.5f; // size of sound source
+        CVector offset       = {0.0f, 0.0f, 0.0f}; // offset in relation to host
+        float radius         = 0.5f;               // size of sound source
 
-        bool placed = false;
-        CVector position = { 0.0f, 0.0f, 0.0f }; // last world position
-        CVector velocity = { 0.0f, 0.0f, 0.0f };
+        bool placed      = false;
+        CVector position = {0.0f, 0.0f, 0.0f}; // last world position
+        CVector velocity = {0.0f, 0.0f, 0.0f};
 
         C3DAudioStream(const C3DAudioStream&) = delete; // no copying!
         void UpdatePosition();
     };
-}
-
+} // namespace CLEO

@@ -1,8 +1,7 @@
 #pragma once
 #include "..\cleo_sdk\CLEO.h"
 
-template<typename T>
-void FilesWalk(const char* directory, const char* extension, T callback)
+template <typename T> void FilesWalk(const char* directory, const char* extension, T callback)
 {
     auto filePattern = std::string(directory);
     filePattern += "\\*";
