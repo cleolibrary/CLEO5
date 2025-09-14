@@ -1,5 +1,6 @@
 #pragma once
 #include <CTheScripts.h>
+#include <CTxdStore.h>
 #include <array>
 
 struct ScriptDrawsState
@@ -13,6 +14,9 @@ struct ScriptDrawsState
     std::array<tScriptRectangle, _countof(CTheScripts::IntroRectangles)> rectangles;
 
     std::array<CSprite2d, _countof(CTheScripts::ScriptSprites)> sprites;
+
+    TxdDef scriptTxd;                                   // current script.txd
+    std::unordered_map<std::string, TxdDef> loadedTxds; // texture dictionaries loaded by script
 
     ScriptDrawsState()                        = default;
     ScriptDrawsState(const ScriptDrawsState&) = delete; // no copying!
@@ -29,46 +33,64 @@ struct ScriptDrawsState
         std::memcpy(rectangles.data(), CTheScripts::IntroRectangles, rectangles.size() * sizeof(tScriptRectangle));
 
         std::memcpy(sprites.data(), CTheScripts::ScriptSprites, sprites.size() * sizeof(CSprite2d));
+
+        // store script.txd
+        scriptTxd = *FindScriptTxd();
     }
 
-    void Apply(bool newFrame = false)
+    void Reset()
     {
-        if (!newFrame)
-        {
-            CTheScripts::UseTextCommands = useTextCommands;
+        CTheScripts::UseTextCommands = (useTextCommands == eUseTextCommandState::DISABLE_NEXT_FRAME)
+                                           ? eUseTextCommandState::DISABLED
+                                           : useTextCommands;
 
-            // texts
-            CTheScripts::NumberOfIntroTextLinesThisFrame = textsCount;
-            std::memcpy(CTheScripts::IntroTextLines, texts.data(), texts.size() * sizeof(tScriptText));
+        // texts
+        CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
+        std::fill(
+            CTheScripts::IntroTextLines, CTheScripts::IntroTextLines + _countof(CTheScripts::IntroTextLines),
+            tScriptText()
+        );
 
-            // rectangles
-            CTheScripts::NumberOfIntroRectanglesThisFrame = rectanglesCount;
-            std::memcpy(CTheScripts::IntroRectangles, rectangles.data(), rectangles.size() * sizeof(tScriptRectangle));
-        }
-        else
-        {
-            CTheScripts::UseTextCommands = (useTextCommands == eUseTextCommandState::DISABLE_NEXT_FRAME)
-                                               ? eUseTextCommandState::DISABLED
-                                               : useTextCommands;
-
-            // texts
-            CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
-            std::fill(
-                CTheScripts::IntroTextLines, CTheScripts::IntroTextLines + _countof(CTheScripts::IntroTextLines),
-                tScriptText()
-            );
-
-            // rectangles
-            CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
-            std::fill(
-                CTheScripts::IntroRectangles, CTheScripts::IntroRectangles + _countof(CTheScripts::IntroRectangles),
-                tScriptRectangle()
-            );
-        }
+        // rectangles
+        CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
+        std::fill(
+            CTheScripts::IntroRectangles, CTheScripts::IntroRectangles + _countof(CTheScripts::IntroRectangles),
+            tScriptRectangle()
+        );
 
         // loaded textures
+        RestoreScriptTextures();
+    }
+
+    void Apply()
+    {
+        CTheScripts::UseTextCommands = useTextCommands;
+
+        // texts
+        CTheScripts::NumberOfIntroTextLinesThisFrame = textsCount;
+        std::memcpy(CTheScripts::IntroTextLines, texts.data(), texts.size() * sizeof(tScriptText));
+
+        // rectangles
+        CTheScripts::NumberOfIntroRectanglesThisFrame = rectanglesCount;
+        std::memcpy(CTheScripts::IntroRectangles, rectangles.data(), rectangles.size() * sizeof(tScriptRectangle));
+
+        // loaded textures
+        RestoreScriptTextures();
+    }
+
+    void RestoreScriptTextures()
+    {
+        // restore script.txd
+        *FindScriptTxd() = scriptTxd;
         std::memcpy(CTheScripts::ScriptSprites, sprites.data(), sprites.size() * sizeof(CSprite2d));
     }
 
     bool IsEmpty() const { return !rectanglesCount && !textsCount; }
+
+    TxdDef* FindScriptTxd()
+    {
+        auto slot = CTxdStore::FindTxdSlot("script");
+        if (slot == -1) slot = CTxdStore::AddTxdSlot("script");
+        return CTxdStore::ms_pTxdPool->GetAt(slot);
+    }
 };
