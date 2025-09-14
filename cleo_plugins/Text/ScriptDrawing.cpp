@@ -1,17 +1,46 @@
-
 #include "ScriptDrawing.h"
 #include "CLEO_Utils.h"
 #include <CHud.h>
 #include <CTheScripts.h>
+#include <CTxdStore.h>
 
 using namespace CLEO;
+
+bool ScriptDrawing::IsTxdLoaded(CLEO::CRunningScript* script, const char* name)
+{
+    if (!script->IsCustom()) return false;
+
+    const auto& loadedTxds = m_scriptDrawingStates[script].loadedTxds;
+    return loadedTxds.find(name) != loadedTxds.end();
+}
+
+void ScriptDrawing::MakeActiveTxd(CLEO::CRunningScript* script, const char* name)
+{
+    if (!script->IsCustom()) return;
+
+    auto& state = m_scriptDrawingStates[script];
+    auto it     = state.loadedTxds.find(name);
+
+    if (it != state.loadedTxds.end())
+    {
+        *state.FindScriptTxd() = it->second;
+    }
+}
+
+void ScriptDrawing::StoreTxd(CLEO::CRunningScript* script, const char* name)
+{
+    if (!script->IsCustom()) return;
+
+    auto& state                         = m_scriptDrawingStates[script];
+    state.loadedTxds[std::string(name)] = *state.FindScriptTxd();
+}
 
 void ScriptDrawing::ScriptProcessingBegin(CLEO::CRunningScript* script)
 {
     if (!script->IsCustom()) return;
 
     m_globalDrawingState.Store();
-    m_scriptDrawingStates[script].Apply(true); // initialize for new frame
+    m_scriptDrawingStates[script].Reset();
 
     m_currCustomScript = script;
 }
@@ -29,6 +58,30 @@ void ScriptDrawing::ScriptProcessingEnd(CLEO::CRunningScript* script)
 void ScriptDrawing::ScriptUnregister(CLEO::CRunningScript* script)
 {
     if (!script->IsCustom()) return;
+
+    const auto& state = m_scriptDrawingStates[script];
+
+    if (!state.loadedTxds.empty())
+    {
+        if (const auto slot = CTxdStore::FindTxdSlot("script"); slot != -1)
+        {
+            if (auto* scriptTxd = CTxdStore::ms_pTxdPool->GetAt(slot); scriptTxd)
+            {
+                // store current script.txd
+                TxdDef scriptTxdCopy = *scriptTxd;
+
+                // cleanup all custom loaded txds
+                for (auto& [name, txd] : state.loadedTxds)
+                {
+                    *scriptTxd = state.scriptTxd;
+                    CTxdStore::RemoveTxd(slot);
+                }
+
+                // restore script.txd
+                *scriptTxd = scriptTxdCopy;
+            }
+        }
+    }
 
     m_scriptDrawingStates.erase(script);
 }
