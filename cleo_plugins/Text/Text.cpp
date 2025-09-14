@@ -8,6 +8,8 @@
 #include <CMessages.h>
 #include <CModelInfo.h>
 #include <CTheScripts.h>
+#include <CMissionCleanup.h>
+#include <CTxdStore.h>
 #include <CText.h>
 #include <shlwapi.h>
 
@@ -35,6 +37,8 @@ class Text
         if (!PluginCheckCleoVersion()) return;
 
         // register opcodes
+        CLEO_RegisterOpcode(0x0390, opcode_0390); // load_texture_dictionary
+        CLEO_RegisterOpcode(0x0391, opcode_0391); // remove_texture_dictionary
         CLEO_RegisterOpcode(0x0ACA, opcode_0ACA); // print_help_string
         CLEO_RegisterOpcode(0x0ACB, opcode_0ACB); // print_big_string
         CLEO_RegisterOpcode(0x0ACC, opcode_0ACC); // print_string
@@ -139,6 +143,50 @@ class Text
         MemPatchJump(gaddrof(CText::Get), &HOOK_CTextGet); // reinstall our hook
 
         return result;
+    }
+
+    // 0390=1,load_texture_dictionary %1s%
+    static OpcodeResult __stdcall opcode_0390(CLEO::CRunningScript* thread)
+    {
+        if (!thread->IsCustom())
+        {
+            return CLEO_CallNativeOpcode(thread, 0x0390); // call original opcode
+        }
+
+        OPCODE_READ_PARAM_STRING(txdName);
+
+        if (instance.scriptDrawing.IsTxdLoaded(thread, txdName))
+        {
+            instance.scriptDrawing.MakeActiveTxd(thread, txdName);
+        }
+        else
+        {
+            std::string path = "models\\txd\\";
+            path += txdName;
+            path += ".txd";
+
+            auto slot = CTxdStore::FindTxdSlot("script");
+            if (slot == -1) slot = CTxdStore::AddTxdSlot("script");
+
+            CTxdStore::LoadTxd(slot, path.c_str());
+            CTxdStore::AddRef(slot);
+
+            instance.scriptDrawing.StoreTxd(thread, txdName);
+        }
+
+        return OR_CONTINUE;
+    }
+
+    // 0391=0,remove_texture_dictionary
+    static OpcodeResult __stdcall opcode_0391(CLEO::CRunningScript* thread)
+    {
+        if (thread->IsCustom())
+        {
+            // CLEO unloads all textures when the custom script ends.
+            // See https://github.com/cleolibrary/CLEO5/wiki/Script-TXD-Issues
+            return OR_CONTINUE;
+        }
+        return CLEO_CallNativeOpcode(thread, 0x0391);
     }
 
     // 0ACA=1,show_text_box %1d%

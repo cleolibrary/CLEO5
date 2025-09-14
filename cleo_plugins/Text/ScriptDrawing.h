@@ -10,6 +10,10 @@ class ScriptDrawing
     void ScriptProcessingEnd(CLEO::CRunningScript* script);
     void ScriptUnregister(CLEO::CRunningScript* script);
 
+    bool IsTxdLoaded(CLEO::CRunningScript* script, const char* name);
+    void MakeActiveTxd(CLEO::CRunningScript* script, const char* name);
+    void StoreTxd(CLEO::CRunningScript* script, const char* name);
+
     void Draw(bool beforeFade); // draw buffered script draws to screen
 
     RwTexture* GetScriptTexture(CLEO::CRunningScript* script, DWORD slot);
