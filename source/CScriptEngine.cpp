@@ -822,7 +822,7 @@ namespace CLEO
         else
         {
             TRACE("Unregistering custom %s named '%s'", cs->IsMission() ? "mission" : "script", cs->GetName().c_str());
-            ScriptsWaitingForDelete.push_back(cs);
+            ScriptsWaitingForDelete.insert(cs);
         }
     }
 

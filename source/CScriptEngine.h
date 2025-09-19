@@ -18,7 +18,7 @@ namespace CLEO
 
         friend class CCustomScript;
         std::list<CCustomScript*> CustomScripts;
-        std::list<CCustomScript*> ScriptsWaitingForDelete;
+        std::set<CCustomScript*> ScriptsWaitingForDelete;
         std::set<unsigned long> InactiveScriptHashes;
         CCustomScript *CustomMission = nullptr;
         CCustomScript *LastScriptCreated = nullptr;
