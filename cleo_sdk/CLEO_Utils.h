@@ -424,9 +424,13 @@ namespace CLEO
         auto msg = TraceVArg(CLEO::eLogLevel::Error, format, args);
         va_end(args);
 
-        auto mainWnd = GetActiveWindow();
-        auto style = GetWindowLong(mainWnd, GWL_STYLE);
-        bool fullscreen = (style & (WS_BORDER | WS_CAPTION)) == 0;
+        bool fullscreen = false;
+        auto mainWnd = GetActiveWindow(); // this application's window
+        if (mainWnd)
+        {
+            auto style = GetWindowLong(mainWnd, GWL_STYLE);
+            fullscreen = (style & (WS_BORDER | WS_CAPTION)) == 0;
+        }
 
         if (fullscreen)
         {
