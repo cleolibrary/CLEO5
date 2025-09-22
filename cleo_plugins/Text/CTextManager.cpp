@@ -142,11 +142,11 @@ namespace CLEO
             stream.getline(buf, sizeof(buf));
             if (stream.fail()) break;
 
-            // parse extracted line	
+            // parse extracted line
             key_start = key_iterator = buf;
             while (*key_iterator)
             {
-                if (*key_iterator == '#')	// start of comment
+                if (*key_iterator == '#') // start of comment
                     break;
                 if (*key_iterator == '/' && key_iterator[1] == '/') // comment
                     break;

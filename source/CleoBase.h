@@ -24,15 +24,15 @@ namespace CLEO
         };
 
         // order here defines init and deinit order!
-        CDmaFix					DmaFix;
-        CGameMenu				GameMenu;
-        CCodeInjector			CodeInjector;
-        CPluginSystem			PluginSystem;
-        CGameVersionManager		VersionManager;
-        CScriptEngine			ScriptEngine;
-        CCustomOpcodeSystem		OpcodeSystem;
-        CModuleSystem			ModuleSystem;
-        OpcodeInfoDatabase		OpcodeInfoDb;
+        CDmaFix DmaFix;
+        CGameMenu GameMenu;
+        CCodeInjector CodeInjector;
+        CPluginSystem PluginSystem;
+        CGameVersionManager VersionManager;
+        CScriptEngine ScriptEngine;
+        CCustomOpcodeSystem OpcodeSystem;
+        CModuleSystem ModuleSystem;
+        OpcodeInfoDatabase OpcodeInfoDb;
 
         int saveSlot = -1; // -1 if not loaded from save
 

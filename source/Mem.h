@@ -1,10 +1,10 @@
 #pragma once
 
-#define OP_NOP			0x90
-#define OP_RET			0xC3
-#define OP_CALL			0xE8
-#define OP_JMP			0xE9
-#define OP_JMPSHORT		0xEB
+#define OP_NOP      0x90
+#define OP_RET      0xC3
+#define OP_CALL     0xE8
+#define OP_JMP      0xE9
+#define OP_JMPSHORT 0xEB
 
 template<typename T, typename U>
 inline void MemWrite(U p, const T v) { *(T*)p = v; }
