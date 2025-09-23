@@ -34,6 +34,8 @@ namespace CLEO
 		void operator delete(void* mem);
 		ScmFunction(CRunningScript* thread);
 
+		size_t GetCallStackSize() const;
+
 		void Return(CRunningScript* thread);
 	};
 }
