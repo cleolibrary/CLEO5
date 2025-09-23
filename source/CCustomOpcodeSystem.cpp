@@ -30,6 +30,8 @@ namespace CLEO
                 callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
             }
 
+            thread->bIsProcessing = false; // opcode processing ended
+
             return (callbackResult != OR_NONE) ? callbackResult : result;
         };
 
@@ -38,6 +40,20 @@ namespace CLEO
         lastOpcode        = opcode;
         lastOpcodePtr     = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
         handledParamCount = 0;
+
+        // check if last opcode ended correctly
+        if (thread->bIsProcessing && !IsLegacyScript(thread))
+        {
+            SHOW_ERROR_COMPAT(
+                "Unexpected opcode [%04X]!\nCalled in script %s\n"
+                "Some runtimes, e.g. SAMP, silently ignore script errors. Check the correctness of this script.",
+                opcode, ScriptInfoStr(thread).c_str()
+            );
+            result = thread->Suspend();
+            return AfterOpcodeExecuted();
+        }
+
+        thread->bIsProcessing = true; // opcode processing started
 
         // prevent past code execution
         if (thread->IsCustom() && !IsLegacyScript(thread))
