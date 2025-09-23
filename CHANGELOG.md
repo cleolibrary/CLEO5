@@ -1,10 +1,13 @@
-## 5.1.1
+## 5.2.0
 - added check for preceding **gosub** call in **0AA1 ([return_if_false](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AA1))**
 - added limit for memory allocated per script (see `cleo_plugins\SA.MemoryOperations.ini`). Exceeding the limit will cause a warning in game
 - added listing of remaining memory blocks allocated by scripts to the cleo.log when closing or starting new game
 - added support of string pointers as output type in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AD4))**
 - added more checks for correctness of format string in **0AD4 ([scan_string](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AD4))**
 - fixed false positive `Code execution past script end` error messages when calling functions from CLEO modules
+- added error message when the script silently crashes in SAMP due to the script problem
+- fixed problem with texture sprites corruption, now scripts can safely use sprites from multiple TXDs
+- new SDK method: `CLEO_CallNativeOpcode`. See SDK documentation: https://github.com/cleolibrary/CLEO5/wiki/CLEO-5-SDK
 
 ## 5.1.0
 - fixed collision of GXT texts hook with SAMP and other mods
