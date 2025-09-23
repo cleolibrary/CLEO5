@@ -203,7 +203,7 @@ namespace CLEO
         TRACE("Ending current game session");
         CleoInstance.CallCallbacks(eCallbackId::GameEnd); // execute registered callbacks
         ScriptEngine.GameEnd();
-        OpcodeSystem.FinalizeScriptObjects();
+        OpcodeSystem.GameEnd();
 
         saveSlot = -1;
     }

@@ -109,21 +109,6 @@ namespace CLEO
         return nullptr; // error
     }
 
-    void OnLoadScmData(void)
-    {
-        TRACE("Loading scripts save data...");
-        CTheScripts::Load();
-    }
-
-    void OnSaveScmData(void)
-    {
-        TRACE("Saving scripts save data...");
-        CleoInstance.ScriptEngine.SaveState();
-        CleoInstance.ScriptEngine.UnregisterAllCustomScripts();
-        CTheScripts::Save();
-        CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
-    }
-
     struct CleoSafeHeader
     {
         const static unsigned sign;
@@ -146,7 +131,7 @@ namespace CLEO
         ptrdiff_t ip_diff;
         char threadName[8];
 
-        ThreadSavingInfo(CCustomScript *cs) :
+        ThreadSavingInfo(CCustomScript* cs) :
             hash(cs->m_codeChecksum), condResult(cs->bCondResult),
             logicalOp(cs->LogicalOp), notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
         {
@@ -156,7 +141,7 @@ namespace CLEO
             std::copy(cs->Name, cs->Name + 8, threadName);
         }
 
-        void Apply(CCustomScript *cs)
+        void Apply(CCustomScript* cs)
         {
             cs->m_codeChecksum = hash;
             std::copy(tls, tls + 32, cs->LocalVar);
@@ -178,25 +163,25 @@ namespace CLEO
     template<typename T>
     void inline ReadBinary(std::istream& s, T& buf)
     {
-        s.read(reinterpret_cast<char *>(&buf), sizeof(T));
+        s.read(reinterpret_cast<char*>(&buf), sizeof(T));
     }
 
     template<typename T>
-    void inline ReadBinary(std::istream& s, T *buf, size_t size)
+    void inline ReadBinary(std::istream& s, T* buf, size_t size)
     {
-        s.read(reinterpret_cast<char *>(buf), sizeof(T) * size);
+        s.read(reinterpret_cast<char*>(buf), sizeof(T) * size);
     }
 
     template<typename T>
     void inline WriteBinary(std::ostream& s, const T& data)
     {
-        s.write(reinterpret_cast<const char *>(&data), sizeof(T));
+        s.write(reinterpret_cast<const char*>(&data), sizeof(T));
     }
 
     template<typename T>
     void inline WriteBinary(std::ostream& s, const T*data, size_t size)
     {
-        s.write(reinterpret_cast<const char *>(data), sizeof(T) * size);
+        s.write(reinterpret_cast<const char*>(data), sizeof(T) * size);
     }
 
     void __cdecl CScriptEngine::HOOK_DrawScriptText(char beforeFade)
@@ -264,6 +249,15 @@ namespace CLEO
         }
     }
 
+    void __cdecl CScriptEngine::HOOK_SaveScmData()
+    {
+        TRACE("Saving scripts save data...");
+        CleoInstance.ScriptEngine.SaveState();
+        CleoInstance.ScriptEngine.UnregisterAllCustomScripts();
+        CleoInstance.ScriptEngine.SaveScmData_Orig();
+        CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
+    }
+
     void CScriptEngine::Inject(CCodeInjector& inj)
     {
         TRACE("Injecting ScriptEngine: Phase 1");
@@ -282,8 +276,7 @@ namespace CLEO
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
         inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
 
-        inj.ReplaceFunction(OnLoadScmData, gvm.TranslateMemoryAddress(MA_CALL_LOAD_SCM_DATA));
-        inj.ReplaceFunction(OnSaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA));
+        inj.ReplaceFunction(HOOK_SaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA), &SaveScmData_Orig);
     }
 
     void CScriptEngine::InjectLate(CCodeInjector& inj)
@@ -302,8 +295,8 @@ namespace CLEO
     }
 
     CleoSafeHeader safe_header;
-    ThreadSavingInfo *safe_info;
-    unsigned long *stopped_info;
+    ThreadSavingInfo* safe_info;
+    unsigned long* stopped_info;
     std::unique_ptr<ThreadSavingInfo[]> safe_info_utilizer;
     std::unique_ptr<unsigned long[]> stopped_info_utilizer;
 
@@ -425,7 +418,7 @@ namespace CLEO
         }
     }
 
-    CCustomScript * CScriptEngine::LoadScript(const char * szFilePath)
+    CCustomScript* CScriptEngine::LoadScript(const char* szFilePath)
     {
         auto cs = new CCustomScript(szFilePath);
 
@@ -553,8 +546,8 @@ namespace CLEO
     {
         try
         {
-            std::list<CCustomScript *> savedThreads;
-            std::for_each(CustomScripts.begin(), CustomScripts.end(), [this, &savedThreads](CCustomScript *cs) {
+            std::list<CCustomScript*> savedThreads;
+            std::for_each(CustomScripts.begin(), CustomScripts.end(), [this, &savedThreads](CCustomScript* cs) {
                 if (cs->m_saveEnabled)
                     savedThreads.push_back(cs);
             });
@@ -575,7 +568,7 @@ namespace CLEO
                 WriteBinary(ss, header);
                 WriteBinary(ss, CleoVariables, 0x400);
 
-                std::for_each(savedThreads.begin(), savedThreads.end(), [&savedThreads, &ss](CCustomScript *cs)
+                std::for_each(savedThreads.begin(), savedThreads.end(), [&savedThreads, &ss](CCustomScript* cs)
                 {
                     ThreadSavingInfo savingInfo(cs);
                     WriteBinary(ss, savingInfo);
@@ -744,7 +737,7 @@ namespace CLEO
         return false;
     }
 
-    void CScriptEngine::AddCustomScript(CCustomScript *cs)
+    void CScriptEngine::AddCustomScript(CCustomScript* cs)
     {
         if (cs->IsMission())
         {
@@ -785,7 +778,7 @@ namespace CLEO
         }
     }
 
-    void CScriptEngine::RemoveCustomScript(CCustomScript *cs)
+    void CScriptEngine::RemoveCustomScript(CCustomScript* cs)
     {
         // run registered callbacks
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptUnregister))
@@ -852,7 +845,7 @@ namespace CLEO
     void CScriptEngine::UnregisterAllCustomScripts()
     {
         TRACE("Unregistering all custom scripts");
-        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
+        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript* cs)
         {
             cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
             cs->SetActive(false);
@@ -862,7 +855,7 @@ namespace CLEO
     void CScriptEngine::ReregisterAllCustomScripts()
     {
         TRACE("Reregistering all custom scripts");
-        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript *cs)
+        std::for_each(CustomScripts.begin(), CustomScripts.end(), [this](CCustomScript* cs)
         {
             cs->AddScriptToList((CRunningScript**)&CTheScripts::pActiveScripts);
             cs->SetActive(true);
