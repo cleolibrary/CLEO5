@@ -605,8 +605,7 @@ namespace CLEO
         void* SceneSkipIP;           // 0xD8 scene skip label ptr
         bool bIsMission;             // 0xDC is this script mission
         WORD ScmFunction;            // 0xDD CLEO's previous scmFunction id
-        bool bIsCustom : 1;          // 0xDF is this CLEO script
-        bool bIsProcessing : 1;      // 0xDF has opcode handler started and finished, or crashed
+        bool bIsCustom;              // 0xDF is this CLEO script
 
       public:
         CRunningScript()
