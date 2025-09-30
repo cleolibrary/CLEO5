@@ -35,7 +35,6 @@ class ScriptLog
 
   private:
     static constexpr size_t Initial_Buff_Size = 16 * 1024 * 1024; // 16 MB
-    const char* Block_Indent                  = "    ";
     const char* Script_Indent                 = "    ";
 
     bool m_initialized = false;
@@ -64,6 +63,8 @@ class ScriptLog
     inline void LogAppendHex(int number, int padLen = 0);
     inline void LogAppendFloat(float number, int padLen = 0);
     inline void LogAppendSpace(); // add white char separator at end of the line if not present
+    inline void LogSeparator();
+    inline void LogNewLine();
     bool LogAppendScriptParam(
         CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName,
         bool logVariable, bool logValue

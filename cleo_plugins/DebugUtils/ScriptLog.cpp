@@ -21,8 +21,15 @@ ScriptLog::ScriptLog()
     assert(g_Instance == nullptr);
     g_Instance = this;
 
+    LoadConfig();
+
+    if (state == LoggingState::Disabled)
+    {
+        return;
+    }
+
     m_logFilePath = CLEO_GetGameDirectory();
-    m_logFilePath += "\\cleo\\.cleo_script_log.xml";
+    m_logFilePath += "\\cleo\\_cleo_script.log";
     LogFileDelete();
 
     CLEO_RegisterCallback(eCallbackId::GameBegin, callbackGameBegin);
@@ -34,8 +41,6 @@ ScriptLog::ScriptLog()
     CLEO_RegisterCallback(eCallbackId::ScriptOpcodeProcessAfter, callbackScriptOpcodeProcessAfter);
     CLEO_RegisterCallback(eCallbackId::DrawingFinished, callbackDrawingFinished);
     CLEO_RegisterCallback(eCallbackId::MainWindowFocus, callbackMainWindowFocus);
-
-    LoadConfig();
 
     std::string path = CLEO_GetGameDirectory();
     path += "\\cleo\\.config\\sa.json";
@@ -54,6 +59,11 @@ ScriptLog::~ScriptLog()
 {
     // TODO: stop file writer thread
 
+    if (state == LoggingState::Disabled)
+    {
+        return;
+    }
+
     m_patchSetConditionResult.Apply(); // undo hook
 
     CLEO_UnregisterCallback(eCallbackId::GameBegin, callbackGameBegin);
@@ -65,6 +75,11 @@ ScriptLog::~ScriptLog()
     CLEO_UnregisterCallback(eCallbackId::ScriptOpcodeProcessAfter, callbackScriptOpcodeProcessAfter);
     CLEO_UnregisterCallback(eCallbackId::DrawingFinished, callbackDrawingFinished);
     CLEO_UnregisterCallback(eCallbackId::MainWindowFocus, callbackMainWindowFocus);
+
+    if (state == LoggingState::OnCrash && !m_logBuffer.empty())
+    {
+        CLEO_Log(eLogLevel::Default, m_logBuffer.c_str());
+    }
 
     LogWriteFile(); // flush to file on exit or crash
 }
@@ -118,17 +133,10 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
     // close previous script's log block
     if (m_currScript != nullptr && script != m_currScript && state != LoggingState::Disabled && m_currScriptLogging)
     {
-        if (m_currScriptCommandCount > 0)
-        {
-            if (m_processingGame) LogAppend(Block_Indent);
-            LogAppend(Block_Indent);
-            LogAppend("Executed in ");
-            LogAppendNum(size_t(clock() - m_currScriptStartTime) * 1000 / CLOCKS_PER_SEC);
-            LogAppend(" ms\n");
-        }
-
-        if (m_processingGame) LogAppend(Block_Indent);
-        LogAppend("</script>\n");
+        LogAppend("  |-- Executed in ");
+        LogAppendNum(size_t(clock() - m_currScriptStartTime) * 1000 / CLOCKS_PER_SEC);
+        LogAppend(" ms");
+        LogLine("  |");
     }
 
     // find index of this script in active scripts queue
@@ -205,54 +213,63 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             filename = "?";
         }
 
-        LogAppend('\n');
-        if (m_processingGame) LogAppend(Block_Indent);
-        LogAppend("<script idx='");
+        LogNewLine();
+        LogAppend(" -|-- Script ");
         LogAppendNum(scriptIdx);
-
-        LogAppend("' name='");
-        LogAppend(script->GetName());
-
-        LogAppend("' file='");
+        LogAppend(": ");
         LogAppend(filename);
-        LogAppend("'");
 
-        if (script->IsCustom()) LogAppend(" custom='true'");
-        if (script->IsMission()) LogAppend(" mission='true'");
-        if (CLEO_GetScriptDebugMode(script)) LogAppend(" debug='true'");
+        // Add flags in parentheses
+        bool hasFlags = false;
+        if (script->IsCustom() || script->IsMission() || CLEO_GetScriptDebugMode(script))
+        {
+            LogAppend(" - ");
+            if (script->IsCustom())
+            {
+                LogAppend("custom");
+                hasFlags = true;
+            }
+            if (script->IsMission())
+            {
+                if (hasFlags) LogAppend(", ");
+                LogAppend("mission");
+                hasFlags = true;
+            }
+            if (CLEO_GetScriptDebugMode(script))
+            {
+                if (hasFlags) LogAppend(", ");
+                LogAppend("debug");
+                hasFlags = true;
+            }
+        }
 
         auto ver = CLEO_GetScriptVersion(script);
         if (ver != eCLEO_Version::CLEO_VER_CUR)
         {
-            LogAppend(" compat='");
+            LogAppend(hasFlags ? ", " : " - ");
             switch (ver)
             {
             case eCLEO_Version::CLEO_VER_3:
-                LogAppend("CLEO3");
+                LogAppend("CLEO3 compat mode");
                 break;
             case eCLEO_Version::CLEO_VER_4:
-                LogAppend("CLEO4");
+                LogAppend("CLEO4 compat mode");
                 break;
             case eCLEO_Version::CLEO_VER_5:
-                LogAppend("CLEO5");
+                LogAppend("CLEO5 compat mode");
                 break;
             default:
                 LogAppendHex(ver);
                 break;
             }
-            LogAppend("'");
         }
-
-        LogAppend(">");
 
         // call stack info
         auto cleoStack = CLEO_GetCleoCallStackSize(script);
         if (cleoStack || script->SP)
         {
-            LogAppend('\n');
-            if (m_processingGame) LogAppend(Block_Indent);
-            LogAppend(Block_Indent);
-            LogAppend("Call Stacks depth - cleo_call: ");
+            LogNewLine();
+            LogAppend(" -|   Call Stacks - cleo_call: ");
             LogAppendNum(cleoStack);
             LogAppend(", gosub: ");
             LogAppendNum(script->SP);
@@ -260,7 +277,7 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             bool savingEnabled = !script->IsCustom() || false; // TODO: check CLEO save enabled for custom script
             if (savingEnabled && cleoStack)
             {
-                LogAppend(" \\ BUG: Scrip saving enabled. Saving during cleo_call would result in errors!");
+                LogAppend(" \\ BUG: Script saving enabled. Saving during cleo_call would result in errors!");
             }
 
             bool wastedBustedCheck = script->IsMission() && script->bWastedBustedCheck;
@@ -283,15 +300,13 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         // 'wait' command in progress?
         if (script->WakeTime > CTimer::m_snTimeInMilliseconds)
         {
-            LogAppend('\n');
-            if (m_processingGame) LogAppend(Block_Indent);
-            LogAppend(Block_Indent);
-            LogAppend("Sleeping for ");
+            LogNewLine();
+            LogAppend("  |   Sleeping for ");
             LogAppendNum(script->WakeTime - CTimer::m_snTimeInMilliseconds);
             LogAppend(" ms more");
         }
 
-        LogAppend('\n');
+        LogNewLine();
     }
 
     // update/reset script stats
@@ -307,8 +322,8 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
 void ScriptLog::LogLine(const std::string_view& str)
 {
     // TODO: thread lock
-    m_logBuffer += '\n';
-    m_logBuffer += str;
+    LogNewLine();
+    LogAppend(str);
     // TODO: thread unlock
 }
 
@@ -377,6 +392,17 @@ inline void ScriptLog::LogAppendSpace()
         m_logBuffer += ' ';
     }
     // TODO: thread unlock
+}
+
+inline void ScriptLog::LogSeparator()
+{
+    LogAppend("------------------------------------------------");
+    LogNewLine();
+}
+
+inline void ScriptLog::LogNewLine()
+{
+    LogAppend('\n');
 }
 
 bool ScriptLog::LogAppendScriptParam(
@@ -678,27 +704,16 @@ void ScriptLog::LogFileDelete()
 
 void __fastcall ScriptLog::HOOK_SetConditionResult(CLEO::CRunningScript* script, int dummy, bool state)
 {
-    if (script->NotFlag) state = !state;
-
     g_Instance->m_conditionResultUpdated = true;
-    g_Instance->m_conditionResultValue   = state;
+    g_Instance->m_conditionResultValue   = script->NotFlag ? !state : state;
 
-    // restoring and calling orignal function code is more performance costly than reimplementing it here
-
-    if (script->LogicalOp == eLogicalOperation::NONE)
-    {
-        script->bCondResult = state;
-    }
-    else if (script->LogicalOp >= eLogicalOperation::ANDS_1 && script->LogicalOp < eLogicalOperation::AND_END)
-    {
-        script->bCondResult &= state;
-        --script->LogicalOp;
-    }
-    else if (script->LogicalOp >= eLogicalOperation::ORS_1 && script->LogicalOp < eLogicalOperation::OR_END)
-    {
-        script->bCondResult |= state;
-        --script->LogicalOp;
-    }
+    // restore original function code
+    g_Instance->m_patchSetConditionResult.Apply();
+    // call original function
+    ((::CRunningScript*)script)->UpdateCompareFlag(state);
+    // reinstall our hook
+    g_Instance->m_patchSetConditionResult =
+        MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
 }
 
 void ScriptLog::OnGameBegin(DWORD saveSlot)
@@ -718,6 +733,10 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
         t.wMilliseconds
     );
 
+    LogSeparator();
+    LogAppend("  Game started at: ");
+    LogAppend(timeStamp);
+
     if (CGame::bMissionPackGame)
     {
         // find name of the mission pack
@@ -730,12 +749,11 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
                 break;
             }
         }
-
-        LogFormattedLine(
-            "<newGameSession mPack='%d' mPackName='%s' time='%s'/>", FrontEndMenuManager.m_nSelectedMissionPack,
-            packName ? packName : "???", timeStamp
-        );
-
+        LogLine("  Mission Pack: ");
+        LogAppendNum(FrontEndMenuManager.m_nSelectedMissionPack);
+        LogLine("  Mission Pack Name: ");
+        LogAppend(packName ? packName : "???");
+        LogNewLine();
         m_customMain = true;
     }
     else
@@ -751,49 +769,19 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
 
         if (saveSlot != -1)
         {
-            LogFormattedLine(
-                "<newGameSession saveSlot='%d' mainScript='%s' time='%s'/>",
-                saveSlot + 1, // 1-based index
-                m_customMain ? "modified" : "original", timeStamp
-            );
+            LogLine("  Save Slot: ");
+            LogAppendNum(saveSlot + 1); // 1-based index
         }
-        else
-        {
-            LogFormattedLine(
-                "<newGameSession mainScript='%s' time='%s'/>", m_customMain ? "modified" : "original", timeStamp
-            );
-        }
+        LogLine("  Main Script: ");
+        LogAppend(m_customMain ? "modified" : "original");
+        LogNewLine();
     }
-
-    LogAppend('\n'); // separator
+    LogSeparator();
 }
 
 void ScriptLog::OnGameProcessBefore()
 {
     if (!CTimer::m_UserPause && !CTimer::m_CodePause) m_processingGame = true;
-
-    // 'CLOG' cheat
-    if (_strnicmp(CCheat::m_CheatString, "golc", 4) == 0) // reversed order
-    {
-        CCheat::m_CheatString[0] = '\0'; // consume the cheat
-
-        state = (state == LoggingState::Full) ? LoggingState::OnCrash : LoggingState::Full; // toggle
-        if (state == LoggingState::Full) LoadConfig(true); // refresh config from ini file
-
-        if (state == LoggingState::Full)
-        {
-            CHud::SetHelpMessage("CLEO script log: ~g~~h~~h~~h~ON~s~", true, false, false);
-            LogLine("Log: ON\n");
-        }
-        else
-        {
-            CHud::SetHelpMessage("CLEO script log: ~r~~h~~h~~h~OFF~s~", true, false, false);
-            LogLine("Log: OFF\n");
-            LogWriteFile(); // flush
-        }
-    }
-
-    if (state == LoggingState::Disabled) return;
 
     // count active scripts
     if (m_processingGame)
@@ -806,22 +794,18 @@ void ScriptLog::OnGameProcessBefore()
             next = next->m_pNext;
         }
 
-        LogAppend("\n<gameProcess frame='");
+        LogNewLine();
+        LogAppend("--|-- Frame ");
         LogAppendNum(CTimer::m_FrameCounter);
-        LogAppend("' activeScripts='");
+        LogAppend(" - Active Scripts: ");
         LogAppendNum(scriptCount);
-        LogAppend("'>");
+        LogLine("  |");
     }
 }
 
 void ScriptLog::OnGameProcessAfter()
 {
     SetCurrScript(nullptr);
-
-    if (state != LoggingState::Disabled)
-    {
-        if (m_processingGame) LogAppend("</gameProcess>\n");
-    }
 
     m_processingGame = false;
 }
@@ -839,6 +823,15 @@ void ScriptLog::OnScriptProcessAfter(CLEO::CRunningScript* script)
 
 OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script, DWORD opcode)
 {
+    // late initialization
+    if (!m_initialized)
+    {
+        m_patchSetConditionResult =
+            MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
+
+        m_initialized = true;
+    }
+
     SetCurrScript(script);
     m_currScriptCommandCount++;
 
@@ -852,8 +845,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
     auto oriIP = script->CurrentIP;
 
-    if (m_processingGame) LogAppend(Block_Indent); // game processing block indentation
-    if (m_currScript) LogAppend(Block_Indent);     // script processing block indentation
+    LogAppend("  |   "); // script content indentation
 
     // script offset
     if (logOffsets)
@@ -1026,7 +1018,7 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(
     auto command = m_opcodeDatabase.GetCommand((uint16_t)opcode);
     if (!command)
     {
-        LogAppend('\n');
+        LogNewLine();
         return result;
     }
 
@@ -1095,22 +1087,13 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(
         LogAppend("BUG?: Custom Script writes global variable");
     }
 
-    LogAppend('\n');
+    LogNewLine();
 
     return result;
 }
 
 void ScriptLog::OnDrawingFinished()
 {
-    // late initialization
-    if (!m_initialized)
-    {
-        m_patchSetConditionResult =
-            MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
-
-        m_initialized = true;
-    }
-
     // this should be done just at the end of scripts processing
     // but PluginSDK, SAMP etc. call single scripts/callbacks outside of the processing queue
     // make sure current script does not persists to next render frame
