@@ -167,7 +167,7 @@ namespace CLEO
                     }
 
                     // remove trailing spaces as the game fails to render a string with them
-                    while (value_iterator > value_start && isspace(*(value_iterator - 1)))
+                    while (value_iterator > value_start && isspace((unsigned char)*(value_iterator - 1)))
                     {
                         value_iterator--;
                     }
