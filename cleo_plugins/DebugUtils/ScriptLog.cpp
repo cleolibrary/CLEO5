@@ -782,7 +782,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
 
 void ScriptLog::OnGameProcessBefore()
 {
-    if (!CTimer::m_UserPause && !CTimer::m_CodePause) return;
+    if (CTimer::m_UserPause || CTimer::m_CodePause) return;
 
     // count active scripts
 
