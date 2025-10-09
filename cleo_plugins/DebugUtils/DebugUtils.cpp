@@ -218,7 +218,7 @@ class DebugUtils
     static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* thread, DWORD opcode)
     {
         // check current script
-        if (currScript != thread) OnScriptChange(thread);
+        OnScriptChange(thread);
         currScriptCommandCount++;
 
         // script per render frame commands limit

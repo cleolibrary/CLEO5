@@ -84,11 +84,6 @@ ScriptLog::~ScriptLog()
     LogWriteFile(); // flush to file on exit or crash
 }
 
-size_t ScriptLog::CurrScriptElapsedSeconds() const
-{
-    return (clock() - m_currScriptStartTime) / CLOCKS_PER_SEC;
-}
-
 void ScriptLog::LoadConfig(bool keepState)
 {
     auto config = GetConfigFilename();

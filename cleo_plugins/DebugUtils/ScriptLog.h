@@ -14,9 +14,6 @@ class ScriptLog
     ScriptLog(const ScriptLog&) = delete; // no copying!
     ~ScriptLog();
 
-    // stats
-    size_t CurrScriptElapsedSeconds() const;
-
     // config
     void LoadConfig(bool keepState = false);
 
