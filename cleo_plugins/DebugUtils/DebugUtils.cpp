@@ -29,10 +29,13 @@ class DebugUtils
     static std::deque<PausedScriptInfo> pausedScripts;
 
     static ScriptLog scriptLog;
+    static CLEO::CRunningScript* currScript;
 
     // limits for processing after which script is considered hanging
     static size_t configLimitCommand;
     static size_t configLimitTime;
+    static size_t currScriptCommandCount;
+    static size_t m_currScriptStartTime;
 
     // breakpoint continue keys
     static const int KeyFirst    = VK_F5;
@@ -71,6 +74,8 @@ class DebugUtils
         CLEO_RegisterCallback(eCallbackId::ScriptProcessBefore, OnScriptProcessBefore);
         CLEO_RegisterCallback(eCallbackId::ScriptOpcodeProcessBefore, OnScriptOpcodeProcessBefore);
         CLEO_RegisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
+        CLEO_RegisterCallback(eCallbackId::GameProcessAfter, OnGameProcessAfter);
+        CLEO_RegisterCallback(eCallbackId::ScriptProcessAfter, OnScriptProcessAfter);
     }
 
     ~DebugUtils()
@@ -81,11 +86,27 @@ class DebugUtils
         CLEO_UnregisterCallback(eCallbackId::ScriptProcessBefore, OnScriptProcessBefore);
         CLEO_UnregisterCallback(eCallbackId::ScriptOpcodeProcessBefore, OnScriptOpcodeProcessBefore);
         CLEO_UnregisterCallback(eCallbackId::ScriptsFinalize, OnScriptsFinalize);
+        CLEO_UnregisterCallback(eCallbackId::GameProcessAfter, OnGameProcessAfter);
+        CLEO_UnregisterCallback(eCallbackId::ScriptProcessAfter, OnScriptProcessAfter);
     }
 
     // ---------------------------------------------- event callbacks -------------------------------------------------
 
-    static void WINAPI OnGameBegin(DWORD saveSlot) { screenLog.Clear(); }
+    static void WINAPI OnScriptChange(CLEO::CRunningScript* script)
+    {
+        if (currScript != script || script == nullptr)
+        {
+            currScript             = script;
+            currScriptCommandCount = 0;
+            m_currScriptStartTime  = clock();
+        }
+    }
+
+    static void WINAPI OnGameBegin(DWORD saveSlot)
+    {
+        screenLog.Clear();
+        OnScriptChange(nullptr);
+    }
 
     static void WINAPI OnScriptsFinalize()
     {
@@ -100,6 +121,7 @@ class DebugUtils
 
         // log messages
         screenLog.Draw();
+        OnScriptChange(nullptr);
 
         // draw active breakpoints list
         if (!pausedScripts.empty() && (CTimer::m_FrameCounter & 0xE) != 0) // flashing
@@ -177,6 +199,7 @@ class DebugUtils
 
     static bool WINAPI OnScriptProcessBefore(CRunningScript* thread)
     {
+        OnScriptChange(thread);
         for (const auto& s : pausedScripts)
         {
             if (s.ptr == thread)
@@ -188,10 +211,18 @@ class DebugUtils
         return true;
     }
 
+    static void WINAPI OnScriptProcessAfter(CRunningScript* pScript) { OnScriptChange(nullptr); }
+
+    static void WINAPI OnGameProcessAfter() { OnScriptChange(nullptr); }
+
     static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* thread, DWORD opcode)
     {
+        // check current script
+        if (currScript != thread) OnScriptChange(thread);
+        currScriptCommandCount++;
+
         // script per render frame commands limit
-        if (configLimitCommand > 0 && scriptLog.CurrScriptCommandCount() > configLimitCommand)
+        if (configLimitCommand > 0 && currScriptCommandCount > configLimitCommand)
         {
             // add comma separators into huge numbers
             std::string limitStr;
@@ -213,9 +244,10 @@ class DebugUtils
         }
 
         // script per frame time execution limit
-        if (scriptLog.CurrScriptCommandCount() % 1000 == 0) // check once every 1000 commands
+        if (currScriptCommandCount % 1000 == 0) // check once every 1000 commands
         {
-            if (configLimitTime > 0 && scriptLog.CurrScriptElapsedSeconds() > configLimitTime)
+            size_t currScriptElapsedSeconds = (clock() - m_currScriptStartTime) / CLOCKS_PER_SEC;
+            if (configLimitTime > 0 && currScriptElapsedSeconds > configLimitTime)
             {
                 SHOW_ERROR(
                     "Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO "
@@ -432,8 +464,11 @@ class DebugUtils
 
 ScreenLog DebugUtils::screenLog = {};
 std::deque<DebugUtils::PausedScriptInfo> DebugUtils::pausedScripts;
-ScriptLog DebugUtils::scriptLog = {};
+ScriptLog DebugUtils::scriptLog              = {};
+CLEO::CRunningScript* DebugUtils::currScript = nullptr;
 size_t DebugUtils::configLimitCommand;
 size_t DebugUtils::configLimitTime;
-bool DebugUtils::keysReleased = true;
+size_t DebugUtils::currScriptCommandCount = 0;
+size_t DebugUtils::m_currScriptStartTime  = 0;
+bool DebugUtils::keysReleased             = true;
 std::map<std::string, std::ofstream> DebugUtils::logFiles;

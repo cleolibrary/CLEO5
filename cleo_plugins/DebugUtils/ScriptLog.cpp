@@ -84,11 +84,6 @@ ScriptLog::~ScriptLog()
     LogWriteFile(); // flush to file on exit or crash
 }
 
-size_t ScriptLog::CurrScriptCommandCount() const
-{
-    return m_currScriptCommandCount;
-}
-
 size_t ScriptLog::CurrScriptElapsedSeconds() const
 {
     return (clock() - m_currScriptStartTime) / CLOCKS_PER_SEC;
@@ -312,10 +307,9 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
     // update/reset script stats
     if (script != m_currScript || script == nullptr)
     {
-        m_currScript             = script;
-        m_currScriptStartTime    = clock();
-        m_currScriptCommandCount = 0;
-        m_prevCommand            = 0xFFFF;
+        m_currScript          = script;
+        m_currScriptStartTime = clock();
+        m_prevCommand         = 0xFFFF;
     }
 }
 
@@ -788,33 +782,29 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
 
 void ScriptLog::OnGameProcessBefore()
 {
-    if (!CTimer::m_UserPause && !CTimer::m_CodePause) m_processingGame = true;
+    if (!CTimer::m_UserPause && !CTimer::m_CodePause) return;
 
     // count active scripts
-    if (m_processingGame)
-    {
-        size_t scriptCount = 0;
-        auto next          = CTheScripts::pActiveScripts;
-        while (next)
-        {
-            scriptCount++;
-            next = next->m_pNext;
-        }
 
-        LogNewLine();
-        LogAppend("--|-- Frame ");
-        LogAppendNum(CTimer::m_FrameCounter);
-        LogAppend(" - Active Scripts: ");
-        LogAppendNum(scriptCount);
-        LogLine("  |");
+    size_t scriptCount = 0;
+    auto next          = CTheScripts::pActiveScripts;
+    while (next)
+    {
+        scriptCount++;
+        next = next->m_pNext;
     }
+
+    LogNewLine();
+    LogAppend("--|-- Frame ");
+    LogAppendNum(CTimer::m_FrameCounter);
+    LogAppend(" - Active Scripts: ");
+    LogAppendNum(scriptCount);
+    LogLine("  |");
 }
 
 void ScriptLog::OnGameProcessAfter()
 {
     SetCurrScript(nullptr);
-
-    m_processingGame = false;
 }
 
 bool ScriptLog::OnScriptProcessBefore(CLEO::CRunningScript* script)
@@ -840,7 +830,6 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     }
 
     SetCurrScript(script);
-    m_currScriptCommandCount++;
 
     if (state == LoggingState::Disabled || !m_currScriptLogging) return OR_NONE;
 
