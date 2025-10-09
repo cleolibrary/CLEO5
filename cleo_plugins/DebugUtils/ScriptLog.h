@@ -71,8 +71,8 @@ class ScriptLog
     void LogWriteFile(bool forceUpdate = false);
     void LogFileDelete();
 
-    bool m_customMain     = false;
-    WORD m_prevCommand    = 0xFFFF;
+    bool m_customMain  = false;
+    WORD m_prevCommand = 0xFFFF;
 
     // event handlers
     static void __fastcall HOOK_SetConditionResult(CLEO::CRunningScript* script, int dummy, bool state);

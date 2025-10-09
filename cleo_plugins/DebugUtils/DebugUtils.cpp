@@ -98,7 +98,7 @@ class DebugUtils
         {
             currScript             = script;
             currScriptCommandCount = 0;
-            currScriptStartTime  = clock();
+            currScriptStartTime    = clock();
         }
     }
 
@@ -469,6 +469,6 @@ CLEO::CRunningScript* DebugUtils::currScript = nullptr;
 size_t DebugUtils::configLimitCommand;
 size_t DebugUtils::configLimitTime;
 size_t DebugUtils::currScriptCommandCount = 0;
-size_t DebugUtils::currScriptStartTime  = 0;
+size_t DebugUtils::currScriptStartTime    = 0;
 bool DebugUtils::keysReleased             = true;
 std::map<std::string, std::ofstream> DebugUtils::logFiles;
