@@ -35,7 +35,7 @@ class DebugUtils
     static size_t configLimitCommand;
     static size_t configLimitTime;
     static size_t currScriptCommandCount;
-    static size_t m_currScriptStartTime;
+    static size_t currScriptStartTime;
 
     // breakpoint continue keys
     static const int KeyFirst    = VK_F5;
@@ -98,7 +98,7 @@ class DebugUtils
         {
             currScript             = script;
             currScriptCommandCount = 0;
-            m_currScriptStartTime  = clock();
+            currScriptStartTime  = clock();
         }
     }
 
@@ -246,7 +246,7 @@ class DebugUtils
         // script per frame time execution limit
         if (currScriptCommandCount % 1000 == 0) // check once every 1000 commands
         {
-            size_t currScriptElapsedSeconds = (clock() - m_currScriptStartTime) / CLOCKS_PER_SEC;
+            size_t currScriptElapsedSeconds = (clock() - currScriptStartTime) / CLOCKS_PER_SEC;
             if (configLimitTime > 0 && currScriptElapsedSeconds > configLimitTime)
             {
                 SHOW_ERROR(
@@ -469,6 +469,6 @@ CLEO::CRunningScript* DebugUtils::currScript = nullptr;
 size_t DebugUtils::configLimitCommand;
 size_t DebugUtils::configLimitTime;
 size_t DebugUtils::currScriptCommandCount = 0;
-size_t DebugUtils::m_currScriptStartTime  = 0;
+size_t DebugUtils::currScriptStartTime  = 0;
 bool DebugUtils::keysReleased             = true;
 std::map<std::string, std::ofstream> DebugUtils::logFiles;
