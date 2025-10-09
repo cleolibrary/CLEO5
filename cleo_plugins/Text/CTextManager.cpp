@@ -160,19 +160,18 @@ namespace CLEO
                         break;
                     }
 
-                    // while (isspace(*++key_iterator)) ; // skip leading spaces
                     value_start = value_iterator = key_iterator + 1;
                     while (*value_iterator)
                     {
-                        // start of comment
-                        if (*value_iterator == '#' || (*key_iterator == '/' && key_iterator[1] == '/'))
-                        {
-                            *value_iterator = '\0';
-                            break;
-                        }
-                        break;
                         value_iterator++;
                     }
+
+                    // remove trailing spaces as the game fails to render a string with them
+                    while (value_iterator > value_start && isspace((unsigned char)*(value_iterator - 1)))
+                    {
+                        value_iterator--;
+                    }
+                    *value_iterator = '\0';
 
                     // register found fxt entry
                     if (AddFxt(key_start, value_start, dynamic))
