@@ -14,10 +14,6 @@ class ScriptLog
     ScriptLog(const ScriptLog&) = delete; // no copying!
     ~ScriptLog();
 
-    // stats
-    size_t CurrScriptCommandCount() const;
-    size_t CurrScriptElapsedSeconds() const;
-
     // config
     void LoadConfig(bool keepState = false);
 
@@ -45,7 +41,6 @@ class ScriptLog
     CLEO::CRunningScript* m_currScript = nullptr;
     clock_t m_currScriptStartTime      = 0;
     bool m_currScriptLogging           = true;
-    size_t m_currScriptCommandCount    = 0;
     BYTE* m_currCommandReturnParams    = nullptr;
     void SetCurrScript(CLEO::CRunningScript* script);
 
@@ -73,9 +68,8 @@ class ScriptLog
     void LogWriteFile(bool forceUpdate = false);
     void LogFileDelete();
 
-    bool m_customMain     = false;
-    bool m_processingGame = false;
-    WORD m_prevCommand    = 0xFFFF;
+    bool m_customMain  = false;
+    WORD m_prevCommand = 0xFFFF;
 
     // event handlers
     static void __fastcall HOOK_SetConditionResult(CLEO::CRunningScript* script, int dummy, bool state);
