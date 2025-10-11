@@ -14,6 +14,7 @@ namespace CLEO
 
         unsigned short prevScmFunctionId, thisScmFunctionId;
         BYTE callArgCount = 0; // args provided to cleo_call
+        BYTE* callIP;          // address of 0AB1 for error messages
 
         // saved nesting context state
         void* savedBaseIP;
@@ -31,7 +32,7 @@ namespace CLEO
 
         void* operator new(size_t size);
         void operator delete(void* mem);
-        ScmFunction(CRunningScript* thread);
+        ScmFunction(CRunningScript* thread, BYTE* callIP);
 
         size_t GetCallStackSize() const;
 

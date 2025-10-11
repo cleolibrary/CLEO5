@@ -647,6 +647,8 @@ namespace CLEO
         static SCRIPT_VAR arguments[32];
         static bool argumentIsStr[32];
         std::forward_list<std::string> stringParams; // scope guard for strings
+        auto callIP = scmFunc->callIP;               // store call ip for error messages
+
         if (returnArgs)
         {
             if (returnArgCount > 32)
@@ -759,10 +761,14 @@ namespace CLEO
                 }
                 else
                 {
+                    // We iterate output params in 0AB1 now.
+                    lastOpcodePtr = (WORD*)callIP;
+                    prevOpcode    = opcode;
+                    lastOpcode    = 0x0AB1;
                     SHOW_ERROR(
-                        "Invalid output argument type '0x%02X' in opcode "
+                        "Expected a variable to store the returned value, found %s in opcode "
                         "[%04X] in script %s\nScript suspended.",
-                        paramType, opcode, ScriptInfoStr(thread).c_str()
+                        ToStr(paramType), 0x0AB1, ScriptInfoStr(thread).c_str()
                     );
                     return thread->Suspend();
                 }
@@ -1003,7 +1009,8 @@ namespace CLEO
     // cleo_call [label] {numParams} [int] {params} [arguments]
     OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript* thread)
     {
-        int label = 0;
+        int label   = 0;
+        auto callIP = thread->CurrentIP - 2; // back to start of opcode
         std::string moduleTxt;
 
         auto paramType = thread->PeekDataType();
@@ -1026,7 +1033,7 @@ namespace CLEO
             return thread->Suspend();
         }
 
-        ScmFunction* scmFunc = new ScmFunction(thread);
+        ScmFunction* scmFunc = new ScmFunction(thread, callIP);
 
         // parse module reference text
         if (!moduleTxt.empty())
