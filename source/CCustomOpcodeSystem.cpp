@@ -647,6 +647,8 @@ namespace CLEO
         static SCRIPT_VAR arguments[32];
         static bool argumentIsStr[32];
         std::forward_list<std::string> stringParams; // scope guard for strings
+        auto callIp = scmFunc->callIP;               // store call ip for error messages
+
         if (returnArgs)
         {
             if (returnArgCount > 32)
@@ -760,7 +762,7 @@ namespace CLEO
                 else
                 {
                     // We iterate output params in 0AB1 now.
-                    lastOpcodePtr = (WORD*)thread->GetBytePointer();
+                    lastOpcodePtr = (WORD*)callIp;
                     prevOpcode    = opcode;
                     lastOpcode    = 0x0AB1;
                     SHOW_ERROR(
@@ -1008,6 +1010,7 @@ namespace CLEO
     OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript* thread)
     {
         int label = 0;
+        auto callIp = thread->CurrentIP - 2; // back to start of opcode
         std::string moduleTxt;
 
         auto paramType = thread->PeekDataType();
@@ -1031,6 +1034,7 @@ namespace CLEO
         }
 
         ScmFunction* scmFunc = new ScmFunction(thread);
+        scmFunc->callIP      = callIp; // store call ip for error messages
 
         // parse module reference text
         if (!moduleTxt.empty())

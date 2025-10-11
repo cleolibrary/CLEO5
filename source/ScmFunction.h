@@ -14,6 +14,7 @@ namespace CLEO
 
         unsigned short prevScmFunctionId, thisScmFunctionId;
         BYTE callArgCount = 0; // args provided to cleo_call
+        BYTE* callIP;
 
         // saved nesting context state
         void* savedBaseIP;
