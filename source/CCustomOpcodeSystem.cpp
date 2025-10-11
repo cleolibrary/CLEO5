@@ -759,10 +759,14 @@ namespace CLEO
                 }
                 else
                 {
+                    // We iterate output params in 0AB1 now.
+                    lastOpcodePtr = (WORD*)thread->GetBytePointer();
+                    prevOpcode    = opcode;
+                    lastOpcode    = 0x0AB1;
                     SHOW_ERROR(
-                        "Invalid output argument type '0x%02X' in opcode "
+                        "Expected a variable to store the returned value, found %s in opcode "
                         "[%04X] in script %s\nScript suspended.",
-                        paramType, opcode, ScriptInfoStr(thread).c_str()
+                        ToStr(paramType), 0x0AB1, ScriptInfoStr(thread).c_str()
                     );
                     return thread->Suspend();
                 }
