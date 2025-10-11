@@ -166,6 +166,7 @@ namespace CLEO
         TRACE("Initializing CLEO core opcodes...");
 
         CLEO_RegisterOpcode(0x004E, opcode_004E);
+        CLEO_RegisterOpcode(0x0050, opcode_0050);
         CLEO_RegisterOpcode(0x0051, opcode_0051);
         CLEO_RegisterOpcode(0x0417, opcode_0417);
         CLEO_RegisterOpcode(0x0A92, opcode_0A92);
@@ -821,6 +822,23 @@ namespace CLEO
         return OR_INTERRUPT;
     }
 
+    // gosub
+    // gosub [label]
+    OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0050(CRunningScript* thread)
+    {
+        constexpr auto Stack_Size = _countof(CRunningScript::Stack);
+        if (thread->SP >= Stack_Size)
+        {
+            SHOW_ERROR(
+                "Call stack overflow in script %s\nMax up to %d nested gosub calls is supported.\nScript suspended.",
+                ScriptInfoStr(thread).c_str(), Stack_Size
+            );
+            return thread->Suspend();
+        }
+
+        return CallNativeOpcode(thread, 0x0050); // call game's original
+    }
+
     // GOSUB return
     OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0051(CRunningScript* thread)
     {
@@ -963,6 +981,16 @@ namespace CLEO
         if (thread->GetConditionResult())
         {
             return OR_CONTINUE;
+        }
+
+        constexpr auto Stack_Size = _countof(CRunningScript::Stack);
+        if (thread->SP >= Stack_Size)
+        {
+            SHOW_ERROR(
+                "Call stack overflow in script %s\nMax up to %d nested gosub calls is supported.\nScript suspended.",
+                ScriptInfoStr(thread).c_str(), Stack_Size
+            );
+            return thread->Suspend();
         }
 
         thread->PushStack(thread->GetBytePointer());
