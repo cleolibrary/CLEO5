@@ -47,9 +47,8 @@ namespace CLEO
         ::operator delete(mem);
     }
 
-    ScmFunction::ScmFunction(CLEO::CRunningScript* thread, BYTE* callIp)
-        : prevScmFunctionId(reinterpret_cast<CCustomScript*>(thread)->GetScmFunction()),
-          callIP(callIp)
+    ScmFunction::ScmFunction(CLEO::CRunningScript* thread, BYTE* callIP)
+        : prevScmFunctionId(reinterpret_cast<CCustomScript*>(thread)->GetScmFunction()), callIP(callIP)
     {
         auto cs = reinterpret_cast<CCustomScript*>(thread);
 

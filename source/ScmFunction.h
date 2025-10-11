@@ -32,7 +32,7 @@ namespace CLEO
 
         void* operator new(size_t size);
         void operator delete(void* mem);
-        ScmFunction(CRunningScript* thread, BYTE* callIp);
+        ScmFunction(CRunningScript* thread, BYTE* callIP);
 
         size_t GetCallStackSize() const;
 
