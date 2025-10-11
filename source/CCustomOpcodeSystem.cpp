@@ -1009,7 +1009,7 @@ namespace CLEO
     // cleo_call [label] {numParams} [int] {params} [arguments]
     OpcodeResult __stdcall CCustomOpcodeSystem::opcode_0AB1(CRunningScript* thread)
     {
-        int label = 0;
+        int label   = 0;
         auto callIp = thread->CurrentIP - 2; // back to start of opcode
         std::string moduleTxt;
 
@@ -1033,8 +1033,7 @@ namespace CLEO
             return thread->Suspend();
         }
 
-        ScmFunction* scmFunc = new ScmFunction(thread);
-        scmFunc->callIP      = callIp; // store call ip for error messages
+        ScmFunction* scmFunc = new ScmFunction(thread, callIp);
 
         // parse module reference text
         if (!moduleTxt.empty())
