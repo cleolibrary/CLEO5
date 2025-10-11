@@ -39,6 +39,7 @@ namespace CLEO
 
         // new/customized opcodes
         static OpcodeResult __stdcall opcode_004E(CRunningScript* thread); // terminate_this_script
+        static OpcodeResult __stdcall opcode_0050(CRunningScript* thread); // gosub
         static OpcodeResult __stdcall opcode_0051(CRunningScript* thread); // GOSUB return
         static OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
 
