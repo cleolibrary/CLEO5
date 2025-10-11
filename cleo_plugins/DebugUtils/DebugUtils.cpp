@@ -90,9 +90,7 @@ class DebugUtils
         CLEO_UnregisterCallback(eCallbackId::ScriptProcessAfter, OnScriptProcessAfter);
     }
 
-    // ---------------------------------------------- event callbacks -------------------------------------------------
-
-    static void WINAPI OnScriptChange(CLEO::CRunningScript* script)
+    static void SetCurrScript(CLEO::CRunningScript* script)
     {
         if (currScript != script || script == nullptr)
         {
@@ -102,10 +100,12 @@ class DebugUtils
         }
     }
 
+    // ---------------------------------------------- event callbacks -------------------------------------------------
+
     static void WINAPI OnGameBegin(DWORD saveSlot)
     {
         screenLog.Clear();
-        OnScriptChange(nullptr);
+        SetCurrScript(nullptr);
     }
 
     static void WINAPI OnScriptsFinalize()
@@ -121,7 +121,7 @@ class DebugUtils
 
         // log messages
         screenLog.Draw();
-        OnScriptChange(nullptr);
+        SetCurrScript(nullptr);
 
         // draw active breakpoints list
         if (!pausedScripts.empty() && (CTimer::m_FrameCounter & 0xE) != 0) // flashing
@@ -199,7 +199,7 @@ class DebugUtils
 
     static bool WINAPI OnScriptProcessBefore(CRunningScript* thread)
     {
-        OnScriptChange(thread);
+        SetCurrScript(thread);
         for (const auto& s : pausedScripts)
         {
             if (s.ptr == thread)
@@ -211,14 +211,14 @@ class DebugUtils
         return true;
     }
 
-    static void WINAPI OnScriptProcessAfter(CRunningScript* pScript) { OnScriptChange(nullptr); }
+    static void WINAPI OnScriptProcessAfter(CRunningScript* pScript) { SetCurrScript(nullptr); }
 
-    static void WINAPI OnGameProcessAfter() { OnScriptChange(nullptr); }
+    static void WINAPI OnGameProcessAfter() { SetCurrScript(nullptr); }
 
     static OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* thread, DWORD opcode)
     {
         // check current script
-        OnScriptChange(thread);
+        SetCurrScript(thread);
         currScriptCommandCount++;
 
         // script per render frame commands limit
