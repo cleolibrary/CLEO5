@@ -72,7 +72,7 @@ class ScriptLog
     WORD m_prevCommand = 0xFFFF;
 
     // event handlers
-    static void __fastcall HOOK_SetConditionResult(CLEO::CRunningScript* script, int dummy, bool state);
+    static void SetConditionResult(CLEO::CRunningScript* script, bool state);
     CLEO::MemPatch m_patchSetConditionResult;
     bool m_conditionResultUpdated  = false;
     bool m_conditionResultValue    = false;

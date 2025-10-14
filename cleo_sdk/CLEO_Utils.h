@@ -181,9 +181,8 @@ namespace CLEO
 
     static void StringAppendFloat(std::string& dest, float number, int padLen = 0)
     {
-        static char buff[32];
-
-        int len = sprintf_s(buff, "%f", number);
+        static char buff[64];
+        int len = sprintf_s(buff, (number > 100000.0f || number < 0.000001f) ? "%g" : "%f", number);
 
         // cut trailing zeros
         if (len > 2)

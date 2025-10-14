@@ -652,7 +652,6 @@ void ScriptLog::LogWriteFile(bool forceUpdate)
     if (maxFileSize > 0 && fileSize > maxFileSize)
     {
         LogFileDelete();
-        LOG_WARNING(0, "CLEO script log file cleared");
     }
 
     if (!m_logFile.is_open())
@@ -691,11 +690,22 @@ void ScriptLog::LogFileDelete()
     }
 }
 
-void __fastcall ScriptLog::HOOK_SetConditionResult(CLEO::CRunningScript* script, int dummy, bool state)
+static void __declspec(naked) HOOK_SetConditionResult()
 {
-    // save ECX since calls might overwrite them
-    auto _ecx = script;
+    _asm
+        {
+            push ecx // save ecx
+            push dword ptr[esp + 8] // state
+            push ecx // script
+            call ScriptLog::SetConditionResult // cdecl, caller cleans stack
+            add esp, 8
+            pop ecx // restore ecx     
+            retn 4
+        }
+}
 
+void ScriptLog::SetConditionResult(CLEO::CRunningScript* script, bool state)
+{
     g_Instance->m_conditionResultUpdated = true;
     g_Instance->m_conditionResultValue   = script->NotFlag ? !state : state;
 
@@ -706,10 +716,6 @@ void __fastcall ScriptLog::HOOK_SetConditionResult(CLEO::CRunningScript* script,
     // reinstall our hook
     g_Instance->m_patchSetConditionResult =
         MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
-
-    __asm {
-        mov ecx, _ecx
-    }
 }
 
 void ScriptLog::OnGameBegin(DWORD saveSlot)
