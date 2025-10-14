@@ -904,7 +904,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
                     // varArg list we need to count all provided params and skip only those which are actualy optional
                     BYTE* argsIP = script->CurrentIP;
                     int args     = 0;
-                    while (true)
+                    while (args < 32)
                     {
                         ScriptParamInfo paramInfo(script); // just skip
                         if (paramInfo.type != eDataType::DT_END)
@@ -986,15 +986,16 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
             }
             else // varArgs
             {
-                bool first = true;
-                auto type  = script->PeekDataType();
-                while (type != eDataType::DT_END)
-                {
-                    if (!first) LogAppend(" ");
-                    LogAppendScriptParam(script, command, i, first, true, true);
+                auto type = script->PeekDataType();
+                int count = 0;
 
-                    first = false;
-                    type  = script->PeekDataType();
+                while (type != eDataType::DT_END && count < 32)
+                {
+                    if (count > 0) LogAppend(" ");
+                    LogAppendScriptParam(script, command, i, count == 0, true, true);
+
+                    count++;
+                    type = script->PeekDataType();
                 }
                 script->IncPtr(sizeof(eDataType)); // var args terminator
             }
