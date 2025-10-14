@@ -138,7 +138,7 @@ class FileSystemOperations
     {
         OPCODE_READ_PARAM_FILEPATH(filename);
 
-        char mode[16];
+        char mode[64];
         auto paramType = thread->PeekDataType();
         if (IsImmInteger(paramType) || IsVariable(paramType))
         {
