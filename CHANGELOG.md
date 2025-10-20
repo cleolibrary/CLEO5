@@ -1,5 +1,5 @@
 ## 5.2.0
-- added script execution log (`cleo\_cleo_script.log`). By default, it records all instructions from the last frame before exit or crash. Configurable via `cleo_plugins\DebugUtils.ini`.
+- added script execution log (`cleo\_cleo_script.log`). By default, it's disabled. Configurable via `cleo_plugins\DebugUtils.ini`.
 - added call stack overflow error check to **gosub** and **gosub_if_false** commands
 - added check for preceding **gosub** call in **0AA1 ([return_if_false](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AA1))**
 - added limit for memory allocated per script (see `cleo_plugins\SA.MemoryOperations.ini`). Exceeding the limit will cause a warning in game
@@ -9,6 +9,7 @@
 - fixed false positive `Code execution past script end` error messages when calling functions from CLEO modules
 - added error message when the script silently crashes in SAMP due to the script problem
 - fixed problem with texture sprites corruption, now scripts can safely use sprites from multiple TXDs
+- remove trailing whitespace from FXT entries preventing them from being displayed in game
 - new SDK method: `CLEO_CallNativeOpcode`. See SDK documentation: https://github.com/cleolibrary/CLEO5/wiki/CLEO-5-SDK
 
 ## 5.1.0
