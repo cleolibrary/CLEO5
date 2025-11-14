@@ -17,8 +17,19 @@ for /f "delims=" %%i in ('dir /b /s *.txt') do (
     if not "%%~nxi" == "cleo_tester.txt" (
         set p=%%i 
         echo Compiling !p:%__CD__%=!
-        %SANNY% --compile "%%i" "%%~dpni.s" --no-splash --mode sa_sbl    
-        if not exist "%%~dpni.s" (
+        
+        @REM Parse the file to find {$CLEO .ext} and extract the extension
+        set "ext=.s"
+        for /f "tokens=*" %%l in ('findstr /i /c:"{$CLEO" "%%i"') do (
+            set "line=%%l"
+            for /f "tokens=2 delims= " %%e in ("!line!") do (
+                set "ext=%%e"
+                set "ext=!ext:}=!"
+            )
+        )
+
+        %SANNY% --compile "%%i" "%%~dpni!ext!" --no-splash --mode sa_sbl    
+        if not exist "%%~dpni!ext!" (
             echo ERROR: Failed to build !p:%__CD__%=!
         )        
     )
