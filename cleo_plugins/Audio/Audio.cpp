@@ -357,7 +357,7 @@ class Audio
         auto length = 0.0f;
         if (stream)
         {
-            auto length = stream->GetLength();
+            length = stream->GetLength();
 
             auto speed = stream->GetSpeed();
             if (speed <= 0.0f)

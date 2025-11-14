@@ -1,0 +1,44 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2501'
+test("2501 (get_audio_stream_duration)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\Speech.mp3"
+
+function tests
+    int stream
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should get duration", test1)
+    return
+    
+
+    :setup
+        stream = load_audio_stream Test_File
+        assert_result_true()
+    return
+
+
+    :cleanup
+        remove_audio_stream stream
+        stream = -1
+    return
+
+
+    function test1(stream: int)
+        float duration
+        
+        duration = -1.0
+        duration = get_audio_stream_duration stream
+        assert_rangef(duration, 7.35, 7.40)
+                
+        set_audio_stream_speed stream {speed} 0.5
+        duration = -1.0
+        duration = get_audio_stream_duration stream
+        assert_rangef(duration, 14.7, 14.8)
+    end
+
+end
