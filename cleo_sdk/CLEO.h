@@ -8,7 +8,7 @@
 #include <wtypes.h>
 
 #define CLEO_VERSION_MAIN 5
-#define CLEO_VERSION_MAJOR 1
+#define CLEO_VERSION_MAJOR 3
 #define CLEO_VERSION_MINOR 0
 
 #define CLEO_VERSION ((CLEO_VERSION_MAIN << 24) | (CLEO_VERSION_MAJOR << 16) | (CLEO_VERSION_MINOR << 8)) // 0x0v0v0v00
@@ -359,33 +359,52 @@ namespace CLEO
     enum class eCallbackId : DWORD
     {
 
-        GameBegin = 0, // void WINAPI OnGameBegin(DWORD saveSlot); // game session started. -1 if not started from save
-        GameProcessBefore =
-            1, // void WINAPI OnGameProcessBefore(); // called once every frame before game logic processing
-        GameProcessAfter =
-            14,              // void WINAPI OnGameProcessAfter(); // called once every frame after game logic processing
-        GameEnd         = 2, // void WINAPI OnGameEnd(); // game session ended
-        ScriptsLoaded   = 3, // void WINAPI OnScriptsLoaded();
-        ScriptsFinalize = 4, // void WINAPI OnScriptsFinalize(); // called after all scripts has been deleted. Pointers
-                             // to scripts are no longer valid!
-        ScriptRegister = 5,  // void WINAPI OnScriptRegister(CRunningScript* pScript); // called after script creation
-        ScriptUnregister =
-            6, // void WINAPI OnScriptUnregister(CRunningScript* pScript); // called before script deletion
-        ScriptProcessBefore = 7, // bool WINAPI OnScriptProcessBefore(CRunningScript* pScript); // return false to skip
-                                 // this script processing
-        ScriptProcessAfter = 15, // void WINAPI OnScriptProcessAfter(CRunningScript* pScript);
-        ScriptOpcodeProcessBefore =
-            8, // OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* pScript, DWORD opcode); // return
-               // other than OR_NONE to signal that opcode was handled in the callback
-        ScriptOpcodeProcessAfter =
-            9, // OpcodeResult WINAPI OnScriptOpcodeProcessAfter(CRunningScript* pScript, DWORD opcode, OpcodeResult
-               // result); // return other than OR_NONE to overwrite original result
-        ScriptDraw      = 10, // void WINAPI OnScriptDraw(bool beforeFade);
-        DrawingFinished = 11, // void WINAPI OnDrawingFinished(); // called after game rendered everything and before
-                              // presenting screen buffer
-        Log = 12,             // void OnLog(eLogLevel level, const char* msg);
-        MainWindowFocus =
-            13, // void WINAPI OnMainWindowFocus(bool active); // called when game main window focus changes
+        // void WINAPI OnGameBegin(DWORD saveSlot);
+        GameBegin = 0, // game session started. -1 if not started from save
+
+        // void WINAPI OnGameProcessBefore();
+        GameProcessBefore = 1, // called once every frame before game logic processing
+
+        // void WINAPI OnGameProcessAfter();
+        GameProcessAfter = 14, // called once every frame after game logic processing
+
+        // void WINAPI OnGameEnd();
+        GameEnd = 2, // game session ended
+
+        // void WINAPI OnScriptsLoaded();
+        ScriptsLoaded = 3,
+
+        // void WINAPI OnScriptsFinalize();
+        ScriptsFinalize = 4, // called after all scripts has been deleted. Pointers to scripts are no longer valid!
+
+        // void WINAPI OnScriptRegister(CRunningScript* pScript);
+        ScriptRegister = 5, // called after script creation
+
+        // void WINAPI OnScriptUnregister(CRunningScript* pScript);
+        ScriptUnregister = 6, // called before script deletion
+
+        // bool WINAPI OnScriptProcessBefore(CRunningScript* pScript);
+        ScriptProcessBefore = 7, // return false to this script processing
+
+        // void WINAPI OnScriptProcessAfter(CRunningScript* pScript);
+        ScriptProcessAfter = 15,
+
+        // OpcodeResult WINAPI OnScriptOpcodeProcessBefore(CRunningScript* pScript, DWORD opcode);
+        ScriptOpcodeProcessBefore = 8, // return other than OR_NONE to signal that opcode was handled in the callback
+
+        // OpcodeResult WINAPI OnScriptOpcodeProcessAfter(CRunningScript* pScript, DWORD opcode, OpcodeResult result);
+        ScriptOpcodeProcessAfter = 9, // return other than OR_NONE to overwrite original result
+
+        ScriptDraw = 10, // void WINAPI OnScriptDraw(bool beforeFade);
+
+        // void WINAPI OnDrawingFinished();
+        DrawingFinished = 11, // called after game rendered everything and before presenting screen buffer
+
+        // void OnLog(eLogLevel level, const char* msg);
+        Log = 12,
+
+        // void WINAPI OnMainWindowFocus(bool active);
+        MainWindowFocus = 13, // called when game main window focus changes
     };
 
     // used by CLEO_Log and Log callback
