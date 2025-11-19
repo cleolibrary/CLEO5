@@ -103,8 +103,7 @@ namespace CLEO
             if (handler != nullptr)
             {
                 lastCustomOpcode = opcode;
-                result           = handler(thread);
-                return AfterOpcodeExecuted();
+                return handler(thread);
             }
 
             // Not registered as custom opcode. Call game's original handler
