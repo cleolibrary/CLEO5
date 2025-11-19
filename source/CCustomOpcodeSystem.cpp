@@ -42,16 +42,16 @@ namespace CLEO
         handledParamCount = 0;
 
         // check if last opcode ended correctly
-        if (thread->bIsProcessing && !IsLegacyScript(thread))
-        {
-            SHOW_ERROR_COMPAT(
-                "Unexpected opcode [%04X]!\nCalled in script %s\n"
-                "Some runtimes, e.g. SAMP, silently ignore script errors. Check the correctness of this script.",
-                opcode, ScriptInfoStr(thread).c_str()
-            );
-            result = thread->Suspend();
-            return AfterOpcodeExecuted();
-        }
+        // if (thread->bIsProcessing && !IsLegacyScript(thread))
+        // {
+        //     SHOW_ERROR_COMPAT(
+        //         "Unexpected opcode [%04X]!\nCalled in script %s\n"
+        //         "Some runtimes, e.g. SAMP, silently ignore script errors. Check the correctness of this script.",
+        //         opcode, ScriptInfoStr(thread).c_str()
+        //     );
+        //     result = thread->Suspend();
+        //     return AfterOpcodeExecuted();
+        // }
 
         thread->bIsProcessing = true; // opcode processing started
 
