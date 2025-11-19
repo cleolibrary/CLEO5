@@ -422,6 +422,7 @@ namespace CLEO
         OR_ERROR     = -1,
         OR_CONTINUE  = 0,
         OR_INTERRUPT = 1,
+        OR_SAMP_RET  = 4,
     };
 
     class CRunningScript;

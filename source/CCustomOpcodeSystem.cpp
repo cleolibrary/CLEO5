@@ -32,8 +32,7 @@ namespace CLEO
 
             thread->bIsProcessing = false; // opcode processing ended
 
-            // return (callbackResult != OR_NONE) ? callbackResult : result;
-            return result;
+            return (callbackResult != OR_NONE) ? callbackResult : result;
         };
 
         prevOpcode        = (thread != lastScript) ? 0xFFFF : lastOpcode;
