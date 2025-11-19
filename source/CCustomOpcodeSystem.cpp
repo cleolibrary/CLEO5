@@ -104,7 +104,7 @@ namespace CLEO
             if (handler != nullptr)
             {
                 lastCustomOpcode = opcode;
-                result = handler(thread);
+                result           = handler(thread);
                 return AfterOpcodeExecuted();
             }
 
