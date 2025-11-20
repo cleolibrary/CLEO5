@@ -75,7 +75,7 @@ namespace CLEO
 
         // universal CLEO's opcode handler
         static OpcodeResult __fastcall customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode);
-
+        static OpcodeResult OnOpcodeFinished(CRunningScript* thread, OpcodeResult result);
         static CustomOpcodeHandler customOpcodeProc[Opcode_Max + 1]; // procedure for each opcode
     };
 

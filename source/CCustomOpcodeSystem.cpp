@@ -14,27 +14,23 @@ namespace CLEO
     WORD CCustomOpcodeSystem::prevOpcode            = 0xFFFF;
     BYTE CCustomOpcodeSystem::handledParamCount     = 0;
 
+    OpcodeResult CCustomOpcodeSystem::OnOpcodeFinished(CRunningScript* thread, OpcodeResult result)
+    {
+        // execute registered callbacks
+        OpcodeResult callbackResult = OR_NONE;
+        for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessAfter))
+        {
+            typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
+            auto res       = ((callback*)func)(thread, CCustomOpcodeSystem::lastOpcode, OR_CONTINUE);
+            callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
+        }
+        thread->bIsProcessing = false; // opcode processing ended
+        return (callbackResult != OR_NONE) ? callbackResult : result;
+    }
+
     // opcode handler for custom opcodes
     OpcodeResult __fastcall CCustomOpcodeSystem::customOpcodeHandler(CRunningScript* thread, int dummy, WORD opcode)
     {
-        OpcodeResult result = OR_NONE;
-
-        auto AfterOpcodeExecuted = [&]() {
-            // execute registered callbacks
-            OpcodeResult callbackResult = OR_NONE;
-            for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessAfter))
-            {
-                typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
-                auto res = ((callback*)func)(thread, opcode, result);
-
-                callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
-            }
-
-            thread->bIsProcessing = false; // opcode processing ended
-
-            return (callbackResult != OR_NONE) ? callbackResult : result;
-        };
-
         prevOpcode        = (thread != lastScript) ? 0xFFFF : lastOpcode;
         lastScript        = thread;
         lastOpcode        = opcode;
@@ -45,12 +41,12 @@ namespace CLEO
         if (thread->bIsProcessing && !IsLegacyScript(thread))
         {
             SHOW_ERROR_COMPAT(
-                "Unexpected opcode [%04X]!\nCalled in script %s\n"
+                "Unexpected opcode [%04X]!\n"
+                "Called in script %s\n"
                 "Some runtimes, e.g. SAMP, silently ignore script errors. Check the correctness of this script.",
                 opcode, ScriptInfoStr(thread).c_str()
-            );
-            result = thread->Suspend();
-            return AfterOpcodeExecuted();
+            )
+            return OnOpcodeFinished(thread, thread->Suspend());
         }
 
         thread->bIsProcessing = true; // opcode processing started
@@ -64,13 +60,12 @@ namespace CLEO
                 (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
             {
                 SHOW_ERROR_COMPAT(
-                    "Code execution past script end in script %s\nThis usually "
-                    "happens when [004E] command "
-                    "is missing.\nScript suspended.",
+                    "Code execution past script end in script %s\n"
+                    "This usually happens when [004E] command is missing.\n"
+                    "Script suspended.",
                     ScriptInfoStr(thread).c_str()
                 );
-                result = thread->Suspend();
-                return AfterOpcodeExecuted();
+                return OnOpcodeFinished(thread, thread->Suspend());
             }
         }
 
@@ -78,57 +73,53 @@ namespace CLEO
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessBefore))
         {
             typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
-            result = ((callback*)func)(thread, opcode);
+            auto result = ((callback*)func)(thread, opcode);
 
             if (result != OR_NONE)
             {
-                break; // processed
+                return OnOpcodeFinished(thread, result); // processed
             }
         }
 
-        if (result == OR_NONE) // opcode not proccessed yet
+        if (opcode > Opcode_Max)
         {
-            if (opcode > Opcode_Max)
-            {
-                SHOW_ERROR(
-                    "Opcode [%04X] out of supported range! \nCalled in script "
-                    "%s\nScript suspended.",
-                    opcode, ScriptInfoStr(thread).c_str()
-                );
-                result = thread->Suspend();
-                return AfterOpcodeExecuted();
-            }
-
-            CustomOpcodeHandler handler = customOpcodeProc[opcode];
-            if (handler != nullptr)
-            {
-                lastCustomOpcode = opcode;
-                result           = handler(thread);
-                return AfterOpcodeExecuted();
-            }
-
-            // Not registered as custom opcode. Call game's original handler
-            result = CallNativeOpcode(thread, opcode);
-            if (result == OR_ERROR)
-            {
-                auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
-                if (!extensionMsg.empty())
-                {
-                    extensionMsg = " " + extensionMsg;
-                }
-
-                SHOW_ERROR(
-                    "Opcode [%04X] not found!%s\nCalled in script %s\nScript "
-                    "suspended.",
-                    opcode, extensionMsg.c_str(), ScriptInfoStr(thread).c_str()
-                );
-
-                result = thread->Suspend();
-                return AfterOpcodeExecuted();
-            }
+            SHOW_ERROR(
+                "Opcode [%04X] out of supported range!\n"
+                "Called in script %s\n"
+                "Script suspended.",
+                opcode, ScriptInfoStr(thread).c_str()
+            );
+            return OnOpcodeFinished(thread, thread->Suspend());
         }
 
-        return AfterOpcodeExecuted();
+        CustomOpcodeHandler handler = customOpcodeProc[opcode];
+        if (handler != nullptr)
+        {
+            lastCustomOpcode = opcode;
+            return OnOpcodeFinished(thread, handler(thread));
+        }
+
+        // Not registered as custom opcode. Call game's original handler
+        auto result = CallNativeOpcode(thread, opcode);
+        if (result != OR_ERROR)
+        {
+            return OnOpcodeFinished(thread, result);
+        }
+
+        auto extensionMsg = CleoInstance.OpcodeInfoDb.GetExtensionMissingMessage(opcode);
+        if (!extensionMsg.empty())
+        {
+            extensionMsg = " " + extensionMsg;
+        }
+
+        SHOW_ERROR(
+            "Opcode [%04X] not found!%s\n"
+            "Called in script %s\n"
+            "Script suspended.",
+            opcode, extensionMsg.c_str(), ScriptInfoStr(thread).c_str()
+        );
+
+        return OnOpcodeFinished(thread, thread->Suspend());
     }
 
     void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
