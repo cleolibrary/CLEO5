@@ -43,7 +43,4 @@
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="SA.MemoryOperations.ini" />
-  </ItemGroup>
 </Project>

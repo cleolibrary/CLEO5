@@ -12,35 +12,21 @@ ScreenLog::ScreenLog()
 
 void ScreenLog::Init()
 {
-    auto ConfigReadHex = [](const char* section, const char* key, DWORD defValue, const char* filename) {
-        char buff[32] = {0};
-        if (!GetPrivateProfileString(section, key, "", buff, sizeof(buff), filename)) return defValue;
-
-        char* end;
-        DWORD result = strtoul(buff, &end, 16);
-
-        if (*end != '\0') return defValue; // any invalid char
-
-        return result;
-    };
-
     // load settings from ini file
-    auto config = GetConfigFilename();
-
-    level       = (eLogLevel)GetPrivateProfileInt("ScreenLog", "Level", (DWORD)eLogLevel::None, config.c_str());
-    maxMessages = GetPrivateProfileInt("ScreenLog", "MessagesMax", 40, config.c_str());
-    timeDisplay = GetPrivateProfileInt("ScreenLog", "MessageTime", 6000, config.c_str());
+    level       = (eLogLevel)CLEO_GetConfigInt("DebugUtils.ScreenLog.Level", (DWORD)eLogLevel::None);
+    maxMessages = CLEO_GetConfigInt("DebugUtils.ScreenLog.MessagesMax", 40);
+    timeDisplay = CLEO_GetConfigInt("DebugUtils.ScreenLog.MessageTime", 6000);
     timeFadeout = 3000;
 
-    fontSize  = 0.01f * GetPrivateProfileInt("ScreenLog", "FontSize", 60, config.c_str());
-    fontStyle = (eFontStyle)GetPrivateProfileInt("ScreenLog", "FontStyle", eFontStyle::FONT_SUBTITLES, config.c_str());
+    fontSize  = 0.01f * CLEO_GetConfigInt("DebugUtils.ScreenLog.FontSize", 60);
+    fontStyle = (eFontStyle)CLEO_GetConfigInt("DebugUtils.ScreenLog.FontStyle", eFontStyle::FONT_SUBTITLES);
 
     fontColor[(size_t)eLogLevel::Error] =
-        CRGBA(ConfigReadHex("ScreenLog", "ColorError", fontColor[(size_t)eLogLevel::Error].ToInt(), config.c_str()));
+        CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorError", fontColor[(size_t)eLogLevel::Error].ToInt()));
     fontColor[(size_t)eLogLevel::Debug] =
-        CRGBA(ConfigReadHex("ScreenLog", "ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt(), config.c_str()));
+        CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt()));
     fontColor[(size_t)eLogLevel::Default] =
-        CRGBA(ConfigReadHex("ScreenLog", "ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt(), config.c_str()));
+        CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt()));
 }
 
 void ScreenLog::Add(eLogLevel level, const char* msg)

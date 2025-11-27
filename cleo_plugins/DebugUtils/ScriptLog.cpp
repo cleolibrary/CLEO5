@@ -86,11 +86,9 @@ ScriptLog::~ScriptLog()
 
 void ScriptLog::LoadConfig(bool keepState)
 {
-    auto config = GetConfigFilename();
-
     if (!keepState)
     {
-        switch (GetPrivateProfileInt("ScriptLog", "Enabled", 0, config.c_str()))
+        switch (CLEO_GetConfigInt("DebugUtils.ScriptLog.Enabled", 0))
         {
         case 0:
             state = LoggingState::Disabled;
@@ -107,15 +105,15 @@ void ScriptLog::LoadConfig(bool keepState)
         }
     }
 
-    int size    = GetPrivateProfileInt("ScriptLog", "MaxSize", 250, config.c_str());
+    int size    = CLEO_GetConfigInt("DebugUtils.ScriptLog.MaxSize", 250);
     size        = std::max(size, 0);
     maxFileSize = size;
     maxFileSize *= 1024 * 1024; // to MB
 
-    logCustomScriptsOnly = GetPrivateProfileInt("ScriptLog", "OnlyCustomScripts", -1, config.c_str());
-    logDebugScriptsOnly  = GetPrivateProfileInt("ScriptLog", "OnlyDebugScripts", false, config.c_str()) != 0;
-    logOffsets           = GetPrivateProfileInt("ScriptLog", "Offsets", 0, config.c_str()) != 0;
-    logOpcodes           = GetPrivateProfileInt("ScriptLog", "Opcodes", 0, config.c_str()) != 0;
+    logCustomScriptsOnly = CLEO_GetConfigInt("DebugUtils.ScriptLog.OnlyCustomScripts", -1);
+    logDebugScriptsOnly  = CLEO_GetConfigInt("DebugUtils.ScriptLog.OnlyDebugScripts", 0) != 0;
+    logOffsets           = CLEO_GetConfigInt("DebugUtils.ScriptLog.Offsets", 0) != 0;
+    logOpcodes           = CLEO_GetConfigInt("DebugUtils.ScriptLog.Opcodes", 0) != 0;
 }
 
 void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)

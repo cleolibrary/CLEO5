@@ -86,7 +86,6 @@
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
-xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 if defined GTA_SA_DIR (
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
 )
@@ -118,7 +117,6 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
-xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 if defined GTA_SA_DIR (
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
 )
@@ -202,9 +200,6 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
     <ClInclude Include="..\..\source\OpcodeInfoDatabase.h" />
     <ClInclude Include="ScreenLog.h" />
     <ClInclude Include="ScriptLog.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="SA.DebugUtils.ini" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />

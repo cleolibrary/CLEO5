@@ -102,7 +102,6 @@ jobs:
           @echo Copy files
           copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
-          copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           
           @echo Download Sanny Builder Library json
           curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json

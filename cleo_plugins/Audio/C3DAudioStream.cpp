@@ -16,7 +16,8 @@ C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
         TRACE(
-            "Loading of 3d-audiostream '%s' failed. Support of network sources was disabled in SA.Audio.ini", filepath
+            "Loading of 3d-audiostream '%s' failed. Support of network sources was disabled in .cleo_config.ini",
+            filepath
         );
         return;
     }

@@ -9,6 +9,7 @@
 #include "CScriptEngine.h"
 #include "CCustomOpcodeSystem.h"
 #include "OpcodeInfoDatabase.h"
+#include "CConfigManager.h"
 
 namespace CLEO
 {

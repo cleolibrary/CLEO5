@@ -123,6 +123,9 @@
     <ClCompile Include="source\CCustomScript.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
+    <ClCompile Include="CConfigManager.cpp">
+      <Filter>source\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\stdafx.h">
@@ -198,6 +201,9 @@
       <Filter>source\core</Filter>
     </ClInclude>
     <ClInclude Include="source\ScriptUtils.h" />
+    <ClInclude Include="CConfigManager.h">
+      <Filter>source\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="source\cleo.def">

@@ -28,10 +28,9 @@ class MemoryOperations
     {
         if (!PluginCheckCleoVersion()) return;
 
-        auto config                  = GetConfigFilename();
-        m_configLimitAllocationCount = GetPrivateProfileInt("Limits", "MemoryAllocations", 2000, config.c_str());
+        m_configLimitAllocationCount = CLEO_GetConfigInt("MemoryOperations.Limits.MemoryAllocations", 2000);
         m_configLimitAllocationSize =
-            GetPrivateProfileInt("Limits", "MemoryTotalSize", 16, config.c_str()) * 1024 * 1024; // megabytes
+            CLEO_GetConfigInt("MemoryOperations.Limits.MemoryTotalSize", 16) * 1024 * 1024; // megabytes
 
         // register opcodes
         CLEO_RegisterOpcode(0x0459, opcode_0459); // terminate_all_scripts_with_this_name

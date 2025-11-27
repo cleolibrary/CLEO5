@@ -84,9 +84,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SA.DebugUtils.ini" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />
   </ItemGroup>
 </Project>

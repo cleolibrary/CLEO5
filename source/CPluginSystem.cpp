@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CPluginSystem.h"
 #include "CleoBase.h"
+#include "CConfigManager.h"
 
 using namespace CLEO;
 
@@ -18,11 +19,7 @@ void CPluginSystem::LoadPlugins()
     std::set<std::string> skippedPaths;
 
     // get blacklist from config
-    auto blacklistStr = std::string(512, '\0');
-    GetPrivateProfileString(
-        "General", "PluginBlacklist", "", blacklistStr.data(), blacklistStr.size(), Filepath_Config.c_str()
-    );
-    blacklistStr.resize(strlen(blacklistStr.data()));
+    auto blacklistStr = CConfigManager::ReadString("General", "PluginBlacklist", "");
     StringToLower(blacklistStr);
     std::vector<std::string> blacklist;
     StringSplit(blacklistStr, "\t ,", blacklist);
@@ -48,7 +45,7 @@ void CPluginSystem::LoadPlugins()
             if (std::find(blacklist.begin(), blacklist.end(), blName) != blacklist.end())
             {
                 skippedPaths.emplace(files.strings[i]);
-                LOG_WARNING(0, " %s - skipped, blacklisted in config.ini", files.strings[i]);
+                LOG_WARNING(0, " %s - skipped, blacklisted in .cleo_config.ini", files.strings[i]);
                 continue;
             }
 

@@ -48,9 +48,8 @@ class DebugUtils
     {
         if (!PluginCheckCleoVersion()) return;
 
-        auto config        = GetConfigFilename();
-        configLimitCommand = GetPrivateProfileInt("Limits", "Command", 2000000, config.c_str()); // 2 milion commands
-        configLimitTime    = GetPrivateProfileInt("Limits", "Time", 5, config.c_str());          // 5 seconds
+        configLimitCommand = CLEO_GetConfigInt("DebugUtils.Limits.Command", 2000000); // 2 milion commands
+        configLimitTime    = CLEO_GetConfigInt("DebugUtils.Limits.Time", 5);          // 5 seconds
 
         // register opcodes
         CLEO_RegisterOpcode(0x00C3, Opcode_DebugOn);
@@ -60,7 +59,7 @@ class DebugUtils
         CLEO_RegisterOpcode(0x2102, Opcode_LogToFile);
 
         // original Rockstar's script debugging opcodes
-        if (GetPrivateProfileInt("General", "LegacyDebugOpcodes", 0, config.c_str()) != 0)
+        if (CLEO_GetConfigInt("DebugUtils.General.LegacyDebugOpcodes", 0) != 0)
         {
             CLEO_RegisterOpcode(0x0662, Opcode_PrintString);
             CLEO_RegisterOpcode(0x0663, Opcode_PrintInt);
@@ -236,9 +235,9 @@ class DebugUtils
 
             SHOW_ERROR(
                 "Over %s commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO "
-                "suspended this script.\n\nTo supress this error, increase 'Command' property in %s.ini file and "
+                "suspended this script.\n\nTo supress this error, increase 'Command' property in .cleo_config.ini and "
                 "restart the game.",
-                limitStr.c_str(), ScriptInfoStr(thread).c_str(), TARGET_NAME
+                limitStr.c_str(), ScriptInfoStr(thread).c_str()
             );
             return thread->Suspend();
         }
@@ -251,9 +250,9 @@ class DebugUtils
             {
                 SHOW_ERROR(
                     "Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO "
-                    "suspended this script.\n\nTo supress this error, increase 'Time' property in %s.ini file and "
-                    "restart the game.",
-                    configLimitTime, ScriptInfoStr(thread).c_str(), TARGET_NAME
+                    "suspended this script.\n\nTo supress this error, increase 'Time' property in .cleo_config.ini "
+                    "file and restart the game.",
+                    configLimitTime, ScriptInfoStr(thread).c_str()
                 );
                 return thread->Suspend();
             }

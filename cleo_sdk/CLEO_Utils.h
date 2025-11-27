@@ -25,7 +25,7 @@
 namespace CLEO
 {
     /*
-    TRACE(format,...) // log to file. Can be displayed on screen with change in DebugUtils.ini
+    TRACE(format,...) // log to file. Can be displayed on screen with change in .cleo_config.ini
     LOG_WARNING(script, format, ...) // warning text on screen and in log file. Not displayed for scripts in 'legacy'
     mode SHOW_ERROR(a,...) // message box, log to file
 
@@ -428,16 +428,6 @@ namespace CLEO
         }
 
         return std::string_view(str.data(), separatorPos);
-    }
-
-    // this plugin's config file
-    static std::string GetConfigFilename()
-    {
-        std::string path = CLEO_GetGameDirectory();
-        path += "\\cleo\\cleo_plugins\\";
-        path += TARGET_NAME;
-        path += ".ini";
-        return path;
     }
 
     // does normalized file path points inside game directories? (game root or user files)

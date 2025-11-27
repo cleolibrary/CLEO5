@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="source\CConfigManager.cpp" />
     <ClCompile Include="source\CCustomScript.cpp">
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -119,6 +120,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\CConfigManager.h" />
     <ClInclude Include="cleo_sdk\CLEO.h" />
     <ClInclude Include="cleo_sdk\CLEO_Utils.h" />
     <ClInclude Include="source\CCodeInjector.h" />

@@ -69,10 +69,8 @@ namespace CLEO
             SHOW_ERROR("Invalid BASS library version! Expected at least %d, found %d.", BASSVERSION, ver);
         }
 
-        auto config = GetConfigFilename();
-        LegacyModeDefaultStreamType =
-            (eStreamType)GetPrivateProfileInt("General", "LegacyModeDefaultStreamType", 0, config.c_str());
-        allowNetworkSources = GetPrivateProfileInt("General", "AllowNetworkSources", 1, config.c_str()) != 0;
+        LegacyModeDefaultStreamType = (eStreamType)CLEO_GetConfigInt("Audio.General.LegacyModeDefaultStreamType", 0);
+        allowNetworkSources         = CLEO_GetConfigInt("Audio.General.AllowNetworkSources", 1) != 0;
 
         int deviceIndex, total_devices, enabled_devices;
         EnumerateBassDevices(total_devices, enabled_devices, deviceIndex);
@@ -80,7 +78,7 @@ namespace CLEO
         BASS_DEVICEINFO info = {"Unknown device", nullptr, 0};
         BASS_GetDeviceInfo(deviceIndex, &info);
 
-        int forceIndex = GetPrivateProfileInt("General", "AudioDevice", -1, config.c_str());
+        int forceIndex = CLEO_GetConfigInt("Audio.General.AudioDevice", -1);
         if (forceIndex != -1)
         {
             BASS_DEVICEINFO forceInfo = {"Unknown device", nullptr, 0};
