@@ -87,8 +87,12 @@ namespace CLEO
 
     bool CConfigManager::WriteString(const char* section, const char* key, const char* value)
     {
+        // check if cache already has the same value
+        const auto cacheKey = MakeKey(section, key);
+        if (cache.find(cacheKey) != cache.end() && cache[cacheKey] == value) return true;
+
         bool result = WritePrivateProfileString(section, key, value, GetConfigPath()) != 0;
-        if (result) cache[MakeKey(section, key)] = value;
+        if (result) cache[cacheKey] = value;
         return result;
     }
 
