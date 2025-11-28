@@ -123,7 +123,7 @@
     <ClCompile Include="source\CCustomScript.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
-    <ClCompile Include="CConfigManager.cpp">
+    <ClCompile Include="source\CConfigManager.cpp">
       <Filter>source\core</Filter>
     </ClCompile>
   </ItemGroup>
@@ -201,7 +201,7 @@
       <Filter>source\core</Filter>
     </ClInclude>
     <ClInclude Include="source\ScriptUtils.h" />
-    <ClInclude Include="CConfigManager.h">
+    <ClInclude Include="source\CConfigManager.h">
       <Filter>source\core</Filter>
     </ClInclude>
   </ItemGroup>
