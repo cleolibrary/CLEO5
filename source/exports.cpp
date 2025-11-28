@@ -536,10 +536,5 @@ namespace CLEO
         {
             return CConfigManager::WriteString("Plugins", key, value);
         }
-
-        LPCSTR WINAPI CLEO_GetConfigFilename()
-        {
-            return CConfigManager::GetConfigPath();
-        }
     }
 } // namespace CLEO

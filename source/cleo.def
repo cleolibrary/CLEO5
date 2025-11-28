@@ -69,4 +69,3 @@ EXPORTS
 	_CLEO_SetConfigInt@8					@66
 	_CLEO_SetConfigFloat@8					@67
 	_CLEO_SetConfigText@8					@68
-	_CLEO_GetConfigFilename@0				@69

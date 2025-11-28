@@ -607,9 +607,6 @@ namespace CLEO
         BOOL WINAPI CLEO_SetConfigInt(const char* key, int value);
         BOOL WINAPI CLEO_SetConfigFloat(const char* key, float value);
         BOOL WINAPI CLEO_SetConfigText(const char* key, const char* value);
-
-        // Get config file path
-        LPCSTR WINAPI CLEO_GetConfigFilename();
     }
 
 #pragma pack(push, 1)
