@@ -19,6 +19,11 @@ namespace CLEO
         // Read from file and then cache
         char buffer[512];
         GetPrivateProfileString(section, key, "", buffer, sizeof(buffer), GetConfigPath());
+        
+        // remove comments starting with ;
+        char* commentPos = strchr(buffer, ';');
+        if (commentPos) *commentPos = '\0';
+
         return cache[cacheKey] = buffer;
     }
 
