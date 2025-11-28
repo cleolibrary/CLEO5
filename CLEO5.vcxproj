@@ -11,7 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\CConfigManager.cpp" />
     <ClCompile Include="source\CCustomScript.cpp">
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -28,6 +27,9 @@
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="source\CCodeInjector.cpp">
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="source\CConfigManager.cpp">
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CGame.cpp">
@@ -120,10 +122,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\CConfigManager.h" />
     <ClInclude Include="cleo_sdk\CLEO.h" />
     <ClInclude Include="cleo_sdk\CLEO_Utils.h" />
     <ClInclude Include="source\CCodeInjector.h" />
+    <ClInclude Include="source\CConfigManager.h" />
     <ClInclude Include="source\CCustomOpcodeSystem.h" />
     <ClInclude Include="source\CCustomScript.h" />
     <ClInclude Include="source\CDebug.h" />
