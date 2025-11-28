@@ -3,48 +3,50 @@
 
 namespace CLEO
 {
+    std::unordered_map<std::string, std::string> CConfigManager::cache;
+
+    std::string CConfigManager::MakeKey(const char* section, const char* key)
+    {
+        return std::string(section) + "\0" + key;
+    }
+
+    const std::string& CConfigManager::GetCachedValue(const char* section, const char* key)
+    {
+        const auto cacheKey = MakeKey(section, key);
+        const auto& it      = cache.find(cacheKey);
+        if (it != cache.end()) return it->second;
+
+        // Read from file and then cache
+        char buffer[512];
+        GetPrivateProfileString(section, key, "", buffer, sizeof(buffer), GetConfigPath());
+        return cache[cacheKey] = buffer;
+    }
 
     int CConfigManager::ReadInt(const char* section, const char* key, int defaultValue)
     {
-        char buffer[32];
-        GetPrivateProfileString(section, key, "", buffer, sizeof(buffer), CConfigManager::GetConfigPath());
-
-        if (buffer[0] == '\0') return defaultValue;
+        const std::string& value = GetCachedValue(section, key);
+        if (value.empty()) return defaultValue;
 
         char* end;
-        // Try to parse as hex if it starts with "0x", otherwise parse as decimal
-        int base   = (buffer[0] == '0' && buffer[1] == 'x') ? 16 : 10;
-        long value = strtol(buffer, &end, base);
-
-        if (end == buffer) // no conversion performed
-            return defaultValue;
-
-        return (int)value;
+        const auto base   = (value[0] == '0' && value[1] == 'x') ? 16 : 10;
+        const auto result = strtol(value.c_str(), &end, base);
+        return (end == value.c_str()) ? defaultValue : result;
     }
 
     float CConfigManager::ReadFloat(const char* section, const char* key, float defaultValue)
     {
-        char buffer[32];
-        GetPrivateProfileString(section, key, "", buffer, sizeof(buffer), CConfigManager::GetConfigPath());
-
-        if (buffer[0] == '\0') return defaultValue;
+        const std::string& value = GetCachedValue(section, key);
+        if (value.empty()) return defaultValue;
 
         char* end;
-        float value = strtof(buffer, &end);
-
-        if (end == buffer) // no conversion performed
-            return defaultValue;
-
-        return value;
+        const auto result = strtof(value.c_str(), &end);
+        return (end == value.c_str()) ? defaultValue : result;
     }
 
     std::string CConfigManager::ReadString(const char* section, const char* key, const char* defaultValue)
     {
-        char buffer[512];
-        GetPrivateProfileString(
-            section, key, defaultValue ? defaultValue : "", buffer, sizeof(buffer), CConfigManager::GetConfigPath()
-        );
-        return std::string(buffer);
+        const std::string& value = GetCachedValue(section, key);
+        return value.empty() ? defaultValue : value;
     }
 
     size_t CConfigManager::ReadString(
@@ -53,28 +55,40 @@ namespace CLEO
     {
         if (buffer == nullptr || bufferSize == 0) return 0;
 
-        return GetPrivateProfileString(
-            section, key, defaultValue ? defaultValue : "", buffer, (DWORD)bufferSize, CConfigManager::GetConfigPath()
-        );
+        const std::string& cached = GetCachedValue(section, key);
+        const char* src           = cached.empty() ? defaultValue : cached.c_str();
+
+        size_t len = strlen(src);
+        if (len >= bufferSize) len = bufferSize - 1;
+
+        memcpy(buffer, src, len);
+        buffer[len] = '\0';
+        return len;
     }
 
     bool CConfigManager::WriteInt(const char* section, const char* key, int value)
     {
         char buffer[32];
-        _itoa_s(value, buffer, 10);
-        return WritePrivateProfileString(section, key, buffer, CConfigManager::GetConfigPath()) != 0;
+        _itoa_s(value, buffer, sizeof(buffer), 10);
+        bool result = WritePrivateProfileString(section, key, buffer, GetConfigPath()) != 0;
+        if (result) cache[MakeKey(section, key)] = buffer;
+        return result;
     }
 
     bool CConfigManager::WriteFloat(const char* section, const char* key, float value)
     {
         char buffer[32];
         sprintf_s(buffer, "%g", value);
-        return WritePrivateProfileString(section, key, buffer, CConfigManager::GetConfigPath()) != 0;
+        bool result = WritePrivateProfileString(section, key, buffer, GetConfigPath()) != 0;
+        if (result) cache[MakeKey(section, key)] = buffer;
+        return result;
     }
 
     bool CConfigManager::WriteString(const char* section, const char* key, const char* value)
     {
-        return WritePrivateProfileString(section, key, value, CConfigManager::GetConfigPath()) != 0;
+        bool result = WritePrivateProfileString(section, key, value, GetConfigPath()) != 0;
+        if (result) cache[MakeKey(section, key)] = value;
+        return result;
     }
 
     const char* CConfigManager::GetConfigPath()

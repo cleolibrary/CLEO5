@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <unordered_map>
+
 namespace CLEO
 {
     class CConfigManager
@@ -19,5 +21,10 @@ namespace CLEO
 
         // Get config file path
         static const char* GetConfigPath();
+
+      private:
+        static std::unordered_map<std::string, std::string> cache;
+        static std::string MakeKey(const char* section, const char* key);
+        static const std::string& GetCachedValue(const char* section, const char* key);
     };
 } // namespace CLEO
