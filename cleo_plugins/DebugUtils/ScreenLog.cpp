@@ -14,11 +14,11 @@ void ScreenLog::Init()
 {
     // load settings from ini file
     level       = (eLogLevel)CLEO_GetConfigInt("DebugUtils.ScreenLog.Level", (DWORD)eLogLevel::None);
-    maxMessages = CLEO_GetConfigInt("DebugUtils.ScreenLog.MessagesMax", 40);
-    timeDisplay = CLEO_GetConfigInt("DebugUtils.ScreenLog.MessageTime", 6000);
+    maxMessages = CLEO_GetConfigInt("DebugUtils.ScreenLog.MessagesMax", 32);
+    timeDisplay = CLEO_GetConfigInt("DebugUtils.ScreenLog.MessageTime", 3000);
     timeFadeout = 3000;
 
-    fontSize  = 0.01f * CLEO_GetConfigInt("DebugUtils.ScreenLog.FontSize", 60);
+    fontSize  = 0.01f * CLEO_GetConfigInt("DebugUtils.ScreenLog.FontSize", 56);
     fontStyle = (eFontStyle)CLEO_GetConfigInt("DebugUtils.ScreenLog.FontStyle", eFontStyle::FONT_SUBTITLES);
 
     fontColor[(size_t)eLogLevel::Error] =

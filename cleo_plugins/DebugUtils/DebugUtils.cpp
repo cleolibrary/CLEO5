@@ -234,9 +234,10 @@ class DebugUtils
             limitStr = StringPrintf("%d%s", limit, limitStr.c_str());
 
             SHOW_ERROR(
-                "Over %s commands executed in a single frame by script %s \nTo prevent the game from freezing, CLEO "
-                "suspended this script.\n\nTo supress this error, increase 'Command' property in .cleo_config.ini and "
-                "restart the game.",
+                "Over %s commands executed in a single frame by script %s \n"
+                "To prevent the game from freezing, CLEO suspended this script.\n\n"
+                "To supress this error, increase 'DebugUtils.Limits.Command' property in "
+                ".cleo_config.ini and restart the game.",
                 limitStr.c_str(), ScriptInfoStr(thread).c_str()
             );
             return thread->Suspend();
@@ -249,9 +250,10 @@ class DebugUtils
             if (configLimitTime > 0 && currScriptElapsedSeconds > configLimitTime)
             {
                 SHOW_ERROR(
-                    "Over %d seconds of lag in a single frame by script %s \nTo prevent the game from freezing, CLEO "
-                    "suspended this script.\n\nTo supress this error, increase 'Time' property in .cleo_config.ini "
-                    "file and restart the game.",
+                    "Over %d seconds of lag in a single frame by script %s \n"
+                    "To prevent the game from freezing, CLEO suspended this script.\n\n"
+                    "To supress this error, increase 'DebugUtils.Limits.Time' property in "
+                    ".cleo_config.ini and restart the game.",
                     configLimitTime, ScriptInfoStr(thread).c_str()
                 );
                 return thread->Suspend();

@@ -112,7 +112,7 @@ void ScriptLog::LoadConfig(bool keepState)
 
     logCustomScriptsOnly = CLEO_GetConfigInt("DebugUtils.ScriptLog.OnlyCustomScripts", -1);
     logDebugScriptsOnly  = CLEO_GetConfigInt("DebugUtils.ScriptLog.OnlyDebugScripts", 0) != 0;
-    logOffsets           = CLEO_GetConfigInt("DebugUtils.ScriptLog.Offsets", 0) != 0;
+    logOffsets           = CLEO_GetConfigInt("DebugUtils.ScriptLog.Offsets", 1) != 0;
     logOpcodes           = CLEO_GetConfigInt("DebugUtils.ScriptLog.Opcodes", 0) != 0;
 }
 
