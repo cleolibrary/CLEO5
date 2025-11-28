@@ -21,7 +21,7 @@ namespace CLEO
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessAfter))
         {
             typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD, OpcodeResult);
-            auto res       = ((callback*)func)(thread, CCustomOpcodeSystem::lastOpcode, OR_CONTINUE);
+            auto res       = ((callback*)func)(thread, CCustomOpcodeSystem::lastOpcode, result);
             callbackResult = std::max(res, callbackResult); // store result with highest value from all callbacks
         }
         thread->bIsProcessing = false; // opcode processing ended
@@ -77,7 +77,7 @@ namespace CLEO
 
             if (result != OR_NONE)
             {
-                return OnOpcodeFinished(thread, result); // processed
+                return OnOpcodeFinished(thread, result); // command processed by callback, done
             }
         }
 
