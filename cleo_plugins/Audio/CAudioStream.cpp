@@ -17,7 +17,7 @@ CAudioStream::CAudioStream(const char* filepath)
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
         TRACE(
-            "Loading of audiostream '%s' was blocked."
+            "Loading of audiostream '%s' was blocked. "
             "Update 'Audio.General.AllowNetworkSources' in .cleo_config.ini",
             filepath
         );

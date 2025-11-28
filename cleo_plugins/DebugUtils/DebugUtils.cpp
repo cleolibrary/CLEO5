@@ -48,7 +48,7 @@ class DebugUtils
     {
         if (!PluginCheckCleoVersion()) return;
 
-        configLimitCommand = CLEO_GetConfigInt("DebugUtils.Limits.Command", 2000000); // 2 milion commands
+        configLimitCommand = CLEO_GetConfigInt("DebugUtils.Limits.Command", 2000000); // 2 million commands
         configLimitTime    = CLEO_GetConfigInt("DebugUtils.Limits.Time", 5);          // 5 seconds
 
         // register opcodes

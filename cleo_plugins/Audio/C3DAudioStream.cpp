@@ -16,7 +16,7 @@ C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
         TRACE(
-            "Loading of 3d-audiostream '%s' was blocked."
+            "Loading of 3d-audiostream '%s' was blocked. "
             "Update 'Audio.General.AllowNetworkSources' in .cleo_config.ini",
             filepath
         );

@@ -7,7 +7,7 @@ namespace CLEO
 
     std::string CConfigManager::MakeKey(const char* section, const char* key)
     {
-        return std::string(section) + "\0" + key;
+        return std::string(section) + "." + key;
     }
 
     const std::string& CConfigManager::GetCachedValue(const char* section, const char* key)
@@ -70,18 +70,14 @@ namespace CLEO
     {
         char buffer[32];
         _itoa_s(value, buffer, sizeof(buffer), 10);
-        bool result = WritePrivateProfileString(section, key, buffer, GetConfigPath()) != 0;
-        if (result) cache[MakeKey(section, key)] = buffer;
-        return result;
+        return WriteString(section, key, buffer);
     }
 
     bool CConfigManager::WriteFloat(const char* section, const char* key, float value)
     {
         char buffer[32];
         sprintf_s(buffer, "%g", value);
-        bool result = WritePrivateProfileString(section, key, buffer, GetConfigPath()) != 0;
-        if (result) cache[MakeKey(section, key)] = buffer;
-        return result;
+        return WriteString(section, key, buffer);
     }
 
     bool CConfigManager::WriteString(const char* section, const char* key, const char* value)
