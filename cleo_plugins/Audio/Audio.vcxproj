@@ -89,7 +89,6 @@
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
-xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command>
     </PostBuildEvent>
     <ResourceCompile>
@@ -118,7 +117,6 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     </Link>
     <PostBuildEvent>
       <Command>taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING"
-xcopy /Y "$(ProjectDir)*.ini" "$(OutDir)"
 xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command>
     </PostBuildEvent>
     <ResourceCompile>
@@ -195,9 +193,6 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
     <ClInclude Include="CAudioStream.h" />
     <ClInclude Include="CSoundSystem.h" />
     <ClInclude Include="CInterpolatedValue.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="SA.Audio.ini" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />

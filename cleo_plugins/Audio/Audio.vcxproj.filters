@@ -75,9 +75,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="SA.Audio.ini" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="..\Resource.rc" />
   </ItemGroup>
 </Project>

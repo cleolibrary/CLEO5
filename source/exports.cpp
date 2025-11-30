@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CleoBase.h"
 #include "ScmFunction.h"
+#include "CConfigManager.h"
 
 namespace CLEO
 {
@@ -504,6 +505,36 @@ namespace CLEO
         void WINAPI CLEO_Log(eLogLevel level, const char* msg)
         {
             Debug.Trace(level, msg);
+        }
+
+        int WINAPI CLEO_GetConfigInt(const char* key, int defaultValue)
+        {
+            return CConfigManager::ReadInt("Plugins", key, defaultValue);
+        }
+
+        float WINAPI CLEO_GetConfigFloat(const char* key, float defaultValue)
+        {
+            return CConfigManager::ReadFloat("Plugins", key, defaultValue);
+        }
+
+        DWORD WINAPI CLEO_GetConfigText(const char* key, const char* defaultValue, char* buffer, DWORD bufferSize)
+        {
+            return (DWORD)CConfigManager::ReadString("Plugins", key, defaultValue, buffer, bufferSize);
+        }
+
+        BOOL WINAPI CLEO_SetConfigInt(const char* key, int value)
+        {
+            return CConfigManager::WriteInt("Plugins", key, value);
+        }
+
+        BOOL WINAPI CLEO_SetConfigFloat(const char* key, float value)
+        {
+            return CConfigManager::WriteFloat("Plugins", key, value);
+        }
+
+        BOOL WINAPI CLEO_SetConfigText(const char* key, const char* value)
+        {
+            return CConfigManager::WriteString("Plugins", key, value);
         }
     }
 } // namespace CLEO

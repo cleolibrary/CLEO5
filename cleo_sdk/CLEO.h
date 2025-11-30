@@ -595,6 +595,18 @@ namespace CLEO
         LPCSTR WINAPI CLEO_GetUserDirectory();
 
         void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
+
+        // Config file (.cleo_config.ini) management for plugins
+        // All values are stored in [Plugins] section
+        // Read configuration values
+        int WINAPI CLEO_GetConfigInt(const char* key, int defaultValue);
+        float WINAPI CLEO_GetConfigFloat(const char* key, float defaultValue);
+        DWORD WINAPI CLEO_GetConfigText(const char* key, const char* defaultValue, char* buffer, DWORD bufferSize);
+
+        // Write configuration values
+        BOOL WINAPI CLEO_SetConfigInt(const char* key, int value);
+        BOOL WINAPI CLEO_SetConfigFloat(const char* key, float value);
+        BOOL WINAPI CLEO_SetConfigText(const char* key, const char* value);
     }
 
 #pragma pack(push, 1)

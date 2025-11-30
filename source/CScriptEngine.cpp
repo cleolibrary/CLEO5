@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "CleoBase.h"
+#include "CConfigManager.h"
 
 namespace CLEO
 {
@@ -329,10 +330,10 @@ namespace CLEO
             MainScriptFileName = "scr.scm";
         }
 
-        NativeScriptsDebugMode = GetPrivateProfileInt("General", "DebugMode", 0, Filepath_Config.c_str()) != 0;
+        NativeScriptsDebugMode = CConfigManager::ReadInt("General", "DebugMode", 0) != 0;
 
         // global native scripts legacy mode
-        int ver = GetPrivateProfileInt("General", "MainScmLegacyMode", 0, Filepath_Config.c_str());
+        int ver = CConfigManager::ReadInt("General", "MainScmLegacyMode", 0);
         switch (ver)
         {
         case 3:

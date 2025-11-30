@@ -63,3 +63,9 @@ EXPORTS
 	_CLEO_GetScmMainData@0					@60
 	_CLEO_CallNativeOpcode@8				@61
 	_CLEO_GetCleoCallStackSize@4			@62
+	_CLEO_GetConfigInt@8					@63
+	_CLEO_GetConfigFloat@8					@64
+	_CLEO_GetConfigText@16					@65
+	_CLEO_SetConfigInt@8					@66
+	_CLEO_SetConfigFloat@8					@67
+	_CLEO_SetConfigText@8					@68
