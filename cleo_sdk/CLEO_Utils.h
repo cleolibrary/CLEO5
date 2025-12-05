@@ -700,7 +700,7 @@ namespace CLEO
 
 #define SUSPEND_COMPAT(a, ...)                                                                                         \
     {                                                                                                                  \
-        if (IsStrictValidation(thread))                                                                                   \
+        if (IsStrictValidation(thread))                                                                                \
         {                                                                                                              \
             SHOW_ERROR_COMPAT(a "in script %s\nScript suspended.", __VA_ARGS__, ScriptInfoStr(thread).c_str());        \
             return thread->Suspend();                                                                                  \
@@ -708,13 +708,13 @@ namespace CLEO
     }
 
 #define SUSPEND_INPUT_TYPE(type)                                                                                       \
-    SUSPEND_COMPAT(                                                                                                           \
+    SUSPEND_COMPAT(                                                                                                    \
         "Input argument %s expected to be " type ", got %s", GetParamInfo().c_str(),                                   \
         CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                           \
     );
 
 #define SUSPEND_OUTPUT_TYPE(type)                                                                                      \
-    SUSPEND_COMPAT(                                                                                                           \
+    SUSPEND_COMPAT(                                                                                                    \
         "Output argument %s expected to be " type " variable, got %s", GetParamInfo().c_str(),                         \
         CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                           \
     );
