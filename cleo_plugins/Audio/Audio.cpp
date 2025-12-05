@@ -12,11 +12,7 @@ using namespace plugin;
     auto _varName = (CAudioStream*)OPCODE_READ_PARAM_UINT();                                                           \
     if (_varName != nullptr && !soundSystem.HasStream(_varName))                                                       \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid or already closed '0x%X' audio stream handle param in script %s \nScript suspended.", _varName,   \
-            ScriptInfoStr(thread).c_str()                                                                              \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid or already closed '0x%X' audio stream handle param", _varName);                               \
     }
 
 class Audio
@@ -161,7 +157,11 @@ class Audio
     // 0AAE=1,release_audiostream %1d%
     static OpcodeResult __stdcall opcode_0AAE(CLEO::CRunningScript* thread)
     {
-        OPCODE_READ_PARAM_STREAM(stream);
+        auto stream = (CAudioStream*)OPCODE_READ_PARAM_UINT();
+        if (stream != nullptr && !soundSystem.HasStream(stream))
+        {
+            SUSPEND_COMPAT("Invalid or already closed '0x%X' audio stream handle param", stream);
+        }
 
         if (stream) soundSystem.DestroyStream(stream);
 

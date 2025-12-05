@@ -85,8 +85,10 @@ class IniFiles
             // parse
             char* end;
             int value = strtol(str, &end, base);
-            if (end != str ||           // at least one number character consumed
-                IsLegacyScript(thread)) // old CLEO reported success anyway with value 0
+
+            // at least one number character consumed
+            // old CLEO reported success anyway with value 0
+            if (end != str || !IsStrictValidation(thread))
             {
                 OPCODE_WRITE_PARAM_INT(value);
                 OPCODE_CONDITION_RESULT(true);
@@ -95,7 +97,7 @@ class IniFiles
         }
 
         // failed
-        if (IsLegacyScript(thread))
+        if (!IsStrictValidation(thread))
         {
             OPCODE_WRITE_PARAM_INT(0x80000000); // CLEO4 behavior
         }
@@ -153,8 +155,9 @@ class IniFiles
                 value = strtof(str, &end);
             }
 
-            if (end != str ||           // at least one number character consumed
-                IsLegacyScript(thread)) // old CLEO reported success anyway with value 0
+            // at least one number character consumed
+            // old CLEO reported success anyway with value 0
+            if (end != str || !IsStrictValidation(thread))
             {
                 OPCODE_WRITE_PARAM_FLOAT(value);
                 OPCODE_CONDITION_RESULT(true);
