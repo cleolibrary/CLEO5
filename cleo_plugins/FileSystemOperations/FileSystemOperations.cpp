@@ -14,12 +14,7 @@ namespace FS = std::filesystem;
     auto handle = (DWORD)OPCODE_READ_PARAM_PTR();                                                                      \
     if (m_hFiles.find(handle) == m_hFiles.end())                                                                       \
     {                                                                                                                  \
-        auto info = ScriptInfoStr(thread);                                                                             \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle,             \
-            info.c_str()                                                                                               \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid or already closed '0x%X' file handle param", handle);                                         \
     }
 
 class FileSystemOperations
@@ -187,14 +182,7 @@ class FileSystemOperations
         }
         else
         {
-            if (!IsLegacyScript(thread))
-            {
-                SHOW_ERROR_COMPAT(
-                    "Invalid or already closed '0x%X' file handle param in script %s \nScript suspended.", handle,
-                    ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
-            }
+            SUSPEND_COMPAT("Invalid or already closed '0x%X' file handle param", handle);
         }
 
         return OR_CONTINUE;
@@ -220,10 +208,7 @@ class FileSystemOperations
 
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         destination->dwParam = 0; // clear not overwritten bytes - https://github.com/cleolibrary/CLEO4/issues/91
@@ -239,10 +224,7 @@ class FileSystemOperations
 
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         if (size == 0)
@@ -263,11 +245,7 @@ class FileSystemOperations
 
             if (size > MAX_STR_LEN)
             {
-                SHOW_ERROR(
-                    "Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN,
-                    ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Size argument (%d) greater than supported (%d)", size, MAX_STR_LEN);
             }
 
             ZeroMemory(buffer, size); // padd with zeros if size > length
@@ -277,11 +255,7 @@ class FileSystemOperations
         {
             if (size > sizeof(SCRIPT_VAR))
             {
-                SHOW_ERROR(
-                    "Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size,
-                    sizeof(SCRIPT_VAR), ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Size argument (%d) greater than supported (%d)", size, sizeof(SCRIPT_VAR));
             }
 
             CLEO_RetrieveOpcodeParams(thread, 1);
@@ -338,10 +312,7 @@ class FileSystemOperations
 
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid size argument (%d)", size);
         }
 
         if (size == 0)
@@ -698,10 +669,7 @@ class FileSystemOperations
 
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid size argument (%d)", size);
         }
 
         if (size == 0)
@@ -730,10 +698,7 @@ class FileSystemOperations
 
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid size argument (%d) in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid size argument (%d)", size);
         }
 
         if (size == 0)

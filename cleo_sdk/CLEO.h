@@ -411,8 +411,8 @@ namespace CLEO
     enum class eLogLevel : DWORD
     {
         None,
-        Error,  // errors and warnings
         Debug,  // debug mode / user traces
+        Error,  // errors and warnings
         Default // all log messages
     };
 
