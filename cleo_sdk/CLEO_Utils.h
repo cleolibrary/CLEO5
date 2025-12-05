@@ -86,9 +86,14 @@ namespace CLEO
     OPCODE_READ_PARAM_OUTPUT_VAR_STRING OPCODE_WRITE_PARAM_PTR(value) // memory address
     */
 
-    static bool IsLegacyScript(CLEO::CRunningScript* thread)
+    static bool IsLegacyScript(CLEO::CRunningScript* script)
     {
-        return CLEO_GetScriptVersion(thread) < CLEO_VER_5;
+        return CLEO_GetScriptVersion(script) < CLEO_VER_5;
+    }
+
+    static bool IsStrictValidation(CLEO::CRunningScript* script)
+    {
+        return (CLEO_GetConfigInt("StrictValidation", 0) == 1) && !IsLegacyScript(script);
     }
 
     static std::string StringPrintf(const char* format, ...)
@@ -680,21 +685,47 @@ namespace CLEO
         CLEO::ShowError(a, __VA_ARGS__);                                                                               \
     }
 
-#define COMPAT_MODE_TIP(MSG) MSG##" \n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'"
 #define SHOW_ERROR_COMPAT(a, ...)                                                                                      \
     {                                                                                                                  \
-        CLEO::ShowError(COMPAT_MODE_TIP(a), __VA_ARGS__);                                                              \
+        CLEO::ShowError(                                                                                               \
+            a "\n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'", __VA_ARGS__       \
+        );                                                                                                             \
     }
 
-    const size_t MinValidAddress =
-        0x10000; // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
+#define SUSPEND(a, ...)                                                                                                \
+    {                                                                                                                  \
+        SHOW_ERROR(a " in script %s\nScript suspended.", __VA_ARGS__, ScriptInfoStr(thread).c_str());                  \
+        return thread->Suspend();                                                                                      \
+    }
+
+#define SUSPEND_COMPAT(a, ...)                                                                                         \
+    {                                                                                                                  \
+        if (IsStrictValidation(thread))                                                                                \
+        {                                                                                                              \
+            SHOW_ERROR_COMPAT(a " in script %s\nScript suspended.", __VA_ARGS__, ScriptInfoStr(thread).c_str());       \
+            return thread->Suspend();                                                                                  \
+        }                                                                                                              \
+    }
+
+#define SUSPEND_INPUT_TYPE(type)                                                                                       \
+    SUSPEND_COMPAT(                                                                                                    \
+        "Input argument %s expected to be " type ", got %s", GetParamInfo().c_str(),                                   \
+        CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                           \
+    );
+
+#define SUSPEND_OUTPUT_TYPE(type)                                                                                      \
+    SUSPEND_COMPAT(                                                                                                    \
+        "Output argument %s expected to be " type " variable, got %s", GetParamInfo().c_str(),                         \
+        CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                           \
+    );
+
+    // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
+    const size_t MinValidAddress = 0x10000;
+
 #define OPCODE_VALIDATE_POINTER(x)                                                                                     \
     if ((size_t)x <= MinValidAddress)                                                                                  \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid '0x%X' pointer argument in script %s \nScript suspended.", x, ScriptInfoStr(thread).c_str()       \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid '0x%X' pointer argument in script %s", x, ScriptInfoStr(thread).c_str());                     \
     }
 
 #define OPCODE_CONDITION_RESULT(value) CLEO_SetThreadCondResult(thread, value);
@@ -824,9 +855,8 @@ namespace CLEO
             return nullptr;
         }
 
-        auto str = CLEO_ReadStringPointerOpcodeParam(
-            thread, buffer, bufferSize
-        ); // returns pointer to source data whenever possible
+        // returns pointer to source data whenever possible
+        auto str = CLEO_ReadStringPointerOpcodeParam(thread, buffer, bufferSize);
 
         if (str == nullptr) // reading string failed
         {
@@ -955,107 +985,66 @@ namespace CLEO
     _readParam(thread).dwParam != false;                                                                               \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
 #define OPCODE_READ_PARAM_INT8()                                                                                       \
     _readParam(thread).cParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
 #define OPCODE_READ_PARAM_UINT8()                                                                                      \
     _readParam(thread).ucParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
 #define OPCODE_READ_PARAM_INT16()                                                                                      \
     _readParam(thread).wParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
 #define OPCODE_READ_PARAM_UINT16()                                                                                     \
     _readParam(thread).usParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
 #define OPCODE_READ_PARAM_INT()                                                                                        \
     _readParam(thread).nParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
 #define OPCODE_READ_PARAM_UINT()                                                                                       \
     _readParam(thread).dwParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
 #define OPCODE_READ_PARAM_FLOAT()                                                                                      \
     _readParamFloat(thread).fParam;                                                                                    \
-    if (!IsLegacyScript(thread) && !_paramWasFloat())                                                                  \
+    if (!_paramWasFloat())                                                                                             \
     {                                                                                                                  \
-        SHOW_ERROR_COMPAT(                                                                                             \
-            "Input argument %s expected to be float, got %s in script %s\nScript suspended.", GetParamInfo().c_str(),  \
-            CLEO::ToKindStr(_lastParamType, _lastParamArrayType), CLEO::ScriptInfoStr(thread).c_str()                  \
+        SUSPEND_COMPAT(                                                                                                \
+            "Input argument %s expected to be float, got %s", GetParamInfo().c_str(),                                  \
+            CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                       \
         );                                                                                                             \
-        return thread->Suspend();                                                                                      \
     }
 
 #define OPCODE_READ_PARAM_ANY32()                                                                                      \
     _readParam(thread);                                                                                                \
     if (!_paramWasInt() && !_paramWasFloat())                                                                          \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be int or float, got %s in script %s\nScript suspended.",                   \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("int or float")                                                                             \
     }
 
 #define OPCODE_READ_PARAM_STRING(_varName)                                                                             \
@@ -1086,8 +1075,7 @@ namespace CLEO
     char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName));        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
-        SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(thread).c_str());  \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid formatted string", "");                                                                       \
     }
 
 #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName)                                                                \
@@ -1095,8 +1083,7 @@ namespace CLEO
     char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
-        SHOW_ERROR("Invalid formatted string in script %s \nScript suspended.", CLEO::ScriptInfoStr(thread).c_str());  \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid formatted string", "");                                                                       \
     }
 
 #define OPCODE_READ_PARAM_FILEPATH(_varName)                                                                           \
@@ -1109,311 +1096,133 @@ namespace CLEO
         return OpcodeResult::OR_INTERRUPT;                                                                             \
     if (!FilepathIsSafe(thread, ##_varName))                                                                           \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Forbidden file path '%s' outside game directories in script %s \nScript suspended.", ##_varName,          \
-            ScriptInfoStr(thread).c_str()                                                                              \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Forbidden file path '%s' outside game directories", ##_varName);                                      \
     }
 
 #define OPCODE_READ_PARAM_PTR()                                                                                        \
     _readParam(thread).pParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer");                                                                                 \
     }                                                                                                                  \
     else if (_paramsArray[0].dwParam <= MinValidAddress)                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid pointer '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam,      \
-            GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()                                                      \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid pointer '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());          \
     }
 
 #define OPCODE_READ_PARAM_OBJECT_HANDLE()                                                                              \
     _readParam(thread).dwParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer");                                                                                 \
     }                                                                                                                  \
     else if (!IsObjectHandleValid(_paramsArray[0].dwParam))                                                            \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid object handle '0x%X' input argument %s in script %s \nScript suspended.",                         \
-            _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()                             \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid object handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());    \
     }
 
 #define OPCODE_READ_PARAM_PED_HANDLE()                                                                                 \
     _readParam(thread).dwParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer");                                                                                 \
     }                                                                                                                  \
     else if (!IsPedHandleValid(_paramsArray[0].dwParam))                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid character handle '0x%X' input argument %s in script %s \nScript suspended.",                      \
-            _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()                             \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid character handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str()); \
     }
 
 #define OPCODE_READ_PARAM_VEHICLE_HANDLE()                                                                             \
     _readParam(thread).dwParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer");                                                                                 \
     }                                                                                                                  \
     else if (!IsVehicleHandleValid(_paramsArray[0].dwParam))                                                           \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid vehicle handle '0x%X' input argument %s in script %s \nScript suspended.",                        \
-            _paramsArray[0].dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()                             \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid vehicle handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());   \
     }
 
 #define OPCODE_READ_PARAM_PLAYER_ID()                                                                                  \
     _readParam(thread).dwParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Input argument %s expected to be integer, got %s in script %s\nScript suspended.",                        \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND_INPUT_TYPE("integer");                                                                                 \
     }                                                                                                                  \
     else if (!IsPlayerIdValid(_paramsArray[0].dwParam))                                                                \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Invalid player id '0x%X' input argument %s in script %s \nScript suspended.", _paramsArray[0].dwParam,    \
-            GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()                                                      \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
+        SUSPEND("Invalid player id '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());        \
     }
 
 #define OPCODE_READ_PARAM_OUTPUT_VAR_ANY32()                                                                           \
     _readParamVariable(thread);                                                                                        \
-    if (!_paramWasVariable())                                                                                          \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int or float, got %s in script %s\nScript suspended.",         \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("int or float")
 
 #define OPCODE_READ_PARAM_OUTPUT_VAR_INT()                                                                             \
     (int*)_readParamVariable(thread);                                                                                  \
-    if (!_paramWasVariable())                                                                                          \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }                                                                                                                  \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("int")                                                               \
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT()                                                                           \
     (float*)_readParamVariable(thread);                                                                                \
-    if (!_paramWasVariable())                                                                                          \
+    if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("float")                                                             \
+    if (!_paramWasFloat(true))                                                                                         \
     {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable float, got %s in script %s\nScript suspended.",                \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
+        SUSPEND_COMPAT(                                                                                                \
+            "Output argument %s expected to be variable float, got %s", GetParamInfo().c_str(),                        \
+            CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                                                      \
+                                                                                                                       \
         );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }                                                                                                                  \
-    if (!IsLegacyScript(thread) && !_paramWasFloat(true))                                                              \
-    {                                                                                                                  \
-        SHOW_ERROR_COMPAT(                                                                                             \
-            "Output argument %s expected to be variable float, got %s in script %s\nScript suspended.",                \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
     }
 
 #define OPCODE_READ_PARAM_OUTPUT_VAR_STRING()                                                                          \
     _readParamStringInfo(thread);                                                                                      \
-    if (!_paramWasString(true))                                                                                        \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable string, got %s in script %s\nScript suspended.",               \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
-
-    // macros for writing opcode output params. Performs type validation, throws error and suspends script if user
-    // provided invalid argument type
+    if (!_paramWasString(true)) SUSPEND_OUTPUT_TYPE("string")
 
 #define OPCODE_WRITE_PARAM_BOOL(_value)                                                                                \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_WRITE_PARAM_INT8(_value)                                                                                \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_WRITE_PARAM_UINT8(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_WRITE_PARAM_INT16(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_WRITE_PARAM_UINT16(_value)                                                                              \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_WRITE_PARAM_INT(_value)                                                                                 \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_WRITE_PARAM_UINT(_value)                                                                                \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 #define OPCODE_WRITE_PARAM_ANY32(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
-    if (!_paramWasInt(true) && !_paramWasFloat(true))                                                                  \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be int or float variable, got %s in script %s\nScript suspended.",         \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true) && !_paramWasFloat(true)) SUSPEND_OUTPUT_TYPE("int or float")
 
 #define OPCODE_WRITE_PARAM_FLOAT(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
-    if (!IsLegacyScript(thread) && !_paramWasFloat(true))                                                              \
-    {                                                                                                                  \
-        SHOW_ERROR_COMPAT(                                                                                             \
-            "Output argument %s expected to be variable float, got %s in script %s\nScript suspended.",                \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasFloat(true)) SUSPEND_OUTPUT_TYPE("float")
 
 #define OPCODE_WRITE_PARAM_STRING(_value)                                                                              \
-    if (!_writeParamText(thread, _value))                                                                              \
-    {                                                                                                                  \
-        return OpcodeResult::OR_INTERRUPT;                                                                             \
-    }
+    if (!_writeParamText(thread, _value)) return OpcodeResult::OR_INTERRUPT;
 
 #define OPCODE_WRITE_PARAM_VAR_STRING(_info, _value)                                                                   \
-    if (!_writeParamText(thread, _info, _value))                                                                       \
-    {                                                                                                                  \
-        return OpcodeResult::OR_INTERRUPT;                                                                             \
-    }
+    if (!_writeParamText(thread, _info, _value)) return OpcodeResult::OR_INTERRUPT;
 
 #define OPCODE_WRITE_PARAM_PTR(_value)                                                                                 \
     _writeParamPtr(thread, (void*)_value);                                                                             \
-    if (!_paramWasInt(true))                                                                                           \
-    {                                                                                                                  \
-        SHOW_ERROR(                                                                                                    \
-            "Output argument %s expected to be variable int, got %s in script %s\nScript suspended.",                  \
-            GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                              \
-            CLEO::ScriptInfoStr(thread).c_str()                                                                        \
-        );                                                                                                             \
-        return thread->Suspend();                                                                                      \
-    }
+    if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
+
 } // namespace CLEO

@@ -153,21 +153,13 @@ class MemoryOperations
         constexpr size_t Max_Args = 32;
         if (inputArgCount > Max_Args)
         {
-            SHOW_ERROR(
-                "Provided more (%d) than supported (%d) arguments in script %s\nScript suspended.", inputArgCount,
-                Max_Args, CLEO::ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Provided more (%d) than supported (%d) arguments", inputArgCount, Max_Args);
         }
 
-        if (numArg != inputArgCount &&
-            !IsLegacyScript(thread)) // CLEO4 ignored param count missmatch (by providing zeros for missing)
+        if (numArg != inputArgCount)
         {
-            SHOW_ERROR_COMPAT(
-                "Declared %d input args, but provided %d in script %s\nScript suspended.", numArg, inputArgCount,
-                CLEO::ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            // CLEO4 ignored param count mismatch (by providing zeros for missing)
+            SUSPEND_COMPAT("Provided more (%d) than declared (%d) arguments", inputArgCount, numArg);
         }
 
         static SCRIPT_VAR arguments[Max_Args] = {0};
@@ -186,7 +178,7 @@ class MemoryOperations
             if (IsImmString(paramType) || IsVarString(paramType))
             {
 
-                if (IsLegacyScript(thread) && IsVarString(paramType))
+                if (!IsStrictValidation(thread) && IsVarString(paramType))
                 {
                     /*
                         Preserving behavior of CLEO 4 where string variables were always passed as pointers.
@@ -201,11 +193,10 @@ class MemoryOperations
                 {
                     if (currTextParam >= Max_Text_Params)
                     {
-                        SHOW_ERROR(
-                            "Provided more (%d) than supported (%d) string arguments in script %s\nScript suspended.",
-                            currTextParam + 1, Max_Text_Params, CLEO::ScriptInfoStr(thread).c_str()
+                        SUSPEND(
+                            "Provided more (%d) than supported (%d) string arguments", currTextParam + 1,
+                            Max_Text_Params
                         );
-                        return thread->Suspend();
                     }
 
                     OPCODE_READ_PARAM_STRING_LEN(str, MAX_STR_LEN);
@@ -221,11 +212,7 @@ class MemoryOperations
             }
             else
             {
-                SHOW_ERROR(
-                    "Invalid param type (%s) in script %s \nScript suspended.", ToKindStr(paramType),
-                    CLEO::ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Invalid param type (%s)", ToKindStr(paramType));
             }
         }
 
@@ -267,12 +254,11 @@ class MemoryOperations
 
             int diff        = oriSp - postSp;
             int requiredPop = (numPop + diff) / 4;
-            SHOW_ERROR(
+            SUSPEND(
                 "Function call left stack position changed (%s%d). This usually happens when incorrect calling "
-                "convention is used. \nArgument 'pop' value should have been %d in script %s \nScript suspended.",
-                diff > 0 ? "+" : "", diff, requiredPop, CLEO::ScriptInfoStr(thread).c_str()
+                "convention is used. \nArgument 'pop' value should have been %d",
+                diff > 0 ? "+" : "", diff, requiredPop
             );
-            return thread->Suspend();
         }
 
         if (returnArg)
@@ -339,11 +325,7 @@ class MemoryOperations
 
             if (size > MAX_STR_LEN)
             {
-                SHOW_ERROR(
-                    "Size argument (%d) greater than supported (%d) in script %s\nScript suspended.", size, MAX_STR_LEN,
-                    ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Size argument (%d) greater than supported (%d)", size, MAX_STR_LEN);
             }
 
             ZeroMemory(buffer, size); // padd with zeros if size > length
@@ -364,10 +346,7 @@ class MemoryOperations
         // validate params
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         // perform
@@ -406,10 +385,7 @@ class MemoryOperations
         // validate params
         if (size < 0 || size > sizeof(SCRIPT_VAR))
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         // perform
@@ -528,14 +504,17 @@ class MemoryOperations
     // 0AA3=1,free_library %1h%
     static OpcodeResult __stdcall opcode_0AA3(CLEO::CRunningScript* thread)
     {
-        auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
+        auto ptr = (HMODULE)OPCODE_READ_PARAM_INT();
+
+        if (ptr == nullptr)
+        {
+            return OR_CONTINUE;
+        }
 
         // validate
         if (Instance.m_libraries.find(ptr) == Instance.m_libraries.end())
         {
-            LOG_WARNING(
-                thread, "Invalid '0x%X' library pointer param in script %s", ptr, ScriptInfoStr(thread).c_str()
-            );
+            SUSPEND_COMPAT("Invalid '0x%X' library pointer param in script %s", ptr);
             return OR_CONTINUE;
         }
 
@@ -592,7 +571,7 @@ class MemoryOperations
         auto func = OPCODE_READ_PARAM_PTR();
 
         void* obj = nullptr;
-        if (!IsLegacyScript(thread))
+        if (IsStrictValidation(thread))
         {
             obj = OPCODE_READ_PARAM_PTR();
         }
@@ -624,7 +603,7 @@ class MemoryOperations
         auto func = OPCODE_READ_PARAM_PTR();
 
         void* obj = nullptr;
-        if (!IsLegacyScript(thread))
+        if (IsStrictValidation(thread))
         {
             obj = OPCODE_READ_PARAM_PTR();
         }
@@ -692,11 +671,7 @@ class MemoryOperations
         auto resultType = thread->PeekDataType();
         if (!IsVariable(resultType) && !IsVarString(resultType))
         {
-            SHOW_ERROR(
-                "Input argument #%d expected to be variable, got constant in script %s\nScript suspended.",
-                CLEO_GetParamsHandledCount(), ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Input argument expected to be a variable, got constant", "");
         }
 
         auto ptr = CLEO_GetPointerToScriptVariable(thread);
@@ -714,10 +689,7 @@ class MemoryOperations
         // validate params
         if (size <= 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         // perform
@@ -759,15 +731,17 @@ class MemoryOperations
     static OpcodeResult __stdcall opcode_0AC9(CLEO::CRunningScript* thread)
     {
         // collect params
-        auto address = OPCODE_READ_PARAM_PTR();
+        auto address = (void*)OPCODE_READ_PARAM_INT();
+
+        if (address == nullptr)
+        {
+            return OR_CONTINUE; // freeing null pointer is no-op
+        }
 
         // validate params
         if (Instance.m_allocations.find(address) == Instance.m_allocations.end())
         {
-            LOG_WARNING(
-                thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address,
-                ScriptInfoStr(thread).c_str()
-            );
+            SUSPEND_COMPAT("Invalid '0x%X' pointer param to unknown or already freed memory", address);
             return OR_CONTINUE;
         }
 
@@ -856,10 +830,7 @@ class MemoryOperations
         }
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         memmove((void*)trg, (void*)src, size);
@@ -875,10 +846,7 @@ class MemoryOperations
 
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         auto resultType = thread->PeekDataType();
@@ -911,11 +879,7 @@ class MemoryOperations
             return OR_CONTINUE;
         }
 
-        SHOW_ERROR(
-            "Invalid type (%s) of the result argument in script %s \nScript suspended.", ToKindStr(resultType),
-            ScriptInfoStr(thread).c_str()
-        );
-        return thread->Suspend();
+        SUSPEND("Invalid type (%s) of the result argument", ToKindStr(resultType));
     }
 
     // 2402=4,write_memory_with_offset %1d% offset %2d% size %3d% value %4d%
@@ -927,10 +891,7 @@ class MemoryOperations
 
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         if (size == 0)
@@ -967,11 +928,7 @@ class MemoryOperations
             return OR_CONTINUE;
         }
 
-        SHOW_ERROR(
-            "Invalid type (%s) of the input argument #%d in script %s \nScript suspended.",
-            CLEO_GetParamsHandledCount(), ToKindStr(valueType), ScriptInfoStr(thread).c_str()
-        );
-        return thread->Suspend();
+        SUSPEND("Invalid value type (%s)", ToKindStr(valueType));
     }
 
     // 2403=1,forget_memory %1d%
@@ -1045,10 +1002,7 @@ class MemoryOperations
         }
         if (size < 0)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         auto result = memcmp(addressA, addressB, size);

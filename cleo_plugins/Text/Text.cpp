@@ -366,31 +366,23 @@ class Text
 
             if (paramType == DT_END)
             {
-                if (formatTokenType != DT_END && !IsLegacyScript(thread))
+                if (formatTokenType != DT_END)
                 {
-                    SHOW_ERROR(
-                        "More tokens in format string than return variables in script %s\nScript suspended.", format,
-                        ScriptInfoStr(thread).c_str()
-                    );
-                    return thread->Suspend();
+                    SUSPEND_COMPAT("More tokens in format string than return variables", format);
                 }
                 break;
             }
 
-            if (formatTokenType == DT_END && !IsLegacyScript(thread))
+            if (formatTokenType == DT_END)
             {
-                SHOW_ERROR(
-                    "More return variables than tokens in format string in script %s\nScript suspended.", format,
-                    ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND_COMPAT("More return variables than tokens in format string", format);
             }
 
             if (IsVarString(paramType))
             {
-                if (IsLegacyScript(thread))
+                if (!IsStrictValidation(thread))
                 {
-                    // older CLEOs did not carred about string variable size limitations
+                    // older CLEOs did not care about string variable size limitations
                     // just give pointer to the variable's data and allow overflow depending on input data
                     outputParams[i] = CLEO_GetPointerToScriptVariable(thread);
                 }
