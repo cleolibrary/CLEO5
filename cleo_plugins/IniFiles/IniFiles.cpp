@@ -66,47 +66,47 @@ class IniFiles
         OPCODE_READ_PARAM_STRING(section);
         OPCODE_READ_PARAM_STRING(key);
 
-        char buff[32];
-        if (GetPrivateProfileString(section, key, NULL, buff, sizeof(buff), path))
-        {
-            char* str;
-            int base;
-            if (StringStartsWith(buff, "0x", false)) // hex int
-            {
-                str  = buff + 2;
-                base = 16;
-            }
-            else // decimal int
-            {
-                str  = buff;
-                base = 10;
-            }
-
-            // parse
-            char* end;
-            int value = strtol(str, &end, base);
-
-            // at least one number character consumed
-            // old CLEO reported success anyway with value 0
-            if (end != str || !IsStrictValidation(thread))
-            {
-                OPCODE_WRITE_PARAM_INT(value);
-                OPCODE_CONDITION_RESULT(true);
-                return OR_CONTINUE;
-            }
-        }
-
-        // failed
         if (!IsStrictValidation(thread))
         {
-            OPCODE_WRITE_PARAM_INT(0x80000000); // CLEO4 behavior
+            int result = GetPrivateProfileInt(section, key, 0x80000000, path);
+            OPCODE_WRITE_PARAM_INT(result);
+            OPCODE_CONDITION_RESULT(result != 0x80000000);
         }
         else
         {
+            char buff[32];
+            if (GetPrivateProfileString(section, key, NULL, buff, sizeof(buff), path))
+            {
+                char* str;
+                int base;
+                if (StringStartsWith(buff, "0x", false)) // hex int
+                {
+                    str  = buff + 2;
+                    base = 16;
+                }
+                else // decimal int
+                {
+                    str  = buff;
+                    base = 10;
+                }
+
+                // parse
+                char* end;
+                int value = strtol(str, &end, base);
+
+                if (end != str) // at least one number character consumed
+                {
+                    OPCODE_WRITE_PARAM_INT(value);
+                    OPCODE_CONDITION_RESULT(true);
+                    return OR_CONTINUE;
+                }
+            }
+
+            // failed
             OPCODE_SKIP_PARAMS(1);
+            OPCODE_CONDITION_RESULT(false);
         }
 
-        OPCODE_CONDITION_RESULT(false);
         return OR_CONTINUE;
     }
 
