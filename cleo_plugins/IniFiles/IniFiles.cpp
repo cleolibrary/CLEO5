@@ -68,12 +68,14 @@ class IniFiles
 
         if (!IsStrictValidation(thread))
         {
+            // CLEO4 behavior
             int result = GetPrivateProfileInt(section, key, 0x80000000, path);
             OPCODE_WRITE_PARAM_INT(result);
             OPCODE_CONDITION_RESULT(result != 0x80000000);
         }
         else
         {
+            // CLEO5 behavior: support for hex format, skip variable if failed
             char buff[32];
             if (GetPrivateProfileString(section, key, NULL, buff, sizeof(buff), path))
             {
