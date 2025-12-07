@@ -75,7 +75,7 @@ class IniFiles
         }
         else
         {
-            // CLEO5 behavior: support for hex format, skip variable if failed
+            // CLEO5 behavior: skip variable if key is missing or parsing failed
             char buff[32];
             if (GetPrivateProfileString(section, key, NULL, buff, sizeof(buff), path))
             {
