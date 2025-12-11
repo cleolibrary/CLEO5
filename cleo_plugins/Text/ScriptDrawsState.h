@@ -1,6 +1,7 @@
 #pragma once
 #include <CTheScripts.h>
 #include <CTxdStore.h>
+#include <CLEO_Utils.h>
 #include <array>
 
 struct ScriptDrawsState
@@ -89,8 +90,20 @@ struct ScriptDrawsState
 
     TxdDef* FindScriptTxd()
     {
+        TRACE(
+            "ScriptDrawsState::FindScriptTxd: TxdPool size = %d, free = %d", CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(),
+            CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
+        );
+
         auto slot = CTxdStore::FindTxdSlot("script");
-        if (slot == -1) slot = CTxdStore::AddTxdSlot("script");
-        return CTxdStore::ms_pTxdPool->GetAt(slot);
+        TRACE("ScriptDrawsState::FindScriptTxd: script txd slot = %d", slot);
+        if (slot == -1)
+        {
+            slot = CTxdStore::AddTxdSlot("script");
+            TRACE("ScriptDrawsState::FindScriptTxd: added script txd slot = %d", slot);
+        }
+        auto pTxd = CTxdStore::ms_pTxdPool->GetAt(slot);
+        TRACE("ScriptDrawsState::FindScriptTxd: script txd = %p", pTxd);
+        return pTxd;
     }
 };
