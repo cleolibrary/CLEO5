@@ -91,8 +91,8 @@ struct ScriptDrawsState
     TxdDef* FindScriptTxd()
     {
         TRACE(
-            "ScriptDrawsState::FindScriptTxd: TxdPool size = %d, free = %d", CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(),
-            CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
+            "ScriptDrawsState::FindScriptTxd: TxdPool size = %d, free = %d",
+            CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(), CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
         );
 
         auto slot = CTxdStore::FindTxdSlot("script");
