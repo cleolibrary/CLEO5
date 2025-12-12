@@ -165,17 +165,8 @@ class Text
             path += txdName;
             path += ".txd";
 
-            TRACE(
-                "0390: TxdPool size = %d, free = %d", CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(),
-                CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
-            );
             auto slot = CTxdStore::FindTxdSlot("script");
-            TRACE("0390: found script txd slot = %d", slot);
-            if (slot == -1)
-            {
-                slot = CTxdStore::AddTxdSlot("script");
-                TRACE("0390: added script txd slot = %d", slot);
-            }
+            if (slot == -1) slot = CTxdStore::AddTxdSlot("script");
 
             CTxdStore::LoadTxd(slot, path.c_str());
             CTxdStore::AddRef(slot);

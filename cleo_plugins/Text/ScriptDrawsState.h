@@ -2,6 +2,7 @@
 #include <CTheScripts.h>
 #include <CTxdStore.h>
 #include <CLEO_Utils.h>
+#include <CKeyGen.h>
 #include <array>
 
 struct ScriptDrawsState
@@ -19,7 +20,7 @@ struct ScriptDrawsState
     TxdDef scriptTxd;                                   // current script.txd
     std::unordered_map<std::string, TxdDef> loadedTxds; // texture dictionaries loaded by script
 
-    ScriptDrawsState()                        = default;
+    ScriptDrawsState() { scriptTxd.m_hash = CKeyGen::GetUppercaseKey("script"); }
     ScriptDrawsState(const ScriptDrawsState&) = delete; // no copying!
     ~ScriptDrawsState()                       = default;
 
@@ -90,20 +91,15 @@ struct ScriptDrawsState
 
     TxdDef* FindScriptTxd()
     {
-        TRACE(
-            "ScriptDrawsState::FindScriptTxd: TxdPool size = %d, free = %d",
-            CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(), CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
-        );
-
         auto slot = CTxdStore::FindTxdSlot("script");
-        TRACE("ScriptDrawsState::FindScriptTxd: script txd slot = %d", slot);
         if (slot == -1)
         {
             slot = CTxdStore::AddTxdSlot("script");
-            TRACE("ScriptDrawsState::FindScriptTxd: added script txd slot = %d", slot);
+            TRACE(
+                "Created script.txd in slot %d. Total slots = %d, free = %d", slot,
+                CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(), CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
+            );
         }
-        auto pTxd = CTxdStore::ms_pTxdPool->GetAt(slot);
-        TRACE("ScriptDrawsState::FindScriptTxd: script txd = %p", pTxd);
-        return pTxd;
+        return CTxdStore::ms_pTxdPool->GetAt(slot);
     }
 };
