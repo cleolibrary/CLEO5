@@ -1,6 +1,8 @@
 #pragma once
 #include <CTheScripts.h>
 #include <CTxdStore.h>
+#include <CLEO_Utils.h>
+#include <CKeyGen.h>
 #include <array>
 
 struct ScriptDrawsState
@@ -18,7 +20,13 @@ struct ScriptDrawsState
     TxdDef scriptTxd;                                   // current script.txd
     std::unordered_map<std::string, TxdDef> loadedTxds; // texture dictionaries loaded by script
 
-    ScriptDrawsState()                        = default;
+    ScriptDrawsState()
+    {
+        scriptTxd.m_hash          = CKeyGen::GetUppercaseKey("script");
+        scriptTxd.m_wParentIndex  = -1;
+        scriptTxd.m_wRefsCount    = 0;
+        scriptTxd.m_pRwDictionary = nullptr;
+    }
     ScriptDrawsState(const ScriptDrawsState&) = delete; // no copying!
     ~ScriptDrawsState()                       = default;
 
@@ -90,7 +98,14 @@ struct ScriptDrawsState
     TxdDef* FindScriptTxd()
     {
         auto slot = CTxdStore::FindTxdSlot("script");
-        if (slot == -1) slot = CTxdStore::AddTxdSlot("script");
+        if (slot == -1)
+        {
+            slot = CTxdStore::AddTxdSlot("script");
+            TRACE(
+                "Created script.txd in slot %d. Total slots = %d, free = %d", slot,
+                CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(), CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
+            );
+        }
         return CTxdStore::ms_pTxdPool->GetAt(slot);
     }
 };

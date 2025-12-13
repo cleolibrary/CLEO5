@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|Win32">
@@ -126,6 +126,7 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CMissionCleanup.cpp" />
+    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CKeyGen.cpp" />
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CRect.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
