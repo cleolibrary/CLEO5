@@ -504,14 +504,17 @@ class MemoryOperations
     // 0AA3=1,free_library %1h%
     static OpcodeResult __stdcall opcode_0AA3(CLEO::CRunningScript* thread)
     {
-        auto ptr = (HMODULE)OPCODE_READ_PARAM_PTR();
+        auto ptr = (HMODULE)OPCODE_READ_PARAM_INT();
+
+        if (ptr == nullptr)
+        {
+            return OR_CONTINUE;
+        }
 
         // validate
         if (Instance.m_libraries.find(ptr) == Instance.m_libraries.end())
         {
-            LOG_WARNING(
-                thread, "Invalid '0x%X' library pointer param in script %s", ptr, ScriptInfoStr(thread).c_str()
-            );
+            SUSPEND_COMPAT("Invalid '0x%X' library pointer param in script %s", ptr);
             return OR_CONTINUE;
         }
 
@@ -728,15 +731,17 @@ class MemoryOperations
     static OpcodeResult __stdcall opcode_0AC9(CLEO::CRunningScript* thread)
     {
         // collect params
-        auto address = OPCODE_READ_PARAM_PTR();
+        auto address = (void*)OPCODE_READ_PARAM_INT();
+
+        if (address == nullptr)
+        {
+            return OR_CONTINUE; // freeing null pointer is no-op
+        }
 
         // validate params
         if (Instance.m_allocations.find(address) == Instance.m_allocations.end())
         {
-            LOG_WARNING(
-                thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address,
-                ScriptInfoStr(thread).c_str()
-            );
+            SUSPEND_COMPAT("Invalid '0x%X' pointer param to unknown or already freed memory", address);
             return OR_CONTINUE;
         }
 
