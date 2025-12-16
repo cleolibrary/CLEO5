@@ -229,13 +229,27 @@ namespace CLEO
 
         std::string_view GetText() const
         {
-            if (IsImmString(type))
+            switch (type)
             {
+            case DT_STRING:
+            case DT_TEXTLABEL:
+            case DT_VARLEN_STRING:
                 return std::string_view(value.pcParam, stringLen);
-            }
-
-            if (IsVarString(type))
-            {
+            case DT_BYTE:
+            case DT_WORD:
+            case DT_DWORD:
+            case DT_VAR:
+            case DT_VAR_ARRAY:
+            case DT_LVAR:
+            case DT_LVAR_ARRAY:
+            case DT_LVAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING:
+            case DT_VAR_STRING_ARRAY:
                 if (value.pParam == nullptr)
                     return "NULL_PTR";
                 else if (value.dwParam < MinValidAddress)
@@ -243,7 +257,6 @@ namespace CLEO
                 else
                     return {value.pcParam, strnlen(value.pcParam, 255)};
             }
-
             return "INVALID_TYPE"; // not a string type param
         }
 
