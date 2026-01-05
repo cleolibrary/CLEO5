@@ -20,12 +20,22 @@ function tests
     
     :setup
         0@ = allocate_memory {size} 512
+        1@ = allocate_memory {size} 512
+        getCwd(1@, 512)
         set_current_directory {path} 0 // game root
     return
     
     
     :cleanup
         free_memory {address} 0@
+        
+        // validate that CWD has not changed
+        2@ = allocate_memory {size} 512
+        getCwd(2@, 512)
+        is_text_equal {text} 1@ {another} 2@ {ignoreCase} false
+        assert_result_true()
+        free_memory {address} 2@
+        free_memory {address} 1@
     return
     
     
@@ -83,3 +93,5 @@ function tests
         assert_result_true()
     end
 end
+
+function getCwd<cdecl, 0x00836E91>(buffer: int, max_size: int)
