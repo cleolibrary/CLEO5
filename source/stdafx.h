@@ -55,7 +55,7 @@ static std::string GetGameDirectory() // already stored in Filepath_Game
     path.resize(MAX_PATH);
     GetModuleFileNameA(NULL, path.data(), path.size()); // game exe absolute path
     path.resize(CLEO::FilepathGetParent(path).length());
-    CLEO::FilepathNormalize(path);
+    CLEO::FilepathNormalize(path, false);
     return std::move(path);
 }
 
