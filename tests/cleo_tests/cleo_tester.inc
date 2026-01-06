@@ -31,7 +31,7 @@ function test(suite_name: string, callback: int)
     debug_on
 
     int suite_name_buf = get_label_pointer @_cleo_tester_test_name
-    copy_memory {src} suite_name {dest} suite_name_buf {size} 255 // used in an it trace
+    string_format {result} suite_name_buf {format} "%s" {args} suite_name // used in an it trace
     trace "" // separator
     trace "Testing %s" suite_name
 
@@ -60,7 +60,7 @@ function _run_with_compat_mode(spec_name: string, callback: int, compat: int)
     _cleo_tester_write_var(VAR_COMPAT, compat)
 
     int spec_name_buf = get_label_pointer @_cleo_tester_spec_name
-    copy_memory {src} spec_name {dest} spec_name_buf {size} 255 // used in a failed assert
+    string_format {result} spec_name_buf {format} "%s" {args} spec_name // used in a failed assert
     int test_name = get_label_pointer @_cleo_tester_test_name
 
     if compat == DEFAULT_COMPAT
