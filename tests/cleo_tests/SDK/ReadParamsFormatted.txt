@@ -6,71 +6,87 @@ test("SDK: CLEO_ReadParamsFormatted", tests)
 terminate_this_custom_script
 
 function tests
-
-    const BUF_SIZE = 512
-    before_each(@setup)
-    after_each(@cleanup)
-
     it("should handle malformed format string", test1)
-    it("should handle missing format specifier", test2)
-    it("should handle unknown format specifier", test3)
-    it("should handle correct input", test4)
-    it("should handle extra arguments", test5)
-    it("should handle not enough arguments", test6)
-    return
-
-    :setup
-    0@ = allocate_memory {size} BUF_SIZE
-    return
-
-    :cleanup
-    free_memory {address} 0@
+    it("should handle correct lowercase input", test2)
+    it("should handle correct uppercase input", test3)
+    it("should handle extra arguments", test4)
+    it("should handle not enough arguments", test5)
+    it("should handle specifier and argument type mismatch", test6)
     return
 
     function test1(buf: int)
-        int formatted = GetFormattedString(@mock1_incomplete, buf, BUF_SIZE)
+        int formatted = GetFormattedString(@mock1_incomplete)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedString(@mock2_missing)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedString(@mock3_unknown)
         assert_eq(formatted, 0)
     end
 
     function test2(buf: int)
-        int formatted = GetFormattedString(@mock2_missing, buf, BUF_SIZE)
-        assert_eq(formatted, 0)
-
+        int formatted = GetFormattedString(@mock4_valid)
+        assert_eqs(formatted, "valid 42")
+        formatted = GetFormattedString(@mock5_mix)
+        assert_eqs(formatted, "str test num 123 float 3.14")
+        formatted = GetFormattedString(@mock9_pct)
+        assert_eqs(formatted, "percent %")
+        formatted = GetFormattedString(@mock10_long)
+        assert_eqs(formatted, "large string This is a very long string that should fit into the buffer without any issues.")
+        formatted = GetFormattedString(@mock11_ptr)
+        assert_eqs(formatted, "pointer 12345678")
+        formatted = GetFormattedString(@mock14_valid_str_ptr)
+        assert_eqs(formatted, "str BUSTED")
     end
 
     function test3(buf: int)
-        int formatted = GetFormattedString(@mock3_unknown, buf, BUF_SIZE)
-        assert_eq(formatted, 0)
+        int formatted = GetFormattedStringUppercase(@mock4_valid)
+        assert_eqs(formatted, "VALID 42")
+        formatted = GetFormattedStringUppercase(@mock5_mix)
+        assert_eqs(formatted, "STR test NUM 123 FLOAT 3.14") // test is an argument, no formatting
+        formatted = GetFormattedStringUppercase(@mock9_pct)
+        assert_eqs(formatted, "PERCENT %")
+        formatted = GetFormattedStringUppercase(@mock10_long)
+        assert_eqs(formatted, "LARGE STRING This is a very long string that should fit into the buffer without any issues.") // This is ... is an argument, no formatting
+        formatted = GetFormattedStringUppercase(@mock11_ptr)
+        assert_eqs(formatted, "POINTER 12345678")
+        formatted = GetFormattedStringUppercase(@mock14_valid_str_ptr)
+        assert_eqs(formatted, "STR BUSTED")
     end
+
 
     function test4(buf: int)
-        int formatted = GetFormattedString(@mock4_valid, buf, BUF_SIZE)
-        assert_eqs(formatted, "valid 42")
-        formatted = GetFormattedString(@mock5_mix, buf, BUF_SIZE)
-        assert_eqs(formatted, "str test num 123 float 3.14")
-        formatted = GetFormattedString(@mock9_pct, buf, BUF_SIZE)
-        assert_eqs(formatted, "percent %")
-        formatted = GetFormattedString(@mock10_long, buf, BUF_SIZE)
-        assert_eqs(formatted, "large string This is a very long string that should fit into the buffer without any issues.")
-        formatted = GetFormattedString(@mock11_ptr, buf, BUF_SIZE)
-        assert_eqs(formatted, "pointer 12345678")
-    end
-
-    function test5(buf: int)
         // too many arguments is a warning
 
-        int formatted = GetFormattedString(@mock6_extra, buf, BUF_SIZE)
+        int formatted = GetFormattedString(@mock6_extra)
         assert_eqs(formatted, "extra args 1")
 
-        formatted = GetFormattedString(@mock8_empty, buf, BUF_SIZE)
+        formatted = GetFormattedString(@mock8_empty)
         assert_eqs(formatted, "")
     end
 
-    function test6(buf: int)
+    function test5(buf: int)
         // too few arguments is an error
 
-        int formatted = GetFormattedString(@mock7_not_enough, buf, BUF_SIZE)
+        int formatted = GetFormattedString(@mock7_not_enough)
         assert_eq(formatted, 0)
+    end
+    
+    
+    function test6(buf: int)
+        int formatted = GetFormattedString(@mock12_str_address)
+        assert_prefix(formatted, "num ", false) // the rest is the random string pointer
+        formatted = GetFormattedStringUppercase(@mock12_str_address)
+        assert_prefix(formatted, "NUM ", false) // the rest is the random string pointer
+        
+        formatted = GetFormattedString(@mock13_invalid_str_ptr)
+        assert_eqs(formatted, "num (INVALID_STR)")
+        formatted = GetFormattedStringUppercase(@mock13_invalid_str_ptr)
+        assert_eqs(formatted, "NUM (INVALID_STR)")
+        
+        formatted = GetFormattedString(@mock15_float_decimal)
+        assert_eqs(formatted, "num 1110048768") // 1110048768 is 0x422A0000 or 42.5
+        formatted = GetFormattedStringUppercase(@mock15_float_decimal)
+        assert_eqs(formatted, "NUM 1110048768") // 1110048768 is 0x422A0000 or 42.5
     end
 
 end
@@ -108,14 +124,40 @@ trace "large string %s" {args} "This is a very long string that should fit into 
 :mock11_ptr
 trace "pointer %p" {args} 0x12345678
 
-function GetFormattedString(label: int, buf: int, buf_size: int): int
+:mock12_str_address
+trace "num %d" {args} 'str'
+
+:mock13_invalid_str_ptr
+trace "num %s" {args} 42
+
+:mock14_valid_str_ptr
+trace "str %s" {args} 0x0085987C // address of BUSTED string
+
+:mock15_float_decimal
+trace "num %d" {args} 42.5
+
+
+function GetFormattedString(label: int): int
     int code = get_label_pointer label
     code += 2 // skip opcode id
     int script = CRunningScript_new(code)
     int string_arg = CLEO_ReadStringOpcodeParam(script)
-    int res = CLEO_ReadParamsFormatted(script, string_arg, buf, buf_size)
+    int res = CLEO_ReadParamsFormatted(script, string_arg, 0, 0)
     free_memory {address} script
     return res
+end
+
+function GetFormattedStringUppercase(label: int): int
+    int code = get_label_pointer label
+    code += 2 // skip opcode id
+    int script = CRunningScript_new(code)
+    int string_arg = CLEO_ReadStringOpcodeParam(script)
+    MakeUpperCase(string_arg)
+    int res = CLEO_ReadParamsFormatted(script, string_arg, 0, 0)
+    free_memory {address} script
+    return res
+    
+    function MakeUpperCase<cdecl, 0x718710>(src: string)
 end
 
 function CRunningScript_new(ip: int): int
