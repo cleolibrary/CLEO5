@@ -11,16 +11,18 @@ function tests
     it("should handle correct uppercase input", test3)
     it("should handle extra arguments", test4)
     it("should handle specifier and argument type mismatch", test5)
+    it("should handle small buffer", test6)
+    it("should handle nullptr format", test7)
     return
 
-    function test1(buf: int)
+    function test1
         ExpectError(@mock1_incomplete)
         ExpectError(@mock2_missing)
         ExpectError(@mock3_unknown)
         ExpectError(@mock7_too_few_args) // too few arguments is an error
     end
 
-    function test2(buf: int)
+    function test2
         int formatted = GetFormattedString(@mock4_valid)
         assert_eqs(formatted, "valid 42")
         formatted = GetFormattedString(@mock5_mix)
@@ -35,7 +37,7 @@ function tests
         assert_eqs(formatted, "str BUSTED")
     end
 
-    function test3(buf: int)
+    function test3
         int formatted = GetFormattedStringUppercase(@mock4_valid)
         assert_eqs(formatted, "VALID 42")
         formatted = GetFormattedStringUppercase(@mock5_mix)
@@ -51,7 +53,7 @@ function tests
     end
 
 
-    function test4(buf: int)
+    function test4
         // too many arguments is a warning
 
         int formatted = GetFormattedString(@mock6_extra)
@@ -62,7 +64,7 @@ function tests
     end
 
    
-    function test5(buf: int)
+    function test5
         int formatted = GetFormattedString(@mock12_str_address)
         assert_prefix(formatted, "num ", false) // the rest is the random string pointer
         formatted = GetFormattedStringUppercase(@mock12_str_address)
@@ -77,6 +79,42 @@ function tests
         assert_eqs(formatted, "num 1110048768") // 1110048768 is 0x422A0000 or 42.5
         formatted = GetFormattedStringUppercase(@mock15_float_decimal)
         assert_eqs(formatted, "NUM 1110048768") // 1110048768 is 0x422A0000 or 42.5
+    end
+    
+    function test6
+        int buf = get_var_pointer TIMERA
+        
+        // hmm, inconsistency between buf size 1 and 2
+        int formatted = GetFormattedStringWithBuf(@mock4_valid, buf, 1)
+        assert_eqs(formatted, "")
+        formatted = GetFormattedStringWithBuf(@mock5_mix, buf, 1)
+        assert_eqs(formatted, "")
+        formatted = GetFormattedStringWithBuf(@mock9_pct, buf, 1)
+        assert_eqs(formatted, "")
+        formatted = GetFormattedStringWithBuf(@mock10_long, buf, 1)
+        assert_eqs(formatted, "")
+        formatted = GetFormattedStringWithBuf(@mock11_ptr, buf, 1)
+        assert_eqs(formatted, "")
+        formatted = GetFormattedStringWithBuf(@mock14_valid_str_ptr, buf, 1)
+        assert_eqs(formatted, "")
+        
+        formatted = GetFormattedStringWithBuf(@mock4_valid, buf, 2)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedStringWithBuf(@mock5_mix, buf, 2)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedStringWithBuf(@mock9_pct, buf, 2)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedStringWithBuf(@mock10_long, buf, 2)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedStringWithBuf(@mock11_ptr, buf, 2)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedStringWithBuf(@mock14_valid_str_ptr, buf, 2)
+        assert_eq(formatted, 0)
+    end
+    
+    function test7
+        int formatted = GetFormattedString(@mock16_nullfmt) // trace 0 {args} 0
+        assert_eqs(formatted, "")
     end
 
 end
@@ -126,14 +164,12 @@ trace "str %s" {args} 0x0085987C // address of BUSTED string
 :mock15_float_decimal
 trace "num %d" {args} 42.5
 
+:mock16_nullfmt
+trace 0 {args} 0
+
 
 function GetFormattedString(label: int): int
-    int code = get_label_pointer label
-    code += 2 // skip opcode id
-    int script = CRunningScript_new(code)
-    int string_arg = CLEO_ReadStringOpcodeParam(script)
-    int res = CLEO_ReadParamsFormatted(script, string_arg, 0, 0)
-    free_memory {address} script
+    int res = GetFormattedStringWithBuf(label, 0, 0)
     return res
 end
 
@@ -148,6 +184,16 @@ function GetFormattedStringUppercase(label: int): int
     return res
     
     function MakeUpperCase<cdecl, 0x718710>(src: string)
+end
+
+function GetFormattedStringWithBuf(label: int, buf: int, buf_size: int): int
+    int code = get_label_pointer label
+    code += 2 // skip opcode id
+    int script = CRunningScript_new(code)
+    int string_arg = CLEO_ReadStringOpcodeParam(script)
+    int res = CLEO_ReadParamsFormatted(script, string_arg, buf, buf_size)
+    free_memory {address} script
+    return res
 end
 
 function ExpectError(label: int)
