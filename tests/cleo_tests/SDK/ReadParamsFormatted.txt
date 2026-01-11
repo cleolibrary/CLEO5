@@ -10,17 +10,14 @@ function tests
     it("should handle correct lowercase input", test2)
     it("should handle correct uppercase input", test3)
     it("should handle extra arguments", test4)
-    it("should handle not enough arguments", test5)
-    it("should handle specifier and argument type mismatch", test6)
+    it("should handle specifier and argument type mismatch", test5)
     return
 
     function test1(buf: int)
-        int formatted = GetFormattedString(@mock1_incomplete)
-        assert_eq(formatted, 0)
-        formatted = GetFormattedString(@mock2_missing)
-        assert_eq(formatted, 0)
-        formatted = GetFormattedString(@mock3_unknown)
-        assert_eq(formatted, 0)
+        ExpectError(@mock1_incomplete)
+        ExpectError(@mock2_missing)
+        ExpectError(@mock3_unknown)
+        ExpectError(@mock7_too_few_args) // too few arguments is an error
     end
 
     function test2(buf: int)
@@ -64,15 +61,8 @@ function tests
         assert_eqs(formatted, "")
     end
 
+   
     function test5(buf: int)
-        // too few arguments is an error
-
-        int formatted = GetFormattedString(@mock7_not_enough)
-        assert_eq(formatted, 0)
-    end
-    
-    
-    function test6(buf: int)
         int formatted = GetFormattedString(@mock12_str_address)
         assert_prefix(formatted, "num ", false) // the rest is the random string pointer
         formatted = GetFormattedStringUppercase(@mock12_str_address)
@@ -109,7 +99,7 @@ trace "str %s num %d float %.2f" {args} "test" 123 3.14159
 :mock6_extra
 trace "extra args %d" {args} 1 2 3 4 5
 
-:mock7_not_enough
+:mock7_too_few_args
 trace "not enough args %d %s %f" {args} 10
 
 :mock8_empty
@@ -158,6 +148,11 @@ function GetFormattedStringUppercase(label: int): int
     return res
     
     function MakeUpperCase<cdecl, 0x718710>(src: string)
+end
+
+function ExpectError(label: int)
+    int formatted = GetFormattedString(label)
+    assert_eq(formatted, 0)
 end
 
 function CRunningScript_new(ip: int): int
