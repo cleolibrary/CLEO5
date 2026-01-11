@@ -365,20 +365,12 @@ namespace CLEO
     }
 
     // perform 'sprintf'-operation for parameters, passed through SCM
-    int ReadFormattedString(CRunningScript* thread, char* outputStr, DWORD len, const char* format)
+    char* ReadFormattedString(CRunningScript* thread, const char* format, char* outputStr, DWORD len)
     {
         unsigned int written = 0;
         const char* iter     = format;
         char* outIter        = outputStr;
         char bufa[MAX_STR_LEN + 1], fmtbufa[64], *fmta;
-
-        // invalid input arguments
-        if (outputStr == nullptr || len == 0)
-        {
-            LOG_WARNING(thread, "ReadFormattedString invalid input arg(s) in script %s", ScriptInfoStr(thread).c_str());
-            SkipUnusedVarArgs(thread);
-            return -1; // error
-        }
 
         if (len > 1 && format != nullptr)
         {
@@ -398,14 +390,9 @@ namespace CLEO
                     // end of format string
                     if (iter[1] == '\0')
                     {
-                        LOG_WARNING(
-                            thread,
-                            "ReadFormattedString encountered incomplete format "
-                            "specifier in script %s",
-                            ScriptInfoStr(thread).c_str()
-                        );
+                        LOG_WARNING(thread, "Incomplete format specifier in script %s", ScriptInfoStr(thread).c_str());
                         SkipUnusedVarArgs(thread);
-                        return -1; // error
+                        return nullptr; // error
                     }
 
                     // escaped % character
@@ -489,6 +476,7 @@ namespace CLEO
 
                     switch (*iter)
                     {
+                    case 'S':
                     case 's':
                         if (thread->PeekDataType() == DT_END)
                         {
@@ -500,6 +488,7 @@ namespace CLEO
                         }
                         break;
 
+                    case 'C':
                     case 'c':
                         if (thread->PeekDataType() == DT_END)
                         {
@@ -560,13 +549,14 @@ namespace CLEO
 
                     default:
                         // unrecognized or incomplete specifier - error
-                        *fmta = '\0';
+                        *fmta++ = *iter;
+                        *fmta   = '\0';
                         LOG_WARNING(
                             thread, "Unknown format specifier '%s' in script %s", fmtbufa, ScriptInfoStr(thread).c_str()
                         );
                         SkipUnusedVarArgs(thread);
                         outputStr[written] = '\0';
-                        return -1; // error
+                        return nullptr; // error
                     }
 
                     char* bufaiter = bufa;
@@ -595,7 +585,7 @@ namespace CLEO
             );
             SkipUnusedVarArgs(thread);
             outputStr[len - 1] = '\0';
-            return -1; // error
+            return nullptr; // error
         }
 
         // still more var-args available
@@ -608,13 +598,13 @@ namespace CLEO
         SkipUnusedVarArgs(thread); // skip terminator too
 
         outputStr[written] = '\0';
-        return (int)written;
+        return outputStr;
 
     _ReadFormattedString_ArgMissing: // jump here on error
         LOG_WARNING(thread, "More tokens in format string than arguments in script %s", ScriptInfoStr(thread).c_str());
         thread->IncPtr(); // skip vararg terminator
         outputStr[written] = '\0';
-        return -1; // error
+        return nullptr; // error
     }
 
     OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(

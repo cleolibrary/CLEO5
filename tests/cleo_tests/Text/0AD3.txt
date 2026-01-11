@@ -11,6 +11,7 @@ function tests
     it("should respect short string variable size", test2)
     it("should respect long string variable size", test3)
     it("should create long text", test4)
+    it("should support uppercase", test5)
     
     return
 
@@ -35,6 +36,9 @@ function tests
         
         string_format {buffer} 0@v {format} "str %s" {args} "text"
         assert_eqs(0@v, "str text")
+        
+        string_format {buffer} 0@v {format} "pct %d%%" {args} 100
+        assert_eqs(0@v, "pct 100%")
     end
     
     function test2
@@ -69,4 +73,22 @@ function tests
         assert_eqs(0@, "some longer test text") // not clamped
         free_memory 0@
     end
+    
+    function test5
+        string_format {buffer} 0@v {format} "char %C" {args} 0x41
+        assert_eqs(0@v, "char A")
+        
+        string_format {buffer} 0@v {format} "int %D" {args} 3
+        assert_eqs(0@v, "int 3")
+        
+        string_format {buffer} 0@v {format} "hex %X" {args} 0x123
+        assert_eqs(0@v, "hex 123")
+        
+        string_format {buffer} 0@v {format} "num %0.1F" {args} 1.234
+        assert_eqs(0@v, "num 1.2")
+        
+        string_format {buffer} 0@v {format} "str %S" {args} "text"
+        assert_eqs(0@v, "str text")
+    end
+    
 end

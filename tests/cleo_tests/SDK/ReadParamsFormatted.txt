@@ -1,0 +1,165 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name 'SDK@31'
+test("SDK: CLEO_ReadParamsFormatted", tests)
+terminate_this_custom_script
+
+function tests
+
+    const BUF_SIZE = 512
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should handle malformed format string", test1)
+    it("should handle missing format specifier", test2)
+    it("should handle unknown format specifier", test3)
+    it("should handle correct input", test4)
+    it("should handle extra arguments", test5)
+    it("should handle not enough arguments", test6)
+    return
+
+    :setup
+    0@ = allocate_memory {size} BUF_SIZE
+    return
+
+    :cleanup
+    free_memory {address} 0@
+    return
+
+    function test1(buf: int)
+        int formatted = GetFormattedString(@mock1_incomplete, buf, BUF_SIZE)
+        assert_eq(formatted, 0)
+    end
+
+    function test2(buf: int)
+        int formatted = GetFormattedString(@mock2_missing, buf, BUF_SIZE)
+        assert_eq(formatted, 0)
+
+    end
+
+    function test3(buf: int)
+        int formatted = GetFormattedString(@mock3_unknown, buf, BUF_SIZE)
+        assert_eq(formatted, 0)
+    end
+
+    function test4(buf: int)
+        int formatted = GetFormattedString(@mock4_valid, buf, BUF_SIZE)
+        assert_eqs(formatted, "valid 42")
+        formatted = GetFormattedString(@mock5_mix, buf, BUF_SIZE)
+        assert_eqs(formatted, "str test num 123 float 3.14")
+        formatted = GetFormattedString(@mock9_pct, buf, BUF_SIZE)
+        assert_eqs(formatted, "percent %")
+        formatted = GetFormattedString(@mock10_long, buf, BUF_SIZE)
+        assert_eqs(formatted, "large string This is a very long string that should fit into the buffer without any issues.")
+        formatted = GetFormattedString(@mock11_ptr, buf, BUF_SIZE)
+        assert_eqs(formatted, "pointer 12345678")
+    end
+
+    function test5(buf: int)
+        // too many arguments is a warning
+
+        int formatted = GetFormattedString(@mock6_extra, buf, BUF_SIZE)
+        assert_eqs(formatted, "extra args 1")
+
+        formatted = GetFormattedString(@mock8_empty, buf, BUF_SIZE)
+        assert_eqs(formatted, "")
+    end
+
+    function test6(buf: int)
+        // too few arguments is an error
+
+        int formatted = GetFormattedString(@mock7_not_enough, buf, BUF_SIZE)
+        assert_eq(formatted, 0)
+    end
+
+end
+
+:mock1_incomplete
+trace {format} "incomplete %0.0" {args} 0x41
+
+:mock2_missing
+trace {format} "missing %" {args} 0x41
+
+:mock3_unknown
+trace "unknown %y" {args} 0x41
+
+:mock4_valid
+trace "valid %d" {args} 42
+
+:mock5_mix
+trace "str %s num %d float %.2f" {args} "test" 123 3.14159
+
+:mock6_extra
+trace "extra args %d" {args} 1 2 3 4 5
+
+:mock7_not_enough
+trace "not enough args %d %s %f" {args} 10
+
+:mock8_empty
+trace "" {args} 0
+
+:mock9_pct
+trace "percent %%"
+
+:mock10_long
+trace "large string %s" {args} "This is a very long string that should fit into the buffer without any issues."
+
+:mock11_ptr
+trace "pointer %p" {args} 0x12345678
+
+function GetFormattedString(label: int, buf: int, buf_size: int): int
+    int code = get_label_pointer label
+    code += 2 // skip opcode id
+    int script = CRunningScript_new(code)
+    int string_arg = CLEO_ReadStringOpcodeParam(script)
+    int res = CLEO_ReadParamsFormatted(script, string_arg, buf, buf_size)
+    free_memory {address} script
+    return res
+end
+
+function CRunningScript_new(ip: int): int
+    int struct = allocate_memory {size} 0xE0
+    write_memory_with_offset {address} struct {offset} 0x10 {size} 4 {value} ip // baseIp
+    write_memory_with_offset {address} struct {offset} 0x14 {size} 4 {value} ip // currentIp
+    return struct
+end
+
+/// Reads format string and arguments from the script and returns a formatted string or nullptr if error
+function CLEO_ReadParamsFormatted(script: int, format: int, buf: int, buf_size: int): int
+    if ReadParamsFormatted fn = GetCLEOSDK("_CLEO_ReadParamsFormatted@16")
+    then
+        int result = fn(script, format, buf, buf_size)
+        return result
+    end
+    return 0
+
+    function ReadParamsFormatted<stdcall>(script: int, format: int, buf: int, buf_size: int): int
+end
+
+// Reads a string argument from script and returns a pointer (always null-terminated)
+function CLEO_ReadStringOpcodeParam(script: int): int
+    if ReadStringOpcodeParam fn = GetCLEOSDK("_CLEO_ReadStringOpcodeParam@12")
+    then
+        int result = fn(script, 0, 0)
+        return result
+    end
+    return 0
+
+    function ReadStringOpcodeParam<stdcall>(script: int, buf: int, buf_size: int): int
+end
+
+/// Returns a pointer to a function exported from CLEO.asi
+function GetCLEOSDK(name: string): optional int
+    if int cleo = load_dynamic_library {fileName} "CLEO.asi"
+    then
+        if int func = get_dynamic_library_procedure {procName} name cleo
+        then
+            free_dynamic_library cleo
+            return func
+        else
+            free_dynamic_library cleo
+            return
+        end
+    end
+end

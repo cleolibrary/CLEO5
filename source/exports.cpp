@@ -291,12 +291,7 @@ namespace CLEO
             }
             if (!bufSize) bufSize = MAX_STR_LEN;
 
-            if (ReadFormattedString(thread, buf, bufSize, format) == -1) // error?
-            {
-                return nullptr; // error
-            }
-
-            return buf;
+            return ReadFormattedString(thread, format, buf, bufSize);
         }
 
         DWORD WINAPI CLEO_PeekIntOpcodeParam(CLEO::CRunningScript* thread)

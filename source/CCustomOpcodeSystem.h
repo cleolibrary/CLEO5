@@ -85,7 +85,7 @@ namespace CLEO
     const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize);
 
     StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
-    int ReadFormattedString(CRunningScript* thread, char* buf, DWORD bufSize, const char* format);
+    char* ReadFormattedString(CRunningScript* thread, const char* format, char* buf, DWORD bufSize);
 
     bool WriteStringParam(CRunningScript* thread, const char* str);
     bool WriteStringParam(const StringParamBufferInfo& target, const char* str);
