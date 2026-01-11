@@ -578,10 +578,8 @@ namespace CLEO
         _ReadFormattedString_OutOfMemory: // jump here on error
 
             LOG_WARNING(
-                thread,
-                "Target buffer too small (%d) to read whole formatted string "
-                "in script %s",
-                len, ScriptInfoStr(thread).c_str()
+                thread, "Target buffer too small (%d) to read whole formatted string in script %s", len,
+                ScriptInfoStr(thread).c_str()
             );
             SkipUnusedVarArgs(thread);
             outputStr[len - 1] = '\0';
