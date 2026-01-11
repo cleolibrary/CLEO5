@@ -12,7 +12,6 @@ function tests
     it("should handle extra arguments", test4)
     it("should handle specifier and argument type mismatch", test5)
     it("should handle small buffer", test6)
-    it("should handle nullptr format", test7)
     return
 
     function test1
@@ -20,6 +19,7 @@ function tests
         ExpectError(@mock2_missing)
         ExpectError(@mock3_unknown)
         ExpectError(@mock7_too_few_args) // too few arguments is an error
+        ExpectError(@mock16_nullfmt) // nullptr format is an error
     end
 
     function test2
@@ -84,37 +84,23 @@ function tests
     function test6
         int buf = get_var_pointer TIMERA
         
-        // hmm, inconsistency between buf size 1 and 2
-        int formatted = GetFormattedStringWithBuf(@mock4_valid, buf, 1)
+        // enough space for empty format string
+        int formatted = GetFormattedStringWithBuf(@mock8_empty, buf, 1)
         assert_eqs(formatted, "")
-        formatted = GetFormattedStringWithBuf(@mock5_mix, buf, 1)
-        assert_eqs(formatted, "")
-        formatted = GetFormattedStringWithBuf(@mock9_pct, buf, 1)
-        assert_eqs(formatted, "")
-        formatted = GetFormattedStringWithBuf(@mock10_long, buf, 1)
-        assert_eqs(formatted, "")
-        formatted = GetFormattedStringWithBuf(@mock11_ptr, buf, 1)
-        assert_eqs(formatted, "")
-        formatted = GetFormattedStringWithBuf(@mock14_valid_str_ptr, buf, 1)
-        assert_eqs(formatted, "")
+        // enough space for one character
+        formatted = GetFormattedStringWithBuf(@mock17_char, buf, 2)
+        assert_eqs(formatted, "a")
         
+        // not enough space
+        formatted = GetFormattedStringWithBuf(@mock4_valid, buf, 1)
+        assert_eq(formatted, 0)
+        formatted = GetFormattedStringWithBuf(@mock17_char, buf, 1)
+        assert_eq(formatted, 0)
         formatted = GetFormattedStringWithBuf(@mock4_valid, buf, 2)
         assert_eq(formatted, 0)
-        formatted = GetFormattedStringWithBuf(@mock5_mix, buf, 2)
+        formatted = GetFormattedStringWithBuf(@mock17_pct, buf, 2)
         assert_eq(formatted, 0)
-        formatted = GetFormattedStringWithBuf(@mock9_pct, buf, 2)
-        assert_eq(formatted, 0)
-        formatted = GetFormattedStringWithBuf(@mock10_long, buf, 2)
-        assert_eq(formatted, 0)
-        formatted = GetFormattedStringWithBuf(@mock11_ptr, buf, 2)
-        assert_eq(formatted, 0)
-        formatted = GetFormattedStringWithBuf(@mock14_valid_str_ptr, buf, 2)
-        assert_eq(formatted, 0)
-    end
-    
-    function test7
-        int formatted = GetFormattedString(@mock16_nullfmt) // trace 0 {args} 0
-        assert_eqs(formatted, "")
+       
     end
 
 end
@@ -167,6 +153,11 @@ trace "num %d" {args} 42.5
 :mock16_nullfmt
 trace 0 {args} 0
 
+:mock17_char
+trace "a" 0
+
+:mock17_pct
+trace "%"
 
 function GetFormattedString(label: int): int
     int res = GetFormattedStringWithBuf(label, 0, 0)

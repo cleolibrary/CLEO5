@@ -367,209 +367,213 @@ namespace CLEO
     // perform 'sprintf'-operation for parameters, passed through SCM
     char* ReadFormattedString(CRunningScript* thread, const char* format, char* outputStr, DWORD len)
     {
+        if (format == nullptr)
+        {
+            LOG_WARNING(thread, "Format string is nullptr in script %s", ScriptInfoStr(thread).c_str());
+            SkipUnusedVarArgs(thread); // skip terminator too
+            return nullptr;            // error
+        }
+
         unsigned int written = 0;
         const char* iter     = format;
         char* outIter        = outputStr;
         char bufa[MAX_STR_LEN + 1], fmtbufa[64], *fmta;
 
-        if (len > 1 && format != nullptr)
+        while (*iter)
         {
-            while (*iter)
+            while (*iter && *iter != '%')
             {
-                while (*iter && *iter != '%')
+                if (written++ >= len)
+                {
+                    goto _ReadFormattedString_OutOfMemory;
+                }
+                *outIter++ = *iter++;
+            }
+
+            if (*iter == '%')
+            {
+                // end of format string
+                if (iter[1] == '\0')
+                {
+                    LOG_WARNING(thread, "Incomplete format specifier in script %s", ScriptInfoStr(thread).c_str());
+                    SkipUnusedVarArgs(thread);
+                    return nullptr; // error
+                }
+
+                // escaped % character
+                if (iter[1] == '%')
                 {
                     if (written++ >= len)
                     {
                         goto _ReadFormattedString_OutOfMemory;
                     }
-                    *outIter++ = *iter++;
+                    *outIter++ = '%';
+                    iter += 2;
+                    continue;
                 }
 
-                if (*iter == '%')
+                // get flags and width specifier
+                fmta    = fmtbufa;
+                *fmta++ = *iter++;
+                while (*iter == '0' || *iter == '+' || *iter == '-' || *iter == ' ' || *iter == '*' || *iter == '#')
                 {
-                    // end of format string
-                    if (iter[1] == '\0')
+                    if (*iter == '*')
                     {
-                        LOG_WARNING(thread, "Incomplete format specifier in script %s", ScriptInfoStr(thread).c_str());
-                        SkipUnusedVarArgs(thread);
-                        return nullptr; // error
-                    }
-
-                    // escaped % character
-                    if (iter[1] == '%')
-                    {
-                        if (written++ >= len)
-                        {
-                            goto _ReadFormattedString_OutOfMemory;
-                        }
-                        *outIter++ = '%';
-                        iter += 2;
-                        continue;
-                    }
-
-                    // get flags and width specifier
-                    fmta    = fmtbufa;
-                    *fmta++ = *iter++;
-                    while (*iter == '0' || *iter == '+' || *iter == '-' || *iter == ' ' || *iter == '*' || *iter == '#')
-                    {
-                        if (*iter == '*')
-                        {
-                            // get width
-                            if (thread->PeekDataType() == DT_END)
-                            {
-                                goto _ReadFormattedString_ArgMissing;
-                            }
-                            CScriptEngine::GetScriptParams(thread, 1);
-                            _itoa_s(opcodeParams[0].dwParam, bufa, 10);
-
-                            char* buffiter = bufa;
-                            while (*buffiter)
-                            {
-                                *fmta++ = *buffiter++;
-                            }
-                        }
-                        else
-                        {
-                            *fmta++ = *iter;
-                        }
-                        iter++;
-                    }
-
-                    // get immediate width value
-                    while (isdigit(*iter))
-                    {
-                        *fmta++ = *iter++;
-                    }
-
-                    // get precision
-                    if (*iter == '.')
-                    {
-                        *fmta++ = *iter++;
-                        if (*iter == '*')
-                        {
-                            if (thread->PeekDataType() == DT_END)
-                            {
-                                goto _ReadFormattedString_ArgMissing;
-                            }
-                            CScriptEngine::GetScriptParams(thread, 1);
-                            _itoa_s(opcodeParams[0].dwParam, bufa, 10);
-
-                            char* buffiter = bufa;
-                            while (*buffiter)
-                            {
-                                *fmta++ = *buffiter++;
-                            }
-                        }
-                        else
-                        {
-                            while (isdigit(*iter))
-                            {
-                                *fmta++ = *iter++;
-                            }
-                        }
-                    }
-                    // get size
-                    if (*iter == 'h' || *iter == 'l')
-                    {
-                        *fmta++ = *iter++;
-                    }
-
-                    switch (*iter)
-                    {
-                    case 'S':
-                    case 's':
-                        if (thread->PeekDataType() == DT_END)
-                        {
-                            goto _ReadFormattedString_ArgMissing;
-                        }
-                        if (ReadStringParam(thread, bufa, sizeof(bufa)) == nullptr)
-                        {
-                            strcpy_s(bufa, "(INVALID_STR)");
-                        }
-                        break;
-
-                    case 'C':
-                    case 'c':
+                        // get width
                         if (thread->PeekDataType() == DT_END)
                         {
                             goto _ReadFormattedString_ArgMissing;
                         }
                         CScriptEngine::GetScriptParams(thread, 1);
-                        bufa[0] = (char)opcodeParams[0].nParam;
-                        bufa[1] = '\0';
-                        break;
+                        _itoa_s(opcodeParams[0].dwParam, bufa, 10);
 
-                    case 'p':
-                    case 'P':
-                        if (thread->PeekDataType() == DT_END)
+                        char* buffiter = bufa;
+                        while (*buffiter)
                         {
-                            goto _ReadFormattedString_ArgMissing;
+                            *fmta++ = *buffiter++;
                         }
-                        CScriptEngine::GetScriptParams(thread, 1);
-                        sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
-                        break;
-
-                    case 'a':
-                    case 'A':
-                    case 'e':
-                    case 'E':
-                    case 'f':
-                    case 'F':
-                    case 'g':
-                    case 'G':
+                    }
+                    else
+                    {
                         *fmta++ = *iter;
-                        *fmta   = '\0';
-                        if (thread->PeekDataType() == DT_END)
-                        {
-                            goto _ReadFormattedString_ArgMissing;
-                        }
-                        CScriptEngine::GetScriptParams(thread, 1);
-                        sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
-                        break;
-
-                    case 'd':
-                    case 'D':
-                    case 'i':
-                    case 'I':
-                    case 'o':
-                    case 'O':
-                    case 'u':
-                    case 'U':
-                    case 'x':
-                    case 'X':
-                        *fmta++ = (char)tolower(*iter); // normalize to lowercase
-                        *fmta   = '\0';
-                        if (thread->PeekDataType() == DT_END)
-                        {
-                            goto _ReadFormattedString_ArgMissing;
-                        }
-                        CScriptEngine::GetScriptParams(thread, 1);
-                        sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
-                        break;
-
-                    default:
-                        // unrecognized or incomplete specifier - error
-                        *fmta++ = *iter;
-                        *fmta   = '\0';
-                        LOG_WARNING(
-                            thread, "Unknown format specifier '%s' in script %s", fmtbufa, ScriptInfoStr(thread).c_str()
-                        );
-                        SkipUnusedVarArgs(thread);
-                        outputStr[written] = '\0';
-                        return nullptr; // error
-                    }
-
-                    char* bufaiter = bufa;
-                    while (*bufaiter)
-                    {
-                        if (written++ >= len)
-                        {
-                            goto _ReadFormattedString_OutOfMemory;
-                        }
-                        *outIter++ = *bufaiter++;
                     }
                     iter++;
                 }
+
+                // get immediate width value
+                while (isdigit(*iter))
+                {
+                    *fmta++ = *iter++;
+                }
+
+                // get precision
+                if (*iter == '.')
+                {
+                    *fmta++ = *iter++;
+                    if (*iter == '*')
+                    {
+                        if (thread->PeekDataType() == DT_END)
+                        {
+                            goto _ReadFormattedString_ArgMissing;
+                        }
+                        CScriptEngine::GetScriptParams(thread, 1);
+                        _itoa_s(opcodeParams[0].dwParam, bufa, 10);
+
+                        char* buffiter = bufa;
+                        while (*buffiter)
+                        {
+                            *fmta++ = *buffiter++;
+                        }
+                    }
+                    else
+                    {
+                        while (isdigit(*iter))
+                        {
+                            *fmta++ = *iter++;
+                        }
+                    }
+                }
+                // get size
+                if (*iter == 'h' || *iter == 'l')
+                {
+                    *fmta++ = *iter++;
+                }
+
+                switch (*iter)
+                {
+                case 'S':
+                case 's':
+                    if (thread->PeekDataType() == DT_END)
+                    {
+                        goto _ReadFormattedString_ArgMissing;
+                    }
+                    if (ReadStringParam(thread, bufa, sizeof(bufa)) == nullptr)
+                    {
+                        strcpy_s(bufa, "(INVALID_STR)");
+                    }
+                    break;
+
+                case 'C':
+                case 'c':
+                    if (thread->PeekDataType() == DT_END)
+                    {
+                        goto _ReadFormattedString_ArgMissing;
+                    }
+                    CScriptEngine::GetScriptParams(thread, 1);
+                    bufa[0] = (char)opcodeParams[0].nParam;
+                    bufa[1] = '\0';
+                    break;
+
+                case 'p':
+                case 'P':
+                    if (thread->PeekDataType() == DT_END)
+                    {
+                        goto _ReadFormattedString_ArgMissing;
+                    }
+                    CScriptEngine::GetScriptParams(thread, 1);
+                    sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
+                    break;
+
+                case 'a':
+                case 'A':
+                case 'e':
+                case 'E':
+                case 'f':
+                case 'F':
+                case 'g':
+                case 'G':
+                    *fmta++ = *iter;
+                    *fmta   = '\0';
+                    if (thread->PeekDataType() == DT_END)
+                    {
+                        goto _ReadFormattedString_ArgMissing;
+                    }
+                    CScriptEngine::GetScriptParams(thread, 1);
+                    sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
+                    break;
+
+                case 'd':
+                case 'D':
+                case 'i':
+                case 'I':
+                case 'o':
+                case 'O':
+                case 'u':
+                case 'U':
+                case 'x':
+                case 'X':
+                    *fmta++ = (char)tolower(*iter); // normalize to lowercase
+                    *fmta   = '\0';
+                    if (thread->PeekDataType() == DT_END)
+                    {
+                        goto _ReadFormattedString_ArgMissing;
+                    }
+                    CScriptEngine::GetScriptParams(thread, 1);
+                    sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
+                    break;
+
+                default:
+                    // unrecognized or incomplete specifier - error
+                    *fmta++ = *iter;
+                    *fmta   = '\0';
+                    LOG_WARNING(
+                        thread, "Unknown format specifier '%s' in script %s", fmtbufa, ScriptInfoStr(thread).c_str()
+                    );
+                    SkipUnusedVarArgs(thread);
+                    outputStr[written] = '\0';
+                    return nullptr; // error
+                }
+
+                char* bufaiter = bufa;
+                while (*bufaiter)
+                {
+                    if (written++ >= len)
+                    {
+                        goto _ReadFormattedString_OutOfMemory;
+                    }
+                    *outIter++ = *bufaiter++;
+                }
+                iter++;
             }
         }
 
