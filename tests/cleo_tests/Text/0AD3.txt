@@ -5,90 +5,162 @@ script_name '0AD3'
 test("0AD3 (string_format)", tests)
 terminate_this_custom_script
 
-
 function tests
     it("should format string", test1)
     it("should respect short string variable size", test2)
     it("should respect long string variable size", test3)
     it("should create long text", test4)
     it("should support uppercase", test5)
-    
+    it("should support length modifiers", test6)
     return
 
     function test1
         string_format {buffer} 0@v {format} "" {args}
         assert_eqs(0@v, "")
-    
+
         string_format {buffer} 0@v {format} "test" {args}
         assert_eqs(0@v, "test")
-        
+
         string_format {buffer} 0@v {format} "char %c" {args} 0x41
         assert_eqs(0@v, "char A")
-        
+
         string_format {buffer} 0@v {format} "int %d" {args} 3
         assert_eqs(0@v, "int 3")
-        
-        string_format {buffer} 0@v {format} "hex %x" {args} 0x123
-        assert_eqs(0@v, "hex 123")
-        
+
+        string_format {buffer} 0@v {format} "hex %x" {args} 0x123ABC
+        assert_eqs(0@v, "hex 123abc")
+
         string_format {buffer} 0@v {format} "num %0.1f" {args} 1.234
         assert_eqs(0@v, "num 1.2")
-        
+
         string_format {buffer} 0@v {format} "str %s" {args} "text"
         assert_eqs(0@v, "str text")
-        
+
         string_format {buffer} 0@v {format} "pct %d%%" {args} 100
         assert_eqs(0@v, "pct 100%")
+
+        string_format {buffer} 0@v {format} "pointer %p" {args} 0x123ABC
+        assert_eqs(0@v, "pointer 00123abc")
+        
+        string_format {buffer} 0@v {format} "float lower %f" {args} 0x7F800000
+        assert_eqs(0@v, "float lower inf")
+
     end
-    
+
     function test2
         0@ = 0xAAAAAAAA
         1@ = 0xBBBBBBBB
         2@ = 0xCCCCCCCC
-        
+
         string_format {buffer} 0@s {format} "some longer test text" {args}
-        
+
         assert_eqs(0@s, "some lon") // clamped to size
         assert_eq(2@, 0xCCCCCCCC)
     end
-    
+
     function test3
         0@ = 0xAAAAAAAA
         1@ = 0xBBBBBBBB
         2@ = 0xCCCCCCCC
         3@ = 0xDDDDDDDD
         4@ = 0xEEEEEEEE
-        
+
         string_format {buffer} 0@v {format} "some longer test text" {args}
-        
+
         assert_eqs(0@v, "some longer test") // clamped to size
         assert_eq(4@, 0xEEEEEEEE)
     end
-    
+
     function test4
         0@ = allocate_memory {size} 64
-        
+
         string_format {buffer} 0@ {format} "some longer test text" {args}
 
         assert_eqs(0@, "some longer test text") // not clamped
         free_memory 0@
     end
-    
+
     function test5
         string_format {buffer} 0@v {format} "char %C" {args} 0x41
         assert_eqs(0@v, "char A")
-        
+
         string_format {buffer} 0@v {format} "int %D" {args} 3
         assert_eqs(0@v, "int 3")
-        
-        string_format {buffer} 0@v {format} "hex %X" {args} 0x123
-        assert_eqs(0@v, "hex 123")
-        
+
+        string_format {buffer} 0@v {format} "hex %X" {args} 0x123ABC
+        assert_eqs(0@v, "hex 123ABC")
+
         string_format {buffer} 0@v {format} "num %0.1F" {args} 1.234
         assert_eqs(0@v, "num 1.2")
-        
+
         string_format {buffer} 0@v {format} "str %S" {args} "text"
         assert_eqs(0@v, "str text")
+
+        string_format {buffer} 0@v {format} "pointer %P" {args} 0x123ABC
+        assert_eqs(0@v, "pointer 00123ABC")
+        
+        string_format {buffer} 0@v {format} "float upper %F" {args} 0x7F800000
+        assert_eqs(0@v, "float upper INF")
+
     end
-    
+
+    function test6
+
+        // h - short int
+        string_format {buffer} 0@v {format} "%hd" 1
+        assert_eqs(0@v, "1")
+        string_format {buffer} 0@v {format} "%hd" 10000
+        assert_eqs(0@v, "10000")
+        string_format {buffer} 0@v {format} "%hd" 50000
+        assert_eqs(0@v, "-15536")
+        string_format {buffer} 0@v {format} "%hd" -1
+        assert_eqs(0@v, "-1")
+        string_format {buffer} 0@v {format} "%hd" -10000
+        assert_eqs(0@v, "-10000")
+        string_format {buffer} 0@v {format} "%hd" -50000
+        assert_eqs(0@v, "15536")
+
+        // l - long int
+        string_format {buffer} 0@v {format} "%ld" 1
+        assert_eqs(0@v, "1")
+        string_format {buffer} 0@v {format} "%ld" 100000
+        assert_eqs(0@v, "100000")
+        string_format {buffer} 0@v {format} "%ld" 2000000000
+        assert_eqs(0@v, "2000000000")
+        string_format {buffer} 0@v {format} "%ld" -1
+        assert_eqs(0@v, "-1")
+        string_format {buffer} 0@v {format} "%ld" -100000
+        assert_eqs(0@v, "-100000")
+        string_format {buffer} 0@v {format} "%ld" -2000000000
+        assert_eqs(0@v, "-2000000000")
+
+        // ll - long long int - should work as l as scripts are limited to 32 bits
+        string_format {buffer} 0@v {format} "%ld" 1
+        assert_eqs(0@v, "1")
+        string_format {buffer} 0@v {format} "%ld" 100000
+        assert_eqs(0@v, "100000")
+        string_format {buffer} 0@v {format} "%ld" 2000000000
+        assert_eqs(0@v, "2000000000")
+        string_format {buffer} 0@v {format} "%ld" -1
+        assert_eqs(0@v, "-1")
+        string_format {buffer} 0@v {format} "%ld" -100000
+        assert_eqs(0@v, "-100000")
+        string_format {buffer} 0@v {format} "%ld" -2000000000
+        assert_eqs(0@v, "-2000000000")
+
+        // hh - signed char
+        string_format {buffer} 0@v {format} "%hhd" 1
+        assert_eqs(0@v, "1")
+        string_format {buffer} 0@v {format} "%hhd" 100
+        assert_eqs(0@v, "100")
+        string_format {buffer} 0@v {format} "%hhd" 200
+        assert_eqs(0@v, "-56")
+        string_format {buffer} 0@v {format} "%hhd" -1
+        assert_eqs(0@v, "-1")
+        string_format {buffer} 0@v {format} "%hhd" -100
+        assert_eqs(0@v, "-100")
+        string_format {buffer} 0@v {format} "%hhd" -200
+        assert_eqs(0@v, "56")
+
+    end
 end

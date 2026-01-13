@@ -474,19 +474,55 @@ namespace CLEO
                     }
                 }
                 // get size
-                if (*iter == 'h' || *iter == 'l')
+                if (*iter == 'h')
                 {
+                    // handle h (short)
                     *fmta++ = *iter++;
+                    if (*iter == 'h')
+                    {
+                        // handle hh (signed char)
+                        *fmta++ = *iter++;
+                    }
+                }
+                else if (*iter == 'l')
+                {
+                    // handle l (long)
+                    *fmta++ = *iter++;
+                }
+
+                // check if argument is available
+                switch (tolower(*iter))
+                {
+                case 's':
+                case 'c':
+                case 'p':
+                case 'd':
+                case 'i':
+                case 'o':
+                case 'u':
+                case 'x':
+                case 'a':
+                case 'e':
+                case 'f':
+                case 'g': {
+                    if (thread->PeekDataType() == DT_END)
+                    {
+                    _ReadFormattedString_ArgMissing: // jump here on error
+                        LOG_WARNING(
+                            thread, "More tokens in format string than arguments in script %s",
+                            ScriptInfoStr(thread).c_str()
+                        );
+                        thread->IncPtr(); // skip vararg terminator
+                        outputStr[written] = '\0';
+                        return nullptr; // error
+                    }
+                }
                 }
 
                 switch (*iter)
                 {
                 case 'S':
                 case 's':
-                    if (thread->PeekDataType() == DT_END)
-                    {
-                        goto _ReadFormattedString_ArgMissing;
-                    }
                     if (ReadStringParam(thread, bufa, sizeof(bufa)) == nullptr)
                     {
                         strcpy_s(bufa, "(INVALID_STR)");
@@ -495,25 +531,19 @@ namespace CLEO
 
                 case 'C':
                 case 'c':
-                    if (thread->PeekDataType() == DT_END)
-                    {
-                        goto _ReadFormattedString_ArgMissing;
-                    }
                     CScriptEngine::GetScriptParams(thread, 1);
                     bufa[0] = (char)opcodeParams[0].nParam;
                     bufa[1] = '\0';
                     break;
 
                 case 'p':
+                    CScriptEngine::GetScriptParams(thread, 1);
+                    sprintf_s(bufa, "%08x", opcodeParams[0].dwParam);
+                    break;
                 case 'P':
-                    if (thread->PeekDataType() == DT_END)
-                    {
-                        goto _ReadFormattedString_ArgMissing;
-                    }
                     CScriptEngine::GetScriptParams(thread, 1);
                     sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
                     break;
-
                 case 'a':
                 case 'A':
                 case 'e':
@@ -524,10 +554,6 @@ namespace CLEO
                 case 'G':
                     *fmta++ = *iter;
                     *fmta   = '\0';
-                    if (thread->PeekDataType() == DT_END)
-                    {
-                        goto _ReadFormattedString_ArgMissing;
-                    }
                     CScriptEngine::GetScriptParams(thread, 1);
                     sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
                     break;
@@ -541,17 +567,17 @@ namespace CLEO
                 case 'u':
                 case 'U':
                 case 'x':
-                case 'X':
                     *fmta++ = (char)tolower(*iter); // normalize to lowercase
                     *fmta   = '\0';
-                    if (thread->PeekDataType() == DT_END)
-                    {
-                        goto _ReadFormattedString_ArgMissing;
-                    }
                     CScriptEngine::GetScriptParams(thread, 1);
                     sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
                     break;
-
+                case 'X':
+                    *fmta++ = *iter;
+                    *fmta   = '\0';
+                    CScriptEngine::GetScriptParams(thread, 1);
+                    sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
+                    break;
                 default:
                     // unrecognized or incomplete specifier - error
                     *fmta++ = *iter;
@@ -601,12 +627,6 @@ namespace CLEO
 
         outputStr[written] = '\0';
         return outputStr;
-
-    _ReadFormattedString_ArgMissing: // jump here on error
-        LOG_WARNING(thread, "More tokens in format string than arguments in script %s", ScriptInfoStr(thread).c_str());
-        thread->IncPtr(); // skip vararg terminator
-        outputStr[written] = '\0';
-        return nullptr; // error
     }
 
     OpcodeResult CCustomOpcodeSystem::CleoReturnGeneric(
