@@ -134,20 +134,6 @@ function tests
         string_format {buffer} 0@v {format} "%ld" -2000000000
         assert_eqs(0@v, "-2000000000")
 
-        // ll - long long int - should work as l as scripts are limited to 32 bits
-        string_format {buffer} 0@v {format} "%ld" 1
-        assert_eqs(0@v, "1")
-        string_format {buffer} 0@v {format} "%ld" 100000
-        assert_eqs(0@v, "100000")
-        string_format {buffer} 0@v {format} "%ld" 2000000000
-        assert_eqs(0@v, "2000000000")
-        string_format {buffer} 0@v {format} "%ld" -1
-        assert_eqs(0@v, "-1")
-        string_format {buffer} 0@v {format} "%ld" -100000
-        assert_eqs(0@v, "-100000")
-        string_format {buffer} 0@v {format} "%ld" -2000000000
-        assert_eqs(0@v, "-2000000000")
-
         // hh - signed char
         string_format {buffer} 0@v {format} "%hhd" 1
         assert_eqs(0@v, "1")
