@@ -566,12 +566,12 @@ namespace CLEO
                 case 'O':
                 case 'u':
                 case 'U':
-                case 'x':
                     *fmta++ = (char)tolower(*iter); // normalize to lowercase
                     *fmta   = '\0';
                     CScriptEngine::GetScriptParams(thread, 1);
                     sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
                     break;
+                case 'x':
                 case 'X':
                     *fmta++ = *iter;
                     *fmta   = '\0';
