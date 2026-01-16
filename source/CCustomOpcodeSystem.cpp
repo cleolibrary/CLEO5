@@ -1012,7 +1012,7 @@ namespace CLEO
         }
         else
         {
-            SUSPEND("Invalid type of first argument in opcode [0AB1], in script %s", "");
+            SUSPEND("Invalid type of first argument in opcode [0AB1]", "");
         }
 
         ScmFunction* scmFunc = new ScmFunction(thread, callIP);

@@ -725,7 +725,7 @@ namespace CLEO
 #define OPCODE_VALIDATE_POINTER(x)                                                                                     \
     if ((size_t)x <= MinValidAddress)                                                                                  \
     {                                                                                                                  \
-        SUSPEND("Invalid '0x%X' pointer argument in script %s", x, ScriptInfoStr(thread).c_str());                     \
+        SUSPEND("Invalid '0x%X' pointer argument", x);                                                                 \
     }
 
 #define OPCODE_CONDITION_RESULT(value) CLEO_SetThreadCondResult(thread, value);

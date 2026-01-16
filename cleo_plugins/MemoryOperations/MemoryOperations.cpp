@@ -514,7 +514,7 @@ class MemoryOperations
         // validate
         if (Instance.m_libraries.find(ptr) == Instance.m_libraries.end())
         {
-            SUSPEND_COMPAT("Invalid '0x%X' library pointer param in script %s", ptr);
+            SUSPEND_COMPAT("Invalid '0x%X' library pointer param", ptr);
             return OR_CONTINUE;
         }
 
