@@ -159,7 +159,7 @@ class MemoryOperations
         if (numArg != inputArgCount)
         {
             // CLEO4 ignored param count mismatch (by providing zeros for missing)
-            SUSPEND_COMPAT("Provided more (%d) than declared (%d) arguments", inputArgCount, numArg);
+            SUSPEND_COMPAT("Argument count mismatch: provided %d, declared %d", inputArgCount, numArg);
         }
 
         static SCRIPT_VAR arguments[Max_Args] = {0};

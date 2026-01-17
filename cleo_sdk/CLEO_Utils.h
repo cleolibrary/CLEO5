@@ -1170,8 +1170,7 @@ namespace CLEO
     {                                                                                                                  \
         SUSPEND_COMPAT(                                                                                                \
             "Output argument %s expected to be variable float, got %s", GetParamInfo().c_str(),                        \
-            CLEO::ToKindStr(_lastParamType, _lastParamArrayType),                                                      \
-                                                                                                                       \
+            CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                       \
         );                                                                                                             \
     }
 

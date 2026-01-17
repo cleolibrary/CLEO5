@@ -9,7 +9,7 @@ function tests
     it("should scan numbers", test1)
     it("should scan characters", test2)
     it("should scan strings", test3)
-    it("should report arg count missmatch", test4)
+    it("should report arg count mismatch", test4)
     it("should respect target string size", test5)
     it_cs4("should respect target string size", test5_cs4)
     it("should support non-capturing sequences", test6)
