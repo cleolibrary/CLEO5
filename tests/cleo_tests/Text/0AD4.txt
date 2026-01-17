@@ -5,13 +5,13 @@ script_name '0AD4'
 test("0AD4 (scan_string)", tests)
 terminate_this_custom_script
 
-
 function tests
     it("should scan numbers", test1)
     it("should scan characters", test2)
     it("should scan strings", test3)
     it("should report arg count missmatch", test4)
     it("should respect target string size", test5)
+    it_cs4("should respect target string size", test5_cs4)
     it("should support non-capturing sequences", test6)
     return
 
@@ -26,7 +26,7 @@ function tests
         assert_eqf(5@, 16.0)
         assert_eqf(6@, 32.0)
     end
-    
+
     function test2
         scan_string {string} "ABC" {format} "%c%c%c" {var_nValues} 0@ {var_values} 1@ 2@ 3@
         assert_result_true()
@@ -35,7 +35,7 @@ function tests
         assert_eq(2@, 0x42) // B
         assert_eq(3@, 0x43) // C
     end
-    
+
     function test3
         scan_string {string} "some testing text" {format} "%s %s %s" {var_nValues} 0@ {var_values} 1@s 3@s 5@s
         assert_result_true()
@@ -43,7 +43,7 @@ function tests
         assert_eqs(1@s, "some")
         assert_eqs(3@s, "testing")
         assert_eqs(5@s, "text")
-        
+
         1@ = allocate_memory {size} 64
         scan_string {string} "some-longer-testing-text 666" {format} "%s%d" {var_nValues} 0@ {var_values} 1@ 2@
         assert_result_true()
@@ -52,7 +52,7 @@ function tests
         assert_eq(2@, 666)
         free_memory {address} 1@
     end
-    
+
     function test4
         3@ = 0xCCCCCCCC
         scan_string {string} "input 1 2" {format} "input %d %d %d" {var_nValues} 0@ {var_values} 1@ 2@ 3@
@@ -62,7 +62,7 @@ function tests
         assert_eq(2@, 2)
         assert_eq(3@, 0xCCCCCCCC) // unchanged
     end
-    
+
     function test5
         1@ = 0x77777777
         2@ = 0x88888888
@@ -73,7 +73,7 @@ function tests
         7@ = 0xDDDDDDDD
         8@ = 0xEEEEEEEE
 
-        scan_string {string} "first_very_long_test_text second_very_long_test_text" {format} "%s %s" {var_nValues} 0@ {var_values} 1@s 4@v,
+        scan_string {string} "first_very_long_test_text second_very_long_test_text" {format} "%s %s" {var_nValues} 0@ {var_values} 1@s 4@v
         assert_result_true()
         assert_eq(0@, 2) // read values count
         assert_eqs(1@s, "first_ve") // clamped to variable size
@@ -81,13 +81,22 @@ function tests
         assert_eqs(4@v, "second_very_long") // clamped to variable size
         assert_eq(8@, 0xEEEEEEEE) // unchanged
     end
-    
+
+    function test5_cs4
+        scan_string {string} "first_very_long_test_text second_very_long_test_text" {format} "%s %s" {var_nValues} 0@ {var_values} 1@s 8@v
+        assert_result_true()
+        assert_eq(0@, 2) // read values count
+        assert_eqs(1@v, "first_very_long_")
+        assert_eqs(8@v, "second_very_long")
+        assert_eqs(12@v, "_test_text")
+    end
+
     function test6
         0@ = 0x66666666
         1@ = 0x77777777
         2@ = 0x88888888
         3@ = 0x99999999
-        
+
         scan_string {string} "input 1 2 3" {format} "%*s %d %*d %d" {var_nValues} 0@ {var_values} 1@ 2@
         //assert_result_true()
         assert_eq(0@, 2) // read values count
