@@ -368,14 +368,14 @@ class Text
             {
                 if (formatTokenType != DT_END)
                 {
-                    SUSPEND_COMPAT("More tokens in format string than return variables", format);
+                    SUSPEND_COMPAT("More tokens than variables in format string %s", format);
                 }
                 break;
             }
 
             if (formatTokenType == DT_END)
             {
-                SUSPEND_COMPAT("More return variables than tokens in format string", format);
+                SUSPEND_COMPAT("More variables than tokens in format string %s", format);
             }
 
             if (IsVarString(paramType))
