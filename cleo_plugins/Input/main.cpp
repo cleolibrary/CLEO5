@@ -183,10 +183,7 @@ class Input
         }
         if (key < 0 || key > Key_Code_Max)
         {
-            SHOW_ERROR(
-                "Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid key code (%d) used", key);
         }
 
         bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Flag_Down;
@@ -205,19 +202,11 @@ class Input
 
         if (keyMin < 0 || keyMin > Key_Code_Max)
         {
-            SHOW_ERROR(
-                "Invalid value (%d) of 'minKeyCode' argument in script %s\nScript suspended.", keyMin,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid value (%d) of 'minKeyCode' argument", keyMin);
         }
         if (keyMax < 0 || keyMax > Key_Code_Max || keyMax < keyMin)
         {
-            SHOW_ERROR(
-                "Invalid value (%d) of 'maxKeyCode' argument in script %s\nScript suspended.", keyMin,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid value (%d) of 'maxKeyCode' argument", keyMax);
         }
 
         for (auto key = keyMin; key <= keyMax; key++)
@@ -246,19 +235,11 @@ class Input
 
         if (keyMin < 0 || keyMin > Key_Code_Max)
         {
-            SHOW_ERROR(
-                "Invalid value (%d) of 'minKeyCode' argument in script %s\nScript suspended.", keyMin,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid value (%d) of 'minKeyCode' argument", keyMin);
         }
         if (keyMax < 0 || keyMax > Key_Code_Max || keyMax < keyMin)
         {
-            SHOW_ERROR(
-                "Invalid value (%d) of 'maxKeyCode' argument in script %s\nScript suspended.", keyMin,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid value (%d) of 'maxKeyCode' argument", keyMax);
         }
 
         for (auto key = keyMin; key <= keyMax; key++)
@@ -291,10 +272,7 @@ class Input
         }
         if (key < 0 || key > Key_Code_Max)
         {
-            SHOW_ERROR(
-                "Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid key code (%d) used", key);
         }
 
         SendKeyEvent(key, true);
@@ -314,10 +292,7 @@ class Input
         }
         if (key < 0 || key > Key_Code_Max)
         {
-            SHOW_ERROR(
-                "Invalid key code (%d) used in script %s\nScript suspended.", key, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid key code (%d) used", key);
         }
 
         SendKeyEvent(key, false);
@@ -334,19 +309,11 @@ class Input
 
         if (actionId < 0 || actionId >= _countof(ControlsManager.m_actions))
         {
-            SHOW_ERROR(
-                "Invalid value (%d) of 'action' argument in script %s\nScript suspended.", actionId,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid value (%d) of 'action' argument", actionId);
         }
         if (altKeyIdx < 0 || altKeyIdx >= _countof(CControllerAction::keys))
         {
-            SHOW_ERROR(
-                "Invalid value (%d) of 'altKeyIdx' argument in script %s\nScript suspended.", actionId,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid value (%d) of 'altKeyIdx' argument", altKeyIdx);
         }
 
         auto& action = ControlsManager.m_actions[actionId];

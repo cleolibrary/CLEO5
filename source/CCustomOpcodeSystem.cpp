@@ -73,9 +73,8 @@ namespace CLEO
         for (void* func : CleoInstance.GetCallbacks(eCallbackId::ScriptOpcodeProcessBefore))
         {
             typedef OpcodeResult WINAPI callback(CRunningScript*, DWORD);
-            auto result = ((callback*)func)(thread, opcode);
 
-            if (result != OR_NONE)
+            if (auto result = ((callback*)func)(thread, opcode); result != OR_NONE)
             {
                 return OnOpcodeFinished(thread, result); // command processed by callback, done
             }
@@ -100,8 +99,7 @@ namespace CLEO
         }
 
         // Not registered as custom opcode. Call game's original handler
-        auto result = CallNativeOpcode(thread, opcode);
-        if (result != OR_ERROR)
+        if (auto result = CallNativeOpcode(thread, opcode); result != OR_ERROR)
         {
             return OnOpcodeFinished(thread, result);
         }
@@ -638,13 +636,7 @@ namespace CLEO
         ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
         if (scmFunc == nullptr)
         {
-            SHOW_ERROR(
-                "Invalid Cleo Call reference. [%04X] possibly used without "
-                "preceding [0AB1] in script %s\nScript "
-                "suspended.",
-                opcode, cs->GetInfoStr().c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid Cleo Call reference. [%04X] possibly used without preceding [0AB1]", opcode);
         }
 
         // store return arguments
@@ -657,23 +649,13 @@ namespace CLEO
         {
             if (returnArgCount > 32)
             {
-                SHOW_ERROR(
-                    "Opcode [%04X] has too many (%d) args in script %s\nScript "
-                    "suspended.",
-                    opcode, returnArgCount, cs->GetInfoStr().c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Opcode [%04X] has too many (%d) args", opcode, returnArgCount);
             }
 
             auto nVarArg = GetVarArgCount(thread);
             if (returnArgCount > nVarArg)
             {
-                SHOW_ERROR(
-                    "Opcode [%04X] declared %d args, but %d was provided in "
-                    "script %s\nScript suspended.",
-                    opcode, returnArgCount, nVarArg, ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Opcode [%04X] declared %d args, but %d was provided", opcode, returnArgCount, nVarArg);
             }
 
             for (DWORD i = 0; i < returnArgCount; i++)
@@ -700,12 +682,7 @@ namespace CLEO
                 }
                 else
                 {
-                    SHOW_ERROR(
-                        "Invalid argument type '0x%02X' in opcode [%04X] in "
-                        "script %s\nScript suspended.",
-                        paramType, opcode, ScriptInfoStr(thread).c_str()
-                    );
-                    return thread->Suspend();
+                    SUSPEND("Invalid argument type '0x%02X' in opcode [%04X]", paramType, opcode);
                 }
             }
         }
@@ -722,20 +699,15 @@ namespace CLEO
             {
                 if (strictArgCount)
                 {
-                    SHOW_ERROR_COMPAT(
-                        "Opcode [%04X] returned %d params, while function "
-                        "caller expected %d in script "
-                        "%s\nScript suspended.",
-                        opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str()
+                    SUSPEND_COMPAT(
+                        "Opcode [%04X] returned %d params, while function caller expected %d", opcode, returnArgCount,
+                        returnSlotCount
                     );
-                    return cs->Suspend();
                 }
                 else
                 {
                     LOG_WARNING(
-                        thread,
-                        "Opcode [%04X] returned %d params, while function "
-                        "caller expected %d in script %s",
+                        thread, "Opcode [%04X] returned %d params, while function caller expected %d in script %s",
                         opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str()
                     );
                 }
@@ -769,12 +741,10 @@ namespace CLEO
                     lastOpcodePtr = (WORD*)callIP;
                     prevOpcode    = opcode;
                     lastOpcode    = 0x0AB1;
-                    SHOW_ERROR(
-                        "Expected a variable to store the returned value, found %s in opcode "
-                        "[%04X] in script %s\nScript suspended.",
-                        ToStr(paramType), 0x0AB1, ScriptInfoStr(thread).c_str()
+                    SUSPEND(
+                        "Expected a variable to store the returned value, found %s in opcode [%04X]", ToStr(paramType),
+                        0x0AB1
                     );
-                    return thread->Suspend();
                 }
             }
         }
@@ -832,11 +802,7 @@ namespace CLEO
         constexpr auto Stack_Size = _countof(CRunningScript::Stack);
         if (thread->SP >= Stack_Size)
         {
-            SHOW_ERROR(
-                "Call stack overflow in script %s\nMax up to %d nested gosub calls is supported.\nScript suspended.",
-                ScriptInfoStr(thread).c_str(), Stack_Size
-            );
-            return thread->Suspend();
+            SUSPEND("Call stack overflow\nMax up to %d nested gosub calls is supported", Stack_Size);
         }
 
         return CallNativeOpcode(thread, 0x0050); // call game's original
@@ -853,12 +819,7 @@ namespace CLEO
 
         if (thread->SP == 0)
         {
-            SHOW_ERROR(
-                "`return` used without preceding `gosub` call in script "
-                "%s\nScript suspended.",
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("`return` used without preceding `gosub` call", "");
         }
 
         return CallNativeOpcode(thread, 0x0051); // call game's original
@@ -989,11 +950,7 @@ namespace CLEO
         constexpr auto Stack_Size = _countof(CRunningScript::Stack);
         if (thread->SP >= Stack_Size)
         {
-            SHOW_ERROR(
-                "Call stack overflow in script %s\nMax up to %d nested gosub calls is supported.\nScript suspended.",
-                ScriptInfoStr(thread).c_str(), Stack_Size
-            );
-            return thread->Suspend();
+            SUSPEND("Call stack overflow\nMax up to %d nested gosub calls is supported", Stack_Size);
         }
 
         thread->PushStack(thread->GetBytePointer());
@@ -1011,12 +968,7 @@ namespace CLEO
 
         if (thread->SP == 0)
         {
-            SHOW_ERROR(
-                "`return_if_false` used without preceding `gosub` call in "
-                "script %s\nScript suspended.",
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("`return_if_false` used without preceding `gosub` call", "");
         }
 
         thread->SetIp(thread->PopStack());
@@ -1060,8 +1012,7 @@ namespace CLEO
         }
         else
         {
-            SHOW_ERROR("Invalid type of first argument in opcode [0AB1], in script %s", ScriptInfoStr(thread).c_str());
-            return thread->Suspend();
+            SUSPEND("Invalid type of first argument in opcode [0AB1]", "");
         }
 
         ScmFunction* scmFunc = new ScmFunction(thread, callIP);
@@ -1072,12 +1023,7 @@ namespace CLEO
             auto pos = moduleTxt.find('@');
             if (pos == moduleTxt.npos)
             {
-                SHOW_ERROR(
-                    "Invalid module reference '%s' in opcode [0AB1] in script "
-                    "%s \nScript suspended.",
-                    moduleTxt.c_str(), ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Invalid module reference '%s' in opcode [0AB1]", moduleTxt.c_str());
             }
             auto strExport = std::string_view(moduleTxt.data(), pos);
             auto strModule = std::string_view(moduleTxt.data() + pos + 1);
@@ -1092,12 +1038,10 @@ namespace CLEO
             auto scriptRef = CleoInstance.ModuleSystem.GetExport(modulePath, strExport);
             if (!scriptRef.Valid())
             {
-                SHOW_ERROR(
-                    "Not found module '%s' export '%s', requested by opcode "
-                    "[0AB1] in script %s",
-                    modulePath.c_str(), moduleTxt.c_str(), ScriptInfoStr(thread).c_str()
+                SUSPEND(
+                    "Not found module '%s' export '%s', requested by opcode [0AB1]", modulePath.c_str(),
+                    moduleTxt.c_str()
                 );
-                return thread->Suspend();
             }
 
             auto cs = reinterpret_cast<CCustomScript*>(thread);
@@ -1122,13 +1066,7 @@ namespace CLEO
             }
             else
             {
-                SHOW_ERROR(
-                    "Invalid type (%s) of the 'input param count' argument in "
-                    "opcode [0AB1] in script %s \nScript "
-                    "suspended.",
-                    ToKindStr(paramType), ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Invalid type (%s) of the 'input param count' argument in opcode [0AB1]", ToKindStr(paramType));
             }
         }
         if (nParams)
@@ -1136,22 +1074,12 @@ namespace CLEO
             auto nVarArg = GetVarArgCount(thread);
             if (nParams > nVarArg) // if less it means there are return params too
             {
-                SHOW_ERROR(
-                    "Opcode [0AB1] declared %d input args, but provided %d in "
-                    "script %s\nScript suspended.",
-                    nParams, nVarArg, ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Opcode [0AB1] declared %d input args, but provided %d", nParams, nVarArg);
             }
 
             if (nParams > 32)
             {
-                SHOW_ERROR(
-                    "Argument count %d is out of supported range (32) of "
-                    "opcode [0AB1] in script %s",
-                    nParams, ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Argument count %d is out of supported range (32) of opcode [0AB1]", nParams);
             }
         }
         scmFunc->callArgCount = (BYTE)nParams;
@@ -1188,12 +1116,7 @@ namespace CLEO
             }
             else
             {
-                SHOW_ERROR(
-                    "Invalid argument type '0x%02X' in opcode [0AB1] in script "
-                    "%s\nScript suspended.",
-                    paramType, ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Invalid argument type '0x%02X' in opcode [0AB1]", paramType);
             }
         }
 
@@ -1227,31 +1150,21 @@ namespace CLEO
             auto paramType = thread->PeekDataType();
             if (!IsImmInteger(paramType))
             {
-                SHOW_ERROR(
-                    "Invalid type of first argument in opcode [0AB2], in "
-                    "script %s",
-                    ScriptInfoStr(thread).c_str()
-                );
-                return thread->Suspend();
+                SUSPEND("Invalid type of first argument in opcode [0AB2]", "");
             }
             DWORD declaredParamCount = CLEO_GetIntOpcodeParam(thread);
 
             if (returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
             {
-                SHOW_ERROR(
-                    "Opcode [0AB2] declared %d return args, but provided %d in "
-                    "script %s\nScript suspended.",
-                    declaredParamCount, returnParamCount - 1, ScriptInfoStr(thread).c_str()
+                SUSPEND(
+                    "Opcode [0AB2] declared %d return args, but provided %d", declaredParamCount, returnParamCount - 1
                 );
-                return thread->Suspend();
             }
             else if (returnParamCount - 1 > declaredParamCount) // more args than needed, not critical
             {
                 LOG_WARNING(
-                    thread,
-                    "Opcode [0AB2] declared %d return args, but provided %d in "
-                    "script %s",
-                    declaredParamCount, returnParamCount - 1, ScriptInfoStr(thread).c_str()
+                    thread, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount,
+                    returnParamCount - 1, ScriptInfoStr(thread).c_str()
                 );
             }
 
@@ -1272,12 +1185,7 @@ namespace CLEO
         const auto VarCount = _countof(CScriptEngine::CleoVariables);
         if (varIdx < 0 || varIdx >= VarCount)
         {
-            SHOW_ERROR(
-                "Variable index '%d' out of supported range in script "
-                "%s\nScript suspended.",
-                varIdx, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Variable index '%d' out of supported range", varIdx);
         }
 
         CleoInstance.ScriptEngine.CleoVariables[varIdx] = OPCODE_READ_PARAM_ANY32();
@@ -1293,12 +1201,7 @@ namespace CLEO
         const auto VarCount = _countof(CScriptEngine::CleoVariables);
         if (varIdx < 0 || varIdx >= VarCount)
         {
-            SHOW_ERROR(
-                "Variable index '%d' out of supported range in script "
-                "%s\nScript suspended.",
-                varIdx, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Variable index '%d' out of supported range", varIdx);
         }
 
         OPCODE_WRITE_PARAM_ANY32(CleoInstance.ScriptEngine.CleoVariables[varIdx]);
@@ -1322,12 +1225,7 @@ namespace CLEO
         ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
         if (scmFunc == nullptr)
         {
-            SHOW_ERROR(
-                "Quering argument count without preceding CLEO function call "
-                "in script %s\nScript suspended.",
-                cs->GetInfoStr().c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Quering argument count without preceding CLEO function call", "");
         }
 
         OPCODE_WRITE_PARAM_INT(scmFunc->callArgCount);
@@ -1341,12 +1239,7 @@ namespace CLEO
         auto argCount = OPCODE_PEEK_VARARG_COUNT();
         if (argCount < 1)
         {
-            SHOW_ERROR(
-                "Opcode [2002] missing condition result argument in script "
-                "%s\nScript suspended.",
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Opcode [2002] missing condition result argument", "");
         }
 
         auto result = OPCODE_READ_PARAM_BOOL();
@@ -1363,12 +1256,7 @@ namespace CLEO
         auto argCount = OPCODE_PEEK_VARARG_COUNT();
         if (argCount != 0) // argument(s) not supported yet
         {
-            SHOW_ERROR(
-                "Too many arguments of opcode [2003] in script %s\nScript "
-                "suspended.",
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Too many arguments in opcode [2003]", "");
         }
 
         OPCODE_CONDITION_RESULT(false);

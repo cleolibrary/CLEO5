@@ -333,10 +333,7 @@ class Math
 
         if (size <= 0 || size > 4)
         {
-            SHOW_ERROR(
-                "Invalid '%d' size argument in script %s\nScript suspended.", size, ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' size argument", size);
         }
 
         size_t offset = size * 8 - 1; // bit offset of top most bit in source value
@@ -358,11 +355,7 @@ class Math
 
         if (bitIndex < 0 || bitIndex > 31)
         {
-            SHOW_ERROR(
-                "Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' bit index argument", bitIndex);
         }
 
         bool result = (value >> bitIndex) & 1;
@@ -379,11 +372,7 @@ class Math
 
         if (bitIndex < 0 || bitIndex > 31)
         {
-            SHOW_ERROR(
-                "Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' bit index argument", bitIndex);
         }
 
         *value |= 1 << bitIndex;
@@ -399,11 +388,7 @@ class Math
 
         if (bitIndex < 0 || bitIndex > 31)
         {
-            SHOW_ERROR(
-                "Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' bit index argument", bitIndex);
         }
 
         *value &= ~(1 << bitIndex);
@@ -420,11 +405,7 @@ class Math
 
         if (bitIndex < 0 || bitIndex > 31)
         {
-            SHOW_ERROR(
-                "Invalid '%d' bit index argument in script %s\nScript suspended.", bitIndex,
-                ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Invalid '%d' bit index argument", bitIndex);
         }
 
         DWORD flag = 1 << bitIndex;
@@ -460,10 +441,7 @@ class Math
 
         if (valueCount < 2) // value + result
         {
-            SHOW_ERROR(
-                "Insufficient number of arguments in script %s\nScript suspended.", CLEO::ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Insufficient number of arguments", "");
         }
         valueCount -= 1; // output param
 
@@ -488,10 +466,7 @@ class Math
 
         if (valueCount < 2) // value + result
         {
-            SHOW_ERROR(
-                "Insufficient number of arguments in script %s\nScript suspended.", CLEO::ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Insufficient number of arguments", "");
         }
         valueCount -= 1; // output param
 
@@ -516,10 +491,7 @@ class Math
 
         if (valueCount < 2) // value + result
         {
-            SHOW_ERROR(
-                "Insufficient number of arguments in script %s\nScript suspended.", CLEO::ScriptInfoStr(thread).c_str()
-            );
-            return thread->Suspend();
+            SUSPEND("Insufficient number of arguments", "");
         }
         valueCount -= 1; // output param
 
