@@ -6,6 +6,7 @@
 #include <CText.h>
 #include <CTimer.h>
 #include <map>
+#include <RenderWare.h>
 
 using namespace CLEO;
 
@@ -53,6 +54,9 @@ class Input
     // refresh keys info
     void CheckKeyboard()
     {
+        // skip if game window is not active
+        if (GetForegroundWindow() != RsGlobal.ps->window) return;
+
         std::swap(keyStatesCurr, keyStatesPrev);
         GetKeyboardState(keyStatesCurr->data());
     }
