@@ -99,7 +99,7 @@ namespace CLEO
     static std::string StringPrintfV(const char* format, va_list args)
     {
         auto len = std::vsnprintf(nullptr, 0, format, args);
-       
+
         if (len <= 0) return {}; // empty or encoding error
 
         std::string result;
@@ -1083,7 +1083,7 @@ namespace CLEO
     char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName));        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
-        SUSPEND("Invalid formatted string");                                                                          \
+        SUSPEND("Invalid formatted string");                                                                           \
     }
 
 #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName)                                                                \
@@ -1091,7 +1091,7 @@ namespace CLEO
     char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
-        SUSPEND("Invalid formatted string");                                                                          \
+        SUSPEND("Invalid formatted string");                                                                           \
     }
 
 #define OPCODE_READ_PARAM_FILEPATH(_varName)                                                                           \
