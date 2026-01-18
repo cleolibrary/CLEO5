@@ -671,7 +671,7 @@ class MemoryOperations
         auto resultType = thread->PeekDataType();
         if (!IsVariable(resultType) && !IsVarString(resultType))
         {
-            SUSPEND("Input argument expected to be a variable, got constant", "");
+            SUSPEND("Input argument expected to be a variable, got constant");
         }
 
         auto ptr = CLEO_GetPointerToScriptVariable(thread);

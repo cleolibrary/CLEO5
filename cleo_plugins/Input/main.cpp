@@ -54,8 +54,13 @@ class Input
     // refresh keys info
     void CheckKeyboard()
     {
-        // skip if game window is not active
-        if (GetForegroundWindow() != RsGlobal.ps->window) return;
+        // reset key states if game window is not active
+        if (GetForegroundWindow() != RsGlobal.ps->window)
+        {
+            keyStatesCurr->fill(0);
+            keyStatesPrev->fill(0);
+            return;
+        }
 
         std::swap(keyStatesCurr, keyStatesPrev);
         GetKeyboardState(keyStatesCurr->data());
