@@ -31,7 +31,7 @@
       <Filter>cleo</Filter>
     </ClCompile>
     <ClCompile Include="ScriptLog.cpp" />
-    <ClCompile Include="..\..\third-party\simdjson\simdjson.cpp">
+    <ClCompile Include="..\..\third-party\simdjson\singleheader\simdjson.cpp">
       <Filter>cleo</Filter>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTheScripts.cpp">
