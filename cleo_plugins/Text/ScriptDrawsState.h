@@ -1,9 +1,9 @@
 #pragma once
+#include "crc32.h"
+#include <CLEO_Utils.h>
 #include <CTheScripts.h>
 #include <CTxdStore.h>
-#include <CLEO_Utils.h>
 #include <array>
-#include "crc32.h"
 
 struct ScriptDrawsState
 {
