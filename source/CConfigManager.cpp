@@ -33,8 +33,17 @@ namespace CLEO
         if (value.empty()) return defaultValue;
 
         char* end;
-        const auto base   = (value[0] == '0' && value[1] == 'x') ? 16 : 10;
-        const auto result = strtol(value.c_str(), &end, base);
+        int result;
+
+        if (value[0] == '0' && value[1] == 'x')
+        {
+            result = (int)strtoul(value.c_str(), &end, 16);
+        }
+        else
+        {
+            result = strtol(value.c_str(), &end, 10);
+        }
+
         return (end == value.c_str()) ? defaultValue : result;
     }
 
