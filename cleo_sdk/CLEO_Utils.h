@@ -566,8 +566,7 @@ namespace CLEO
         auto msg = StringPrintfV(format, args);
         va_end(args);
 
-        msg += " in script " + scriptInfo + "\nScript suspended.";
-        ShowError("%s", msg.c_str());
+        ShowError("%s in script %s\nScript suspended.", msg.c_str(), scriptInfo.c_str());
     }
 
     static void ShowErrorSuspendCompat(const std::string& scriptInfo, const char* format, ...)
@@ -577,9 +576,11 @@ namespace CLEO
         auto msg = StringPrintfV(format, args);
         va_end(args);
 
-        msg += " in script " + scriptInfo + "\nScript suspended.";
-        msg += "\n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'";
-        ShowError("%s", msg.c_str());
+        ShowError(
+            "%s in script %s\nScript suspended."
+            "\n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'",
+            msg.c_str(), scriptInfo.c_str()
+        );
     }
 
     static bool PluginCheckCleoVersion()
