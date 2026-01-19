@@ -30,6 +30,7 @@ namespace CLEO
         eCLEO_Version NativeScriptsVersion = eCLEO_Version::CLEO_VER_CUR; // allows using legacy modes
         std::string MainScriptFileDir;
         std::string MainScriptFileName;
+        std::string ScriptImgFileName;
         std::string MainScriptCurWorkDir;
 
         static SCRIPT_VAR CleoVariables[0x400];
