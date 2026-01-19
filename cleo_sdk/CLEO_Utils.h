@@ -694,13 +694,6 @@ namespace CLEO
         CLEO::ShowError(a, __VA_ARGS__);                                                                               \
     }
 
-#define SHOW_ERROR_COMPAT(a, ...)                                                                                      \
-    {                                                                                                                  \
-        CLEO::ShowError(                                                                                               \
-            a "\n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'", __VA_ARGS__       \
-        );                                                                                                             \
-    }
-
 #define SUSPEND(...)                                                                                                   \
     {                                                                                                                  \
         CLEO::ShowErrorSuspend(ScriptInfoStr(thread), __VA_ARGS__);                                                    \

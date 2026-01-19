@@ -40,12 +40,10 @@ namespace CLEO
         // check if last opcode ended correctly
         if (thread->bIsProcessing && !IsLegacyScript(thread))
         {
-            SHOW_ERROR_COMPAT(
-                "Unexpected opcode [%04X]!\n"
-                "Called in script %s\n"
-                "Some runtimes, e.g. SAMP, silently ignore script errors. Check the correctness of this script.",
-                opcode, ScriptInfoStr(thread).c_str()
-            )
+            ShowErrorSuspendCompat(
+                ScriptInfoStr(thread).c_str(),
+                "Unexpected opcode [%04X], likely caused by an error that was silently ignored (e.g. in SAMP),", opcode
+            );
             return OnOpcodeFinished(thread, thread->Suspend());
         }
 
@@ -59,11 +57,9 @@ namespace CLEO
             if ((BYTE*)lastOpcodePtr == endPos ||
                 (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
             {
-                SHOW_ERROR_COMPAT(
-                    "Code execution past script end in script %s\n"
-                    "This usually happens when [004E] command is missing.\n"
-                    "Script suspended.",
-                    ScriptInfoStr(thread).c_str()
+                ShowErrorSuspendCompat(
+                    ScriptInfoStr(thread).c_str(), "Script execution continued beyond its end, likely due to a missing "
+                                                   "TERMINATE_THIS_SCRIPT (004E) instruction"
                 );
                 return OnOpcodeFinished(thread, thread->Suspend());
             }
