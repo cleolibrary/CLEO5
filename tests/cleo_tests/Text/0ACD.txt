@@ -1,0 +1,93 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0ACD'
+test("0ACD (print_string_now)", tests)
+terminate_this_custom_script
+
+
+// get pointer to current subtitle text 
+function getCurrSubtitleText(): int
+    int txt = read_memory {address} 0x00C1A7F0 {size} 4 {vp} false // GTA SA 1.0: CMessages::BriefMessages[0].text
+    return txt
+end
+
+
+function tests
+    it("should print short string variable", test1)
+    it("should print long string variable", test2)
+    it("should print string pointer", test3)
+    it("should print very long string pointer", test4)
+    return
+
+
+    function test1
+        shortString a = 'From ACD' // 8 characters
+        shortString b = '12345678'
+        
+        clear_prints
+        print_string_now {text} a {time} 100
+        a = '--VOID--'
+        wait {time} 0
+        
+        int str = getCurrSubtitleText()
+        assert_eqs(str, "From ACD")
+    end
+    
+    
+    function test2
+        longString a = "Message from ACD" // 16 characters
+        shortString b = '12345678'
+        
+        clear_prints
+        print_string_now {text} a {time} 100
+        a = "--VOID--"
+        wait {time} 0
+        
+        int str = getCurrSubtitleText()
+        assert_eqs(str, "Message from ACD")
+    end
+    
+    
+    function test3
+        int msg = allocate_memory {size} 64
+        string_format msg = "Hello from 0ACD!"
+        
+        clear_prints
+        print_string_now {text} msg {time} 100
+        string_format msg = "--VOID--"
+        wait {time} 0
+        
+        free_memory {address} msg
+        msg = 0
+        
+        int str = getCurrSubtitleText()
+        assert_eqs(str, "Hello from 0ACD!")
+    end
+    
+    
+    function test4
+        int msg = allocate_memory {size} 513
+        write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
+        
+        clear_prints
+        print_string_now {text} msg {time} 100
+        string_format msg = "--VOID--"
+        wait {time} 0
+        
+        free_memory {address} msg
+        msg = 0
+        
+        int expected = allocate_memory {size} 400 // same as game's internal limit
+        write_memory {address} expected {size} 399 {value} 0x41 {vp} false // fill with A
+        
+        int str = getCurrSubtitleText()
+        
+        // assert_eqs(str, expected) // assert error message will not be able to display strings that long
+        is_text_equal {text} str {another} expected {ignoreCase} false
+        assert_result_true()
+        
+        free_memory {address} expected
+        expected = 0
+    end
+end
