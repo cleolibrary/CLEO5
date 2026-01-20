@@ -1,3 +1,7 @@
+## 5.3.0
+- fixed too long input text crashing game in commands **print_big_string**, **print_string**, **print_string_now**, etc.
+- text length limit increased from 255 to 399 in commands **([print_string](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACC))** and **([print_string_now](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACD))**
+
 ## 5.2.0
 - added script execution log (`cleo\_cleo_script.log`). By default, it's disabled. Configurable via `cleo_plugins\DebugUtils.ini`.
 - added call stack overflow error check to **gosub** and **gosub_if_false** commands
