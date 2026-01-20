@@ -22,8 +22,8 @@ class Text
     static ScriptDrawing scriptDrawing;
     static CTextManager textManager;
 
-    static char msgBuffLow[MAX_STR_LEN + 1];
-    static char msgBuffHigh[MAX_STR_LEN + 1];
+    static char msgBuffLow[400]; // same as in CMessages' text processing functions
+    static char msgBuffHigh[400];
     static const size_t MsgBigStyleCount = 7;
     static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
 
@@ -672,8 +672,8 @@ class Text
 
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
-char Text::msgBuffLow[MAX_STR_LEN + 1];
-char Text::msgBuffHigh[MAX_STR_LEN + 1];
+char Text::msgBuffLow[400];
+char Text::msgBuffHigh[400];
 char Text::msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
 WORD Text::genericLabelCounter;
 
