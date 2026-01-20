@@ -329,7 +329,7 @@ namespace CLEO
             MainScriptFileDir  = Filepath_User + StringPrintf("\\MPACK\\MPACK%d", CGame::bMissionPackGame);
             MainScriptFileName = "scr.scm";
         }
-
+        ScriptImgFileName      = "script.img";
         NativeScriptsDebugMode = CConfigManager::ReadInt("General", "DebugMode", 0) != 0;
 
         // global native scripts legacy mode

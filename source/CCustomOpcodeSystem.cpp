@@ -40,12 +40,10 @@ namespace CLEO
         // check if last opcode ended correctly
         if (thread->bIsProcessing && !IsLegacyScript(thread))
         {
-            SHOW_ERROR_COMPAT(
-                "Unexpected opcode [%04X]!\n"
-                "Called in script %s\n"
-                "Some runtimes, e.g. SAMP, silently ignore script errors. Check the correctness of this script.",
-                opcode, ScriptInfoStr(thread).c_str()
-            )
+            ShowErrorSuspendCompat(
+                ScriptInfoStr(thread).c_str(),
+                "Unexpected opcode [%04X], likely caused by an error that was silently ignored (e.g. in SAMP),", opcode
+            );
             return OnOpcodeFinished(thread, thread->Suspend());
         }
 
@@ -59,11 +57,9 @@ namespace CLEO
             if ((BYTE*)lastOpcodePtr == endPos ||
                 (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
             {
-                SHOW_ERROR_COMPAT(
-                    "Code execution past script end in script %s\n"
-                    "This usually happens when [004E] command is missing.\n"
-                    "Script suspended.",
-                    ScriptInfoStr(thread).c_str()
+                ShowErrorSuspendCompat(
+                    ScriptInfoStr(thread).c_str(), "Script execution continued beyond its end, likely due to a missing "
+                                                   "TERMINATE_THIS_SCRIPT (004E) instruction"
                 );
                 return OnOpcodeFinished(thread, thread->Suspend());
             }
@@ -819,7 +815,7 @@ namespace CLEO
 
         if (thread->SP == 0)
         {
-            SUSPEND("`return` used without preceding `gosub` call", "");
+            SUSPEND("`return` used without preceding `gosub` call");
         }
 
         return CallNativeOpcode(thread, 0x0051); // call game's original
@@ -968,7 +964,7 @@ namespace CLEO
 
         if (thread->SP == 0)
         {
-            SUSPEND("`return_if_false` used without preceding `gosub` call", "");
+            SUSPEND("`return_if_false` used without preceding `gosub` call");
         }
 
         thread->SetIp(thread->PopStack());
@@ -1012,7 +1008,7 @@ namespace CLEO
         }
         else
         {
-            SUSPEND("Invalid type of first argument in opcode [0AB1]", "");
+            SUSPEND("Invalid type of first argument in opcode [0AB1]");
         }
 
         ScmFunction* scmFunc = new ScmFunction(thread, callIP);
@@ -1150,7 +1146,7 @@ namespace CLEO
             auto paramType = thread->PeekDataType();
             if (!IsImmInteger(paramType))
             {
-                SUSPEND("Invalid type of first argument in opcode [0AB2]", "");
+                SUSPEND("Invalid type of first argument in opcode [0AB2]");
             }
             DWORD declaredParamCount = CLEO_GetIntOpcodeParam(thread);
 
@@ -1225,7 +1221,7 @@ namespace CLEO
         ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
         if (scmFunc == nullptr)
         {
-            SUSPEND("Quering argument count without preceding CLEO function call", "");
+            SUSPEND("Quering argument count without preceding CLEO function call");
         }
 
         OPCODE_WRITE_PARAM_INT(scmFunc->callArgCount);
@@ -1239,7 +1235,7 @@ namespace CLEO
         auto argCount = OPCODE_PEEK_VARARG_COUNT();
         if (argCount < 1)
         {
-            SUSPEND("Opcode [2002] missing condition result argument", "");
+            SUSPEND("Opcode [2002] missing condition result argument");
         }
 
         auto result = OPCODE_READ_PARAM_BOOL();
@@ -1256,7 +1252,7 @@ namespace CLEO
         auto argCount = OPCODE_PEEK_VARARG_COUNT();
         if (argCount != 0) // argument(s) not supported yet
         {
-            SUSPEND("Too many arguments in opcode [2003]", "");
+            SUSPEND("Too many arguments in opcode [2003]");
         }
 
         OPCODE_CONDITION_RESULT(false);

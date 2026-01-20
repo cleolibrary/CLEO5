@@ -96,7 +96,7 @@ namespace CLEO
             else
                 msg = StringPrintf("#%d", curr);
 
-            strncpy_s(buf, bufSize, msg.c_str(), bufSize);
+            strncpy_s(buf, bufSize, msg.c_str(), bufSize - 1);
         }
 
         DWORD WINAPI CLEO_GetScriptBaseRelativeOffset(const CRunningScript* script, const BYTE* codePos)

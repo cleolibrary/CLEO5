@@ -1,8 +1,8 @@
 #pragma once
+#include "crc32.h"
+#include <CLEO_Utils.h>
 #include <CTheScripts.h>
 #include <CTxdStore.h>
-#include <CLEO_Utils.h>
-#include <CKeyGen.h>
 #include <array>
 
 struct ScriptDrawsState
@@ -22,7 +22,7 @@ struct ScriptDrawsState
 
     ScriptDrawsState()
     {
-        scriptTxd.m_hash          = CKeyGen::GetUppercaseKey("script");
+        scriptTxd.m_hash          = crc32FromUpcaseString("script");
         scriptTxd.m_wParentIndex  = -1;
         scriptTxd.m_wRefsCount    = 0;
         scriptTxd.m_pRwDictionary = nullptr;

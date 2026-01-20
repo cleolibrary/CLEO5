@@ -227,15 +227,28 @@ void CCustomScript::SetScriptFileDir(const char* directory)
 
 const char* CCustomScript::GetScriptFileName() const
 {
-    return bIsCustom ? m_scriptFileName.c_str() : CleoInstance.ScriptEngine.MainScriptFileName.c_str();
+    if (bIsCustom) return m_scriptFileName.c_str();
+    return bIsExternal ? CleoInstance.ScriptEngine.ScriptImgFileName.c_str()
+                       : CleoInstance.ScriptEngine.MainScriptFileName.c_str();
 }
 
 void CCustomScript::SetScriptFileName(const char* filename)
 {
-    if (!bIsCustom)
-        CleoInstance.ScriptEngine.MainScriptFileName = filename;
-    else
+    if (bIsCustom)
+    {
         m_scriptFileName = filename;
+    }
+    else
+    {
+        if (bIsExternal)
+        {
+            CleoInstance.ScriptEngine.ScriptImgFileName = filename;
+        }
+        else
+        {
+            CleoInstance.ScriptEngine.MainScriptFileName = filename;
+        }
+    }
 }
 
 std::string CCustomScript::GetScriptFileFullPath() const
