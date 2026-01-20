@@ -206,7 +206,7 @@ class Text
         auto style = OPCODE_READ_PARAM_INT();
 
         auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
+        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]) - 1);
         CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
         return OR_CONTINUE;
     }
@@ -217,7 +217,7 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow));
+        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow) - 1);
         CMessages::AddMessage(msgBuffLow, time, false, false);
         return OR_CONTINUE;
     }
@@ -228,7 +228,7 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh));
+        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh) - 1);
         CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
         return OR_CONTINUE;
     }
@@ -251,7 +251,7 @@ class Text
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
         auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]));
+        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]) - 1);
         CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
         return OR_CONTINUE;
     }
@@ -263,7 +263,7 @@ class Text
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow));
+        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow) - 1);
         CMessages::AddMessage(msgBuffLow, time, false, false);
         return OR_CONTINUE;
     }
@@ -275,7 +275,7 @@ class Text
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh));
+        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh) - 1);
         CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
         return OR_CONTINUE;
     }
