@@ -96,42 +96,27 @@ namespace CLEO
         return (CLEO_GetConfigInt("StrictValidation", 0) == 1) && !IsLegacyScript(script);
     }
 
-    static std::string StringPrintf(const char* format, ...)
+    static std::string StringPrintfV(const char* format, va_list args)
     {
-        va_list args;
-
-        va_start(args, format);
         auto len = std::vsnprintf(nullptr, 0, format, args);
-        va_end(args);
 
         if (len <= 0) return {}; // empty or encoding error
 
         std::string result;
         result.resize(len);
 
-        va_start(args, format);
         std::vsnprintf(result.data(), result.length() + 1, format, args);
-        va_end(args);
 
         return std::move(result);
     }
 
-    static void StringAppendPrintf(std::string& dest, const char* format, ...)
+    static std::string StringPrintf(const char* format, ...)
     {
         va_list args;
-
         va_start(args, format);
-        auto len = std::vsnprintf(nullptr, 0, format, args);
+        auto result = StringPrintfV(format, args);
         va_end(args);
-
-        if (len <= 0) return; // empty or encoding error
-
-        size_t oriSize = dest.size();
-        dest.resize(dest.size() + len);
-
-        va_start(args, format);
-        std::vsnprintf(dest.data() + oriSize, len + 1, format, args);
-        va_end(args);
+        return result;
     }
 
     static void StringAppendNum(std::string& dest, int number, int padLen = 0)
@@ -574,6 +559,30 @@ namespace CLEO
         }
     }
 
+    static void ShowErrorSuspend(const std::string& scriptInfo, const char* format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        auto msg = StringPrintfV(format, args);
+        va_end(args);
+
+        ShowError("%s in script %s\nScript suspended.", msg.c_str(), scriptInfo.c_str());
+    }
+
+    static void ShowErrorSuspendCompat(const std::string& scriptInfo, const char* format, ...)
+    {
+        va_list args;
+        va_start(args, format);
+        auto msg = StringPrintfV(format, args);
+        va_end(args);
+
+        ShowError(
+            "%s in script %s\nScript suspended."
+            "\n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'",
+            msg.c_str(), scriptInfo.c_str()
+        );
+    }
+
     static bool PluginCheckCleoVersion()
     {
         auto ver = CLEO_GetVersion();
@@ -685,24 +694,17 @@ namespace CLEO
         CLEO::ShowError(a, __VA_ARGS__);                                                                               \
     }
 
-#define SHOW_ERROR_COMPAT(a, ...)                                                                                      \
+#define SUSPEND(...)                                                                                                   \
     {                                                                                                                  \
-        CLEO::ShowError(                                                                                               \
-            a "\n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'", __VA_ARGS__       \
-        );                                                                                                             \
-    }
-
-#define SUSPEND(a, ...)                                                                                                \
-    {                                                                                                                  \
-        SHOW_ERROR(a " in script %s\nScript suspended.", __VA_ARGS__, ScriptInfoStr(thread).c_str());                  \
+        CLEO::ShowErrorSuspend(ScriptInfoStr(thread), __VA_ARGS__);                                                    \
         return thread->Suspend();                                                                                      \
     }
 
-#define SUSPEND_COMPAT(a, ...)                                                                                         \
+#define SUSPEND_COMPAT(...)                                                                                            \
     {                                                                                                                  \
         if (IsStrictValidation(thread))                                                                                \
         {                                                                                                              \
-            SHOW_ERROR_COMPAT(a " in script %s\nScript suspended.", __VA_ARGS__, ScriptInfoStr(thread).c_str());       \
+            CLEO::ShowErrorSuspendCompat(ScriptInfoStr(thread), __VA_ARGS__);                                          \
             return thread->Suspend();                                                                                  \
         }                                                                                                              \
     }
@@ -1075,7 +1077,7 @@ namespace CLEO
     char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName));        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
-        SUSPEND("Invalid formatted string", "");                                                                       \
+        SUSPEND("Invalid formatted string");                                                                           \
     }
 
 #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName)                                                                \
@@ -1083,7 +1085,7 @@ namespace CLEO
     char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                        \
     if (_varName##Ok == nullptr)                                                                                       \
     {                                                                                                                  \
-        SUSPEND("Invalid formatted string", "");                                                                       \
+        SUSPEND("Invalid formatted string");                                                                           \
     }
 
 #define OPCODE_READ_PARAM_FILEPATH(_varName)                                                                           \
