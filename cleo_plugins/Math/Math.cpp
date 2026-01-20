@@ -441,7 +441,7 @@ class Math
 
         if (valueCount < 2) // value + result
         {
-            SUSPEND("Insufficient number of arguments", "");
+            SUSPEND("Insufficient number of arguments");
         }
         valueCount -= 1; // output param
 
@@ -466,7 +466,7 @@ class Math
 
         if (valueCount < 2) // value + result
         {
-            SUSPEND("Insufficient number of arguments", "");
+            SUSPEND("Insufficient number of arguments");
         }
         valueCount -= 1; // output param
 
@@ -491,7 +491,7 @@ class Math
 
         if (valueCount < 2) // value + result
         {
-            SUSPEND("Insufficient number of arguments", "");
+            SUSPEND("Insufficient number of arguments");
         }
         valueCount -= 1; // output param
 
