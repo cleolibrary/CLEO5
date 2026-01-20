@@ -7,11 +7,11 @@ on:
 
 jobs:
   Release:
-    runs-on: windows-2022
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: "recursive"
 
@@ -171,7 +171,7 @@ jobs:
           exclusions: "*.pdb *.exp"
 
       - name: Create release
-        uses: ncipollo/release-action@main
+        uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ steps.read_version.outputs.version }}

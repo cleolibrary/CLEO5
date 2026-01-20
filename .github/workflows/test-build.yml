@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: "recursive"
 
@@ -33,10 +33,10 @@ jobs:
           clangFormatVersion: 20
 
   Test_Build:
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: "recursive"
 
@@ -109,7 +109,7 @@ jobs:
 
       - name: Upload Result
         id: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           compression-level: 9
           include-hidden-files: true
