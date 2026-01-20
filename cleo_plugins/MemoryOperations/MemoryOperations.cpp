@@ -481,7 +481,7 @@ class MemoryOperations
 
         // resolve absolute path and try load
         char buff[MAX_PATH];
-        strncpy_s(buff, path, sizeof(buff));
+        strncpy_s(buff, path, sizeof(buff) - 1);
         CLEO_ResolvePath(thread, buff, sizeof(buff));
         ptr = LoadLibrary(buff);
 
