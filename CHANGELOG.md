@@ -1,6 +1,17 @@
 ## 5.3.0
-- fixed too long input text crashing game in commands **print_big_string**, **print_string**, **print_string_now**, etc.
-- text length limit increased from 255 to 399 in commands **([print_string](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACC))** and **([print_string_now](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACD))**
+
+- moved CLEO core and plugin settings into a shared configuration file (`CLEO\.cleo_config.ini`)
+- improved compatibility with ModLoader
+- refactored error handling and relaxed checks for non‑critical errors
+- keyboard input is now ignored when the game window is not focused
+- increased text length limit from **255** to **399** for:
+  - `print_string` (0ACC)
+  - `print_string_now` (0ACD)
+- fixed a memory leak caused by creating too many script TXDs
+- fixed multiple issues with string‑formatting opcodes
+- fixed a crash in print string commands when processing very long input
+- fixed `GET_AUDIO_STREAM_DURATION` always returning `0`
+- fixed an incompatibility with the result of `SAMP_RAKNET_HOOK_RETURN`
 
 ## 5.2.0
 - added script execution log (`cleo\_cleo_script.log`). By default, it's disabled. Configurable via `cleo_plugins\DebugUtils.ini`.
