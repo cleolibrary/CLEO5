@@ -10,7 +10,7 @@ assignees: ''
 **Describe the bug**
 <!-- A clear and concise description of what the bug is: -->
 
-**Step To Reproduce**
+**Steps To Reproduce**
 <!-- Steps to reproduce the issue: -->
 
 **Logs**
@@ -25,3 +25,4 @@ If possible, attach `cleo_script.log` or `scrlog.log` (requires SCRLog plugin). 
 
 **Additional context**
 <!-- Does the script work with other versions of CLEO? -->
+<!-- Any additional information -->
