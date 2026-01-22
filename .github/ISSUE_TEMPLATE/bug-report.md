@@ -11,7 +11,7 @@ assignees: ''
 <!-- A clear and concise description of what the bug is: -->
 
 **Step To Reproduce**
-<!-- Steps to reproduce the issue: ->
+<!-- Steps to reproduce the issue: -->
 
 **Logs**
 <!-- Attach cleo.log (can be found the game's root directory). 
