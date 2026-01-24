@@ -5,13 +5,13 @@
 - refactored error handling and relaxed checks for non‑critical errors
 - keyboard input is now ignored when the game window is not focused
 - increased text length limit from **255** to **399** for:
-  - `print_string` (0ACC)
-  - `print_string_now` (0ACD)
+  - [PRINT_STRING](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACC) 
+  - [PRINT_STRING_NOW](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACD)
 - fixed a memory leak caused by creating too many script TXDs
 - fixed multiple issues with string‑formatting opcodes
 - fixed a crash in print string commands when processing very long input
-- fixed `GET_AUDIO_STREAM_DURATION` always returning `0`
-- fixed an incompatibility with the result of `SAMP_RAKNET_HOOK_RETURN`
+- fixed [GET_AUDIO_STREAM_DURATION](https://library.sannybuilder.com/#/sa/script/extensions/audio/2501) always returning `0`
+- fixed an incompatibility with the result of [SAMP_RAKNET_HOOK_RETURN](https://library.sannybuilder.com/#/sa/script/extensions/SAMPFUNCS/0BE0)
 
 ## 5.2.0
 - added script execution log (`cleo\_cleo_script.log`). By default, it's disabled. Configurable via `cleo_plugins\DebugUtils.ini`.
