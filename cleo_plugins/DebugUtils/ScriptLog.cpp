@@ -29,7 +29,7 @@ ScriptLog::ScriptLog()
     }
 
     m_logFilePath = CLEO_GetGameDirectory();
-    m_logFilePath += "\\cleo\\_cleo_script.log";
+    m_logFilePath += "\\cleo_script.log";
     LogFileDelete();
 
     CLEO_RegisterCallback(eCallbackId::GameBegin, callbackGameBegin);
