@@ -1,6 +1,6 @@
 /*
 	BASS 2.4 C/C++ header file
-	Copyright (c) 1999-2024 Un4seen Developments Ltd.
+	Copyright (c) 1999-2025 Un4seen Developments Ltd.
 
 	See the BASS.CHM file for more detailed documentation
 */
@@ -76,6 +76,7 @@ typedef DWORD HPLUGIN;		// plugin handle
 #define BASS_ERROR_START	9	// BASS_Start has not been successfully called
 #define BASS_ERROR_SSL		10	// SSL/HTTPS support isn't available
 #define BASS_ERROR_REINIT	11	// device needs to be reinitialized
+#define BASS_ERROR_TRACK	13	// invalid track number
 #define BASS_ERROR_ALREADY	14	// already initialized/paused/whatever
 #define BASS_ERROR_NOTAUDIO	17	// file does not contain audio
 #define BASS_ERROR_NOCHAN	18	// can't get a free channel
@@ -131,7 +132,6 @@ typedef DWORD HPLUGIN;		// plugin handle
 #define BASS_CONFIG_UPDATETHREADS	24
 #define BASS_CONFIG_DEV_BUFFER		27
 #define BASS_CONFIG_REC_LOOPBACK	28
-#define BASS_CONFIG_VISTA_TRUEPOS	30
 #define BASS_CONFIG_IOS_SESSION		34
 #define BASS_CONFIG_IOS_MIXAUDIO	34
 #define BASS_CONFIG_DEV_DEFAULT		36
@@ -168,10 +168,12 @@ typedef DWORD HPLUGIN;		// plugin handle
 #define BASS_CONFIG_NORAMP			74
 #define BASS_CONFIG_NOSOUND_MAXDELAY	76
 #define BASS_CONFIG_STACKALLOC		79
+#define BASS_CONFIG_DOWNMIX			80
 
 // BASS_SetConfigPtr options
 #define BASS_CONFIG_NET_AGENT		16
 #define BASS_CONFIG_NET_PROXY		17
+#define BASS_CONFIG_DEV_NOTIFY		33
 #define BASS_CONFIG_IOS_NOTIFY		46
 #define BASS_CONFIG_ANDROID_JAVAVM	63
 #define BASS_CONFIG_LIBSSL			64
@@ -196,7 +198,6 @@ typedef DWORD HPLUGIN;		// plugin handle
 #define BASS_DEVICE_MONO		2		// mono
 #define BASS_DEVICE_3D			4		// unused
 #define BASS_DEVICE_16BITS		8		// limit output to 16-bit
-#define BASS_DEVICE_NODOWNMIX	0x10	// don't downmix multi-channel
 #define BASS_DEVICE_REINIT		0x80	// reinitialize
 #define BASS_DEVICE_LATENCY		0x100	// unused
 #define BASS_DEVICE_CPSPEAKERS	0x400	// unused
@@ -251,15 +252,10 @@ typedef struct {
 // BASS_GetDeviceInfo flags
 #define BASS_DEVICES_AIRPLAY	0x1000000
 
+// Output device info structure
 typedef struct {
-	DWORD flags;	// device capabilities (DSCAPS_xxx flags)
-	DWORD hwsize;	// unused
-	DWORD hwfree;	// unused
-	DWORD freesam;	// unused
-	DWORD free3d;	// unused
-	DWORD minrate;	// unused
-	DWORD maxrate;	// unused
-	BOOL eax;		// unused
+	DWORD flags;	// DirectSound capabilities (DSCAPS_xxx flags)
+	DWORD reserved[7];
 	DWORD minbuf;	// recommended minimum buffer length in ms
 	DWORD dsver;	// DirectSound version
 	DWORD latency;	// average delay (in ms) before start of playback
@@ -276,11 +272,11 @@ typedef struct {
 
 // Recording device info structure
 typedef struct {
-	DWORD flags;	// device capabilities (DSCCAPS_xxx flags)
-	DWORD formats;	// supported standard formats (WAVE_FORMAT_xxx flags)
+	DWORD flags;	// DirectSound capabilities (DSCCAPS_xxx flags)
+	DWORD formats;	// number of channels (in high 8 bits)
 	DWORD inputs;	// number of inputs
 	BOOL singlein;	// TRUE = only 1 input can be set at a time
-	DWORD freq;		// current input rate
+	DWORD freq;		// current sample rate
 } BASS_RECORDINFO;
 
 // BASS_RECORDINFO flags (from DSOUND.H)
@@ -310,8 +306,7 @@ typedef struct {
 	DWORD iangle;	// angle of inside projection cone
 	DWORD oangle;	// angle of outside projection cone
 	float outvol;	// delta-volume outside the projection cone
-	DWORD vam;		// unused
-	DWORD priority;	// unused
+	DWORD reserved[2];
 } BASS_SAMPLE;
 
 #define BASS_SAMPLE_8BITS		1	// 8 bit
@@ -385,13 +380,6 @@ typedef struct {
 
 #define BASS_RECORD_OPENSLES	0x1000	// use OpenSLES
 #define BASS_RECORD_PAUSE		0x8000	// start recording paused
-
-// DX7 voice allocation & management flags
-#define BASS_VAM_HARDWARE		1
-#define BASS_VAM_SOFTWARE		2
-#define BASS_VAM_TERM_TIME		4
-#define BASS_VAM_TERM_DIST		8
-#define BASS_VAM_TERM_PRIO		0x10
 
 // Channel info structure
 typedef struct {
@@ -472,8 +460,6 @@ typedef struct BASS_3DVECTOR {
 // software 3D mixing algorithms (used with BASS_CONFIG_3DALGORITHM)
 #define BASS_3DALG_DEFAULT	0
 #define BASS_3DALG_OFF		1
-#define BASS_3DALG_FULL		2
-#define BASS_3DALG_LIGHT	3
 
 // BASS_SampleGetChannel flags
 #define BASS_SAMCHAN_NEW		1	// get a new playback channel
@@ -485,9 +471,10 @@ handle : The stream that needs writing
 buffer : Buffer to write the samples in
 length : Number of bytes to write
 user   : The 'user' parameter value given when calling BASS_StreamCreate
-RETURN : Number of bytes written. Set the BASS_STREAMPROC_END flag to end the stream. */
+RETURN : Number of bytes written and BASS_STREAMPROC_xxx flags */
 
-#define BASS_STREAMPROC_END		0x80000000	// end of user stream flag
+#define BASS_STREAMPROC_AGAIN	0x40000000	// call again for remainder
+#define BASS_STREAMPROC_END		0x80000000	// end the stream
 
 // Special STREAMPROCs
 #define STREAMPROC_DUMMY		(STREAMPROC*)0		// "dummy" stream
@@ -538,6 +525,7 @@ typedef struct {
 #define BASS_FILEPOS_SIZE		8
 #define BASS_FILEPOS_BUFFERING	9
 #define BASS_FILEPOS_AVAILABLE	10
+#define BASS_FILEPOS_ASYNCSIZE	12
 
 typedef void (CALLBACK DOWNLOADPROC)(const void *buffer, DWORD length, void *user);
 /* Internet stream download callback function.
@@ -558,6 +546,7 @@ user   : The 'user' parameter value given when calling BASS_StreamCreateURL */
 #define BASS_SYNC_MUSICINST		1
 #define BASS_SYNC_MUSICFX		3
 #define BASS_SYNC_OGG_CHANGE	12
+#define BASS_SYNC_ATTRIB		13
 #define BASS_SYNC_DEV_FAIL		14
 #define BASS_SYNC_DEV_FORMAT	15
 #define BASS_SYNC_POS_RAW		16
@@ -620,6 +609,7 @@ RETURN : TRUE = continue recording, FALSE = stop */
 #define BASS_ATTRIB_DOWNLOADPROC	18
 #define BASS_ATTRIB_VOLDSP			19
 #define BASS_ATTRIB_VOLDSP_PRIORITY	20
+#define BASS_ATTRIB_DOWNMIX			21
 #define BASS_ATTRIB_MUSIC_AMPLIFY	0x100
 #define BASS_ATTRIB_MUSIC_PANSEP	0x101
 #define BASS_ATTRIB_MUSIC_PSCALER	0x102
@@ -629,6 +619,10 @@ RETURN : TRUE = continue recording, FALSE = stop */
 #define BASS_ATTRIB_MUSIC_ACTIVE	0x106
 #define BASS_ATTRIB_MUSIC_VOL_CHAN	0x200 // + channel #
 #define BASS_ATTRIB_MUSIC_VOL_INST	0x300 // + instrument #
+
+// Channel attribute types
+#define BASS_ATTRIBTYPE_FLOAT		-1
+#define BASS_ATTRIBTYPE_INT			-2
 
 // BASS_ChannelSlideAttribute flags
 #define BASS_SLIDE_LOG				0x1000000
@@ -869,9 +863,11 @@ typedef const WAVEFORMATEX *LPCWAVEFORMATEX;
 #define BASS_POS_BYTE			0		// byte position
 #define BASS_POS_MUSIC_ORDER	1		// order.row position, MAKELONG(order,row)
 #define BASS_POS_OGG			3		// OGG bitstream number
+#define BASS_POS_TRACK			4		// track number
 #define BASS_POS_RAW			6		// monotonic byte position
 #define BASS_POS_END			0x10	// trimmed end position
 #define BASS_POS_LOOP			0x11	// loop start positiom
+#define BASS_POS_DSP			0x800000 // flag: get the DSP position
 #define BASS_POS_FLUSH			0x1000000 // flag: flush decoder/FX buffers
 #define BASS_POS_RESET			0x2000000 // flag: reset user file buffers
 #define BASS_POS_RELATIVE		0x4000000 // flag: seek relative to the current position
@@ -1011,6 +1007,16 @@ typedef struct {
 	DWORD lCurve;
 } BASS_FX_VOLUME_PARAM;
 
+typedef void (CALLBACK DEVICENOTIFYPROC)(DWORD notify);
+/* Device notification callback function.
+notify : The notification (BASS_DEVICENOTIFY_xxx) */
+
+#define BASS_DEVICENOTIFY_ENABLED			0	// a device has been added or removed
+#define BASS_DEVICENOTIFY_DEFAULT			1	// the default output device has changed
+#define BASS_DEVICENOTIFY_REC_DEFAULT		2	// the default recording device has changed
+#define BASS_DEVICENOTIFY_DEFAULTCOM		3	// the default communication output device has changed
+#define BASS_DEVICENOTIFY_REC_DEFAULTCOM	4	// the default communication recording device has changed
+
 typedef void (CALLBACK IOSNOTIFYPROC)(DWORD status);
 /* iOS notification callback function.
 status : The notification (BASS_IOSNOTIFY_xxx) */
@@ -1113,8 +1119,8 @@ BOOL BASSDEF(BASS_ChannelSetAttribute)(DWORD handle, DWORD attrib, float value);
 BOOL BASSDEF(BASS_ChannelGetAttribute)(DWORD handle, DWORD attrib, float *value);
 BOOL BASSDEF(BASS_ChannelSlideAttribute)(DWORD handle, DWORD attrib, float value, DWORD time);
 BOOL BASSDEF(BASS_ChannelIsSliding)(DWORD handle, DWORD attrib);
-BOOL BASSDEF(BASS_ChannelSetAttributeEx)(DWORD handle, DWORD attrib, void *value, DWORD size);
-DWORD BASSDEF(BASS_ChannelGetAttributeEx)(DWORD handle, DWORD attrib, void *value, DWORD size);
+BOOL BASSDEF(BASS_ChannelSetAttributeEx)(DWORD handle, DWORD attrib, void *value, DWORD typesize);
+DWORD BASSDEF(BASS_ChannelGetAttributeEx)(DWORD handle, DWORD attrib, void *value, DWORD typesize);
 BOOL BASSDEF(BASS_ChannelSet3DAttributes)(DWORD handle, int mode, float min, float max, int iangle, int oangle, float outvol);
 BOOL BASSDEF(BASS_ChannelGet3DAttributes)(DWORD handle, DWORD *mode, float *min, float *max, DWORD *iangle, DWORD *oangle, float *outvol);
 BOOL BASSDEF(BASS_ChannelSet3DPosition)(DWORD handle, const BASS_3DVECTOR *pos, const BASS_3DVECTOR *orient, const BASS_3DVECTOR *vel);

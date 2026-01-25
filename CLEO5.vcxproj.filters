@@ -105,7 +105,7 @@
     <ClCompile Include="source\CPluginSystem.cpp">
       <Filter>source\extensions</Filter>
     </ClCompile>
-    <ClCompile Include="third-party\simdjson\simdjson.cpp">
+    <ClCompile Include="third-party\simdjson\singleheader\simdjson.cpp">
       <Filter>third_party\simdjson</Filter>
     </ClCompile>
     <ClCompile Include="third-party\plugin-sdk\plugin_sa\game_sa\CTimer.cpp">
@@ -194,7 +194,7 @@
     <ClInclude Include="source\OpcodeInfoDatabase.h">
       <Filter>source\utils</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\simdjson\simdjson.h">
+    <ClInclude Include="third-party\simdjson\singleheader\simdjson.h">
       <Filter>third_party\simdjson</Filter>
     </ClInclude>
     <ClInclude Include="source\CCustomScript.h">
