@@ -2,3 +2,6 @@
 	path = third-party/plugin-sdk
 	url = https://github.com/cleolibrary/plugin-sdk
 	branch = CLEO_5
+[submodule "simdjson"]
+	path = third-party/simdjson
+	url = https://github.com/simdjson/simdjson

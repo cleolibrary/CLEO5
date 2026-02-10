@@ -124,7 +124,6 @@ namespace CLEO
             {
                 if (SoundDevice.flags & DSCAPS_EMULDRIVER)
                     TRACE("Audio drivers not installed - using DirectSound emulation");
-                if (!SoundDevice.eax) TRACE("Audio hardware acceleration disabled (no EAX)");
             }
 
             initialized = true;
