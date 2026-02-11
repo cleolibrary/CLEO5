@@ -1,0 +1,22 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0A91'
+test("0A91 (int_div)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should divide two ints", test1)
+    return
+    
+    function test1
+        int a = 40
+        int b = 10
+        int c = 80
+        c = a / b
+        assert_eq(a, 40)
+        assert_eq(b, 10)
+        assert_eq(c, 4)
+    end
+end
