@@ -1,0 +1,22 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0A8F'
+test("0A8F (int_sub)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should substract two ints", test1)
+    return
+    
+    function test1
+        int a = 10
+        int b = 40
+        int c = 80
+        c = a - b
+        assert_eq(a, 10)
+        assert_eq(b, 40)
+        assert_eq(c, -30)
+    end
+end
