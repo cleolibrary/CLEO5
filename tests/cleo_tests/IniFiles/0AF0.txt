@@ -12,10 +12,10 @@ function tests
     after_each(@cleanup)
 
     // error cases
-    it("should fail on not-existing file", test1)
-    it("should fail on invalid file", test2)
-    it("should fail on not existing value", test3)
-    it("should fail on invalid data", test4)
+    it_cs5("should fail on not-existing file", test1_cs5)
+    it_cs5("should fail on invalid file", test2_cs5)
+    it_cs5("should fail on not existing value", test3_cs5)
+    it_cs5("should fail on invalid data", test4_cs5)
     it_cs4("should fail on not-existing file", test1_cs4) // diff
     it_cs4("should fail on invalid file", test2_cs4) // diff
     it_cs4("should fail on not existing value", test3_cs4) // diff
@@ -28,12 +28,6 @@ function tests
     it("should read int from float data", test8)
     it("should read int from negative float data", test9)
     it("should read int from mixed data", test10)
-    it_cs4("should read int from int data", test5)
-    it_cs4("should read int from negative int data", test6)
-    it_cs4("should read int from hex int data", test7)
-    it_cs4("should read int from float data", test8)
-    it_cs4("should read int from negative float data", test9)
-    it_cs4("should read int from mixed data", test10)
 
     return
 
@@ -52,28 +46,28 @@ function tests
     delete_file {path} Test_Path
     return
 
-    function test1
+    function test1_cs5
         int value = 555
         value = read_int_from_ini_file {path} "not_a_file.ini" {section} "test" {key} "test_float"
         assert_result_false()
         assert_eq(value, 555)
     end
 
-    function test2
+    function test2_cs5
         int value = 555
         value = read_int_from_ini_file {path} "cleo.asi" {section} "test" {key} "test_int"
         assert_result_false()
         assert_eq(value, 555)
     end
 
-    function test3
+    function test3_cs5
         int value = 555
         value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "invalid_key"
         assert_result_false()
         assert_eq(value, 555)
     end
 
-    function test4
+    function test4_cs5
         int value = 555
         value = read_int_from_ini_file {path} Test_Path {section} "test" {key} "test_string"
         assert_result_false()

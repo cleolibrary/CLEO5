@@ -19,8 +19,8 @@ function tests
     
     :cleanup
         set_current_directory {path} 0
-        delete_directory {path} Test_Path_Src
-        delete_directory {path} Test_Path_Dst
+        delete_directory {path} Test_Path_Src true
+        delete_directory {path} Test_Path_Dst true
     return
     
     function test1
@@ -31,7 +31,7 @@ function tests
         assert_result_false()
     end
     
-    function test2        
+    function test2
         // setup
         create_directory {path} Test_Path_Src
         set_current_directory {path} Test_Path_Src

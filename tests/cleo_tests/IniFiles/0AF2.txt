@@ -15,11 +15,8 @@ function tests
     it("should fail on not-existing file", test1)
     it("should fail on invalid file", test2)
     it("should fail on not existing value", test3)
-    it("should fail on invalid data", test4)
-    it_cs4("should fail on not-existing file", test1)
-    it_cs4("should fail on invalid file", test2)
-    it_cs4("should fail on not existing value", test3)
-    it_cs4("should fail on invalid data", test4_cs4) // diff
+    it_cs5("should fail on invalid data", test4_cs5)
+    it_cs4("should fail on invalid data", test4_cs4)
     
     // success cases
     it("should read float from int data", test5)
@@ -28,12 +25,6 @@ function tests
     it("should read float from float data", test8)
     it("should read float from negative float data", test9)
     it("should read float from mixed data", test10)
-    it_cs4("should read float from int data", test5)
-    it_cs4("should read float from negative int data", test6)
-    it_cs4("should read float from hex int data", test7)
-    it_cs4("should read float from float data", test8)
-    it_cs4("should read float from negative float data", test9)
-    it_cs4("should read float from mixed data", test10)
     return
 
     :setup
@@ -72,7 +63,7 @@ function tests
         assert_eq(value, 555.0)
     end
 
-    function test4
+    function test4_cs5
         float value = 555.0
         value = read_float_from_ini_file {path} Test_Path {section} "test" {key} "test_string"
         assert_result_false()

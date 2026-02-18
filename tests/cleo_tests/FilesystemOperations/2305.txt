@@ -7,7 +7,7 @@ terminate_this_custom_script
 
 
 function tests
-    const Test_File_Path = ".\test_file.ini"
+    const Test_File_Path = "cleo\cleo_tests\FileSystemOperations\test_file.ini" // works in both cs5 and cs4
     
     before_each(@prepare)
     after_each(@finalize)
@@ -54,7 +54,7 @@ function tests
         assert_range(4@, 0, 23) // hour
         assert_range(5@, 0, 59) // minute
         assert_range(6@, 0, 59) // second
-        assert_range(7@, 0, 999) // milisedond
+        assert_range(7@, 0, 999) // millisecond
         trace "~g~~h~~h~Read time: %04d-%02d-%02d %02d:%02d:%02d.%03d" 1@ 2@ 3@ 4@ 5@ 6@ 7@
     end
     
@@ -67,7 +67,7 @@ function tests
         assert_range(4@, 0, 23) // hour
         assert_range(5@, 0, 59) // minute
         assert_range(6@, 0, 59) // second
-        assert_range(7@, 0, 999) // milisecond
+        assert_range(7@, 0, 999) // millisecond
     end
     
     function test4
@@ -95,7 +95,7 @@ function tests
         
         0@, 0@, 0@, 5@, 6@, 7@, 8@ = get_file_write_time {path} Test_File_Path
         assert_result_true()
-        assert_eq(5@, 1@) // hour did not changed meanwhile
+        assert_eq(5@, 1@) // hour did not change meanwhile
         
         // calculate small time stamp
         6@ *= 60000 // minutes to ms
