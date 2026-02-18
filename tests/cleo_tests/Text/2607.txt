@@ -51,11 +51,20 @@ function tests
     end
     
     function test3
-        2607: unload_fxt {filepath} "cleo\cleo_tests\text\non existing file.fxt"
+        unload_fxt {filepath} "cleo\cleo_tests\text\non existing file.fxt"
         assert_result_false()
-    
-        2607: unload_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        
+        // ensure fxt is loaded
+        load_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
         assert_result_true()
+    
+        // unload once
+        unload_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        assert_result_true()
+
+        // unload twice
+        unload_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        assert_result_false()
         
         int ptr
         

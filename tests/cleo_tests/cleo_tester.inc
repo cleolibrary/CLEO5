@@ -45,12 +45,19 @@ end
 /// use assert_*(...) to validate result
 function it(spec_name: string, callback: int)
     _run_with_compat_mode(spec_name, callback, DEFAULT_COMPAT)
+    _run_with_compat_mode(spec_name, callback, CLEO4_COMPAT)
 end
 
 /// registers new unit test in a test suite - runs in CS4 mode
 /// use assert_*(...) to validate result
 function it_cs4(spec_name: string, callback: int)
     _run_with_compat_mode(spec_name, callback, CLEO4_COMPAT)
+end
+
+/// registers new unit test in a test suite - runs in CLEO5 mode
+/// use assert_*(...) to validate result
+function it_cs5(spec_name: string, callback: int)
+    _run_with_compat_mode(spec_name, callback, CLEO5_COMPAT)
 end
 
 /// registers new unit test in a test suite
@@ -132,6 +139,17 @@ function xit(spec_name: string, callback: int)
     index++
     _cleo_tester_write_var(VAR_TEST_INDEX, index)
 end
+
+/// skips unit test in a test suite
+function xit_cs4(spec_name: string, callback: int)
+    xit(spec_name, callback)
+end
+
+/// skips unit test in a test suite
+function xit_cs5(spec_name: string, callback: int)
+    xit(spec_name, callback)
+end
+
 
 function _cleo_tester_fail
     int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)

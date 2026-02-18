@@ -13,7 +13,8 @@ function tests
     it("should set param 0", test1)
     it("should set param 1", test2)
     it("should set virtual paths", test3)
-    it("should set script path", test4)
+    it_cs5("should set CWD to script folder", test4_cs5)
+    it_cs4("should set CWD to root folder", test4_cs4)
     it("should enter relative sub-path", test5)
     return
     
@@ -74,12 +75,17 @@ function tests
     end
     
     
-    function test4
-        set_current_directory {path} ".\\" // this script's location
+    function test4_cs5
+        set_current_directory {path} ".\\" // CWD = this script's location
         0@ = resolve_filepath ""
         assert_eqs(0@, "cleo\cleo_tests\FilesystemOperations") // relative to root
     end
     
+    function test4_cs4
+        set_current_directory {path} ".\\" // CWD = root folder
+        0@ = resolve_filepath ""
+        assert_eqs(0@, ".") // relative to root
+    end
         
     function test5
         set_current_directory {path} "root:"

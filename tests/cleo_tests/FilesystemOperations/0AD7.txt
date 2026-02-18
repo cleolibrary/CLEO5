@@ -1,5 +1,9 @@
 {$CLEO .s}
 goto @TEST_DATA_END
+
+const LF = 0xA
+const CR = 0xD
+
 hex
     "1234567890ABCDEF1234567890ABCDE" 00 // data A - 32 characters
     "123" 0A // data B
@@ -28,8 +32,10 @@ function tests
     it("should read four", test4)
     it("should read eight", test5)
     it("should overflow dest string variable", test6)
-    it("should read till line feed (\\n)", test7)
-    it("should read till line feed (\\r\\n)", test8)
+    it_cs5("should read line excluding line feed (\\n)", test7_cs5)
+    it_cs4("should read line including line feed (\\n)", test7_cs4)
+    it_cs5("should read line excluding line feed (\\r\\n)", test8_cs5)
+    it_cs4("should read line including line feed (\\r\\n)", test8_cs4)
 
     return
     
@@ -103,7 +109,7 @@ function tests
         assert_eqs(4@s, "9") // overflowed data
     end
     
-    function test7
+    function test7_cs5
         file_seek 0@ {offset} Test_Data_Offset_B {origin} SeekOrigin.Begin
         read_string_from_file 0@ {storeTo} 2@s {maxLength} 8
         assert_result_true()
@@ -111,13 +117,36 @@ function tests
         assert_eqs(2@s, "123")
         assert_eq(4@, 0xCCCCCCCC)
     end
+
+    function test7_cs4
+        file_seek 0@ {offset} Test_Data_Offset_B {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        
+        string_format 10@v = "123%c" LF
+        assert_eqs(2@s, 10@v)
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+
     
-    function test8
+    function test8_cs5
         file_seek 0@ {offset} Test_Data_Offset_C {origin} SeekOrigin.Begin
         read_string_from_file 0@ {storeTo} 2@s {maxLength} 8
         assert_result_true()
         assert_eq(1@, 0xCCCCCCCC)
         assert_eqs(2@s, "12")
+        assert_eq(4@, 0xCCCCCCCC)
+    end
+    
+    function test8_cs4
+        file_seek 0@ {offset} Test_Data_Offset_C {origin} SeekOrigin.Begin
+        read_string_from_file 0@ {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eq(1@, 0xCCCCCCCC)
+        
+        string_format 10@v = "12%c%c" CR LF
+        assert_eqs(2@s, 10@v)
         assert_eq(4@, 0xCCCCCCCC)
     end
 end

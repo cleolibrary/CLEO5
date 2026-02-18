@@ -13,7 +13,7 @@ cleo_return 0
 
 
 function tests
-    it("should return from cleo_call", test1)
+    it_cs5("should return from cleo_call", test1)
     return
     
     function test1

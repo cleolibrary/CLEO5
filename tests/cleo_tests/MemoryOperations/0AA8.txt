@@ -10,8 +10,8 @@ function tests
     it("should call class getter method", test1)
     it_cs4("should ignore null 'this' in legacy modes", test2)
     it_cs4("should handle misused 'this' in legacy modes", test3)
-    it("should set condition result", test4)
-    it_cs4("should not set condition in legacy modes", test5)
+    it_cs5("should set condition result", test4_cs5)
+    it_cs4("should not set condition result", test4_cs4)
     return
 
 
@@ -36,7 +36,7 @@ function tests
     end
 
 
-    function test4
+    function test4_cs5
         int funcPtr = get_label_pointer @increment
         int result
 
@@ -70,7 +70,7 @@ function tests
     end
 
 
-    function test5
+    function test4_cs4
         int funcPtr = get_label_pointer @increment
         int result
 

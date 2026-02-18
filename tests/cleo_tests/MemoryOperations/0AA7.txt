@@ -7,12 +7,12 @@ terminate_this_custom_script
 
 
 function tests
-    it("should call function with return", test1)
-    it_cs4("should not set condition in legacy modes", test2)
+    it_cs5("should call function with return and set condition result", test1_cs5)
+    it_cs4("should call function with return and don't set condition result", test1_cs4)
     return
 
 
-    function test1
+    function test1_cs5
         int funcPtr = get_label_pointer @increment
         int result
 
@@ -46,7 +46,7 @@ function tests
     end
 
 
-    function test2
+    function test1_cs4
         int funcPtr = get_label_pointer @increment
         int result
 
