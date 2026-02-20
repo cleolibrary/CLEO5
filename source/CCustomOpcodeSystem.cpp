@@ -37,16 +37,6 @@ namespace CLEO
         lastOpcodePtr     = (WORD*)thread->GetBytePointer() - 1; // rewind to the opcode start
         handledParamCount = 0;
 
-        // check if last opcode ended correctly
-        if (thread->bIsProcessing && !IsLegacyScript(thread))
-        {
-            ShowErrorSuspendCompat(
-                ScriptInfoStr(thread).c_str(),
-                "Unexpected opcode [%04X], likely caused by an error that was silently ignored (e.g. in SAMP),", opcode
-            );
-            return OnOpcodeFinished(thread, thread->Suspend());
-        }
-
         thread->bIsProcessing = true; // opcode processing started
 
         // prevent past code execution
