@@ -233,6 +233,8 @@ class DebugUtils
             }
             limitStr = StringPrintf("%d%s", limit, limitStr.c_str());
 
+            currScriptCommandCount = 0; // reset command count to avoid multiple triggers in the same frame
+
             return TrySuspendScript(
                 thread, false,
                 "Potential infinite loop detected!\n"
@@ -248,6 +250,8 @@ class DebugUtils
             size_t currScriptElapsedSeconds = (clock() - currScriptStartTime) / CLOCKS_PER_SEC;
             if (configLimitTime > 0 && currScriptElapsedSeconds > configLimitTime)
             {
+                currScriptStartTime = clock(); // reset time to avoid multiple triggers in the same frame
+
                 return TrySuspendScript(
                     thread, false,
                     "Potential lag detected!\n"
