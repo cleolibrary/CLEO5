@@ -453,7 +453,7 @@ namespace CLEO
         // check if script is active
         BOOL WINAPI CLEO_IsScriptRunning(const CRunningScript* thread);
 
-        // check if pointer is valid script (main.scm, script.img, CLEO script). Script may be inactive, or pending deletion
+        // check if pointer is valid script (main.scm, script.img, CLEO). Script may be inactive, or pending deletion
         BOOL WINAPI CLEO_IsValidScriptPtr(const CRunningScript* thread);
 
         // short text for displaying in error\log messages
