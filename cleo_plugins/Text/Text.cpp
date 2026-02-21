@@ -319,10 +319,6 @@ class Text
                         formatPos++; // next char
                         if (*formatPos == '\0')
                         {
-                            SHOW_ERROR(
-                                "Invalid string format sequence ('%s') in script %s\nScript suspended.", format,
-                                ScriptInfoStr(thread).c_str()
-                            );
                             return DT_INVALID;
                         }
 
@@ -362,7 +358,10 @@ class Text
             auto paramType = thread->PeekDataType();
 
             auto formatTokenType = GetNextTokenType();
-            if (formatTokenType == DT_INVALID) return thread->Suspend(); // error message already displayed
+            if (formatTokenType == DT_INVALID)
+            {
+                SUSPEND("Invalid string format sequence ('%s')", format);
+            }
 
             if (paramType == DT_END)
             {

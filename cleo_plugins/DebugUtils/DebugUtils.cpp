@@ -233,14 +233,13 @@ class DebugUtils
             }
             limitStr = StringPrintf("%d%s", limit, limitStr.c_str());
 
-            SHOW_ERROR(
-                "Over %s commands executed in a single frame by script %s \n"
-                "To prevent the game from freezing, CLEO suspended this script.\n\n"
-                "To supress this error, increase 'DebugUtils.Limits.Command' property in "
-                ".cleo_config.ini and restart the game.",
-                limitStr.c_str(), ScriptInfoStr(thread).c_str()
+            return TrySuspendScript(
+                thread, false,
+                "Potential infinite loop detected!\n"
+                "The limit of %s commands per frame (property 'DebugUtils.Limits.Command' in .cleo_config.ini) "
+                "is exceeded",
+                limitStr.c_str()
             );
-            return thread->Suspend();
         }
 
         // script per frame time execution limit
@@ -249,14 +248,13 @@ class DebugUtils
             size_t currScriptElapsedSeconds = (clock() - currScriptStartTime) / CLOCKS_PER_SEC;
             if (configLimitTime > 0 && currScriptElapsedSeconds > configLimitTime)
             {
-                SHOW_ERROR(
-                    "Over %d seconds of lag in a single frame by script %s \n"
-                    "To prevent the game from freezing, CLEO suspended this script.\n\n"
-                    "To supress this error, increase 'DebugUtils.Limits.Time' property in "
-                    ".cleo_config.ini and restart the game.",
-                    configLimitTime, ScriptInfoStr(thread).c_str()
+                return TrySuspendScript(
+                    thread, false,
+                    "Potential lag detected!\n"
+                    "The limit of %d seconds of execution time (property 'DebugUtils.Limits.Time' in .cleo_config.ini) "
+                    "is exceeded",
+                    configLimitTime
                 );
-                return thread->Suspend();
             }
         }
 
