@@ -69,6 +69,12 @@ namespace CLEO
             return CleoInstance.ScriptEngine.IsActiveScriptPtr(thread);
         }
 
+        BOOL WINAPI CLEO_IsValidScriptPtr(const CLEO::CRunningScript* thread)
+        {
+            if (thread == nullptr) return false;
+            return CleoInstance.ScriptEngine.IsValidScriptPtr(thread);
+        }
+
         void WINAPI CLEO_GetScriptInfoStr(CLEO::CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize)
         {
             if (thread == nullptr || buf == nullptr || bufSize < 2)

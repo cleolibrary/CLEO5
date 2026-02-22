@@ -559,28 +559,35 @@ namespace CLEO
         }
     }
 
-    static void ShowErrorSuspend(const std::string& scriptInfo, const char* format, ...)
+    static OpcodeResult TrySuspendScript(CLEO::CRunningScript* thread, bool canBeDisabled, const char* format, ...)
     {
+        if (!CLEO_IsValidScriptPtr(thread))
+        {
+            // we can't suspend an ASI script, so inform it using the error result
+            return OpcodeResult::OR_ERROR;
+        }
+
+        auto scriptInfo = ScriptInfoStr(thread);
+
         va_list args;
         va_start(args, format);
-        auto msg = StringPrintfV(format, args);
+        auto details = StringPrintfV(format, args);
         va_end(args);
 
-        ShowError("%s in script %s\nScript suspended.", msg.c_str(), scriptInfo.c_str());
-    }
+        std::string msg = StringPrintf("%s in script %s\nScript suspended.", details.c_str(), scriptInfo.c_str());
 
-    static void ShowErrorSuspendCompat(const std::string& scriptInfo, const char* format, ...)
-    {
-        va_list args;
-        va_start(args, format);
-        auto msg = StringPrintfV(format, args);
-        va_end(args);
+        if (canBeDisabled)
+        {
+            const char* hint =
+                thread->IsCustom()
+                    ? "\n\nTo ignore this error in the future, change the script extension to '.cs4'"
+                    : "\n\nTo ignore this error in the future, set MainScmLegacyMode=4 in .cleo_config.ini";
+            msg += hint;
+        }
 
-        ShowError(
-            "%s in script %s\nScript suspended."
-            "\n\nThis error can be ignored in legacy mode by changing script extension to '.cs4'",
-            msg.c_str(), scriptInfo.c_str()
-        );
+        ShowError(msg.c_str());
+        thread->WakeTime = 0xFFFFFFFF;
+        return OpcodeResult::OR_INTERRUPT;
     }
 
     static bool PluginCheckCleoVersion()
@@ -696,16 +703,14 @@ namespace CLEO
 
 #define SUSPEND(...)                                                                                                   \
     {                                                                                                                  \
-        CLEO::ShowErrorSuspend(ScriptInfoStr(thread), __VA_ARGS__);                                                    \
-        return thread->Suspend();                                                                                      \
+        return CLEO::TrySuspendScript(thread, false, __VA_ARGS__);                                                     \
     }
 
 #define SUSPEND_COMPAT(...)                                                                                            \
     {                                                                                                                  \
         if (IsStrictValidation(thread))                                                                                \
         {                                                                                                              \
-            CLEO::ShowErrorSuspendCompat(ScriptInfoStr(thread), __VA_ARGS__);                                          \
-            return thread->Suspend();                                                                                  \
+            return CLEO::TrySuspendScript(thread, true, __VA_ARGS__);                                                  \
         }                                                                                                              \
     }
 
@@ -848,11 +853,10 @@ namespace CLEO
 
         if (!_paramWasString())
         {
-            SHOW_ERROR(
-                "Input argument %s expected to be string, got %s in script %s\nScript suspended.",
-                GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str()
+            TrySuspendScript(
+                thread, false, "Input argument %s expected to be string, got %s", GetParamInfo(1).c_str(),
+                ToKindStr(_lastParamType, _lastParamArrayType)
             );
-            thread->Suspend();
             _lastParamType = DT_INVALID; // mark error
             return nullptr;
         }
@@ -867,21 +871,17 @@ namespace CLEO
             if ((IsImmInteger(_lastParamType) || isVariableInt) && // pointer argument type?
                 CLEO_GetOpcodeParamsArray()->dwParam <= MinValidAddress)
             {
-                SHOW_ERROR(
-                    "Invalid '0x%X' pointer of input string argument %s in script %s",
-                    CLEO_GetOpcodeParamsArray()->dwParam, GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()
+                TrySuspendScript(
+                    thread, false, "Invalid '0x%X' pointer of input string argument %s",
+                    CLEO_GetOpcodeParamsArray()->dwParam, GetParamInfo().c_str()
                 );
             }
             else
             {
                 // other error
-                SHOW_ERROR(
-                    "Invalid input argument %s in script %s\nScript suspended.", GetParamInfo().c_str(),
-                    ScriptInfoStr(thread).c_str()
-                );
+                TrySuspendScript(thread, false, "Invalid input argument %s", GetParamInfo().c_str());
             }
 
-            thread->Suspend();
             _lastParamType = DT_INVALID; // mark error
             return nullptr;
         }
@@ -893,21 +893,19 @@ namespace CLEO
     {
         if (str != nullptr && (size_t)str <= MinValidAddress)
         {
-            SHOW_ERROR(
-                "Invalid '0x%X' source pointer of output string argument %s in script %s \nScript suspended.", str,
-                GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str()
+            TrySuspendScript(
+                thread, false, "Invalid '0x%X' source pointer of output string argument %s", str,
+                GetParamInfo(1).c_str()
             );
-            thread->Suspend();
             return false;
         }
 
         if ((size_t)target.data <= MinValidAddress)
         {
-            SHOW_ERROR(
-                "Invalid '0x%X' target pointer of output string argument in script %s \nScript suspended.", target.data,
-                ScriptInfoStr(thread).c_str()
+            TrySuspendScript(
+                thread, false, "Invalid '0x%X' target pointer of output string argument %s", target.data,
+                GetParamInfo(1).c_str()
             );
-            thread->Suspend();
             return false;
         }
 
@@ -936,21 +934,19 @@ namespace CLEO
 
         if (str != nullptr && (size_t)str <= MinValidAddress)
         {
-            SHOW_ERROR(
-                "Invalid '0x%X' source pointer of output string argument %s in script %s \nScript suspended.", str,
+            TrySuspendScript(
+                thread, false, "Invalid '0x%X' source pointer of output string argument %s in script %s", str,
                 GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str()
             );
-            thread->Suspend();
             return false;
         }
 
         if (!_paramWasString(true))
         {
-            SHOW_ERROR(
-                "Output argument %s expected to be variable string, got %s in script %s\nScript suspended.",
+            TrySuspendScript(
+                thread, false, "Output argument %s expected to be variable string, got %s in script %s",
                 GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str()
             );
-            thread->Suspend();
             return false;
         }
 
@@ -960,11 +956,10 @@ namespace CLEO
 
             if ((size_t)ptr <= MinValidAddress)
             {
-                SHOW_ERROR(
-                    "Invalid '0x%X' pointer of output string argument %s in script %s \nScript suspended.", ptr,
+                TrySuspendScript(
+                    thread, false, "Invalid '0x%X' pointer of output string argument %s in script %s", ptr,
                     GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str()
                 );
-                thread->Suspend();
                 return false;
             }
         }

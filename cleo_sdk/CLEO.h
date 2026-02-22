@@ -450,8 +450,11 @@ namespace CLEO
         void WINAPI CLEO_AddScriptDeleteDelegate(FuncScriptDeleteDelegateT func);
         void WINAPI CLEO_RemoveScriptDeleteDelegate(FuncScriptDeleteDelegateT func);
 
-        // script utils
-        BOOL WINAPI CLEO_IsScriptRunning(const CRunningScript* thread); // check if script is active
+        // check if script is active
+        BOOL WINAPI CLEO_IsScriptRunning(const CRunningScript* thread);
+
+        // check if pointer is valid script (main.scm, script.img, CLEO). Script may be inactive, or pending deletion
+        BOOL WINAPI CLEO_IsValidScriptPtr(const CRunningScript* thread);
 
         // short text for displaying in error\log messages
         void WINAPI CLEO_GetScriptInfoStr(CRunningScript* thread, bool currLineInfo, char* buf, DWORD bufSize);
@@ -695,12 +698,6 @@ namespace CLEO
         CRunningScript* GetPrev() const { return Previous; }
         void SetIsExternal(bool b) { bIsExternal = b; }
         void SetActive(bool b) { bIsActive = b; }
-
-        OpcodeResult Suspend()
-        {
-            WakeTime = 0xFFFFFFFF;
-            return OpcodeResult::OR_INTERRUPT;
-        } // suspend script execution forever
 
         void SetNext(CRunningScript* v) { Next = v; }
         void SetPrev(CRunningScript* v) { Previous = v; }

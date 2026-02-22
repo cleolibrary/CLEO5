@@ -40,11 +40,11 @@ namespace CLEO
         // check if last opcode ended correctly
         if (thread->bIsProcessing && !IsLegacyScript(thread))
         {
-            ShowErrorSuspendCompat(
-                ScriptInfoStr(thread).c_str(),
-                "Unexpected opcode [%04X], likely caused by an error that was silently ignored (e.g. in SAMP),", opcode
+            auto result = TrySuspendScript(
+                thread, true,
+                "Unexpected opcode [%04X], likely caused by an error that was silently ignored (e.g. in SAMP)", opcode
             );
-            return OnOpcodeFinished(thread, thread->Suspend());
+            return OnOpcodeFinished(thread, result);
         }
 
         thread->bIsProcessing = true; // opcode processing started
@@ -57,11 +57,11 @@ namespace CLEO
             if ((BYTE*)lastOpcodePtr == endPos ||
                 (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
             {
-                ShowErrorSuspendCompat(
-                    ScriptInfoStr(thread).c_str(), "Script execution continued beyond its end, likely due to a missing "
-                                                   "TERMINATE_THIS_SCRIPT (004E) instruction"
+                auto result = TrySuspendScript(
+                    thread, true,
+                    "Code execution reached end of script. This may be caused by missing TERMINATE_THIS_SCRIPT"
                 );
-                return OnOpcodeFinished(thread, thread->Suspend());
+                return OnOpcodeFinished(thread, result);
             }
         }
 
@@ -78,13 +78,8 @@ namespace CLEO
 
         if (opcode > Opcode_Max)
         {
-            SHOW_ERROR(
-                "Opcode [%04X] out of supported range!\n"
-                "Called in script %s\n"
-                "Script suspended.",
-                opcode, ScriptInfoStr(thread).c_str()
-            );
-            return OnOpcodeFinished(thread, thread->Suspend());
+            auto result = TrySuspendScript(thread, false, "Opcode [%04X] out of supported range!", opcode);
+            return OnOpcodeFinished(thread, result);
         }
 
         CustomOpcodeHandler handler = customOpcodeProc[opcode];
@@ -106,14 +101,8 @@ namespace CLEO
             extensionMsg = " " + extensionMsg;
         }
 
-        SHOW_ERROR(
-            "Opcode [%04X] not found!%s\n"
-            "Called in script %s\n"
-            "Script suspended.",
-            opcode, extensionMsg.c_str(), ScriptInfoStr(thread).c_str()
-        );
-
-        return OnOpcodeFinished(thread, thread->Suspend());
+        auto result = TrySuspendScript(thread, false, "Opcode [%04X] not found!%s", opcode, extensionMsg.c_str());
+        return OnOpcodeFinished(thread, result);
     }
 
     void CCustomOpcodeSystem::Inject(CCodeInjector& inj)
