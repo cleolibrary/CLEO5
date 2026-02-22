@@ -47,7 +47,7 @@ namespace CLEO
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
     }
 
-    // called on game restart, either from new game or from loading save. Not called on first game start.
+    // called on game restart, either from new game or from loading save. Not called on the first game start.
     void CCleoInstance::OnScmInit1()
     {
         CleoInstance.ScmInit1_Orig();
@@ -59,7 +59,7 @@ namespace CLEO
         }
     }
 
-    // called on the first game start (either new game, or loading save). Not called on game restart.
+    // called on the first game start, either from new game or from loading save. Not called on game restart.
     void CCleoInstance::OnScmInit2()
     {
         CleoInstance.ScmInit2_Orig();
@@ -71,7 +71,7 @@ namespace CLEO
         }
     }
 
-    // called after loading save, either on game start or restart. Always called after either OnScmInit1 or OnScmInit2
+    // called when loading save, after either OnScmInit1 or OnScmInit2
     void CCleoInstance::OnScmInit3()
     {
         CleoInstance.ScmInit3_Orig();
