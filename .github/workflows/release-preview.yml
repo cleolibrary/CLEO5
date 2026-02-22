@@ -14,14 +14,6 @@ jobs:
 
     runs-on: windows-2022
     steps:
-      - name: Delete 'preview' release
-        uses: ClementTsang/delete-tag-and-release@v0.4.0
-        with:
-          tag_name: 'preview'
-          delete_release: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -125,3 +117,4 @@ jobs:
           prerelease: true
           bodyFile: 'preview_changes.md'
           artifacts: '.output/Release/*.zip'
+          allowUpdates: true
