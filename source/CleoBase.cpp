@@ -11,13 +11,11 @@ namespace CLEO
         Stop();
     }
 
-    void __cdecl CCleoInstance::OnUpdateGameLogics()
+    void __cdecl CCleoInstance::OnGameProcess()
     {
-        CleoInstance.CallCallbacks(eCallbackId::GameProcessBefore); // execute registered callbacks
-
-        CleoInstance.UpdateGameLogics_Orig(); // call original function
-
-        CleoInstance.CallCallbacks(eCallbackId::GameProcessAfter); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::GameProcessBefore);
+        CleoInstance.OnGameProcess_Orig();
+        CleoInstance.CallCallbacks(eCallbackId::GameProcessAfter);
     }
 
     HWND CCleoInstance::OnCreateMainWnd(HINSTANCE hinst)
@@ -49,21 +47,34 @@ namespace CLEO
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
     }
 
+    // called on game restart, either from new game or from loading save. Not called on first game start.
     void CCleoInstance::OnScmInit1()
     {
-        CleoInstance.ScmInit1_Orig(); // call original
-        CleoInstance.GameBegin();
+        CleoInstance.ScmInit1_Orig();
+        if (!FrontEndMenuManager.m_bWantToLoad)
+        {
+            // if it's a new game, we can call GameBegin right now.
+            // Otherwise, defer it to OnScmInit3
+            CleoInstance.GameBegin();
+        }
     }
 
-    void CCleoInstance::OnScmInit2() // load save
+    // called on the first game start (either new game, or loading save). Not called on game restart.
+    void CCleoInstance::OnScmInit2()
     {
-        CleoInstance.ScmInit2_Orig(); // call original
-        CleoInstance.GameBegin();
+        CleoInstance.ScmInit2_Orig();
+        if (!FrontEndMenuManager.m_bWantToLoad)
+        {
+            // if it's a new game, we can call GameBegin right now.
+            // Otherwise, defer it to OnScmInit3
+            CleoInstance.GameBegin();
+        }
     }
 
+    // called after loading save, either on game start or on game restart. Always called after either OnScmInit1 or OnScmInit2
     void CCleoInstance::OnScmInit3()
     {
-        CleoInstance.ScmInit3_Orig(); // call original
+        CleoInstance.ScmInit3_Orig();
         CleoInstance.GameBegin();
     }
 
@@ -189,8 +200,7 @@ namespace CLEO
                 &GameRestartDebugDisplayTextBuffer_FrontendOrig
             );
             CodeInjector.ReplaceFunction(
-                OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS),
-                &UpdateGameLogics_Orig
+                OnGameProcess, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_PROCESS), &OnGameProcess_Orig
             );
 
             PluginSystem.LogLoadedPlugins();

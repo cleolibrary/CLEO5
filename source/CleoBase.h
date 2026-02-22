@@ -54,8 +54,8 @@ namespace CLEO
         void CallCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id, DWORD arg);
 
-        void(__cdecl* UpdateGameLogics_Orig)() = nullptr;
-        static void __cdecl OnUpdateGameLogics();
+        void(__cdecl* OnGameProcess_Orig)() = nullptr;
+        static void __cdecl OnGameProcess();
 
         // call for InitInstance
         HWND(__cdecl* CreateMainWnd_Orig)(HINSTANCE) = nullptr;
