@@ -71,7 +71,7 @@ namespace CLEO
         }
     }
 
-    // called after loading save, either on game start or on game restart. Always called after either OnScmInit1 or OnScmInit2
+    // called after loading save, either on game start or restart. Always called after either OnScmInit1 or OnScmInit2
     void CCleoInstance::OnScmInit3()
     {
         CleoInstance.ScmInit3_Orig();
