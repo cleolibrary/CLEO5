@@ -579,7 +579,7 @@ namespace CLEO
         }
         else
         {
-            ShowError("%s in script %s", msg.c_str(), scriptInfo.c_str());
+            ShowError("%s in script %s\nScript suspended.", msg.c_str(), scriptInfo.c_str());
         }
 
         thread->WakeTime = 0xFFFFFFFF;
