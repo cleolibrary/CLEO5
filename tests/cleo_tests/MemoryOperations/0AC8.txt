@@ -11,7 +11,8 @@ function tests
     after_each(@free)
     
     it("should return valid pointer", test1)
-    it("should point to zero-filled mem in CLEO5", test2)
+    it("should allocate zero sized block", test2)
+    it("should point to zero-filled mem in CLEO5", test3)
     return
 
     function test1
@@ -21,6 +22,13 @@ function tests
     end
     
     function test2
+        // 0@ is set in before_each callback
+        1@ = allocate_memory {size} 0
+        assert_ptr(1@)
+        assert_neq(1@, 0x11223344)
+    end
+    
+    function test3
         2@ = 0xCCCCCCCC
         2@ = read_memory 0@ {size} 4 {vp} false
         assert_eq(2@, 0)
