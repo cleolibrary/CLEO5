@@ -559,29 +559,33 @@ namespace CLEO
         }
     }
 
-    static OpcodeResult TrySuspendScript(CLEO::CRunningScript* thread, bool compat, const char* format, ...)
+    static OpcodeResult TrySuspendScript(CLEO::CRunningScript* thread, bool canBeDisabled, const char* format, ...)
     {
-        if (!CLEO_IsValidScriptPtr(thread)) return OpcodeResult::OR_ERROR;
+        if (!CLEO_IsValidScriptPtr(thread))
+        {
+            // we can't suspend an ASI script, so inform it using the error result
+            return OpcodeResult::OR_ERROR;
+        }
+
+        auto scriptInfo = ScriptInfoStr(thread);
 
         va_list args;
         va_start(args, format);
-        auto msg = StringPrintfV(format, args);
+        auto details = StringPrintfV(format, args);
         va_end(args);
 
-        auto scriptInfo = ScriptInfoStr(thread);
-        if (compat)
+        std::string msg = StringPrintf("%s in script %s\nScript suspended.", details.c_str(), scriptInfo.c_str());
+
+        if (canBeDisabled)
         {
-            ShowError(
-                "%s in script %s\nScript suspended."
-                "\n\nTo ignore this error in the future, change the script extension to '.cs4'",
-                msg.c_str(), scriptInfo.c_str()
-            );
-        }
-        else
-        {
-            ShowError("%s in script %s\nScript suspended.", msg.c_str(), scriptInfo.c_str());
+            const char* hint =
+                thread->IsCustom()
+                    ? "\n\nTo ignore this error in the future, change the script extension to '.cs4'"
+                    : "\n\nTo ignore this error in the future, set MainScmLegacyMode=4 in .cleo_config.ini";
+            msg += hint;
         }
 
+        ShowError(msg.c_str());
         thread->WakeTime = 0xFFFFFFFF;
         return OpcodeResult::OR_INTERRUPT;
     }
