@@ -107,6 +107,15 @@ jobs:
           exclusions: '*.pdb *.exp *.lib'
           custom: '-mm=Deflate -mfb=258 -mpass=15'
 
+      - name: Delete 'preview' release
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        uses: ClementTsang/delete-tag-and-release@v0.4.0
+        with:
+          tag_name: 'preview'
+          delete_release: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create 'preview' release
         if: ${{ hashFiles('preview_changes.md') != '' }}
         uses: ncipollo/release-action@main
@@ -117,4 +126,3 @@ jobs:
           prerelease: true
           bodyFile: 'preview_changes.md'
           artifacts: '.output/Release/*.zip'
-          allowUpdates: true
