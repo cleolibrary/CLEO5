@@ -48,7 +48,7 @@ namespace CLEO
     }
 
     /*******************************************************
-    
+
         Order of callbacks during game start:
 
             First Boot → New Game      OnScmInit2
