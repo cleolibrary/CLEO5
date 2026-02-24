@@ -11,13 +11,11 @@ namespace CLEO
         Stop();
     }
 
-    void __cdecl CCleoInstance::OnUpdateGameLogics()
+    void __cdecl CCleoInstance::OnGameProcess()
     {
-        CleoInstance.CallCallbacks(eCallbackId::GameProcessBefore); // execute registered callbacks
-
-        CleoInstance.UpdateGameLogics_Orig(); // call original function
-
-        CleoInstance.CallCallbacks(eCallbackId::GameProcessAfter); // execute registered callbacks
+        CleoInstance.CallCallbacks(eCallbackId::GameProcessBefore);
+        CleoInstance.OnGameProcess_Orig();
+        CleoInstance.CallCallbacks(eCallbackId::GameProcessAfter);
     }
 
     HWND CCleoInstance::OnCreateMainWnd(HINSTANCE hinst)
@@ -49,22 +47,43 @@ namespace CLEO
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
     }
 
+    /*******************************************************
+
+        Order of callbacks during game start:
+
+            First Boot → New Game      OnScmInit2
+            First Boot → Load Save     OnScmInit2 → OnScmInit1 → OnScmInit3
+            Later → New Game           OnScmInit1
+            Later → Load Save          OnScmInit1 → OnScmInit3
+
+    ********************************************************/
+
     void CCleoInstance::OnScmInit1()
     {
-        CleoInstance.ScmInit1_Orig(); // call original
-        CleoInstance.GameBegin();
+        CleoInstance.ScmInit1_Orig();
+        if (!FrontEndMenuManager.m_bWantToLoad)
+        {
+            // if it's a new game, we can call GameBegin right now.
+            // Otherwise, defer it to OnScmInit3
+            CleoInstance.GameBegin(-1);
+        }
     }
 
-    void CCleoInstance::OnScmInit2() // load save
+    void CCleoInstance::OnScmInit2()
     {
-        CleoInstance.ScmInit2_Orig(); // call original
-        CleoInstance.GameBegin();
+        CleoInstance.ScmInit2_Orig();
+        if (!FrontEndMenuManager.m_bWantToLoad)
+        {
+            // if it's a new game, we can call GameBegin right now.
+            // Otherwise, defer it to OnScmInit3
+            CleoInstance.GameBegin(-1);
+        }
     }
 
     void CCleoInstance::OnScmInit3()
     {
-        CleoInstance.ScmInit3_Orig(); // call original
-        CleoInstance.GameBegin();
+        CleoInstance.ScmInit3_Orig();
+        CleoInstance.GameBegin(FrontEndMenuManager.m_nSelectedSaveGame);
     }
 
     void __declspec(naked) CCleoInstance::OnGameShutdown()
@@ -189,8 +208,7 @@ namespace CLEO
                 &GameRestartDebugDisplayTextBuffer_FrontendOrig
             );
             CodeInjector.ReplaceFunction(
-                OnUpdateGameLogics, VersionManager.TranslateMemoryAddress(MA_CALL_UPDATE_GAME_LOGICS),
-                &UpdateGameLogics_Orig
+                OnGameProcess, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_PROCESS), &OnGameProcess_Orig
             );
 
             PluginSystem.LogLoadedPlugins();
@@ -206,13 +224,12 @@ namespace CLEO
         m_initStage = InitStage::None;
     }
 
-    void CCleoInstance::GameBegin()
+    void CCleoInstance::GameBegin(int saveSlot)
     {
         if (m_bGameInProgress) return;
         m_bGameInProgress = true;
 
-        saveSlot = FrontEndMenuManager.m_bWantToLoad ? FrontEndMenuManager.m_nSelectedSaveGame : -1;
-
+        CleoInstance.saveSlot = saveSlot;
         TRACE("Starting new game session, save slot: %d", saveSlot);
 
         // late initialization if not done yet

@@ -7,7 +7,7 @@ namespace CLEO
     memory_pointer MemoryAddresses[MA_TOTAL][GV_TOTAL] = {
         // clang-format off
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
-        { 0x0053E981,	memory_und, 0x0053E981, 0x0053EE21, 0x00551174 },		// MA_CALL_UPDATE_GAME_LOGICS,
+        { 0x0053E981,	memory_und, 0x0053E981, 0x0053EE21, 0x00551174 },		// MA_CALL_GAME_PROCESS,
 
         // GV_US10,	    GV_US11,	GV_EU10,	GV_EU11,	GV_STEAM
         { 0x0057B9FD,	memory_und, 0x0057B9FD, 0x0057BF71, 0x00591379 },		// MA_CALL_CTEXTURE_DRAW_BG_RECT,

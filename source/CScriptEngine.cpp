@@ -312,12 +312,14 @@ namespace CLEO
 
     void CScriptEngine::GameBegin()
     {
+        if (scriptsLoaded) return;                   // already loaded
+        if (!CleoInstance.m_bGameInProgress) return; // game not finished loading yet
+
         auto& activeScriptsListHead =
             (CRunningScript*&)CTheScripts::pActiveScripts; // reference, but with type casted to CLEO's CRunningScript
+        if (activeScriptsListHead == nullptr) return;      // main gamescript not loaded yet
 
-        if (gameInProgress) return;                   // already started
-        if (activeScriptsListHead == nullptr) return; // main gamescript not loaded yet
-        gameInProgress = true;
+        scriptsLoaded = true;
 
         if (CGame::bMissionPackGame == 0) // regular main game
         {
@@ -376,8 +378,8 @@ namespace CLEO
 
     void CScriptEngine::GameEnd()
     {
-        if (!gameInProgress) return;
-        gameInProgress = false;
+        if (!scriptsLoaded) return;
+        scriptsLoaded = false;
 
         RemoveAllCustomScripts();
         CleoInstance.ModuleSystem.Clear();

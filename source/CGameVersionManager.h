@@ -22,8 +22,8 @@ namespace CLEO
     // considering to game version
     enum eMemoryAddress
     {
-        // UpdateGameLogics
-        MA_CALL_UPDATE_GAME_LOGICS,
+        // CGame::Process
+        MA_CALL_GAME_PROCESS,
 
         // MenuStatusNotifier
         MA_CALL_CTEXTURE_DRAW_BG_RECT,

@@ -35,15 +35,15 @@ namespace CLEO
         CModuleSystem ModuleSystem;
         OpcodeInfoDatabase OpcodeInfoDb;
 
-        int saveSlot = -1; // -1 if not loaded from save
-
-        CCleoInstance() = default;
+        int saveSlot           = -1; // -1 if not loaded from save
+        bool m_bGameInProgress = false;
+        CCleoInstance()        = default;
         virtual ~CCleoInstance();
 
         void Start(InitStage stage);
         void Stop();
 
-        void GameBegin();
+        void GameBegin(int saveSlot);
         void GameEnd();
 
         bool IsStarted() const { return m_initStage != InitStage::None; }
@@ -54,8 +54,8 @@ namespace CLEO
         void CallCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id, DWORD arg);
 
-        void(__cdecl* UpdateGameLogics_Orig)() = nullptr;
-        static void __cdecl OnUpdateGameLogics();
+        void(__cdecl* OnGameProcess_Orig)() = nullptr;
+        static void __cdecl OnGameProcess();
 
         // call for InitInstance
         HWND(__cdecl* CreateMainWnd_Orig)(HINSTANCE) = nullptr;
@@ -93,8 +93,7 @@ namespace CLEO
         static void OnDebugDisplayTextBuffer_Frontend();
 
       private:
-        InitStage m_initStage  = InitStage::None;
-        bool m_bGameInProgress = false;
+        InitStage m_initStage = InitStage::None;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 
