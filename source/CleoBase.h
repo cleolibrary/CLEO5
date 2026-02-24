@@ -36,14 +36,14 @@ namespace CLEO
         OpcodeInfoDatabase OpcodeInfoDb;
 
         int saveSlot = -1; // -1 if not loaded from save
-
+        bool m_bGameInProgress = false;
         CCleoInstance() = default;
         virtual ~CCleoInstance();
 
         void Start(InitStage stage);
         void Stop();
 
-        void GameBegin();
+        void GameBegin(int saveSlot);
         void GameEnd();
 
         bool IsStarted() const { return m_initStage != InitStage::None; }
@@ -94,7 +94,6 @@ namespace CLEO
 
       private:
         InitStage m_initStage  = InitStage::None;
-        bool m_bGameInProgress = false;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 

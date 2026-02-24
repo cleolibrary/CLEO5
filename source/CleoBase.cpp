@@ -47,7 +47,17 @@ namespace CLEO
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
     }
 
-    // called on game restart, either from new game or from loading save. Not called on the first game start.
+    /*******************************************************
+    
+        Order of callbacks during game start:
+
+            First Boot → New Game      OnScmInit2
+            First Boot → Load Save     OnScmInit2 → OnScmInit1 → OnScmInit3
+            Later → New Game           OnScmInit1
+            Later → Load Save          OnScmInit1 → OnScmInit3
+
+    ********************************************************/
+
     void CCleoInstance::OnScmInit1()
     {
         CleoInstance.ScmInit1_Orig();
@@ -55,11 +65,10 @@ namespace CLEO
         {
             // if it's a new game, we can call GameBegin right now.
             // Otherwise, defer it to OnScmInit3
-            CleoInstance.GameBegin();
+            CleoInstance.GameBegin(-1);
         }
     }
 
-    // called on the first game start, either from new game or from loading save. Not called on game restart.
     void CCleoInstance::OnScmInit2()
     {
         CleoInstance.ScmInit2_Orig();
@@ -67,15 +76,14 @@ namespace CLEO
         {
             // if it's a new game, we can call GameBegin right now.
             // Otherwise, defer it to OnScmInit3
-            CleoInstance.GameBegin();
+            CleoInstance.GameBegin(-1);
         }
     }
 
-    // called when loading save, after either OnScmInit1 or OnScmInit2
     void CCleoInstance::OnScmInit3()
     {
         CleoInstance.ScmInit3_Orig();
-        CleoInstance.GameBegin();
+        CleoInstance.GameBegin(FrontEndMenuManager.m_nSelectedSaveGame);
     }
 
     void __declspec(naked) CCleoInstance::OnGameShutdown()
@@ -216,13 +224,12 @@ namespace CLEO
         m_initStage = InitStage::None;
     }
 
-    void CCleoInstance::GameBegin()
+    void CCleoInstance::GameBegin(int saveSlot)
     {
         if (m_bGameInProgress) return;
         m_bGameInProgress = true;
 
-        saveSlot = FrontEndMenuManager.m_bWantToLoad ? FrontEndMenuManager.m_nSelectedSaveGame : -1;
-
+        CleoInstance.saveSlot = saveSlot;
         TRACE("Starting new game session, save slot: %d", saveSlot);
 
         // late initialization if not done yet

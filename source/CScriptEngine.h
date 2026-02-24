@@ -10,7 +10,7 @@ namespace CLEO
     class CScriptEngine
     {
       public:
-        bool gameInProgress = false;
+        bool scriptsLoaded = false;
 
         BYTE* scmBlock     = nullptr;
         BYTE* missionBlock = nullptr;
