@@ -7,6 +7,9 @@ namespace CLEO
     class CConfigManager
     {
       public:
+        // Initialize config file: create from embedded default if missing, add missing keys if exists
+        static void Initialize();
+
         // Read methods
         static int ReadInt(const char* section, const char* key, int defaultValue);
         static float ReadFloat(const char* section, const char* key, float defaultValue);

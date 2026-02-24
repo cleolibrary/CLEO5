@@ -146,6 +146,8 @@ namespace CLEO
             FS::create_directory(Filepath_Cleo + "\\cleo_plugins");
             FS::create_directory(Filepath_Cleo + "\\cleo_saves");
 
+            CConfigManager::Initialize();
+
             OpcodeInfoDb.LoadCommands((Filepath_Cleo + "\\.config\\sa.json").c_str());
 
             CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
