@@ -46,3 +46,4 @@ node_modules/
 *.cs
 *.cm
 *.mod
+_codeql_detected_source_root
