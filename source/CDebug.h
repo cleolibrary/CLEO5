@@ -4,8 +4,11 @@
 class CDebug
 {
   public:
-    CDebug() : m_hFile(Filepath_Log)
+    CDebug()
     {
+        std::error_code ec;
+        FS::create_directories(FS::path(Filepath_Log).parent_path(), ec);
+        m_hFile.open(Filepath_Log);
         Trace(CLEO::eLogLevel::Default, "Log started.");
 
 #ifdef _DEBUG

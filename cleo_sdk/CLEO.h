@@ -597,6 +597,9 @@ namespace CLEO
         // absolute game user files directory filepath without trailling path separator
         LPCSTR WINAPI CLEO_GetUserDirectory();
 
+        // absolute log files directory filepath without trailling path separator
+        LPCSTR WINAPI CLEO_GetLogDirectory();
+
         void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
 
         // Config file (.cleo_config.ini) management for plugins

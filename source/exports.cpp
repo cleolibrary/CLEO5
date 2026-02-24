@@ -503,6 +503,11 @@ namespace CLEO
             return Filepath_User.c_str();
         }
 
+        LPCSTR WINAPI CLEO_GetLogDirectory()
+        {
+            return Filepath_LogDir.c_str();
+        }
+
         void WINAPI CLEO_Log(eLogLevel level, const char* msg)
         {
             Debug.Trace(level, msg);
