@@ -35,9 +35,9 @@ namespace CLEO
         CModuleSystem ModuleSystem;
         OpcodeInfoDatabase OpcodeInfoDb;
 
-        int saveSlot = -1; // -1 if not loaded from save
+        int saveSlot           = -1; // -1 if not loaded from save
         bool m_bGameInProgress = false;
-        CCleoInstance() = default;
+        CCleoInstance()        = default;
         virtual ~CCleoInstance();
 
         void Start(InitStage stage);
@@ -93,7 +93,7 @@ namespace CLEO
         static void OnDebugDisplayTextBuffer_Frontend();
 
       private:
-        InitStage m_initStage  = InitStage::None;
+        InitStage m_initStage = InitStage::None;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 
