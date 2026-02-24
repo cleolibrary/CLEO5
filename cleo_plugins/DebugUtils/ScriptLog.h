@@ -71,6 +71,11 @@ class ScriptLog
     bool m_customMain  = false;
     WORD m_prevCommand = 0xFFFF;
 
+    // pending frame header (used when logDebugScriptsOnly to skip frames with no debug scripts)
+    bool m_pendingFrameHeader   = false;
+    size_t m_pendingFrameNumber = 0;
+    size_t m_pendingScriptCount = 0;
+
     // event handlers
     static void SetConditionResult(CLEO::CRunningScript* script, bool state);
     CLEO::MemPatch m_patchSetConditionResult;

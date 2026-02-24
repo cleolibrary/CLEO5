@@ -174,6 +174,18 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
     // start new script's log block
     if (script != nullptr && script != m_currScript && state != LoggingState::Disabled && m_currScriptLogging)
     {
+        // write pending frame header (delayed when logDebugScriptsOnly to skip empty frames)
+        if (m_pendingFrameHeader)
+        {
+            m_pendingFrameHeader = false;
+            LogNewLine();
+            LogAppend("--|-- Frame ");
+            LogAppendNum(m_pendingFrameNumber);
+            LogAppend(" - Active Scripts: ");
+            LogAppendNum(m_pendingScriptCount);
+            LogLine("  |");
+        }
+
         // script file path
         static std::string filename; // keep for performance
 
@@ -793,6 +805,16 @@ void ScriptLog::OnGameProcessBefore()
         next = next->m_pNext;
     }
 
+    if (logDebugScriptsOnly)
+    {
+        // delay frame header until first debug script is logged in this frame
+        m_pendingFrameHeader  = true;
+        m_pendingFrameNumber  = CTimer::m_FrameCounter;
+        m_pendingScriptCount  = scriptCount;
+        return;
+    }
+
+    m_pendingFrameHeader = false; // clear any leftover pending header
     LogNewLine();
     LogAppend("--|-- Frame ");
     LogAppendNum(CTimer::m_FrameCounter);
@@ -803,6 +825,7 @@ void ScriptLog::OnGameProcessBefore()
 
 void ScriptLog::OnGameProcessAfter()
 {
+    m_pendingFrameHeader = false; // clear any unwritten frame header (no debug scripts ran this frame)
     SetCurrScript(nullptr);
 }
 

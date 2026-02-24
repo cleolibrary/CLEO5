@@ -152,8 +152,23 @@ namespace CLEO
                 return nullptr;
             }
 
-            auto cs = (CCustomScript*)thread;
-            return cs->GetScriptFileName();
+            // safely check if this is a known custom script without relying on bIsCustom flag
+            auto& eng = CleoInstance.ScriptEngine;
+            if (eng.CustomMission == thread)
+            {
+                return eng.CustomMission->GetScriptFileName();
+            }
+            for (const auto cs : eng.CustomScripts)
+            {
+                if (cs == thread) return cs->GetScriptFileName();
+            }
+            for (const auto cs : eng.ScriptsWaitingForDelete)
+            {
+                if (cs == thread) return cs->GetScriptFileName();
+            }
+
+            // native script - determine source file based on bIsExternal flag
+            return thread->IsExternal() ? eng.ScriptImgFileName.c_str() : eng.MainScriptFileName.c_str();
         }
 
         LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread)
