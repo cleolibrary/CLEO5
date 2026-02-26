@@ -170,7 +170,7 @@ namespace CLEO
             }
         }
 
-        if (modified)
+        if (modified) 
         {
             SaveIni();
         }

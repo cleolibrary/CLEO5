@@ -100,6 +100,7 @@ jobs:
           mkdir .output\Release\cleo_readme\examples
 
           @echo Copy files
+          copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
           xcopy /E /I examples .output\Release\cleo_readme\examples
