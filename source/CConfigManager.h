@@ -24,6 +24,11 @@ namespace CLEO
 
       private:
         static std::unordered_map<std::string, std::string> cache;
+
+        static bool SaveIni();
+        static void EnsureLoaded();
+        static void UpdateUserConfig(const char* defaultData, size_t defaultSize);
+        static std::string StripInlineComment(const char* value);
         static std::string MakeKey(const char* section, const char* key);
         static const std::string& GetCachedValue(const char* section, const char* key);
     };

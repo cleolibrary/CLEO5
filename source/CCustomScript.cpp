@@ -45,7 +45,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
         {
             // store script file directory and name
             std::string pathStr = szFileName;
-            FilepathNormalize(pathStr, false);
+            FilepathNormalize(pathStr);
             FS::path path = pathStr;
 
             // file exists?
@@ -114,7 +114,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             else
             {
                 m_debugMode = CleoInstance.ScriptEngine.NativeScriptsDebugMode; // global setting
-                m_workDir   = Filepath_Game;                                    // game root
+                m_workDir   = GetGameDirectory();                               // game root
             }
 
             using std::ios;
@@ -325,10 +325,10 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
         }
 
         auto result = fsPath.string();
-        FilepathNormalize(result, false);
+        FilepathNormalize(result);
 
         // ModLoader support: make paths withing game directory relative to it
-        FilepathRemoveParent(result, Filepath_Game);
+        FilepathRemoveParent(result, GetGameDirectory());
 
         return std::move(result);
     }
@@ -338,19 +338,19 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
     switch (virtualPrefix)
     {
     case VPref::User:
-        resolved = Filepath_User;
+        resolved = GetUserDirectory();
         break;
     case VPref::Script:
         resolved = GetScriptFileDir();
         break;
     case VPref::Game:
-        resolved = Filepath_Game;
+        resolved = GetGameDirectory();
         break;
     case VPref::Cleo:
-        resolved = Filepath_Cleo;
+        resolved = GetCleoDirectory();
         break;
     case VPref::Modules:
-        resolved = Filepath_Cleo + "\\cleo_modules";
+        resolved = GetCleoDirectory() + "\\cleo_modules";
         break;
     default:
         resolved = "<error>";
@@ -362,7 +362,7 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
         resolved /= *it;
 
     auto result = resolved.string();
-    FilepathNormalize(result, false);
+    FilepathNormalize(result);
     return std::move(result);
 }
 
