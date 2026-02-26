@@ -88,7 +88,6 @@ jobs:
 
           @echo Copy files
           copy preview_changes.md .output\Release\cleo_readme\CLEO5_Preview.md
-          copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           copy cleo_plugins\.output\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
