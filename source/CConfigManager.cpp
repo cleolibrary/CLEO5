@@ -104,7 +104,7 @@ namespace CLEO
         if (ini.SetValue(section, key, value) < 0) return false;
 
         if (!SaveIni()) return false;
-        
+
         cache[cacheKey] = value;
         return true;
     }
@@ -243,8 +243,8 @@ namespace CLEO
                 {
                     group.clear();
                 }
-                
-                // add a blank line when a new group of settings starts 
+
+                // add a blank line when a new group of settings starts
                 // (e.g. "DebugUtils.General", "MemoryOperations.Limits", etc)
                 if (group != lastGroup)
                 {
