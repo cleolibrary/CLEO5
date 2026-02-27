@@ -147,6 +147,7 @@ namespace CLEO
 
         CSimpleIniA::TNamesDepend sections;
         defaults.GetAllSections(sections);
+        sections.sort(CSimpleIniA::Entry::LoadOrder());
 
         bool modified = false;
         for (const auto& section : sections)
@@ -218,6 +219,7 @@ namespace CLEO
 
         CSimpleIniA::TNamesDepend sections;
         ini.GetAllSections(sections);
+        sections.sort(CSimpleIniA::Entry::LoadOrder());
 
         for (const auto& section : sections)
         {
