@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <SimpleIni.h>
 
 namespace CLEO
 {
@@ -23,6 +24,8 @@ namespace CLEO
         static const char* GetConfigPath();
 
       private:
+        static CSimpleIniA ini;
+        static bool iniLoaded;
         static std::unordered_map<std::string, std::string> cache;
 
         static bool SaveIni();

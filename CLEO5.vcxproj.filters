@@ -25,6 +25,9 @@
     <Filter Include="third_party\simdjson">
       <UniqueIdentifier>{2fba67c2-5ab9-4f75-82ed-e1024b272094}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third_party\simpleini">
+      <UniqueIdentifier>{5f3e89f1-4952-4b4e-9f91-fe76de288c69}</UniqueIdentifier>
+    </Filter>
     <Filter Include="third_party\plugin_sdk">
       <UniqueIdentifier>{5cead5cc-9a75-4d2e-99b5-ebbc8f9d6d86}</UniqueIdentifier>
     </Filter>
@@ -196,6 +199,9 @@
     </ClInclude>
     <ClInclude Include="third-party\simdjson\singleheader\simdjson.h">
       <Filter>third_party\simdjson</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party\simpleini\SimpleIni.h">
+      <Filter>third_party\simpleini</Filter>
     </ClInclude>
     <ClInclude Include="source\CCustomScript.h">
       <Filter>source\core</Filter>
