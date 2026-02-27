@@ -219,8 +219,6 @@ namespace CLEO
 
     bool CConfigManager::SaveIni()
     {
-        const auto PADDING_SIZE = 43; // align values in INI file for better readability
-
         std::ofstream out(GetConfigPath(), std::ios::binary);
         if (!out) return false;
 
@@ -229,6 +227,18 @@ namespace CLEO
         CSimpleIniA::TNamesDepend sections;
         ini.GetAllSections(sections);
         sections.sort(CSimpleIniA::Entry::LoadOrder());
+
+        // find the longest key across all sections for alignment
+        size_t maxKeyLength = 0;
+        for (const auto& section : sections)
+        {
+            CSimpleIniA::TNamesDepend keys;
+            ini.GetAllKeys(section.pItem, keys);
+            for (const auto& key : keys)
+            {
+                maxKeyLength = std::max(maxKeyLength, std::strlen(key.pItem));
+            }
+        }
 
         for (const auto& section : sections)
         {
@@ -264,9 +274,9 @@ namespace CLEO
                 }
 
                 std::string paddedKey = key.pItem;
-                if (paddedKey.length() < PADDING_SIZE)
+                if (paddedKey.length() < maxKeyLength)
                 {
-                    paddedKey.append(PADDING_SIZE - paddedKey.length(), ' ');
+                    paddedKey.append(maxKeyLength - paddedKey.length(), ' ');
                 }
 
                 out << paddedKey << " = " << value;
