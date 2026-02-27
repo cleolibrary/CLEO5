@@ -71,9 +71,6 @@
     <ClInclude Include="..\..\source\OpcodeInfoDatabase.h">
       <Filter>cleo</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\third-party\simpleini\SimpleIni.h">
-      <Filter>cleo</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="plugin_sdk">

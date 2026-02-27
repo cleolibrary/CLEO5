@@ -1,4 +1,5 @@
 #pragma once
+#include "..\cleo_sdk\CLEO.h"
 #include <map>
 #include <string>
 #include <unordered_map>
