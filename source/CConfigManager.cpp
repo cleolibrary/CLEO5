@@ -10,6 +10,14 @@ namespace CLEO
 
     std::unordered_map<std::string, std::string> CConfigManager::cache;
 
+    HMODULE GetCurrentModule()
+    {
+        HMODULE hModule = NULL;
+        GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)GetCurrentModule, &hModule);
+
+        return hModule;
+    }
+
     std::string CConfigManager::MakeKey(const char* section, const char* key)
     {
         return std::string(section) + "." + key;
@@ -181,7 +189,7 @@ namespace CLEO
         iniLoaded = true;
 
         const char* path  = GetConfigPath();
-        const auto handle = GetModuleHandle("CLEO.asi");
+        const auto handle = GetCurrentModule();
 
         if (const auto iniFile = FindResource(handle, MAKEINTRESOURCE(IDR_DEFAULT_CONFIG), RT_RCDATA))
         {
