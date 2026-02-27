@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "CConfigManager.h"
 #include "resource.h"
-
 #include <SimpleIni.h>
 
 namespace CLEO
@@ -104,12 +103,10 @@ namespace CLEO
 
         if (ini.SetValue(section, key, value) < 0) return false;
 
-        if (SaveIni())
-        {
-            cache[cacheKey] = value;
-            return true;
-        }
-        return false;
+        if (!SaveIni()) return false;
+        
+        cache[cacheKey] = value;
+        return true;
     }
 
     const char* CConfigManager::GetConfigPath()
@@ -156,6 +153,7 @@ namespace CLEO
         {
             CSimpleIniA::TNamesDepend keys;
             defaults.GetAllKeys(section.pItem, keys);
+            keys.sort(CSimpleIniA::Entry::LoadOrder());
 
             for (const auto& key : keys)
             {
@@ -225,13 +223,33 @@ namespace CLEO
         {
             out << "[" << section.pItem << "]" << std::endl;
 
+            std::string lastGroup = {};
+
             CSimpleIniA::TNamesDepend keys;
             ini.GetAllKeys(section.pItem, keys);
+            keys.sort(CSimpleIniA::Entry::LoadOrder());
 
             for (const auto& key : keys)
             {
                 const char* value   = ini.GetValue(section.pItem, key.pItem);
                 const char* comment = key.pComment;
+
+                std::string group = key.pItem;
+                if (auto pos = group.find_last_of('.'); pos != std::string::npos)
+                {
+                    group = group.substr(0, pos);
+                }
+                else
+                {
+                    group.clear();
+                }
+                
+                // add a blank line when a new group of settings starts (e.g. "DebugUtils.General", "MemoryOperations.Limits", etc)
+                if (group != lastGroup)
+                {
+                    out << std::endl;
+                    lastGroup = group;
+                }
 
                 std::string paddedKey = key.pItem;
                 if (paddedKey.length() < PADDING_SIZE)
