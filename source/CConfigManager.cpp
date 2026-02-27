@@ -244,7 +244,8 @@ namespace CLEO
                     group.clear();
                 }
                 
-                // add a blank line when a new group of settings starts (e.g. "DebugUtils.General", "MemoryOperations.Limits", etc)
+                // add a blank line when a new group of settings starts 
+                // (e.g. "DebugUtils.General", "MemoryOperations.Limits", etc)
                 if (group != lastGroup)
                 {
                     out << std::endl;
