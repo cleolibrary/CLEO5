@@ -1,13 +1,11 @@
 #include "stdafx.h"
 #include "CConfigManager.h"
 #include "resource.h"
-#include <SimpleIni.h>
 
 namespace CLEO
 {
-    static CSimpleIniA ini;
-    static bool iniLoaded = false;
-
+    CSimpleIniA CConfigManager::ini;
+    bool CConfigManager::iniLoaded = false;
     std::unordered_map<std::string, std::string> CConfigManager::cache;
 
     HMODULE GetCurrentModule()
