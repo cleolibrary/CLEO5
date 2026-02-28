@@ -100,7 +100,6 @@ jobs:
           mkdir .output\Release\cleo\cleo_plugins
 
           @echo Copy files
-          copy source\cleo_config.ini .output\Release\cleo\.cleo_config.ini
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           
           @echo Download Sanny Builder Library json

@@ -495,12 +495,17 @@ namespace CLEO
 
         LPCSTR WINAPI CLEO_GetGameDirectory()
         {
-            return Filepath_Game.c_str();
+            return GetGameDirectory().c_str();
         }
 
         LPCSTR WINAPI CLEO_GetUserDirectory()
         {
-            return Filepath_User.c_str();
+            return GetUserDirectory().c_str();
+        }
+
+        LPCSTR WINAPI CLEO_GetLogDirectory()
+        {
+            return GetLogDirectory().c_str();
         }
 
         void WINAPI CLEO_Log(eLogLevel level, const char* msg)

@@ -1,5 +1,6 @@
-#include "stdafx.h"
 #include "OpcodeInfoDatabase.h"
+#include "..\cleo_sdk\CLEO_Utils.h"
+#include <simdjson.h>
 #include <algorithm>
 #include <fstream>
 

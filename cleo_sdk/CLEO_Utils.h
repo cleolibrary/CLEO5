@@ -339,7 +339,7 @@ namespace CLEO
 
     // Normalize filepath, collapse all parent directory references, trim path separators at front and back. Input
     // should be path without expandable %variables%
-    static void FilepathNormalize(std::string& path, bool normalizeCase = true)
+    static void FilepathNormalize(std::string& path)
     {
         if (path.empty()) return;
 
@@ -351,8 +351,6 @@ namespace CLEO
         {
             path.erase(pos, 1);
         }
-
-        if (normalizeCase) StringToLower(path);
 
         // collapse references to parent directory
         const auto ParentRef    = "\\..\\";
@@ -436,7 +434,7 @@ namespace CLEO
             {
                 absolute += '\\';
                 absolute += path;
-                FilepathNormalize(absolute, false);
+                FilepathNormalize(absolute);
                 path = absolute.c_str();
             }
         }

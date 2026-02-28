@@ -59,7 +59,7 @@ bool CModuleSystem::LoadDirectory(const char* path)
 
 bool CModuleSystem::LoadCleoModules()
 {
-    const auto path = FS::path(Filepath_Cleo).append("cleo_modules").string();
+    const auto path = FS::path(GetCleoDirectory()).append("cleo_modules").string();
     return LoadDirectory(path.c_str());
 }
 

@@ -28,7 +28,7 @@
 
 #include "..\cleo_sdk\CLEO.h"
 #include "..\cleo_sdk\CLEO_Utils.h"
-
+#include "CConfigManager.h"
 #include "simdjson.h"
 
 #include <plugin.h>
@@ -46,32 +46,74 @@
 #include <RenderWare.h>
 #include <extensions/Screen.h>
 
-// global constant paths. Initialize before anything else
+// global constant paths – construct-on-first-use to guarantee init order
 namespace FS = std::filesystem;
 
-static std::string GetGameDirectory() // already stored in Filepath_Game
+inline const std::string& GetGameDirectory()
 {
-    std::string path;
-    path.resize(MAX_PATH);
-    GetModuleFileNameA(NULL, path.data(), path.size()); // game exe absolute path
-    path.resize(CLEO::FilepathGetParent(path).length());
-    CLEO::FilepathNormalize(path, false);
-    return std::move(path);
+    static std::string path = [] {
+        std::string p;
+        p.resize(MAX_PATH);
+        GetModuleFileNameA(NULL, p.data(), p.size()); // game exe absolute path
+        p.resize(CLEO::FilepathGetParent(p).length());
+        CLEO::FilepathNormalize(p);
+        return p;
+    }();
+    return path;
 }
 
-static std::string GetUserDirectory() // already stored in Filepath_User
+inline const std::string& GetUserDirectory()
 {
-    static const auto GTA_InitUserDirectories =
-        (char*(__cdecl*)())0x00744FB0; // SA 1.0 US - CFileMgr::InitUserDirectories
+    static std::string path = [] {
+        // SA 1.0 US - CFileMgr::InitUserDirectories
+        static const auto GTA_InitUserDirectories = (char*(__cdecl*)())0x00744FB0;
 
-    std::string path = GTA_InitUserDirectories();
-    CLEO::FilepathNormalize(path);
-
-    return std::move(path);
+        std::string p = GTA_InitUserDirectories();
+        CLEO::FilepathNormalize(p);
+        return p;
+    }();
+    return path;
 }
 
-inline const std::string Filepath_Game   = GetGameDirectory();
-inline const std::string Filepath_User   = GetUserDirectory();
-inline const std::string Filepath_Cleo   = Filepath_Game + "\\cleo";
-inline const std::string Filepath_Config = Filepath_Cleo + "\\.cleo_config.ini";
-inline const std::string Filepath_Log    = Filepath_Game + "\\cleo.log";
+// Force re-read of user directory (may be modified by PortableGTA.asi etc.)
+inline void UpdateUserDirectoryPath()
+{
+    // SA 1.0 US - CFileMgr::InitUserDirectories
+    static const auto GTA_InitUserDirectories = (char*(__cdecl*)())0x00744FB0;
+
+    std::string p = GTA_InitUserDirectories();
+    CLEO::FilepathNormalize(p);
+    const_cast<std::string&>(GetUserDirectory()) = std::move(p);
+}
+
+inline const std::string& GetCleoDirectory()
+{
+    static std::string path = GetGameDirectory() + "\\cleo";
+    return path;
+}
+
+inline const std::string& GetLogDirectory()
+{
+    static std::string path = [] {
+        auto dir = CLEO::CConfigManager::ReadString("General", "LogDirectory", "");
+
+        if (dir.empty()) return GetGameDirectory();
+
+        FS::path fsPath(dir);
+        if (!fsPath.is_absolute())
+        {
+            fsPath = GetGameDirectory() / fsPath;
+        }
+
+        std::string result = fsPath.string();
+        CLEO::FilepathNormalize(result);
+        return result;
+    }();
+    return path;
+}
+
+inline const std::string& GetLogPath()
+{
+    static std::string path = GetLogDirectory() + "\\cleo.log";
+    return path;
+}

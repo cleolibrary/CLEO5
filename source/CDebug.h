@@ -4,7 +4,7 @@
 class CDebug
 {
   public:
-    CDebug() : m_hFile(Filepath_Log)
+    CDebug() : m_hFile(GetLogPath())
     {
         Trace(CLEO::eLogLevel::Default, "Log started.");
 

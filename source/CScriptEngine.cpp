@@ -323,12 +323,12 @@ namespace CLEO
 
         if (CGame::bMissionPackGame == 0) // regular main game
         {
-            MainScriptFileDir  = Filepath_Game + "\\data\\script";
+            MainScriptFileDir  = GetGameDirectory() + "\\data\\script";
             MainScriptFileName = "main.scm";
         }
         else // mission pack
         {
-            MainScriptFileDir  = Filepath_User + StringPrintf("\\MPACK\\MPACK%d", CGame::bMissionPackGame);
+            MainScriptFileDir  = GetUserDirectory() + StringPrintf("\\MPACK\\MPACK%d", CGame::bMissionPackGame);
             MainScriptFileName = "scr.scm";
         }
         ScriptImgFileName      = "script.img";
@@ -351,7 +351,7 @@ namespace CLEO
         }
         if (ver != 0) TRACE("Legacy mode for native scripts active: CLEO%d", ver);
 
-        MainScriptCurWorkDir = Filepath_Game;
+        MainScriptCurWorkDir = GetGameDirectory();
 
         CleoInstance.ModuleSystem.LoadCleoModules();
         LoadState(CleoInstance.saveSlot);
@@ -405,17 +405,17 @@ namespace CLEO
             }
         };
 
-        auto searchPattern = Filepath_Cleo + "\\*" + cs_ext;
+        auto searchPattern = GetCleoDirectory() + "\\*" + cs_ext;
         auto list          = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
         processFileList(list);
         CLEO_StringListFree(list);
 
-        searchPattern = Filepath_Cleo + "\\*" + cs3_ext;
+        searchPattern = GetCleoDirectory() + "\\*" + cs3_ext;
         list          = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
         processFileList(list);
         CLEO_StringListFree(list);
 
-        searchPattern = Filepath_Cleo + "\\*" + cs4_ext;
+        searchPattern = GetCleoDirectory() + "\\*" + cs4_ext;
         list          = CLEO_ListDirectory(nullptr, searchPattern.c_str(), false, true);
         processFileList(list);
         CLEO_StringListFree(list);
@@ -522,7 +522,7 @@ namespace CLEO
 
         if (saveSlot == -1) return; // new game started
 
-        auto saveFile = FS::path(Filepath_Cleo).append(StringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
+        auto saveFile = FS::path(GetCleoDirectory()).append(StringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
 
         // load cleo saving file
         try

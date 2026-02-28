@@ -72,12 +72,12 @@ void CPluginSystem::LoadPlugins()
 
     TRACE(""); // separator
     TRACE("Listing CLEO plugins:");
-    ScanPluginsDir(FS::path(Filepath_Cleo).append("cleo_plugins").string(), "SA.", ".cleo");
+    ScanPluginsDir(FS::path(GetCleoDirectory()).append("cleo_plugins").string(), "SA.", ".cleo");
     ScanPluginsDir(
-        FS::path(Filepath_Cleo).append("cleo_plugins").string(), "",
+        FS::path(GetCleoDirectory()).append("cleo_plugins").string(), "",
         ".cleo"
-    );                                          // legacy plugins in new location
-    ScanPluginsDir(Filepath_Cleo, "", ".cleo"); // legacy plugins in old location
+    );                                               // legacy plugins in new location
+    ScanPluginsDir(GetCleoDirectory(), "", ".cleo"); // legacy plugins in old location
 
     // reverse order, so opcodes from CLEO5 plugins can overwrite opcodes from legacy plugins
     if (!paths.empty())
@@ -87,7 +87,7 @@ void CPluginSystem::LoadPlugins()
             std::string filename = *it;
 
             // ModLoader support: keep game dir relative paths relative
-            FilepathRemoveParent(filename, Filepath_Game);
+            FilepathRemoveParent(filename, GetGameDirectory());
 
             TRACE(""); // separator
             TRACE("Loading plugin '%s'", filename.c_str());
@@ -159,13 +159,13 @@ void CLEO::CPluginSystem::LogLoadedPlugins() const
         {
             filename.resize(strlen(filename.data()));
 
-            if (StringStartsWith(filename, Filepath_Game, false) || StringEndsWith(filename, ".asi", false) ||
+            if (StringStartsWith(filename, GetGameDirectory(), false) || StringEndsWith(filename, ".asi", false) ||
                 StringEndsWith(filename, ".cleo", false))
             {
                 std::error_code err;
                 auto fileSize = (size_t)FS::file_size(filename, err);
 
-                FilepathRemoveParent(filename, Filepath_Game);
+                FilepathRemoveParent(filename, GetGameDirectory());
 
                 TRACE(" %s (%zu bytes)", filename.c_str(), fileSize);
             }

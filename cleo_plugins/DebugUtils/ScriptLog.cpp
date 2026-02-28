@@ -28,7 +28,7 @@ ScriptLog::ScriptLog()
         return;
     }
 
-    m_logFilePath = CLEO_GetGameDirectory();
+    m_logFilePath = CLEO_GetLogDirectory();
     m_logFilePath += "\\cleo_script.log";
     LogFileDelete();
 

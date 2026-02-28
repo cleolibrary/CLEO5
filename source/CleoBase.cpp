@@ -141,12 +141,12 @@ namespace CLEO
         {
             TRACE("CLEO initialization: Phase 1");
 
-            FS::create_directory(Filepath_Cleo);
-            FS::create_directory(Filepath_Cleo + "\\cleo_modules");
-            FS::create_directory(Filepath_Cleo + "\\cleo_plugins");
-            FS::create_directory(Filepath_Cleo + "\\cleo_saves");
+            FS::create_directory(GetCleoDirectory());
+            FS::create_directory(GetCleoDirectory() + "\\cleo_modules");
+            FS::create_directory(GetCleoDirectory() + "\\cleo_plugins");
+            FS::create_directory(GetCleoDirectory() + "\\cleo_saves");
 
-            OpcodeInfoDb.LoadCommands((Filepath_Cleo + "\\.config\\sa.json").c_str());
+            OpcodeInfoDb.LoadCommands((GetCleoDirectory() + "\\.config\\sa.json").c_str());
 
             CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
             GameMenu.Inject(CodeInjector);
@@ -191,8 +191,7 @@ namespace CLEO
         {
             TRACE("CLEO initialization: Phase 2");
 
-            const_cast<std::string&>(Filepath_User) =
-                GetUserDirectory(); // force update now, as it could be modifed by PortableGTA.asi
+            UpdateUserDirectoryPath(); // force update now, as it could be modified by PortableGTA.asi
 
             ScriptEngine.InjectLate(CodeInjector);
 
@@ -326,7 +325,7 @@ namespace CLEO
             if (thread != nullptr)
                 fsSearchPath = ((CCustomScript*)thread)->GetWorkDir() / fsSearchPath;
             else
-                fsSearchPath = Filepath_Game / fsSearchPath;
+                fsSearchPath = GetGameDirectory() / fsSearchPath;
         }
 
         WIN32_FIND_DATA wfd = {0};
