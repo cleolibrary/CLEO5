@@ -419,34 +419,29 @@ namespace CLEO
     }
 
     // does normalized file path points inside game directories? (game root or user files)
+    // input path is expected to be absolute or relative to game directory
     static bool FilepathIsSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        if (strchr(path, '%') != nullptr)
+        if (path == nullptr || strchr(path, '%') != nullptr) return false;
+
+        std::string resolved;
+        if (std::filesystem::path(path).is_relative())
         {
-            return false; // do not allow paths containing expandable variables
+            resolved = CLEO_GetGameDirectory();
+            resolved += '\\';
+            resolved += path;
+        }
+        else
+        {
+            resolved = path;
         }
 
-        std::string absolute;
-        if (!std::filesystem::path(path).is_absolute())
-        {
-            absolute = CLEO_GetScriptWorkDir(thread);
-            if (!absolute.empty())
-            {
-                absolute += '\\';
-                absolute += path;
-                FilepathNormalize(absolute);
-                path = absolute.c_str();
-            }
-        }
+        FilepathNormalize(resolved);
 
-        if (!StringStartsWith(path, CLEO_GetGameDirectory(), false) &&
-            !StringStartsWith(path, CLEO_GetUserDirectory(), false))
-        {
-            if (StringStartsWith(path, "..")) // relative path trying to escape game's directory
-                return false;
-        }
-
-        return true;
+        if (StringStartsWith(resolved, CLEO_GetGameDirectory(), false)) return true;
+        if (StringStartsWith(resolved, CLEO_GetUserDirectory(), false)) return true;
+        
+        return false; // reject everything outside game/user dirs
     }
 
     static bool IsObjectHandleValid(DWORD handle)

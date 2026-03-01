@@ -481,9 +481,8 @@ namespace CLEO
 
     CCustomScript* CScriptEngine::CreateCustomScript(CRunningScript* fromThread, const char* script_name, int label)
     {
-        auto filename =
-            reinterpret_cast<CCustomScript*>(fromThread)
-                ->ResolvePath(script_name, DIR_CLEO); // legacy: default search location is game\cleo directory
+        // convert path relative to CLEO directory to relative to game directory
+        auto filename = reinterpret_cast<CCustomScript*>(fromThread)->ResolvePath(script_name, DIR_CLEO);
 
         if (label != 0) // create from label
         {

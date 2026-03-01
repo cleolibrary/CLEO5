@@ -150,7 +150,6 @@ function xit_cs5(spec_name: string, callback: int)
     xit(spec_name, callback)
 end
 
-
 function _cleo_tester_fail
     int test_index = _cleo_tester_read_var(VAR_TEST_INDEX)
     int test_name = get_label_pointer @_cleo_tester_spec_name
@@ -403,6 +402,27 @@ function assert_suffix(actual: string, expectedSuffix: string, ignoreCase: int)
     end
 end
 
+/// checks if code at label suspends current script
+function assert_suspend(label: int)
+    debug_on
+    int code = get_label_pointer label
+    int script = CRunningScript_new(code)
+    int op_result = CRunningScript_ProcessOneCommand(script)
+
+    free_memory {address} script
+    assert_eq(op_result, 0xFF) // OR_ERROR = -1
+
+    cleo_return 0
+
+    function CRunningScript_ProcessOneCommand<thiscall, 0x469EB0>(struct: int { CRunningScript* }): int
+    function CRunningScript_new(ip: int): int
+        int struct = allocate_memory {size} 0xE0
+        write_memory_with_offset {address} struct {offset} 0x10 {size} 4 {value} ip // baseIp
+        write_memory_with_offset {address} struct {offset} 0x14 {size} 4 {value} ip // currentIp
+        return struct
+    end
+end
+
 /// registers a callback that runs before each unit test (test setup)
 function before_each(callback: int)
     _cleo_tester_write_var(VAR_BEFORE_EACH, callback)
@@ -443,6 +463,5 @@ end
 function _restore_current_script_compat
     _set_current_script_compat_to(DEFAULT_COMPAT)
 end
-
 
 :_cleo_tester_skip_fns

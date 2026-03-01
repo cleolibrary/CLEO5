@@ -322,10 +322,8 @@ namespace CLEO
         auto fsSearchPath = FS::path(searchPath);
         if (!fsSearchPath.is_absolute())
         {
-            if (thread != nullptr)
-                fsSearchPath = ((CCustomScript*)thread)->GetWorkDir() / fsSearchPath;
-            else
-                fsSearchPath = GetGameDirectory() / fsSearchPath;
+            const auto baseDir = thread ? ((CCustomScript*)thread)->GetWorkDir() : GetGameDirectory();
+            fsSearchPath       = baseDir / fsSearchPath;
         }
 
         WIN32_FIND_DATA wfd = {0};

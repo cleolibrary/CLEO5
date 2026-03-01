@@ -476,6 +476,8 @@ namespace CLEO
         LPCSTR WINAPI CLEO_GetScriptFilename(const CRunningScript* thread);
 
         LPCSTR WINAPI CLEO_GetScriptWorkDir(const CRunningScript* thread);
+
+        // set base directory for relative paths used by the script. Can use virtual prefixes like "cleo:" or "user:"
         void WINAPI CLEO_SetScriptWorkDir(CRunningScript* thread, const char* path);
 
         DWORD WINAPI CLEO_GetCleoCallStackSize(CRunningScript* thread); // get length of current cleo_call chain

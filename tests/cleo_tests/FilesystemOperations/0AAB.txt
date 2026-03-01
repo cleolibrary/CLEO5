@@ -5,13 +5,14 @@ script_name "0AAB"
 test("0AAB (does_file_exist)", tests)
 terminate_this_custom_script
 
-
 function tests
 
     it("should fail on a non-existing file", test1)
     it("should success on existing file", test2)
     it_cs5("should handle .\ prefix", test3_cs5)
     it_cs4("should handle .\ prefix", test3_cs4)
+    it("should fail on paths outside of game or user directory", test4)
+    it("should allow virtual prefixes game or user directory", test4)
     return
 
     function test1
@@ -23,20 +24,75 @@ function tests
         does_file_exist {path} "cleo\.cleo_config.ini" // tested opcode
         assert_result_true()
     end
-    
+
     function test3_cs5
         does_file_exist {path} ".\0AAB.s"
         assert_result_true()
-        
+
         does_file_exist {path} ".\cleo.asi"
         assert_result_false()
     end
-    
+
     function test3_cs4
         does_file_exist {path} ".\0AAB.s"
         assert_result_false()
-        
+
         does_file_exist {path} ".\cleo.asi"
         assert_result_true()
     end
+
+    function test4
+
+        assert_suspend(@suspend2)
+        assert_suspend(@suspend3)
+        assert_suspend(@suspend4)
+        assert_suspend(@suspend5)
+        assert_suspend(@suspend6)
+        assert_suspend(@suspend7)
+        assert_suspend(@suspend8)
+    end
+    
+    function test5
+        does_file_exist {path} "root:/cleo.asi"
+        assert_result_true()
+        does_file_exist {path} "root:\CLEO.asi"
+        assert_result_true()
+        does_file_exist {path} "root:\data\..\CLEO.asi"
+        assert_result_true()
+        does_file_exist {path} "cleo:\..\CLEO.asi"
+        assert_result_true()
+        does_file_exist {path} "cleo\cleo_plugins\..\..\CLEO.asi"
+        assert_result_true()
+        does_file_exist {path} "user:\gta_sa.set"
+        assert_result_true()
+    
+    end
 end
+
+// absolute path outside game directory
+:suspend2
+does_file_exist "C:\Windows\System32\cmd.exe"
+
+// absolute path outside game directory (forward slashes)
+:suspend3
+does_file_exist "C:/Windows/System32/cmd.exe"
+
+// relative path with embedded parent references escaping game directory
+:suspend4
+does_file_exist "cleo\..\..\test.txt"
+
+// relative path with embedded parent references (forward slashes)
+:suspend5
+does_file_exist "cleo/../../test.txt"
+
+// path with expandable environment variables
+:suspend6
+does_file_exist "%WINDIR%\System32\cmd.exe"
+
+// virtual path escaping via parent reference
+:suspend7
+does_file_exist "root:\..\test.txt"
+
+// virtual path escaping via parent reference (forward slashes)
+:suspend8
+does_file_exist "root:/../test.txt"
