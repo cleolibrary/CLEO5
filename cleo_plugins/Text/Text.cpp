@@ -8,7 +8,6 @@
 #include <CMessages.h>
 #include <CModelInfo.h>
 #include <CTheScripts.h>
-#include <CMissionCleanup.h>
 #include <CTxdStore.h>
 #include <CText.h>
 #include <shlwapi.h>
