@@ -42,7 +42,7 @@ function tests
     end
 
     function test4
-
+        assert_suspend(@suspend1)
         assert_suspend(@suspend2)
         assert_suspend(@suspend3)
         assert_suspend(@suspend4)
@@ -69,6 +69,10 @@ function tests
     
     end
 end
+
+// absolute path outside game directory
+:suspend1
+does_file_exist "\\Server\share\file.txt"
 
 // absolute path outside game directory
 :suspend2

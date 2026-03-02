@@ -339,12 +339,18 @@ namespace CLEO
 
     // Normalize filepath, collapse all parent directory references, trim path separators at front and back.
     // Input should be path without expandable %variables%
-    // TODO: this function incorrectly transforms UNC paths (e.g. \\Server\share\file.txt => Server\share\file.txt)
     static void FilepathNormalize(std::string& path)
     {
         if (path.empty()) return;
 
         std::replace(path.begin(), path.end(), '/', '\\');
+
+        // detect and preserve UNC path prefix (e.g. \\Server\share\file.txt)
+        bool isUNC = StringStartsWith(path, "\\\\", false);
+        if (isUNC)
+        {
+            path.erase(0, 2); // temporarily remove UNC prefix
+        }
 
         // remove doubled separators
         size_t pos;
@@ -381,10 +387,16 @@ namespace CLEO
         }
 
         // trim separators
-        while (path.front() == '\\')
+        while (!path.empty() && path.front() == '\\')
             path.erase(0, 1);
-        while (path.back() == '\\')
+        while (!path.empty() && path.back() == '\\')
             path.pop_back();
+
+        // restore UNC prefix
+        if (isUNC)
+        {
+            path.insert(0, "\\\\");
+        }
     }
 
     // strip parent prefix from filepath if present
@@ -423,11 +435,9 @@ namespace CLEO
     // input path is expected to be absolute or relative to game directory
     static bool FilepathIsSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        if (path == nullptr) return false;              // reject null path
-        if (strchr(path, '%') != nullptr) return false; // reject expandable variables
-
-        // TODO: FilepathNormalize always removes leading \\
-        // if (StringStartsWith(path, "\\\\", false)) return false; // reject UNC and device paths
+        if (path == nullptr) return false;                       // reject null path
+        if (strchr(path, '%') != nullptr) return false;          // reject expandable variables
+        if (StringStartsWith(path, "\\\\", false)) return false; // reject UNC and device paths
 
         std::string resolved;
         if (std::filesystem::path(path).is_relative())
