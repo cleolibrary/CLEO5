@@ -16,10 +16,10 @@ namespace CLEO
         if (dynamic && Contains(hash) && !entries[hash].dynamic)
             return false; // can not overwrite static entry with dynamic one
 
-        auto& entry = entries[hash]; // get or create
-        entry.key = gxtKey;
+        auto& entry   = entries[hash]; // get or create
+        entry.key     = gxtKey;
         entry.dynamic = dynamic;
-        entry.text = text;
+        entry.text    = text;
 
         return true;
     }
@@ -28,11 +28,9 @@ namespace CLEO
     {
         auto hash = GetHash(gxtKey);
 
-        if (!Contains(hash))
-            return true; // already not present
+        if (!Contains(hash)) return true; // already not present
 
-        if (!force && !entries[hash].dynamic)
-            return false; // protected key
+        if (!force && !entries[hash].dynamic) return false; // protected key
 
         entries.erase(hash);
         return true;
@@ -147,8 +145,7 @@ namespace CLEO
     {
         auto entry = entries.find(GetHash(gxtKey));
 
-        if (entry == entries.end())
-            return nullptr; // not found
+        if (entry == entries.end()) return nullptr; // not found
 
         return entry->second.text.c_str();
     }
@@ -156,21 +153,17 @@ namespace CLEO
     // example collision: 'UXDLX' and 'ALADAAB'
     void CTextManager::TestKeyCollision(const char* gxtKey, CLEO::CRunningScript* script) const
     {
-        if (!IsStrictValidation(script))
-            return;
+        if (!IsStrictValidation(script)) return;
 
         auto entry = entries.find(GetHash(gxtKey));
-        if (entry == entries.end())
-            return; // not found
+        if (entry == entries.end()) return; // not found
 
         if (_stricmp(gxtKey, entry->second.key.c_str()))
         {
-            LOG_WARNING(script,
-                "GXT key collision detected! Hash of key '%s' matches with already present '%s'%s%s",
-                gxtKey,
-                entry->second.key.c_str(),
-                script ? " in script " : "",
-                script ? ScriptInfoStr(script).c_str() : "");
+            LOG_WARNING(
+                script, "GXT key collision detected! Hash of key '%s' matches with already present '%s'%s%s", gxtKey,
+                entry->second.key.c_str(), script ? " in script " : "", script ? ScriptInfoStr(script).c_str() : ""
+            );
         }
     }
 
@@ -183,4 +176,4 @@ namespace CLEO
     {
         return entries.find(hash) != entries.end();
     }
-}
+} // namespace CLEO

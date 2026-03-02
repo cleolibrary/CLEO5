@@ -14,7 +14,7 @@ namespace CLEO
         void LoadFxts(); // load all cleo\cleo_text\*.fxt
 
         bool Remove(const char* gxtKey, bool force = false); // force to remove non-dynamic
-        void Clear(); // remove all
+        void Clear();                                        // remove all
 
         size_t ParseFxtFile(const char* filename, bool remove = false);
 
@@ -22,7 +22,7 @@ namespace CLEO
         const char* Get(const char* gxtKey) const; // get from this dictionary only
 
         // print warning if there is already entry with same hash but different GXT key
-        void TestKeyCollision(const char* gxtKey, CLEO::CRunningScript* thread = nullptr) const; 
+        void TestKeyCollision(const char* gxtKey, CLEO::CRunningScript* thread = nullptr) const;
 
       private:
         typedef DWORD GxtHash;
@@ -38,4 +38,4 @@ namespace CLEO
 
         bool Contains(GxtHash hash) const;
     };
-}
+} // namespace CLEO
