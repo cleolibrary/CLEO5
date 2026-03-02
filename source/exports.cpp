@@ -276,7 +276,7 @@ namespace CLEO
             {
                 LOG_WARNING(
                     thread, "Invalid argument of CLEO_ReadStringParamWriteBuffer in script %s",
-                    ((CCustomScript*)thread)->GetInfoStr().c_str()
+                    thread ? ((CCustomScript*)thread)->GetInfoStr().c_str() : "<null>"
                 );
                 return;
             }
@@ -395,6 +395,9 @@ namespace CLEO
                     break;
                 case DT_STRING:
                     thread->IncPtr(16);
+                    break;
+                default:
+                    thread->IncPtr();
                     break;
                 }
             }
