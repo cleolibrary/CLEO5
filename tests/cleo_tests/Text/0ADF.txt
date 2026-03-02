@@ -7,6 +7,7 @@ terminate_this_custom_script
 
 function tests
     it("should add dynamic GXT", test1)
+    it("should NOT replace static GXT", test2)
     return
     
     function test1
@@ -19,5 +20,21 @@ function tests
         assert_eqs(0@v, "cleo test")
         
         remove_text_label {key} 'CLE0ADF' // cleanup
+    end
+    
+    function test2
+        load_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        assert_result_true()
+        
+        // gxt present
+        0@v = get_text_label_string {key} 'CLEO_T1'
+        assert_eqs(0@v, "Test one")
+
+        add_text_label {dynamicKey} 'CLEO_T1' {text} "cleo test"
+        0@v = get_text_label_string {key} 'CLEO_T1'
+        assert_eqs(0@v, "Test one") // unchanged
+        
+        // cleanup
+        unload_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
     end
 end

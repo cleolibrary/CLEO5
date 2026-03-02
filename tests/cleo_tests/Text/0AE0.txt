@@ -7,6 +7,9 @@ terminate_this_custom_script
 
 function tests
     it("should remove dynamic GXT", test1)
+    it("should NOT remove static GXT", test2)
+    it("should NOT remove global GXT", test3)
+    it("should ignore key case", test4)
     return
 
     function test1
@@ -19,6 +22,46 @@ function tests
         assert_eqs(0@v, "cleo test")
 
         remove_text_label {key} 'CLE0AE0'
+        0@v = get_text_label_string {key} 'CLE0AE0'
+        assert_eqs(0@v, "") // successfully removed
+    end
+    
+    function test2
+        load_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        assert_result_true()
+        
+        // gxt present
+        0@v = get_text_label_string {key} 'CLEO_T1'
+        assert_eqs(0@v, "Test one")
+
+        remove_text_label {key} 'CLEO_T1'
+        0@v = get_text_label_string {key} 'CLEO_T1'
+        assert_eqs(0@v, "Test one") // still exists
+        
+        // cleanup
+        unload_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+    end
+    
+    function test3
+        // gxt entry exists
+        0@v = get_text_label_string {key} 'DEAD'
+        assert_eqs(0@v, "Wasted")
+
+        remove_text_label {key} 'DEAD'
+        0@v = get_text_label_string {key} 'DEAD'
+        assert_eqs(0@v, "Wasted") // still exists
+    end
+    
+    function test4
+        // gxt entry not present yet
+        0@v = get_text_label_string {key} 'CLE0AE0'
+        assert_eqs(0@v, "")
+
+        add_text_label {dynamicKey} 'CLE0AE0' {text} "cleo test"
+        0@v = get_text_label_string {key} 'CLE0AE0'
+        assert_eqs(0@v, "cleo test")
+
+        remove_text_label {key} 'cLe0aE0'
         0@v = get_text_label_string {key} 'CLE0AE0'
         assert_eqs(0@v, "") // successfully removed
     end

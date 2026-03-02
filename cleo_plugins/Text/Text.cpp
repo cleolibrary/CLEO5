@@ -133,7 +133,7 @@ class Text
         if ((gxt[0] == '\0') || (gxt[0] == ' ')) return "";
 
         // check CLEO's texts
-        auto result = Text::textManager.LocateFxt(gxt);
+        auto result = Text::textManager.Get(gxt);
         if (result != nullptr) return result;
 
         // call original function
@@ -450,7 +450,7 @@ class Text
     {
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
 
-        auto txt = textManager.Get(gxt);
+        auto txt = TheText.Get(gxt); // hooked original function
 
         if (IsVarString(thread->PeekDataType()))
         {
@@ -469,7 +469,9 @@ class Text
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
         OPCODE_READ_PARAM_STRING(txt);
 
-        textManager.AddFxt(gxt, txt);
+        textManager.TestKeyCollision(gxt, thread);
+
+        textManager.Add(gxt, txt);
         return OR_CONTINUE;
     }
 
@@ -478,7 +480,9 @@ class Text
     {
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
 
-        textManager.RemoveFxt(gxt);
+        textManager.TestKeyCollision(gxt, thread);
+
+        textManager.Remove(gxt);
         return OR_CONTINUE;
     }
 
@@ -593,7 +597,7 @@ class Text
         _itoa_s(genericLabelCounter, gxt + 4, sizeof(gxt) - 4, 36);        // 0xFFFF -> "1ekf"
         genericLabelCounter++;
 
-        textManager.AddFxt(gxt, text);
+        textManager.Add(gxt, text);
 
         auto& draw = CTheScripts::IntroTextLines[CTheScripts::NumberOfIntroTextLinesThisFrame];
         memcpy(&draw.xPosition, &posX, sizeof(draw.xPosition)); // invalid type in Plugin SDK. Just copy memory
@@ -613,8 +617,7 @@ class Text
         size_t added = 0;
         try
         {
-            std::ifstream stream(filename);
-            added = textManager.ParseFxtFile(stream, true, false);
+            added = textManager.ParseFxtFile(filename, false);
         }
         catch (std::exception& ex)
         {
@@ -633,8 +636,7 @@ class Text
         size_t removed = 0;
         try
         {
-            std::ifstream stream(filename);
-            removed = textManager.ParseFxtFile(stream, true, true);
+            removed = textManager.ParseFxtFile(filename, true);
         }
         catch (std::exception& ex)
         {
@@ -662,7 +664,9 @@ class Text
         OPCODE_READ_PARAM_STRING_LEN(gxt, 7); // GXT labels can be max 7 character long
         OPCODE_READ_PARAM_STRING_FORMATTED(str);
 
-        textManager.AddFxt(gxt, str);
+        textManager.TestKeyCollision(gxt, thread);
+
+        textManager.Add(gxt, str);
 
         return OR_CONTINUE;
     }

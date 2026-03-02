@@ -27,10 +27,10 @@ function tests
     end
 
     function test2
-        2606: load_fxt {filepath} "cleo\cleo_tests\text\non existing file.fxt"
+        load_fxt {filepath} "cleo\cleo_tests\text\non existing file.fxt"
         assert_result_false()
     
-        2606: load_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
+        load_fxt {filepath} "cleo\cleo_tests\text\test.fxt"
         assert_result_true()
         
         int ptr
