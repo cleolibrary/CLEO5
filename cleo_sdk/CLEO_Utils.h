@@ -337,8 +337,9 @@ namespace CLEO
         return std::move(info);
     }
 
-    // Normalize filepath, collapse all parent directory references, trim path separators at front and back. Input
-    // should be path without expandable %variables%
+    // Normalize filepath, collapse all parent directory references, trim path separators at front and back.
+    // Input should be path without expandable %variables%
+    // TODO: this function incorrectly transforms UNC paths (e.g. \\Server\share\file.txt => Server\share\file.txt)
     static void FilepathNormalize(std::string& path)
     {
         if (path.empty()) return;
@@ -418,11 +419,15 @@ namespace CLEO
         return std::string_view(str.data(), separatorPos);
     }
 
-    // does normalized file path points inside game directories? (game root or user files)
+    // is normalized file path inside allowed directories (game root or user files)?
     // input path is expected to be absolute or relative to game directory
     static bool FilepathIsSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        if (path == nullptr || strchr(path, '%') != nullptr) return false;
+        if (path == nullptr) return false;                       // reject null path
+        if (strchr(path, '%') != nullptr) return false;          // reject expandable variables
+
+        // TODO: FilepathNormalize always removes leading \\
+        // if (StringStartsWith(path, "\\\\", false)) return false; // reject UNC and device paths
 
         std::string resolved;
         if (std::filesystem::path(path).is_relative())
@@ -438,10 +443,14 @@ namespace CLEO
 
         FilepathNormalize(resolved);
 
-        if (StringStartsWith(resolved, CLEO_GetGameDirectory(), false)) return true;
-        if (StringStartsWith(resolved, CLEO_GetUserDirectory(), false)) return true;
-        
-        return false; // reject everything outside game/user dirs
+        // returns true if resolved path starts with dir and is either exactly the same or has separator after that
+        const auto checkDir = [&](const char* dir) {
+            if (!StringStartsWith(resolved, dir, false)) return false;
+            return (resolved.length() == strlen(dir) || resolved[strlen(dir)] == '\\');
+        };
+
+        // path must be inside game/user dirs
+        return (checkDir(CLEO_GetGameDirectory()) || checkDir(CLEO_GetUserDirectory()));
     }
 
     static bool IsObjectHandleValid(DWORD handle)

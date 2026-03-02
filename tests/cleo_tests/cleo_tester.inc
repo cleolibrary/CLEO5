@@ -404,7 +404,6 @@ end
 
 /// checks if code at label suspends current script
 function assert_suspend(label: int)
-    debug_on
     int code = get_label_pointer label
     int script = CRunningScript_new(code)
     int op_result = CRunningScript_ProcessOneCommand(script)

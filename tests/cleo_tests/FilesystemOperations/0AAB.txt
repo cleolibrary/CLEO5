@@ -50,6 +50,7 @@ function tests
         assert_suspend(@suspend6)
         assert_suspend(@suspend7)
         assert_suspend(@suspend8)
+        assert_suspend(@suspend9)        
     end
     
     function test5
@@ -96,3 +97,6 @@ does_file_exist "root:\..\test.txt"
 // virtual path escaping via parent reference (forward slashes)
 :suspend8
 does_file_exist "root:/../test.txt"
+
+:suspend9
+does_file_exist "user:/../test.txt"
