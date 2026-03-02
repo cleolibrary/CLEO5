@@ -423,8 +423,8 @@ namespace CLEO
     // input path is expected to be absolute or relative to game directory
     static bool FilepathIsSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        if (path == nullptr) return false;                       // reject null path
-        if (strchr(path, '%') != nullptr) return false;          // reject expandable variables
+        if (path == nullptr) return false;              // reject null path
+        if (strchr(path, '%') != nullptr) return false; // reject expandable variables
 
         // TODO: FilepathNormalize always removes leading \\
         // if (StringStartsWith(path, "\\\\", false)) return false; // reject UNC and device paths
