@@ -687,7 +687,7 @@ class MemoryOperations
         int size = OPCODE_READ_PARAM_INT();
 
         // validate params
-        if (size <= 0)
+        if (size < 0)
         {
             SUSPEND("Invalid '%d' size argument", size);
         }
