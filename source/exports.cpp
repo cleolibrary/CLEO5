@@ -396,9 +396,6 @@ namespace CLEO
                 case DT_STRING:
                     thread->IncPtr(16);
                     break;
-                default:
-                    thread->IncPtr();
-                    break;
                 }
             }
 
