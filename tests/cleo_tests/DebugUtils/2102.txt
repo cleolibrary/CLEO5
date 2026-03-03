@@ -1,0 +1,67 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "2102" // open_file
+test("2102 (log_to_file)", tests)
+terminate_this_custom_script
+
+const LOG_FILE = "./log_to_file.tlog"
+const LOG_FILE2 = "./log_to_file_copy.tlog"
+
+function tests
+    before_each(@cleanup)
+    after_each(@cleanup)
+
+    it("should write a string to the file", test1)
+    it("suspend on wrong path", test2)
+
+    return
+
+    :cleanup
+    delete_file LOG_FILE // this file will be deleted only once per new game
+    delete_file LOG_FILE2
+    return
+
+    function test1
+        log_to_file LOG_FILE false "some string %d" 123
+        assert_log_contains("some string 123")
+    end
+
+    function test2        
+        assert_suspend(@suspend1)
+    end
+end
+
+:suspend1
+log_to_file "root:\..\log_to_file.tlog" false "some string %d" 123
+
+function assert_log_contains(find_string: string)
+    int f
+    copy_file {fileName} LOG_FILE {newFileName} LOG_FILE2
+
+    if f = open_file LOG_FILE2 "rb"
+    then
+
+        int size = get_file_size f
+        int source = allocate_memory size
+
+        if read_block_from_file f size source
+        then
+            int p = strstr(source, find_string)
+            close_file f
+            free_memory source
+            assert_ptr(p)
+        else
+            close_file f
+            free_memory source
+            trace "Error: can't read file %s" LOG_FILE2
+            assert(false) // fail
+        end
+    else
+        trace "Error: can't open file %s" LOG_FILE2
+        assert(false) // fail
+    end
+
+    /// Finds the first occurrence of a substring in a string and returns a pointer to it
+    function strstr<cdecl, 0x822650>(str: string, substr: string): string
+end

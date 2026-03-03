@@ -352,33 +352,13 @@ class DebugUtils
     // 2102=-1, log_to_file %1s% timestamp %2d% text %3s% ...
     static OpcodeResult __stdcall Opcode_LogToFile(CRunningScript* thread)
     {
-        auto filestr = CLEO_ReadStringOpcodeParam(thread);
+        OPCODE_READ_PARAM_FILEPATH(filestr);
 
-        // normalized absolute filepath
-        std::string filename(MAX_PATH, '\0');
-        const size_t len = strlen(filestr);
-        for (size_t i = 0; i < len; i++)
-        {
-            if (filestr[i] == '/')
-                filename[i] = '\\';
-            else
-                filename[i] = std::tolower(filestr[i]);
-        }
-        CLEO_ResolvePath(thread, filename.data(), MAX_PATH);
-        filename.resize(strlen(filename.data())); // clip to actual cstr len
+        std::string filename(filestr);
+        StringToLower(filename);
 
-        auto it = logFiles.find(filename);
-        if (it == logFiles.end()) // not opened yet
-        {
-            it = logFiles
-                     .emplace(
-                         std::piecewise_construct, std::make_tuple(filename),
-                         std::make_tuple(filename, std::ios_base::app)
-                     )
-                     .first;
-        }
+        auto& file = logFiles.try_emplace(filename, filename, std::ios::app).first->second;
 
-        auto& file = it->second;
         if (!file.good())
         {
             std::ostringstream ss;
