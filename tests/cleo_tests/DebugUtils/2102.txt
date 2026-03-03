@@ -13,7 +13,7 @@ function tests
     after_each(@cleanup)
 
     it("should write a string to the file", test1)
-    it("suspend on wrong path", test2)
+    it("should suspend on wrong path", test2)
 
     return
 
