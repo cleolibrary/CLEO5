@@ -1,5 +1,11 @@
-## 5.3.0
+## 5.3.1
+- added commands for missing float math operations: 
+  - **[FLOAT_ADD](https://library.sannybuilder.com/#/sa/script/extensions/math/2709)**
+  - **[FLOAT_SUB](https://library.sannybuilder.com/#/sa/script/extensions/math/270A)**
+  - **[FLOAT_MUL](https://library.sannybuilder.com/#/sa/script/extensions/math/270B)**
+  - **[FLOAT_DIV](https://library.sannybuilder.com/#/sa/script/extensions/math/270C)**
 
+## 5.3.0
 - moved CLEO core and plugin settings into a shared configuration file (`CLEO\.cleo_config.ini`)
 - improved compatibility with ModLoader
 - refactored error handling and relaxed checks for non‑critical errors

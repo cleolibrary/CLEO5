@@ -52,6 +52,10 @@ class Math
         CLEO_RegisterOpcode(0x2706, opcode_2706); // pick_random_float
         CLEO_RegisterOpcode(0x2707, opcode_2707); // pick_random_text
         CLEO_RegisterOpcode(0x2708, opcode_2708); // random_chance
+        CLEO_RegisterOpcode(0x2709, opcode_2709); // x = a + b (float)
+        CLEO_RegisterOpcode(0x270A, opcode_270A); // x = a - b (float)
+        CLEO_RegisterOpcode(0x270B, opcode_270B); // x = a * b (float)
+        CLEO_RegisterOpcode(0x270C, opcode_270C); // x = a / b (float)
     }
 
     // 0A8E=3,%3d% = %1d% + %2d% ; int
@@ -520,6 +524,54 @@ class Math
         auto result = random < chance;
 
         OPCODE_CONDITION_RESULT(result);
+        return OR_CONTINUE;
+    }
+
+    // 2709=3,%3d% = %1d% + %2d% ; int
+    static OpcodeResult __stdcall opcode_2709(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_FLOAT();
+        auto b = OPCODE_READ_PARAM_FLOAT();
+
+        auto result = a + b;
+
+        OPCODE_WRITE_PARAM_FLOAT(result);
+        return OR_CONTINUE;
+    }
+
+    // 270A=3,%3d% = %1d% - %2d% ; FLOAT
+    static OpcodeResult __stdcall opcode_270A(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_FLOAT();
+        auto b = OPCODE_READ_PARAM_FLOAT();
+
+        auto result = a - b;
+
+        OPCODE_WRITE_PARAM_FLOAT(result);
+        return OR_CONTINUE;
+    }
+
+    // 270B=3,%3d% = %1d% * %2d% ; FLOAT
+    static OpcodeResult __stdcall opcode_270B(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_FLOAT();
+        auto b = OPCODE_READ_PARAM_FLOAT();
+
+        auto result = a * b;
+
+        OPCODE_WRITE_PARAM_FLOAT(result);
+        return OR_CONTINUE;
+    }
+
+    // 270C=3,%3d% = %1d% / %2d% ; FLOAT
+    static OpcodeResult __stdcall opcode_270C(CRunningScript* thread)
+    {
+        auto a = OPCODE_READ_PARAM_FLOAT();
+        auto b = OPCODE_READ_PARAM_FLOAT();
+
+        auto result = a / b;
+
+        OPCODE_WRITE_PARAM_FLOAT(result);
         return OR_CONTINUE;
     }
 } Instance;
