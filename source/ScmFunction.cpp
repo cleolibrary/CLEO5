@@ -32,7 +32,7 @@ namespace CLEO
             if (++allocationPlace >= Store_Size) allocationPlace = 0; // end of store reached
             if (allocationPlace == start_search)
             {
-                SHOW_ERROR("CLEO function storage stack overfllow!");
+                SHOW_ERROR("CLEO function storage stack overflow!");
                 throw std::bad_alloc(); // the store is filled up
             }
         }
