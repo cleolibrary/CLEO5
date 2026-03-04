@@ -64,7 +64,8 @@ namespace CLEO
         const char* GetWorkDir() const;
         void SetWorkDir(const char* directory);
 
-        // create absolute file path
+        // Converts paths starting with virtual path prefix to absolute
+        // Converts other paths from being relative to customWorkDir or workdir to relative to game directory
         std::string ResolvePath(const char* path, const char* customWorkDir = nullptr) const;
 
         // get short info text about script

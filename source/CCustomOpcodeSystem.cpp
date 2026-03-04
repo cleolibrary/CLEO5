@@ -825,9 +825,9 @@ namespace CLEO
     {
         OPCODE_READ_PARAM_STRING(path);
 
-        auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(
-            path, DIR_CLEO
-        ); // legacy: default search location is game\cleo directory
+        // convert path from relative to CLEO directory to relative to game directory
+        auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO);
+
         TRACE(
             "[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str()
         );
@@ -877,9 +877,9 @@ namespace CLEO
     {
         OPCODE_READ_PARAM_STRING(path);
 
-        auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(
-            path, DIR_CLEO
-        );                 // legacy: default search location is game\cleo directory
+        // convert path from relative to CLEO directory to relative to game directory
+        auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO);
+
         filename += ".cm"; // add custom mission extension
         TRACE(
             "[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(),
@@ -1013,11 +1013,8 @@ namespace CLEO
             auto strExport = std::string_view(moduleTxt.data(), pos);
             auto strModule = std::string_view(moduleTxt.data() + pos + 1);
 
-            // get module's file absolute path
-            auto modulePath = std::string(strModule);
-            modulePath      = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(
-                modulePath.c_str(), DIR_SCRIPT
-            ); // by default search relative to current script location
+            // convert path from relative to script directory to relative to game directory
+            auto modulePath = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(strModule.data(), DIR_SCRIPT);
 
             // get export reference
             auto scriptRef = CleoInstance.ModuleSystem.GetExport(modulePath, strExport);

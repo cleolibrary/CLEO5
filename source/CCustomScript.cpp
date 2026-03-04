@@ -269,7 +269,7 @@ void CCustomScript::SetWorkDir(const char* directory)
     if (directory == nullptr || strlen(directory) == 0)
         return; // Already done. Empty path is relative path starting at current work dir
 
-    auto resolved = ResolvePath(directory);
+    auto resolved = ResolvePath(directory); // resolve any virtual prefixes
 
     if (!bIsCustom)
         CleoInstance.ScriptEngine.MainScriptCurWorkDir = resolved;
@@ -318,10 +318,8 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
     {
         if (fsPath.is_relative())
         {
-            if (customWorkDir != nullptr)
-                fsPath = ResolvePath(customWorkDir) / fsPath;
-            else
-                fsPath = GetWorkDir() / fsPath;
+            const auto workDir = customWorkDir ? ResolvePath(customWorkDir) : GetWorkDir();
+            fsPath             = workDir / fsPath;
         }
 
         auto result = fsPath.string();

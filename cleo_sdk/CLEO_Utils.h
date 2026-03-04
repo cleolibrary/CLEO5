@@ -337,13 +337,20 @@ namespace CLEO
         return std::move(info);
     }
 
-    // Normalize filepath, collapse all parent directory references, trim path separators at front and back. Input
-    // should be path without expandable %variables%
+    // Normalize filepath, collapse all parent directory references, trim path separators at front and back.
+    // Input should be path without expandable %variables%
     static void FilepathNormalize(std::string& path)
     {
         if (path.empty()) return;
 
         std::replace(path.begin(), path.end(), '/', '\\');
+
+        // detect and preserve UNC path prefix (e.g. \\Server\share\file.txt)
+        bool isUNC = StringStartsWith(path, "\\\\", false);
+        if (isUNC)
+        {
+            path.erase(0, 2); // temporarily remove UNC prefix
+        }
 
         // remove doubled separators
         size_t pos;
@@ -380,10 +387,16 @@ namespace CLEO
         }
 
         // trim separators
-        while (path.front() == '\\')
+        while (!path.empty() && path.front() == '\\')
             path.erase(0, 1);
-        while (path.back() == '\\')
+        while (!path.empty() && path.back() == '\\')
             path.pop_back();
+
+        // restore UNC prefix
+        if (isUNC)
+        {
+            path.insert(0, "\\\\");
+        }
     }
 
     // strip parent prefix from filepath if present
@@ -418,35 +431,36 @@ namespace CLEO
         return std::string_view(str.data(), separatorPos);
     }
 
-    // does normalized file path points inside game directories? (game root or user files)
+    // is normalized file path inside allowed directories (game root or user files)?
+    // input path is expected to be absolute or relative to game directory
     static bool FilepathIsSafe(CLEO::CRunningScript* thread, const char* path)
     {
-        if (strchr(path, '%') != nullptr)
+        if (path == nullptr) return false;                       // reject null path
+        if (strchr(path, '%') != nullptr) return false;          // reject expandable variables
+        if (StringStartsWith(path, "\\\\", false)) return false; // reject UNC and device paths
+
+        std::string resolved;
+        if (std::filesystem::path(path).is_relative())
         {
-            return false; // do not allow paths containing expandable variables
+            resolved = CLEO_GetGameDirectory();
+            resolved += '\\';
+            resolved += path;
+        }
+        else
+        {
+            resolved = path;
         }
 
-        std::string absolute;
-        if (!std::filesystem::path(path).is_absolute())
-        {
-            absolute = CLEO_GetScriptWorkDir(thread);
-            if (!absolute.empty())
-            {
-                absolute += '\\';
-                absolute += path;
-                FilepathNormalize(absolute);
-                path = absolute.c_str();
-            }
-        }
+        FilepathNormalize(resolved);
 
-        if (!StringStartsWith(path, CLEO_GetGameDirectory(), false) &&
-            !StringStartsWith(path, CLEO_GetUserDirectory(), false))
-        {
-            if (StringStartsWith(path, "..")) // relative path trying to escape game's directory
-                return false;
-        }
+        // returns true if resolved path starts with dir and is either exactly the same or has separator after that
+        const auto checkDir = [&](const char* dir) {
+            if (!StringStartsWith(resolved, dir, false)) return false;
+            return (resolved.length() == strlen(dir) || resolved[strlen(dir)] == '\\');
+        };
 
-        return true;
+        // path must be inside game/user dirs
+        return (checkDir(CLEO_GetGameDirectory()) || checkDir(CLEO_GetUserDirectory()));
     }
 
     static bool IsObjectHandleValid(DWORD handle)
