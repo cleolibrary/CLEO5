@@ -1,0 +1,29 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B1B'
+test("0B1B (MOD)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should return remainder of a division", test1)
+    it("should suspend on division by zero", test2)
+    return
+    
+    function test1
+        int a = 10
+        int b = 3
+        a %= b
+        assert_eq(a, 1)
+        assert_eq(b, 3)
+    end
+    
+    function test2
+        assert_suspend(@suspend1)
+    end
+end
+
+:suspend1
+int 0@
+0@ %= 0

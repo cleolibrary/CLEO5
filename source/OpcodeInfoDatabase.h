@@ -57,7 +57,7 @@ class OpcodeInfoDatabase
         bool IsComparison() const
         {
             if (!isCondition || oper.empty()) return false;
-            return oper == ">" || oper == ">=" || oper == "==" || "<" || oper == "<=" || oper == "<>";
+            return oper == ">" || oper == ">=" || oper == "==" || oper == "<" || oper == "<=" || oper == "<>";
         }
     };
 

@@ -96,6 +96,11 @@ class Math
         auto a = OPCODE_READ_PARAM_INT();
         auto b = OPCODE_READ_PARAM_INT();
 
+        if (b == 0)
+        {
+            SUSPEND("Division by zero");
+        }
+
         auto result = a / b;
 
         OPCODE_WRITE_PARAM_INT(result);
@@ -191,6 +196,11 @@ class Math
     {
         auto a = OPCODE_READ_PARAM_INT();
         auto b = OPCODE_READ_PARAM_INT();
+
+        if (b == 0)
+        {
+            SUSPEND("Division by zero in modulo");
+        }
 
         auto result = a % b;
 
@@ -291,6 +301,11 @@ class Math
     {
         auto operand = OPCODE_READ_PARAM_OUTPUT_VAR_INT();
         auto value   = OPCODE_READ_PARAM_INT();
+
+        if (value == 0)
+        {
+            SUSPEND("Division by zero in modulo");
+        }
 
         *operand %= value;
         return OR_CONTINUE;

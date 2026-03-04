@@ -13,8 +13,7 @@ static void CleoSingletonCheck()
         module.dwSize   = sizeof(MODULEENTRY32);
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, GetCurrentProcessId());
 
-        Module32First(snapshot, &module);
-        if (snapshot != INVALID_HANDLE_VALUE)
+        if (snapshot != INVALID_HANDLE_VALUE && Module32First(snapshot, &module))
         {
             size_t count = 0;
             do
