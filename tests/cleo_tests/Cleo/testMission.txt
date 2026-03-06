@@ -5,4 +5,8 @@
 008B: $101 = 1@
 008B: $102 = 2@
 
+hex
+    00(69000) // larger than the default static mission buffer
+end
+
 terminate_this_script
