@@ -8,6 +8,9 @@ on:
       - '.github/**'
       - 'tests/**'
 
+permissions:
+  contents: write
+
 jobs:
   Release_Preview:
     if: (github.ref_type != 'tag' || !endsWith(github.ref, '/preview')) && (github.ref_type != 'branch' || endsWith(github.ref, '/master')) # ignore 'preview' tag, ignore pushes other than to master
@@ -15,7 +18,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
           submodules: "recursive"
@@ -55,7 +58,7 @@ jobs:
 
       - name: Set up MsBuild
         if: ${{ hashFiles('preview_changes.md') != '' }}
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2.0.0
 
       - name: Build CLEO Core
         if: ${{ hashFiles('preview_changes.md') != '' }}
@@ -93,12 +96,12 @@ jobs:
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
 
           @echo Download Sanny Builder Library json
-          curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
-          curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/enums.json -o .output\Release\cleo\.config\enums.json
+          curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
+          curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/enums.json -o .output\Release\cleo\.config\enums.json
 
       - name: Pack archive
         if: ${{ hashFiles('preview_changes.md') != '' }}
-        uses: thedoctor0/zip-release@0.7.6
+        uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
         with:
           type: 'zip'
           filename: 'SA.CLEO-v${{steps.custom_build.outputs.version}}-${{steps.custom_build.outputs.sha}}.zip'
@@ -108,16 +111,14 @@ jobs:
 
       - name: Delete 'preview' release
         if: ${{ hashFiles('preview_changes.md') != '' }}
-        uses: ClementTsang/delete-tag-and-release@v0.4.0
-        with:
-          tag_name: 'preview'
-          delete_release: true
+        run: gh release delete preview --cleanup-tag --yes
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create 'preview' release
         if: ${{ hashFiles('preview_changes.md') != '' }}
-        uses: ncipollo/release-action@main
+        uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: 'Next version preview'

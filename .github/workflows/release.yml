@@ -5,18 +5,21 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+**'
 
+permissions:
+  contents: write
+
 jobs:
   Release:
     runs-on: windows-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: "recursive"
 
       - name: Set up MsBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2.0.0
 
       - name: Read version tag
         id: read_version
@@ -45,7 +48,7 @@ jobs:
         env:
           vt_key: ${{secrets.VT_KEY}}
         if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@v4
+        uses: crazy-max/ghaction-virustotal@d34968c958ae283fe976efed637081b9f9dcf74f # v4.2.0
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
           files: './.output/Release/CLEO.asi'
@@ -77,7 +80,7 @@ jobs:
         env:
           vt_key: ${{secrets.VT_KEY}}
         if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@v4
+        uses: crazy-max/ghaction-virustotal@d34968c958ae283fe976efed637081b9f9dcf74f # v4.2.0
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
           files: './cleo_plugins/.output/*.cleo'
@@ -105,15 +108,15 @@ jobs:
           xcopy /E /I examples .output\Release\cleo_readme\examples
 
           @echo Download Sanny Builder Library json
-          curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
-          curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/enums.json -o .output\Release\cleo\.config\enums.json
+          curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
+          curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/enums.json -o .output\Release\cleo\.config\enums.json
 
           @echo Copy SDK
           copy .output\Release\CLEO.lib cleo_sdk\CLEO.lib
 
       - name: Convert Markdown to HTML
         run: |
-          npm install showdown
+          npm ci --prefix .github/workflows --ignore-scripts --no-audit --no-fund
           node.exe .github/workflows/markdown.js
           move README.html .output\Release\cleo_readme\Readme.html
           move CHANGELOG.html .output\Release\cleo_readme\Changelog.html
@@ -126,19 +129,21 @@ jobs:
           xcopy /E /I .output\Release .output\Release_with_Ultimate_ASI_Loader
 
           @echo Install Silent's ASI Loader
-          curl https://silent.rockstarvision.com/uploads/silents_asi_loader_13.zip -o silents_asi_loader_13.zip
+          curl -fL https://silent.rockstarvision.com/uploads/silents_asi_loader_13.zip -o silents_asi_loader_13.zip
+          powershell.exe -NoP -NonI -Command "$hash = (Get-FileHash '.\silents_asi_loader_13.zip' -Algorithm SHA256).Hash.ToLowerInvariant(); if ($hash -ne '12114d9e3cf604ace85093d2537b30567b02ca5f19022ffe322c4c2687e590a7') { throw 'Silent ASI Loader checksum mismatch' }"
           powershell.exe -NoP -NonI -Command "Expand-Archive '.\silents_asi_loader_13.zip' '.\.output\Release_with_Silent_ASI_Loader'"
           move .output\Release_with_Silent_ASI_Loader\ReadMe.txt ".output\Release_with_Silent_ASI_Loader\cleo_readme\ASI Loader Readme.txt"
           rmdir /s /q .output\Release_with_Silent_ASI_Loader\advanced_plugin_management_example
           rmdir /s /q .output\Release_with_Silent_ASI_Loader\scripts
 
           @echo Install Ultimate ASI Loader
-          curl https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/Win32-latest/vorbisFile-Win32.zip -L -o ual.zip
+          curl -fL https://github.com/cleolibrary/Ultimate-ASI-Loader/releases/download/v9.7.0/vorbisFile-Win32.zip -o ual.zip
+          powershell.exe -NoP -NonI -Command "$hash = (Get-FileHash '.\ual.zip' -Algorithm SHA256).Hash.ToLowerInvariant(); if ($hash -ne '623b1592d5fae767c06c47b77e6ec01b23dc452e7116dba5f1af2c7cbdf4d800') { throw 'Ultimate ASI Loader checksum mismatch' }"
           powershell.exe -NoP -NonI -Command "Expand-Archive '.\ual.zip' '.\.output\Release_with_Ultimate_ASI_Loader'"
           rm .\.output\Release_with_Ultimate_ASI_Loader\vorbisFile-Win32.SHA512
 
       - name: Pack archive - CLEO
-        uses: ThirteenAG/zip-release@master
+        uses: ThirteenAG/zip-release@a24011d8d445e4da5935a7e73c1f98e22a439464 # master
         with:
           path: ./.output/Release/*
           type: "zip"
@@ -146,7 +151,7 @@ jobs:
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO + Silent's ASI Loader
-        uses: ThirteenAG/zip-release@master
+        uses: ThirteenAG/zip-release@a24011d8d445e4da5935a7e73c1f98e22a439464 # master
         with:
           path: ./.output/Release_with_Silent_ASI_Loader/*
           type: "zip"
@@ -154,7 +159,7 @@ jobs:
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO + UAL
-        uses: ThirteenAG/zip-release@master
+        uses: ThirteenAG/zip-release@a24011d8d445e4da5935a7e73c1f98e22a439464 # master
         with:
           path: ./.output/Release_with_Ultimate_ASI_Loader/*
           type: "zip"
@@ -162,7 +167,7 @@ jobs:
           exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO SDK
-        uses: ThirteenAG/zip-release@master
+        uses: ThirteenAG/zip-release@a24011d8d445e4da5935a7e73c1f98e22a439464 # master
         with:
           path: ./cleo_sdk/*
           type: "zip"
@@ -170,7 +175,7 @@ jobs:
           exclusions: "*.pdb *.exp"
 
       - name: Create release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ steps.read_version.outputs.version }}

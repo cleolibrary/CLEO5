@@ -1,6 +1,18 @@
 const fs = require("fs");
 const title = process.argv[2];
 
+function escapeData(value) {
+  return value.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+}
+
+function escapeProperty(value) {
+  return escapeData(value).replace(/:/g, "%3A").replace(/,/g, "%2C");
+}
+
+function normalizeLevel(value) {
+  return ["error", "warning", "notice"].includes(value) ? value : "error";
+}
+
 // Step 1: Read, sort, and deduplicate lines
 let lines = fs.readFileSync("output.log", "utf8").split(/\r?\n/);
 lines.sort();
@@ -15,9 +27,10 @@ for (let line of lines) {
   const match = line.match(/^(.*)\((\d+),(\d+)\): (\w+) (.*) \[.*\]$/);
   if (match) {
     // ::level file=filepath,line=linenumber,title=title::message
-    console.log(`::${match[4]} file=${match[1]},line=${match[2]},title=${title}::${match[5]}`);
+    const level = normalizeLevel(match[4]);
+    console.log(`::${level} file=${escapeProperty(match[1])},line=${match[2]},title=${escapeProperty(title)}::${escapeData(match[5])}`);
   } else {
-    console.log(`::error title=${title}::${line}`);
+    console.log(`::error title=${escapeProperty(title)}::${escapeData(line)}`);
   }
 }
 

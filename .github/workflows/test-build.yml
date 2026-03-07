@@ -18,17 +18,20 @@ on:
       - '**.sln'
       - '**.yml'
 
+permissions:
+  contents: read
+
 jobs:
   Validate_Code_Formatting:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: "recursive"
 
       - name: clang-format
-        uses: DoozyX/clang-format-lint-action@v0.20
+        uses: DoozyX/clang-format-lint-action@bcb4eb2cb0d707ee4f3e5cc3b456eb075f12cf73 # v0.20
         with:
           clangFormatVersion: 20
 
@@ -36,12 +39,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           submodules: "recursive"
 
       - name: Set up MsBuild
-        uses: microsoft/setup-msbuild@v2
+        uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2.0.0
 
       - name: Tag with current commit SHA
         id: custom_build
@@ -60,7 +63,7 @@ jobs:
         env:
           vt_key: ${{secrets.VT_KEY}}
         if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@v4
+        uses: crazy-max/ghaction-virustotal@d34968c958ae283fe976efed637081b9f9dcf74f # v4.2.0
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
           files: './.output/Release/CLEO.asi'
@@ -82,7 +85,7 @@ jobs:
         env:
           vt_key: ${{secrets.VT_KEY}}
         if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@v4
+        uses: crazy-max/ghaction-virustotal@d34968c958ae283fe976efed637081b9f9dcf74f # v4.2.0
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
           files: './cleo_plugins/.output/*.cleo'
@@ -103,12 +106,12 @@ jobs:
           copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           
           @echo Download Sanny Builder Library json
-          curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
-          curl https://raw.githubusercontent.com/sannybuilder/library/master/sa/enums.json -o .output\Release\cleo\.config\enums.json
+          curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
+          curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/enums.json -o .output\Release\cleo\.config\enums.json
 
       - name: Upload Result
         id: upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           compression-level: 9
           include-hidden-files: true
