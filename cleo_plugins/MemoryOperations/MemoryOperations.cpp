@@ -150,6 +150,8 @@ class MemoryOperations
         const void* source;
         auto paramType  = thread->PeekDataType();
         bool sourceText = false;
+        auto vp         = false;
+
         if (IsVariable(paramType) || IsVarString(paramType))
         {
             source = CLEO_GetPointerToScriptVariable(thread);
@@ -176,21 +178,26 @@ class MemoryOperations
             source = &value;
         }
 
+        if (virtualProtect)
+        {
+            vp = OPCODE_READ_PARAM_BOOL();
+        }
+
         // validate params
         if (size < 0)
         {
             SUSPEND("Invalid '%d' size argument", size);
         }
 
-        // perform
         if (size == 0) return OR_CONTINUE; // done
 
-        if (virtualProtect)
+        if (vp)
         {
             DWORD oldProtect;
             VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
         }
 
+        // perform
         if (!sourceText)
         {
             // that's how it worked since ever...
@@ -398,11 +405,10 @@ class MemoryOperations
     static OpcodeResult __stdcall opcode_0A8C(CLEO::CRunningScript* thread)
     {
         // collect params
-        auto address        = OPCODE_READ_PARAM_PTR();
-        auto size           = OPCODE_READ_PARAM_INT();
-        auto virtualProtect = OPCODE_READ_PARAM_BOOL();
+        auto address = OPCODE_READ_PARAM_PTR();
+        auto size    = OPCODE_READ_PARAM_INT();
 
-        return WriteMemoryGeneric(thread, address, size, virtualProtect);
+        return WriteMemoryGeneric(thread, address, size, true);
     }
 
     // 0A8D=4,read_memory %1d% size %2d% virtual_protect %3d% store_to %4d%
