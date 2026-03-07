@@ -71,6 +71,33 @@ namespace CLEO
 
     void CCleoInstance::OnScmInit2()
     {
+        TRACE("CLEO initialization: Phase 2");
+        CGameVersionManager& gvm = CleoInstance.VersionManager;
+        auto& inj                = CleoInstance.CodeInjector;
+
+        inj.InjectFunction(GetScriptStringParam, gaddrof(::CRunningScript::ReadTextLabelFromScript));
+
+        inj.ReplaceFunction(
+            OnDebugDisplayTextBuffer_Idle, gvm.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE),
+            &CleoInstance.GameRestartDebugDisplayTextBuffer_IdleOrig
+        );
+        inj.ReplaceFunction(
+            OnDebugDisplayTextBuffer_Frontend, gvm.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND),
+            &CleoInstance.GameRestartDebugDisplayTextBuffer_FrontendOrig
+        );
+        inj.ReplaceFunction(
+            OnGameProcess, gvm.TranslateMemoryAddress(MA_CALL_GAME_PROCESS), &CleoInstance.OnGameProcess_Orig
+        );
+
+        CleoInstance.PluginSystem.LogLoadedPlugins();
+
+        // limit adjusters support: get adresses from (possibly) patched references
+        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), CleoInstance.ScriptEngine.scmBlock);
+        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_MISSION_BLOCK_REF), CleoInstance.ScriptEngine.missionBlock);
+
+        // re-read User directory path, as it could be modified by PortableGTA.asi
+        UpdateUserDirectoryPath();
+
         CleoInstance.ScmInit2_Orig();
         if (!FrontEndMenuManager.m_bWantToLoad)
         {
@@ -130,97 +157,61 @@ namespace CLEO
         CleoInstance.CallCallbacks(eCallbackId::DrawingFinished);      // execute registered callbacks
     }
 
-    void CCleoInstance::Start(InitStage stage)
+    void CCleoInstance::Start()
     {
-        if (stage > InitStage::Done) return; // invalid argument
+        TRACE("CLEO initialization: Phase 1");
 
-        auto nextStage = InitStage(m_initStage + 1);
-        if (stage != nextStage) return;
+        FS::create_directory(GetCleoDirectory());
+        FS::create_directory(GetCleoDirectory() + "\\cleo_modules");
+        FS::create_directory(GetCleoDirectory() + "\\cleo_plugins");
+        FS::create_directory(GetCleoDirectory() + "\\cleo_saves");
 
-        if (stage == InitStage::Initial)
-        {
-            TRACE("CLEO initialization: Phase 1");
+        OpcodeInfoDb.LoadCommands((GetCleoDirectory() + "\\.config\\sa.json").c_str());
 
-            FS::create_directory(GetCleoDirectory());
-            FS::create_directory(GetCleoDirectory() + "\\cleo_modules");
-            FS::create_directory(GetCleoDirectory() + "\\cleo_plugins");
-            FS::create_directory(GetCleoDirectory() + "\\cleo_saves");
+        CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
+        GameMenu.Inject(CodeInjector);
+        DmaFix.Inject(CodeInjector);
+        OpcodeSystem.Inject(CodeInjector);
+        ScriptEngine.Inject(CodeInjector);
 
-            OpcodeInfoDb.LoadCommands((GetCleoDirectory() + "\\.config\\sa.json").c_str());
+        CodeInjector.ReplaceFunction(
+            OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig
+        );
 
-            CodeInjector.OpenReadWriteAccess(); // must do this earlier to ensure plugins write access on init
-            GameMenu.Inject(CodeInjector);
-            DmaFix.Inject(CodeInjector);
-            OpcodeSystem.Inject(CodeInjector);
-            ScriptEngine.Inject(CodeInjector);
+        CodeInjector.ReplaceFunction(
+            OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig
+        );
+        CodeInjector.ReplaceFunction(
+            OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig
+        );
+        CodeInjector.ReplaceFunction(
+            OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig
+        );
 
-            CodeInjector.ReplaceFunction(
-                OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig
-            );
+        CodeInjector.ReplaceFunction(
+            OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown_Orig
+        );
 
-            CodeInjector.ReplaceFunction(
-                OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig
-            );
-            CodeInjector.ReplaceFunction(
-                OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig
-            );
-            CodeInjector.ReplaceFunction(
-                OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig
-            );
+        CodeInjector.ReplaceFunction(
+            OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1_Orig
+        );
+        CodeInjector.ReplaceFunction(
+            OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2_Orig
+        );
+        CodeInjector.ReplaceFunction(
+            OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3_Orig
+        );
 
-            CodeInjector.ReplaceFunction(
-                OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown_Orig
-            );
+        OpcodeSystem.Init();
+        PluginSystem.LoadPlugins();
 
-            CodeInjector.ReplaceFunction(
-                OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1_Orig
-            );
-            CodeInjector.ReplaceFunction(
-                OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2_Orig
-            );
-            CodeInjector.ReplaceFunction(
-                OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3_Orig
-            );
-
-            OpcodeSystem.Init();
-            PluginSystem.LoadPlugins();
-        }
-
-        // delayed until menu background drawing
-        if (stage == InitStage::OnDraw)
-        {
-            TRACE("CLEO initialization: Phase 2");
-
-            UpdateUserDirectoryPath(); // force update now, as it could be modified by PortableGTA.asi
-
-            ScriptEngine.InjectLate(CodeInjector);
-
-            CodeInjector.InjectFunction(GetScriptStringParam, gaddrof(::CRunningScript::ReadTextLabelFromScript));
-            CodeInjector.ReplaceFunction(
-                OnDebugDisplayTextBuffer_Idle,
-                VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE),
-                &GameRestartDebugDisplayTextBuffer_IdleOrig
-            );
-            CodeInjector.ReplaceFunction(
-                OnDebugDisplayTextBuffer_Frontend,
-                VersionManager.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND),
-                &GameRestartDebugDisplayTextBuffer_FrontendOrig
-            );
-            CodeInjector.ReplaceFunction(
-                OnGameProcess, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_PROCESS), &OnGameProcess_Orig
-            );
-
-            PluginSystem.LogLoadedPlugins();
-        }
-
-        m_initStage = stage;
+        m_isStarted = true;
     }
 
     void CCleoInstance::Stop()
     {
         GameEnd();
         PluginSystem.UnloadPlugins();
-        m_initStage = InitStage::None;
     }
 
     void CCleoInstance::GameBegin(int saveSlot)
@@ -230,9 +221,6 @@ namespace CLEO
 
         CleoInstance.saveSlot = saveSlot;
         TRACE("Starting new game session, save slot: %d", saveSlot);
-
-        // late initialization if not done yet
-        CleoInstance.Start(CCleoInstance::InitStage::OnDraw);
 
         // execute registered callbacks
         CleoInstance.CallCallbacks(eCallbackId::GameBegin, saveSlot);

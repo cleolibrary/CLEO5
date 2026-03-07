@@ -42,7 +42,7 @@ class Starter
             CConfigManager::WriteInt("Internal", "ReportedGameVersion", gv);
         }
 
-        CleoInstance.Start(CCleoInstance::InitStage::Initial);
+        CleoInstance.Start();
     }
 
     ~Starter() { CleoInstance.Stop(); }
