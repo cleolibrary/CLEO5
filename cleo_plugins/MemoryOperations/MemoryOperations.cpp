@@ -12,6 +12,8 @@ class MemoryOperations
 {
   public:
     std::unordered_map<void*, size_t> m_allocations;
+    static constexpr DWORD Alloc_Security_Marker = 0xAD840A39; // block border indicators
+
     std::unordered_map<HMODULE, size_t> m_libraries;
 
     // keep track of per-script memory allocations
@@ -98,8 +100,19 @@ class MemoryOperations
                 float(entry.second.size) / 1024, str.c_str()
             );
         }
-        for (auto p : Instance.m_allocations)
-            free(p.first);
+        for (auto [address, size] : Instance.m_allocations)
+        {
+            if (!Instance.CheckMemoryAllocation(nullptr, address))
+            {
+                SHOW_ERROR(
+                    "Memory corruption detected!\n\nAt some point an out-of-bounds write was performed on memory "
+                    "obtained via ALLOCATE_MEMORY command.\nAffected block is at 0x%X, allocated size %d.",
+                    address, size
+                );
+                continue; // keep allocated
+            }
+            free((BYTE*)address - sizeof(Alloc_Security_Marker));
+        }
         Instance.m_allocations.clear();
         Instance.m_scriptAllocationsInfo.clear();
 
@@ -141,6 +154,64 @@ class MemoryOperations
         info.count--;
         info.size -= m_allocations[address];
         m_allocations.erase(address);
+    }
+
+    // verify memory access
+    // if accessed region crosses one of known allocations check if borders are respected
+    OpcodeResult CheckMemoryAccess(CLEO::CRunningScript* thread, void* address, size_t size)
+    {
+        return OpcodeResult::OR_CONTINUE;
+        if (size == 0 || !IsStrictValidation(thread)) return OpcodeResult::OR_CONTINUE;
+
+        const auto accessBegin = (BYTE*)address;
+        const auto accessEnd   = (BYTE*)address + size; // points byte after end
+
+        for (auto [allocPtr, allocSize] : Instance.m_allocations)
+        {
+            const auto blockBegin     = (BYTE*)allocPtr - sizeof(Alloc_Security_Marker);
+            const auto blockDataBegin = (BYTE*)allocPtr;
+            const auto blockDataEnd   = (BYTE*)allocPtr + allocSize; // points byte after end
+            const auto blockEnd       = blockDataEnd + sizeof(Alloc_Security_Marker);
+
+            // access intersects with the allocated block?
+            if (accessBegin < blockEnd && accessEnd > blockBegin)
+            {
+                // breaching into allocated block
+                if (accessBegin < blockDataBegin)
+                {
+                    SUSPEND_COMPAT(
+                        "Memory access violation detected!\n\nAccess to address 0x%X (size %d) intersects with "
+                        "allocated memory block at 0x%X (size %d).\n\nOccured",
+                        address, size, allocPtr, allocSize
+                    );
+                }
+
+                // escape outside of allocated block
+                if (accessEnd > blockDataEnd)
+                {
+                    SUSPEND_COMPAT(
+                        "Memory access violation detected!\n\nAccess to address 0x%X (size %d) reaches beyond end of "
+                        "allocated memory block at 0x%X (size %d).\n\nOccured",
+                        address, size, allocPtr, allocSize
+                    );
+                }
+            }
+        }
+
+        return OpcodeResult::OR_CONTINUE;
+    }
+
+    // check if memory markers in front and back of the allocated block are still intact
+    bool CheckMemoryAllocation(CLEO::CRunningScript* thread, void* address)
+    {
+        if (!IsStrictValidation(thread)) return true;
+
+        // should never happen
+        if (m_allocations.find(address) == m_allocations.end()) return false;
+
+        auto beginMarker = (DWORD*)((BYTE*)address - sizeof(Alloc_Security_Marker));
+        auto endMarker   = (DWORD*)((BYTE*)address + m_allocations.at(address));
+        return *beginMarker == Alloc_Security_Marker && *endMarker == Alloc_Security_Marker;
     }
 
     // opcodes 0AA5 - 0AA8
@@ -311,6 +382,9 @@ class MemoryOperations
         auto address = OPCODE_READ_PARAM_PTR();
         auto size    = OPCODE_READ_PARAM_INT();
 
+        auto checkResult = Instance.CheckMemoryAccess(thread, address, size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
+
         // value param
         const void* source;
         auto paramType  = thread->PeekDataType();
@@ -387,6 +461,9 @@ class MemoryOperations
         {
             SUSPEND("Invalid '%d' size argument", size);
         }
+
+        auto checkResult = Instance.CheckMemoryAccess(thread, address, size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
 
         // perform
         DWORD value = 0;
@@ -693,12 +770,19 @@ class MemoryOperations
         }
 
         // perform
-        void* mem = calloc(size, 1);
+        size_t totalSize =
+            sizeof(Alloc_Security_Marker) + size + sizeof(Alloc_Security_Marker); // begin marker + data + end marker
+        auto mem = (BYTE*)calloc(totalSize, 1);
         if (mem)
         {
             DWORD oldProtect;
-            VirtualProtect(mem, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+            VirtualProtect(mem, totalSize, PAGE_EXECUTE_READWRITE, &oldProtect);
+            memcpy(mem, &Alloc_Security_Marker, sizeof(Alloc_Security_Marker)); // begin marker
+            memcpy(
+                mem + sizeof(Alloc_Security_Marker) + size, &Alloc_Security_Marker, sizeof(Alloc_Security_Marker)
+            ); // end marker
 
+            mem += sizeof(Alloc_Security_Marker); // point to data instead of begin marker
             Instance.RegisterMemoryAllocation(thread, mem, size);
 
             const auto& info = Instance.m_scriptAllocationsInfo[thread];
@@ -731,7 +815,7 @@ class MemoryOperations
     static OpcodeResult __stdcall opcode_0AC9(CLEO::CRunningScript* thread)
     {
         // collect params
-        auto address = (void*)OPCODE_READ_PARAM_INT();
+        auto address = (BYTE*)OPCODE_READ_PARAM_INT();
 
         if (address == nullptr)
         {
@@ -745,10 +829,22 @@ class MemoryOperations
             return OR_CONTINUE;
         }
 
-        free(address);
+        // check if end marker is still intact
+        if (!Instance.CheckMemoryAllocation(thread, address))
+        {
+            auto size = Instance.m_allocations.at(address);
+            Instance.UnregisterMemoryAllocation(thread, address); // forget
+
+            SUSPEND_COMPAT(
+                "Memory corruption detected!\n\nAt some point an out-of-bounds write was performed on memory obtained "
+                "via ALLOCATE_MEMORY command.\nAffected block is at 0x%X (size %d).\n\nOccured",
+                address, size
+            );
+            return OR_INTERRUPT; // already done inside SUSPEND_COMPAT
+        }
 
         Instance.UnregisterMemoryAllocation(thread, address);
-
+        free(address - sizeof(Alloc_Security_Marker));
         return OR_CONTINUE; // done
     }
 
@@ -833,6 +929,12 @@ class MemoryOperations
             SUSPEND("Invalid '%d' size argument", size);
         }
 
+        auto checkResult = Instance.CheckMemoryAccess(thread, src, size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
+
+        checkResult = Instance.CheckMemoryAccess(thread, trg, size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
+
         memmove((void*)trg, (void*)src, size);
         return OR_CONTINUE;
     }
@@ -848,6 +950,9 @@ class MemoryOperations
         {
             SUSPEND("Invalid '%d' size argument", size);
         }
+
+        auto checkResult = Instance.CheckMemoryAccess(thread, ptr, offset + size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
 
         auto resultType = thread->PeekDataType();
         if (IsVariable(resultType))
@@ -899,6 +1004,9 @@ class MemoryOperations
             CLEO_SkipOpcodeParams(thread, 1); // value not used
             return OR_CONTINUE;               // done
         }
+
+        auto checkResult = Instance.CheckMemoryAccess(thread, ptr, offset + size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
 
         auto valueType = thread->PeekDataType();
         if (IsImmInteger(valueType) || IsImmFloat(valueType) || IsVariable(valueType))
@@ -1004,6 +1112,12 @@ class MemoryOperations
         {
             SUSPEND("Invalid '%d' size argument", size);
         }
+
+        auto checkResult = Instance.CheckMemoryAccess(thread, addressA, size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
+
+        checkResult = Instance.CheckMemoryAccess(thread, addressB, size);
+        if (checkResult != OpcodeResult::OR_CONTINUE) return checkResult;
 
         auto result = memcmp(addressA, addressB, size);
 
