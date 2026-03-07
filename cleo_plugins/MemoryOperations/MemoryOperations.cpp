@@ -149,7 +149,7 @@ class MemoryOperations
         // value param
         const void* source;
         auto paramType  = thread->PeekDataType();
-        bool sourceText = false;
+        auto sourceText = false;
         auto vp         = false;
 
         if (IsVariable(paramType) || IsVarString(paramType))
