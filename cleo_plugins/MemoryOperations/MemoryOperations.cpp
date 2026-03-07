@@ -142,7 +142,7 @@ class MemoryOperations
         info.size -= m_allocations[address];
         m_allocations.erase(address);
     }
-    
+
     // opcodes 0A8C, 2402 - write_memory and write_memory_with_offset
     static OpcodeResult WriteMemoryGeneric(CLEO::CRunningScript* thread, void* address, int size, bool virtualProtect)
     {
@@ -398,8 +398,8 @@ class MemoryOperations
     static OpcodeResult __stdcall opcode_0A8C(CLEO::CRunningScript* thread)
     {
         // collect params
-        auto address = OPCODE_READ_PARAM_PTR();
-        auto size    = OPCODE_READ_PARAM_INT();
+        auto address        = OPCODE_READ_PARAM_PTR();
+        auto size           = OPCODE_READ_PARAM_INT();
         auto virtualProtect = OPCODE_READ_PARAM_BOOL();
 
         return WriteMemoryGeneric(thread, address, size, virtualProtect);
