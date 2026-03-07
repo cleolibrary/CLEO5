@@ -6,51 +6,66 @@
 namespace CLEO
 {
     ScmFunction* ScmFunction::store[Store_Size] = {0};
-    size_t ScmFunction::allocationPlace         = 0;
+    WORD ScmFunction::lastAllocIdx              = 0;
 
-    ScmFunction* ScmFunction::Get(unsigned short idx)
+    ScmFunction* ScmFunction::Get(WORD id)
     {
-        if (idx >= Store_Size) return nullptr;
+        if (id == Id_None) return nullptr;
+
+        auto idx = id - 1; // skip Id_None
+
+        if (idx >= Store_Size || store[idx] == nullptr)
+        {
+            SHOW_ERROR("CLEO function with id %d not found in the storage!", id);
+            return nullptr;
+        }
 
         return store[idx];
     }
 
     void ScmFunction::Clear()
     {
-        for each (ScmFunction* scmFunc in store)
+        for (auto scmFunc : store)
         {
             if (scmFunc != nullptr) delete scmFunc;
         }
-        ScmFunction::allocationPlace = 0;
+        lastAllocIdx = 0;
     }
 
     void* ScmFunction::operator new(size_t size)
     {
-        size_t start_search = allocationPlace;
-        while (store[allocationPlace] != nullptr) // find first unused position in store
+        auto searchStart = lastAllocIdx;
+        while (store[lastAllocIdx] != nullptr) // find first unused position in store
         {
-            if (++allocationPlace >= Store_Size) allocationPlace = 0; // end of store reached
-            if (allocationPlace == start_search)
+            lastAllocIdx++;
+            if (lastAllocIdx >= Store_Size) lastAllocIdx = 0; // warp around
+
+            if (lastAllocIdx == searchStart)
             {
                 SHOW_ERROR("CLEO function storage stack overfllow!");
                 throw std::bad_alloc(); // the store is filled up
             }
         }
-        ScmFunction* obj       = reinterpret_cast<ScmFunction*>(::operator new(size));
-        store[allocationPlace] = obj;
-        return obj;
+
+        auto func           = reinterpret_cast<ScmFunction*>(::operator new(size));
+        store[lastAllocIdx] = func;
+        return func;
     }
 
     void ScmFunction::operator delete(void* mem)
     {
-        store[reinterpret_cast<ScmFunction*>(mem)->thisScmFunctionId] = nullptr;
+        auto idx   = reinterpret_cast<ScmFunction*>(mem)->thisScmFunctionId - 1;
+        store[idx] = nullptr;
         ::operator delete(mem);
     }
 
     ScmFunction::ScmFunction(CLEO::CRunningScript* thread, BYTE* callIP)
-        : prevScmFunctionId(reinterpret_cast<CCustomScript*>(thread)->GetScmFunction()), callIP(callIP)
     {
         auto cs = reinterpret_cast<CCustomScript*>(thread);
+
+        thisScmFunctionId = ScmFunction::lastAllocIdx + 1; // skip Id_None
+        prevScmFunctionId = cs->GetScmFunction();
+        this->callIP      = callIP;
 
         // create snapshot of current scope
         savedBaseIP   = cs->BaseIP;
@@ -76,14 +91,7 @@ namespace CLEO
         cs->LogicalOp   = eLogicalOperation::NONE;
         cs->NotFlag     = false;
 
-        cs->SetScmFunction(thisScmFunctionId = (unsigned short)allocationPlace);
-    }
-
-    size_t ScmFunction::GetCallStackSize() const
-    {
-        if (prevScmFunctionId == 0) return 0;
-        auto parent = Get(prevScmFunctionId);
-        return parent ? parent->GetCallStackSize() + 1 : 1;
+        cs->SetScmFunction(thisScmFunctionId);
     }
 
     void ScmFunction::Return(CRunningScript* thread)
@@ -125,5 +133,11 @@ namespace CLEO
 
         cs->SetIp(retnAddress);
         cs->SetScmFunction(prevScmFunctionId);
+    }
+
+    size_t ScmFunction::GetCallStackSize() const
+    {
+        if (prevScmFunctionId == Id_None) return 0;
+        return 1 + Get(prevScmFunctionId)->GetCallStackSize();
     }
 }; // namespace CLEO

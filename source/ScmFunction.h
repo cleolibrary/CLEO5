@@ -4,15 +4,13 @@
 
 namespace CLEO
 {
-    struct ScmFunction
+    class ScmFunction
     {
-        static const size_t Store_Size = 0x400;
-        static ScmFunction* store[Store_Size];
-        static size_t allocationPlace; // contains an index of last allocated object
-        static ScmFunction* Get(unsigned short idx);
-        static void Clear();
+      public:
+        static const WORD Id_None = 0;
+        static ScmFunction* Get(WORD id);
+        static void Clear(); // clear storage
 
-        unsigned short prevScmFunctionId, thisScmFunctionId;
         BYTE callArgCount = 0; // args provided to cleo_call
         BYTE* callIP;          // address of 0AB1 for error messages
 
@@ -34,8 +32,15 @@ namespace CLEO
         void operator delete(void* mem);
         ScmFunction(CRunningScript* thread, BYTE* callIP);
 
+        void Return(CRunningScript* thread);
+
         size_t GetCallStackSize() const;
 
-        void Return(CRunningScript* thread);
+      private:
+        static const WORD Store_Size = 0x400;
+        static ScmFunction* store[Store_Size];
+        static WORD lastAllocIdx;
+
+        WORD prevScmFunctionId, thisScmFunctionId;
     };
 } // namespace CLEO
