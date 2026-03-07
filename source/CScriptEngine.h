@@ -39,8 +39,7 @@ namespace CLEO
         CScriptEngine(const CScriptEngine&) = delete; // no copying
         ~CScriptEngine();
 
-        void Inject(CCodeInjector&);     // Phase 1
-        void InjectLate(CCodeInjector&); // Phase 2
+        void Inject(CCodeInjector&);
 
         void GameBegin(); // call after new game started
         void GameEnd();

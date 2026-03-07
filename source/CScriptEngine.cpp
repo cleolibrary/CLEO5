@@ -262,11 +262,8 @@ namespace CLEO
 
     void CScriptEngine::Inject(CCodeInjector& inj)
     {
-        TRACE("Injecting ScriptEngine: Phase 1");
+        TRACE("Injecting ScriptEngine");
         CGameVersionManager& gvm = CleoInstance.VersionManager;
-
-        // Global Events crashfix
-        // inj.MemoryWrite(0xA9AF6C, 0, 4);
 
         opcodeParams  = (SCRIPT_VAR*)ScriptParams; // from Plugin SDK's TheScripts.h
         missionLocals = (SCRIPT_VAR*)CTheScripts::LocalVariablesForCurrentMission;
@@ -287,16 +284,6 @@ namespace CLEO
         );
 
         inj.ReplaceFunction(HOOK_SaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA), &SaveScmData_Orig);
-    }
-
-    void CScriptEngine::InjectLate(CCodeInjector& inj)
-    {
-        TRACE("Injecting ScriptEngine: Phase 2");
-        CGameVersionManager& gvm = CleoInstance.VersionManager;
-
-        // limit adjusters support: get adresses from (possibly) patched references
-        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), scmBlock);
-        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_MISSION_BLOCK_REF), missionBlock);
     }
 
     CScriptEngine::~CScriptEngine()

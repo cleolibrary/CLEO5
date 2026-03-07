@@ -16,8 +16,6 @@ namespace CLEO
 
     void __fastcall CGameMenu::HOOK_DrawMenuBackground(CSprite2d* texture, int dummy, CRect* rect, RwRGBA* color)
     {
-        CleoInstance.Start(CCleoInstance::InitStage::OnDraw); // late initialization
-
         CleoInstance.GameMenu.DrawMenuBackground_Orig(texture, dummy, rect, color);
 
         CFont::SetBackground(false, false);

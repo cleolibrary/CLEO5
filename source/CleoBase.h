@@ -16,13 +16,6 @@ namespace CLEO
     class CCleoInstance
     {
       public:
-        enum InitStage : size_t
-        {
-            None,
-            Initial,
-            OnDraw,
-            Done = OnDraw
-        };
 
         // order here defines init and deinit order!
         CDmaFix DmaFix;
@@ -40,13 +33,13 @@ namespace CLEO
         CCleoInstance()        = default;
         virtual ~CCleoInstance();
 
-        void Start(InitStage stage);
+        void Start();
         void Stop();
 
         void GameBegin(int saveSlot);
         void GameEnd();
 
-        bool IsStarted() const { return m_initStage != InitStage::None; }
+        bool IsStarted() const { return m_isStarted; }
 
         void AddCallback(eCallbackId id, void* func);
         void RemoveCallback(eCallbackId id, void* func);
@@ -93,7 +86,7 @@ namespace CLEO
         static void OnDebugDisplayTextBuffer_Frontend();
 
       private:
-        InitStage m_initStage = InitStage::None;
+        bool m_isStarted = false;
         std::map<eCallbackId, std::set<void*>> m_callbacks;
     };
 
