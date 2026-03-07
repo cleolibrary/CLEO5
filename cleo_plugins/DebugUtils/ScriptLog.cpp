@@ -896,6 +896,8 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
         {
             if (i < command->inputArguments)
             {
+                if (script->PeekDataType() == eDataType::DT_END) break;
+
                 if (command->arguments[i].type == OpcodeInfoDatabase::CommandArgumentType::Arguments)
                 {
                     // when varArg param is present in command SB always compiles all following params as members of the
@@ -960,6 +962,8 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     {
         for (size_t i = 0; i < command->inputArguments; i++)
         {
+            if (script->PeekDataType() == eDataType::DT_END) break;
+
             LogAppendSpace();
 
             // operator
