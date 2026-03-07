@@ -16,7 +16,6 @@ namespace CLEO
     class CCleoInstance
     {
       public:
-
         // order here defines init and deinit order!
         CDmaFix DmaFix;
         CGameMenu GameMenu;
