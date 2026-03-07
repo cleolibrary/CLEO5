@@ -5,7 +5,6 @@ script_name '0A8C'
 test("0A8C (write_memory)", tests)
 terminate_this_custom_script
 
-
 function tests
     before_each(@before)
 
@@ -18,12 +17,12 @@ function tests
     it("should write 7 bytes", test7)
     it("should write float", test8)
     return
-    
+
     :before
-        get_var_pointer 2@ {store_to} 0@
-        1@ = 0xcccccccc
-        2@ = 0xdddddddd
-        3@ = 0xeeeeeeee
+    0@ = get_var_pointer 2@
+    1@ = 0xcccccccc
+    2@ = 0xdddddddd
+    3@ = 0xeeeeeeee
     return
 
     function test1
@@ -32,7 +31,7 @@ function tests
         assert_eq(2@, 0xdddddddd)
         assert_eq(3@, 0xeeeeeeee)
     end
-    
+
     function test2
         write_memory {address} 0@ {size} 1 {value} 0x11223344 {vp} false
         assert_eq(1@, 0xcccccccc)
@@ -82,6 +81,5 @@ function tests
         assert_eqf(2@, 100.0)
         assert_eq(3@, 0xeeeeeeee)
     end
-
 
 end
