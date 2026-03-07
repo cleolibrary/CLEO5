@@ -13,9 +13,8 @@
 
 #pragma once
 #include "CLEO.h"
-#include "CPools.h"      // from GTA Plugin SDK
-#include "CTheScripts.h" // from GTA Plugin SDK
-#include "shellapi.h"    // game window minimize/maximize support
+#include "CPools.h"   // from GTA Plugin SDK
+#include "shellapi.h" // game window minimize/maximize support
 #include <algorithm>
 #include <filesystem>
 #include <string>
@@ -600,8 +599,12 @@ namespace CLEO
 
         ShowError(msg.c_str());
         thread->WakeTime = 0xFFFFFFFF;
-        // allow mission scripts to be started again after suspension
-        if (thread->bIsMission) CTheScripts::bAlreadyRunningAMissionScript = false;
+        if (thread->bIsMission)
+        {
+            const auto CTheScripts_bAlreadyRunningAMissionScript = (BYTE*)0xA444B1;
+            // reset mission script running flag to allow it to be started again after suspension
+            *CTheScripts_bAlreadyRunningAMissionScript = 0;
+        }
         return OpcodeResult::OR_INTERRUPT;
     }
 
