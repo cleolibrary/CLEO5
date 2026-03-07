@@ -146,12 +146,11 @@ class MemoryOperations
     // opcodes 0A8C, 2402 - write_memory and write_memory_with_offset
     static OpcodeResult WriteMemoryGeneric(CLEO::CRunningScript* thread, void* address, int size, bool virtualProtect)
     {
+        // read value param
         const void* source;
         auto paramType  = thread->PeekDataType();
         auto sourceText = false;
-        auto vp         = false;
 
-        // read value param
         if (IsVariable(paramType) || IsVarString(paramType))
         {
             source = CLEO_GetPointerToScriptVariable(thread);
@@ -179,6 +178,7 @@ class MemoryOperations
         }
 
         // read vp param if required
+        auto vp = false;
         if (virtualProtect)
         {
             vp = OPCODE_READ_PARAM_BOOL();
