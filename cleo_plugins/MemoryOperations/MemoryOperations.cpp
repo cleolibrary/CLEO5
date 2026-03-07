@@ -218,6 +218,12 @@ class MemoryOperations
     // opcodes 0A8D, 2401 - read_memory and read_memory_with_offset
     static OpcodeResult ReadMemoryGeneric(CLEO::CRunningScript* thread, void* address, int size, bool virtualProtect)
     {
+        auto vp = false;
+        if (virtualProtect)
+        {
+            vp = OPCODE_READ_PARAM_BOOL();
+        }
+
         // validate params
         if (size < 0 || size > sizeof(SCRIPT_VAR))
         {
@@ -228,7 +234,7 @@ class MemoryOperations
         DWORD value = 0;
         if (size > 0)
         {
-            if (virtualProtect)
+            if (vp)
             {
                 DWORD oldProtect;
                 VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
@@ -418,9 +424,8 @@ class MemoryOperations
         // collect params
         auto address        = OPCODE_READ_PARAM_PTR();
         auto size           = OPCODE_READ_PARAM_INT();
-        auto virtualProtect = OPCODE_READ_PARAM_BOOL();
 
-        return ReadMemoryGeneric(thread, address, size, virtualProtect);
+        return ReadMemoryGeneric(thread, address, size, true);
     }
 
     // 0A96=2,get_ped_pointer %1d% store_to %2d%
