@@ -1,156 +1,99 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name "2402" // write_struct
-debug_on
-
-
-trace "2402 (write_struct)"
-
-wait 0
-// write 0 bytes
-get_var_pointer 1@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-2402: write_struct 0@ {offset} 4 {size} 0 {value} 0x12345678 // tested opcode
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdddddddd
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2402 (write_struct), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2402 (write_struct), #0 FAILED!~n~cccccccc dddddddd eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 1 byte
-get_var_pointer 1@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-2402: write_struct 0@ {offset} 4 {size} 1 {value} 0x12345678 // tested opcode
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdddddd78
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2402 (write_struct), #1 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2402 (write_struct), #1 FAILED!~n~cccccccc dddddd78 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 2 bytes
-get_var_pointer 1@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-2402: write_struct 0@ {offset} 4 {size} 2 {value} 0x12345678 // tested opcode
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdddd5678
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2402 (write_struct), #2 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2402 (write_struct), #2 FAILED!~n~cccccccc dddd5678 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 3 bytes
-get_var_pointer 1@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-2402: write_struct 0@ {offset} 4 {size} 3 {value} 0x12345678 // tested opcode
-if and
-    1@ == 0xcccccccc
-    2@ == 0xdd345678
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2402 (write_struct), #3 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2402 (write_struct), #3 FAILED!~n~cccccccc dd345678 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write 4 bytes
-get_var_pointer 1@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-2402: write_struct 0@ {offset} 4 {size} 4 {value} 0x12345678 // tested opcode
-if and
-    1@ == 0xcccccccc
-    2@ == 0x12345678
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2402 (write_struct), #4 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2402 (write_struct), #4 FAILED!~n~cccccccc 12345678 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// try write 5 bytes
-get_var_pointer 1@ {store_to} 0@
-1@ = 0xcccccccc
-2@ = 0xdddddddd
-3@ = 0xeeeeeeee
-
-2402: write_struct 0@ {offset} 4 {size} 5 {value} 0x12345678 // tested opcode
-if and
-    1@ == 0xcccccccc
-    2@ == 0x12345678
-    3@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2402 (write_struct), #5 PASSED (expected warning)"
-else
-    breakpoint "~r~~h~~h~~h~2402 (write_struct), #5 FAILED!~n~cccccccc 12345678 eeeeeeee Expected~n~%08x %08x %08x Occured" 1@ 2@ 3@
-end
-
-
-wait 0
-// write string
-get_var_pointer 1@ {store_to} 0@
-1@ = 0xcccccccc
-2@s = 'CCCCCCCC'
-4@ = 0xeeeeeeee
-
-
-2402: write_struct 0@ {offset} 5 {size} 2 {value} "some longer text" // tested opcode
-if and
-    1@ == 0xcccccccc
-    2@s == 'CsoCCCCC' // trimmed by target value capacity
-    4@ == 0xeeeeeeee
-then
-    trace "~g~~h~~h~2402 (write_struct), #6 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~2402 (write_struct), #6 FAILED!~n~cccccccc 'CsoCCCCC' eeeeeeee Expected~n~%08x %s %08x Occured" 1@ 2@s 4@
-end
-
-
+script_name '2402'
+test("2402 (write_memory_with_offset)", tests)
 terminate_this_custom_script
+
+function tests
+    before_each(@before)
+
+    it("should write 0 bytes", test1)
+    it("should write 1 byte", test2)
+    it("should write 2 bytes", test3)
+    it("should write 3 bytes", test4)
+    it("should write 4 bytes", test5)
+    it("should write 5 bytes", test6)
+    it("should write 7 bytes", test7)
+    it("should write float", test8)
+    it("should write string", test9)
+    return
+
+    :before
+        get_var_pointer 1@ {store_to} 0@
+        1@ = 0xcccccccc
+        2@ = 0xdddddddd
+        3@ = 0xeeeeeeee
+    return
+
+    function test1
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 0 {value} 0x11223344
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddddddd)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test2
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 1 {value} 0x11223344
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddddd44)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test3
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 2 {value} 0x11223344
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdddd3344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test4
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 3 {value} 0x11223344
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0xdd444444)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test5
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 4 {value} 0x11223344
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x11223344)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test6
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 5 {value} 0x11223344
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x44444444)
+        assert_eq(3@, 0xeeeeee44)
+    end
+
+    function test7
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 7 {value} 0x11223344
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@, 0x44444444)
+        assert_eq(3@, 0xee444444)
+    end
+
+    function test8
+        4@ = 100.0
+        write_memory_with_offset {address} 0@ {offset} 4 {size} 4 {value} 4@
+        assert_eq(1@, 0xcccccccc)
+        assert_eqf(2@, 100.0)
+        assert_eq(3@, 0xeeeeeeee)
+    end
+
+    function test9
+        get_var_pointer 1@ {store_to} 0@
+        1@ = 0xcccccccc
+        2@s = 'CCCCCCCC'
+        4@ = 0xeeeeeeee
+
+        write_memory_with_offset {address} 0@ {offset} 5 {size} 2 {value} "some longer text"
+
+        assert_eq(1@, 0xcccccccc)
+        assert_eq(2@s, 'CsoCCCCC')
+        assert_eq(4@, 0xeeeeeeee)
+    end
+
+end
