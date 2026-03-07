@@ -422,8 +422,8 @@ class MemoryOperations
     static OpcodeResult __stdcall opcode_0A8D(CLEO::CRunningScript* thread)
     {
         // collect params
-        auto address        = OPCODE_READ_PARAM_PTR();
-        auto size           = OPCODE_READ_PARAM_INT();
+        auto address = OPCODE_READ_PARAM_PTR();
+        auto size    = OPCODE_READ_PARAM_INT();
 
         return ReadMemoryGeneric(thread, address, size, true);
     }
