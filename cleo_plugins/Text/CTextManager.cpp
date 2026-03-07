@@ -49,7 +49,9 @@ namespace CLEO
 
     bool CTextManager::RemoveFxt(const char* key)
     {
-        return fxts.erase(key) != 0;
+        std::string str = key;
+        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+        return fxts.erase(str) != 0;
     }
 
     const char* CTextManager::LocateFxt(const char* key)
