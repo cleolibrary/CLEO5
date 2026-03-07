@@ -111,10 +111,8 @@ jobs:
 
       - name: Delete 'preview' release
         if: ${{ hashFiles('preview_changes.md') != '' }}
-        uses: ClementTsang/delete-tag-and-release@d2eed79714fe4651e02708db039bf33705952153 # v0.4.0
-        with:
-          tag_name: 'preview'
-          delete_release: true
+        run: gh release delete preview --cleanup-tag --yes
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
