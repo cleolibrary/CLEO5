@@ -164,14 +164,14 @@ class MemoryOperations
         if (size == 0 || !IsStrictValidation(thread)) return OpcodeResult::OR_CONTINUE;
 
         const auto accessBegin = (BYTE*)address;
-        const auto accessEnd = (BYTE*)address + size; // points byte after end
+        const auto accessEnd   = (BYTE*)address + size; // points byte after end
 
         for (auto [allocPtr, allocSize] : Instance.m_allocations)
         {
-            const auto blockBegin = (BYTE*)allocPtr - sizeof(Alloc_Security_Marker);
+            const auto blockBegin     = (BYTE*)allocPtr - sizeof(Alloc_Security_Marker);
             const auto blockDataBegin = (BYTE*)allocPtr;
-            const auto blockDataEnd = (BYTE*)allocPtr + allocSize; // points byte after end
-            const auto blockEnd = blockDataEnd + sizeof(Alloc_Security_Marker);
+            const auto blockDataEnd   = (BYTE*)allocPtr + allocSize; // points byte after end
+            const auto blockEnd       = blockDataEnd + sizeof(Alloc_Security_Marker);
 
             // access intersects with the allocated block?
             if (accessBegin < blockEnd && accessEnd > blockBegin)
@@ -180,7 +180,8 @@ class MemoryOperations
                 if (accessBegin < blockDataBegin)
                 {
                     SUSPEND_COMPAT(
-                        "Memory access violation detected!\n\nAccess to address 0x%X (size %d) intersects with allocated memory block at 0x%X (size %d).\n\nOccured",
+                        "Memory access violation detected!\n\nAccess to address 0x%X (size %d) intersects with "
+                        "allocated memory block at 0x%X (size %d).\n\nOccured",
                         address, size, allocPtr, allocSize
                     );
                 }
@@ -189,7 +190,8 @@ class MemoryOperations
                 if (accessEnd > blockDataEnd)
                 {
                     SUSPEND_COMPAT(
-                        "Memory access violation detected!\n\nAccess to address 0x%X (size %d) reaches beyond end of allocated memory block at 0x%X (size %d).\n\nOccured",
+                        "Memory access violation detected!\n\nAccess to address 0x%X (size %d) reaches beyond end of "
+                        "allocated memory block at 0x%X (size %d).\n\nOccured",
                         address, size, allocPtr, allocSize
                     );
                 }
@@ -208,7 +210,7 @@ class MemoryOperations
         if (m_allocations.find(address) == m_allocations.end()) return false;
 
         auto beginMarker = (DWORD*)((BYTE*)address - sizeof(Alloc_Security_Marker));
-        auto endMarker = (DWORD*)((BYTE*)address + m_allocations.at(address));
+        auto endMarker   = (DWORD*)((BYTE*)address + m_allocations.at(address));
         return *beginMarker == Alloc_Security_Marker && *endMarker == Alloc_Security_Marker;
     }
 
@@ -768,14 +770,17 @@ class MemoryOperations
         }
 
         // perform
-        size_t totalSize = sizeof(Alloc_Security_Marker) + size + sizeof(Alloc_Security_Marker); // begin marker + data + end marker
+        size_t totalSize =
+            sizeof(Alloc_Security_Marker) + size + sizeof(Alloc_Security_Marker); // begin marker + data + end marker
         auto mem = (BYTE*)calloc(totalSize, 1);
         if (mem)
         {
             DWORD oldProtect;
             VirtualProtect(mem, totalSize, PAGE_EXECUTE_READWRITE, &oldProtect);
             memcpy(mem, &Alloc_Security_Marker, sizeof(Alloc_Security_Marker)); // begin marker
-            memcpy(mem + sizeof(Alloc_Security_Marker) + size, &Alloc_Security_Marker, sizeof(Alloc_Security_Marker)); // end marker
+            memcpy(
+                mem + sizeof(Alloc_Security_Marker) + size, &Alloc_Security_Marker, sizeof(Alloc_Security_Marker)
+            ); // end marker
 
             mem += sizeof(Alloc_Security_Marker); // point to data instead of begin marker
             Instance.RegisterMemoryAllocation(thread, mem, size);
