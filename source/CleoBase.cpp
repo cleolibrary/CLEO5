@@ -94,7 +94,7 @@ namespace CLEO
         // limit adjusters support: get adresses from (possibly) patched references
         inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), CleoInstance.ScriptEngine.scmBlock);
         inj.MemoryRead(gvm.TranslateMemoryAddress(MA_MISSION_BLOCK_REF), CleoInstance.ScriptEngine.missionBlock);
-        
+
         // re-read User directory path, as it could be modified by PortableGTA.asi
         UpdateUserDirectoryPath();
 
