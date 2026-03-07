@@ -143,6 +143,104 @@ class MemoryOperations
         m_allocations.erase(address);
     }
 
+    // opcodes 0A8C, 2402 - write_memory and write_memory_with_offset
+    static OpcodeResult WriteMemoryGeneric(CLEO::CRunningScript* thread, void* address, int size, bool virtualProtect)
+    {
+        // read value param
+        const void* source;
+        auto paramType  = thread->PeekDataType();
+        auto sourceText = false;
+
+        if (IsVariable(paramType) || IsVarString(paramType))
+        {
+            source = CLEO_GetPointerToScriptVariable(thread);
+        }
+        else if (IsImmString(paramType))
+        {
+            static char buffer[MAX_STR_LEN];
+
+            if (size > MAX_STR_LEN)
+            {
+                SUSPEND("Size argument (%d) greater than supported (%d)", size, MAX_STR_LEN);
+            }
+
+            ZeroMemory(buffer, size); // padd with zeros if size > length
+            source     = CLEO_ReadStringOpcodeParam(thread, buffer, sizeof(buffer));
+            sourceText = true;
+        }
+        else
+        {
+            static SCRIPT_VAR value;
+
+            CLEO_RetrieveOpcodeParams(thread, 1);
+            value  = CLEO_GetOpcodeParamsArray()[0];
+            source = &value;
+        }
+
+        // read vp param if required
+        auto vp = false;
+        if (virtualProtect)
+        {
+            vp = OPCODE_READ_PARAM_BOOL();
+        }
+
+        // validate params
+        if (size < 0)
+        {
+            SUSPEND("Invalid '%d' size argument", size);
+        }
+
+        if (size == 0) return OR_CONTINUE; // done
+
+        if (vp)
+        {
+            DWORD oldProtect;
+            VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+        }
+
+        // perform
+        if (!sourceText)
+        {
+            // that's how it worked since ever...
+            if (size == 2 || size == 4)
+                memcpy(address, source, size);
+            else
+                memset(address, *((int*)source), size);
+        }
+        else
+        {
+            memcpy(address, source, size);
+        }
+
+        return OR_CONTINUE;
+    }
+
+    // opcodes 0A8D, 2401 - read_memory and read_memory_with_offset
+    static OpcodeResult ReadMemoryGeneric(CLEO::CRunningScript* thread, void* address, int size, bool virtualProtect)
+    {
+        // validate params
+        if (size < 0 || size > sizeof(SCRIPT_VAR))
+        {
+            SUSPEND("Invalid '%d' size argument", size);
+        }
+
+        // perform
+        DWORD value = 0;
+        if (size > 0)
+        {
+            if (virtualProtect)
+            {
+                DWORD oldProtect;
+                VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+            }
+
+            memcpy(&value, address, size);
+        }
+
+        OPCODE_WRITE_PARAM_ANY32(value);
+        return OR_CONTINUE;
+    }
+
     // opcodes 0AA5 - 0AA8
     static OpcodeResult CallFunctionGeneric(
         CLEO::CRunningScript* thread, void* func, void* obj, int numArg, int numPop, bool returnArg
@@ -311,67 +409,7 @@ class MemoryOperations
         auto address = OPCODE_READ_PARAM_PTR();
         auto size    = OPCODE_READ_PARAM_INT();
 
-        // value param
-        const void* source;
-        auto paramType  = thread->PeekDataType();
-        bool sourceText = false;
-        if (IsVariable(paramType) || IsVarString(paramType))
-        {
-            source = CLEO_GetPointerToScriptVariable(thread);
-        }
-        else if (IsImmString(paramType))
-        {
-            static char buffer[MAX_STR_LEN];
-
-            if (size > MAX_STR_LEN)
-            {
-                SUSPEND("Size argument (%d) greater than supported (%d)", size, MAX_STR_LEN);
-            }
-
-            ZeroMemory(buffer, size); // padd with zeros if size > length
-            source     = CLEO_ReadStringOpcodeParam(thread, buffer, sizeof(buffer));
-            sourceText = true;
-        }
-        else
-        {
-            static SCRIPT_VAR value;
-
-            CLEO_RetrieveOpcodeParams(thread, 1);
-            value  = CLEO_GetOpcodeParamsArray()[0];
-            source = &value;
-        }
-
-        auto virtualProtect = OPCODE_READ_PARAM_BOOL();
-
-        // validate params
-        if (size < 0)
-        {
-            SUSPEND("Invalid '%d' size argument", size);
-        }
-
-        // perform
-        if (size == 0) return OR_CONTINUE; // done
-
-        if (virtualProtect)
-        {
-            DWORD oldProtect;
-            VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
-        }
-
-        if (!sourceText)
-        {
-            // that's how it worked since ever...
-            if (size == 2 || size == 4)
-                memcpy(address, source, size);
-            else
-                memset(address, *((int*)source), size);
-        }
-        else
-        {
-            memcpy(address, source, size);
-        }
-
-        return OR_CONTINUE;
+        return WriteMemoryGeneric(thread, address, size, true);
     }
 
     // 0A8D=4,read_memory %1d% size %2d% virtual_protect %3d% store_to %4d%
@@ -382,27 +420,7 @@ class MemoryOperations
         auto size           = OPCODE_READ_PARAM_INT();
         auto virtualProtect = OPCODE_READ_PARAM_BOOL();
 
-        // validate params
-        if (size < 0 || size > sizeof(SCRIPT_VAR))
-        {
-            SUSPEND("Invalid '%d' size argument", size);
-        }
-
-        // perform
-        DWORD value = 0;
-        if (size > 0)
-        {
-            if (virtualProtect)
-            {
-                DWORD oldProtect;
-                VirtualProtect(address, size, PAGE_EXECUTE_READWRITE, &oldProtect);
-            }
-
-            memcpy(&value, address, size);
-        }
-
-        OPCODE_WRITE_PARAM_ANY32(value);
-        return OR_CONTINUE;
+        return ReadMemoryGeneric(thread, address, size, virtualProtect);
     }
 
     // 0A96=2,get_ped_pointer %1d% store_to %2d%
@@ -844,42 +862,7 @@ class MemoryOperations
         auto offset = OPCODE_READ_PARAM_INT();
         auto size   = OPCODE_READ_PARAM_INT();
 
-        if (size < 0)
-        {
-            SUSPEND("Invalid '%d' size argument", size);
-        }
-
-        auto resultType = thread->PeekDataType();
-        if (IsVariable(resultType))
-        {
-            if (size == 0)
-            {
-                OPCODE_WRITE_PARAM_ANY32(0);
-                return OR_CONTINUE; // done
-            }
-
-            DWORD result = 0;
-            if (size > sizeof(result))
-            {
-                LOG_WARNING(
-                    thread, "Size '%d' argument out of supported range (%d) in script %s", size, sizeof(result),
-                    ScriptInfoStr(thread).c_str()
-                );
-                size = sizeof(result);
-            }
-            if (size > 0) memcpy(&result, (void*)(ptr + offset), size);
-
-            OPCODE_WRITE_PARAM_ANY32(result);
-            return OR_CONTINUE;
-        }
-        else if (IsVarString(resultType))
-        {
-            std::string str(std::string_view((char*)ptr + offset, size)); // null terminated
-            OPCODE_WRITE_PARAM_STRING(str.c_str());
-            return OR_CONTINUE;
-        }
-
-        SUSPEND("Invalid type (%s) of the result argument", ToKindStr(resultType));
+        return ReadMemoryGeneric(thread, ptr + offset, size, false);
     }
 
     // 2402=4,write_memory_with_offset %1d% offset %2d% size %3d% value %4d%
@@ -889,46 +872,7 @@ class MemoryOperations
         auto offset = OPCODE_READ_PARAM_INT();
         auto size   = OPCODE_READ_PARAM_INT();
 
-        if (size < 0)
-        {
-            SUSPEND("Invalid '%d' size argument", size);
-        }
-
-        if (size == 0)
-        {
-            CLEO_SkipOpcodeParams(thread, 1); // value not used
-            return OR_CONTINUE;               // done
-        }
-
-        auto valueType = thread->PeekDataType();
-        if (IsImmInteger(valueType) || IsImmFloat(valueType) || IsVariable(valueType))
-        {
-            if (size > sizeof(DWORD))
-            {
-                LOG_WARNING(
-                    thread, "Size '%d' argument out of supported range (%d) in script %s", size, sizeof(DWORD),
-                    ScriptInfoStr(thread).c_str()
-                );
-                size = sizeof(DWORD);
-            }
-
-            auto value = OPCODE_READ_PARAM_ANY32();
-            memcpy(ptr + offset, &value, size);
-
-            return OR_CONTINUE;
-        }
-        else if (IsImmString(valueType) || IsVarString(valueType))
-        {
-            OPCODE_READ_PARAM_STRING(str);
-            auto len = (int)strlen(str);
-
-            memcpy(ptr + offset, str, std::min(size, len));
-            if (size > len) ZeroMemory(ptr + offset + len, size - len); // fill rest with zeros
-
-            return OR_CONTINUE;
-        }
-
-        SUSPEND("Invalid value type (%s)", ToKindStr(valueType));
+        return WriteMemoryGeneric(thread, ptr + offset, size, false);
     }
 
     // 2403=1,forget_memory %1d%
