@@ -5,22 +5,20 @@ script_name '0A94'
 test("0A94 (load_and_launch_custom_mission)", tests)
 terminate_this_custom_script
 
-
 function tests
     before_each(@cleanup)
     after_each(@cleanup)
-    
+
     it("should start custom mission from default location", test1)
     it_cs5("should start script from current folder", test2_cs5)
     it_cs4("should start script from CLEO folder", test2_cs4)
-    return
-    
-    
-    :cleanup
-        fail_current_mission // end any ongoing mission
-        wait {time} 0
+    it("should use heap allocated buffer", test3)
     return
 
+    :cleanup
+    fail_current_mission // end any ongoing mission
+    wait {time} 0
+    return
 
     function test1
         // use default search path "cleo\"
@@ -38,7 +36,6 @@ function tests
         assert_eq($102, 0)
     end
 
-
     function test2_cs5
         // ./ prefix resolves to the current directory in CLEO5
         $100 = -1
@@ -54,7 +51,7 @@ function tests
         assert_eq($101, 42)
         assert_eq($102, 0)
     end
-    
+
     function test2_cs4
         // ./ prefix is relative to CLEO directory
         $100 = -1
@@ -69,5 +66,13 @@ function tests
         assert_eqf($100, 3.1415)
         assert_eq($101, 42)
         assert_eq($102, 0)
+    end
+
+    function test3
+        load_and_launch_custom_mission {scriptFileName} "./cleo_tests/cleo/testMission"
+        int mis = get_script_struct_just_created
+        int base_ip = read_memory_with_offset {address} mis {offset} 0x10 {size} 4
+        assert_ptr(base_ip)
+        assert_neq(base_ip, 0xA7A6A0) // static buffer address in 1.0
     end
 end

@@ -132,14 +132,9 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
                 CTheScripts::bAlreadyRunningAMissionScript = 1;
                 CleoInstance.ScriptEngine.missionIndex     = -1;
+            }
 
-                // TODO: there should be check length <= missionBlock size
-                BaseIP = CurrentIP = CleoInstance.ScriptEngine.missionBlock;
-            }
-            else
-            {
-                BaseIP = CurrentIP = new BYTE[length];
-            }
+            BaseIP = CurrentIP = new BYTE[length];
             is.read(reinterpret_cast<char*>(BaseIP), length);
 
             m_codeSize = length;
@@ -178,7 +173,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
 CCustomScript::~CCustomScript()
 {
-    if (BaseIP && !bIsMission) delete[] BaseIP;
+    if (BaseIP) delete[] BaseIP;
     CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
 
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;

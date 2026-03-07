@@ -599,6 +599,12 @@ namespace CLEO
 
         ShowError(msg.c_str());
         thread->WakeTime = 0xFFFFFFFF;
+        if (thread->bIsMission)
+        {
+            const auto CTheScripts_bAlreadyRunningAMissionScript = (BYTE*)0xA444B1;
+            // reset mission script running flag to allow it to be started again after suspension
+            *CTheScripts_bAlreadyRunningAMissionScript = 0;
+        }
         return OpcodeResult::OR_INTERRUPT;
     }
 
