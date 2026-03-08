@@ -1,0 +1,47 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name 'CLEO'
+test("Hook_CRunningScript_Init", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should initialize all CRunningScript fields", test1)
+    return
+
+    function test1
+        // find first idle script
+        int scriptPtr = read_memory {address} 0x00A8B428 {size} 4 {vp} false // CTheScripts::pIdleScripts
+        
+        // fill with junk data
+        int ptr = scriptPtr + 8 // skip Next and Previous fields
+        write_memory {address} ptr {size} 0xD8 {value} 0xFF {vp} false // fill entire CRunningScript
+        
+        // call vanilla script creation
+        int testIp = get_label_pointer @_SCRIPT_CODE
+        int createdScriptPtr = call_function_return {address} 0x00464C20 {numArgs} 1 {pop} 1 {args} testIp // CRunningScript* CTheScripts::StartNewScript(uint8* startIP)
+        
+        assert_eq(createdScriptPtr, scriptPtr) // the script struct we expected was used
+        
+        int ip = read_memory_with_offset {address} createdScriptPtr {offset} 0x14 {size} 4 // CRunningScript::CurrentIP
+        assert_eq(ip, testIp)
+        
+        int namePtr = createdScriptPtr + 0x08 // CRunningScript::Name
+        assert_eqs(namePtr, "noname")
+        
+        // expect CLEO added custom fields to be cleared too
+        
+        int scmFunctionId = read_memory_with_offset {address} createdScriptPtr {offset} 0xDD {size} 2 // CRunningScript::ScmFunction
+        assert_eq(scmFunctionId, 0) // ScmFunction::Id_None
+        
+        int flags = read_memory_with_offset {address} createdScriptPtr {offset} 0xDF {size} 1 // CRunningScript::bIsCustom
+        assert_eq(flags, 0) // ScmFunction::Id_None
+        
+        terminate_script {address} createdScriptPtr // kill before it try to run
+    end
+end
+
+
+:_SCRIPT_CODE
+terminate_this_script
