@@ -11,20 +11,20 @@ namespace CLEO
         static ScmFunction* Get(WORD id);
         static void Clear(); // clear storage
 
-        BYTE callArgCount = 0; // args provided to cleo_call
-        BYTE* callIP = nullptr;// address of 0AB1 for error messages
+        BYTE callArgCount = 0;       // args provided to cleo_call
+        BYTE* callIP      = nullptr; // address of 0AB1 for error messages
 
         // saved nesting context state
-        void* savedBaseIP = nullptr;
-        size_t savedCodeSize = 0; // Custom Scripts only
-        BYTE* retnAddress = nullptr;
-        std::array<BYTE*, _countof(CRunningScript::Stack)> savedStack = {}; // gosub stack
-        WORD savedSP = 0;
+        void* savedBaseIP                                                        = nullptr;
+        size_t savedCodeSize                                                     = 0; // Custom Scripts only
+        BYTE* retnAddress                                                        = nullptr;
+        std::array<BYTE*, _countof(CRunningScript::Stack)> savedStack            = {}; // gosub stack
+        WORD savedSP                                                             = 0;
         std::array<SCRIPT_VAR, _countof(CRunningScript::LocalVar)> savedLocalVar = {};
         std::list<std::string> stringParams; // texts with this scope lifetime
-        bool savedCondResult = false;
+        bool savedCondResult             = false;
         eLogicalOperation savedLogicalOp = {};
-        bool savedNotFlag = false;
+        bool savedNotFlag                = false;
         std::string savedScriptFileDir;  // modules switching
         std::string savedScriptFileName; // modules switching
 
