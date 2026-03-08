@@ -196,6 +196,16 @@ namespace CLEO
         }
     }
 
+    void __fastcall CScriptEngine::HOOK_CRunningScriptInit(CLEO::CRunningScript* thread)
+    {
+        if (thread == nullptr) return;
+
+        std::memset(thread, 0, sizeof(CLEO::CRunningScript)); // clear everything, including padding fields
+        strcpy_s(thread->Name, "noname");
+        thread->bExternalType      = -1;
+        thread->bWastedBustedCheck = true;
+    }
+
     SCRIPT_VAR* CScriptEngine::GetScriptParamPointer(CRunningScript* thread)
     {
         auto type = DT_DWORD; // thread->PeekDataType(); // ignored in GetPointerToScriptVariable anyway
@@ -276,6 +286,8 @@ namespace CLEO
         inj.ReplaceFunction(
             HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig
         );
+
+        inj.ReplaceJump(HOOK_CRunningScriptInit, addrof(::CRunningScript::Init));
 
         inj.ReplaceFunction(
             HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE),
