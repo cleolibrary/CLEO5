@@ -8,12 +8,18 @@ terminate_this_custom_script
 
 
 function tests
+    after_each(@cleanup)
+
     it("should print short string variable", test1)
     it("should print long string variable", test2)
     it("should print string pointer", test3)
     it("should print formatted string with args", test4)
-    it("should add to brief history", test5)
-    it("should add multiple to brief history", test6)
+    it_cs5("should add CLEO texts to brief history", test5_cs5)
+    it_cs4("should not add CLEO texts to brief history", test5_cs4)
+    return
+
+    :cleanup
+    write_memory {address} 0xC1A570 {size} 640 {value} 0 {vp} false // reset CMessages::PreviousBriefs
     return
 
 
@@ -72,57 +78,67 @@ function tests
     end
 
 
-    function test5
-        int msg = allocate_memory {size} 64
-        string_format msg = "Brief from 0AD0"
-        
-        clear_prints
-        print_formatted {format} msg {time} 100
-        string_format msg = "--VOID--"
-        
-        free_memory {address} msg
-        msg = 0
-        
-        int str = getBriefTextAt(0)
-        assert_eqs(str, "Brief from 0AD0")
+    function test5_cs5
+        print_now {key} 'STAT000' {time} 100 {flag} 1 // add Progress made to brief
+        print_now {key} 'STAT001' {time} 100 {flag} 1 // add Total progress to brief
+
+        print_brief_messages()
+
+        assert_brief_at(0, "Brief 0AD0 three")
+        assert_brief_at(1, "Brief 0AD0 one")
+        assert_brief_at(2, "Total progress")
+        assert_brief_at(3, "Progress made")
     end
 
+    function test5_cs4
+        print_now {key} 'STAT013' {time} 100 {flag} 1 // add Weapon Budget to brief
+        print_now {key} 'STAT014' {time} 100 {flag} 1 // add Fashion Budget to brief
+        print_now {key} 'STAT015' {time} 100 {flag} 1 // add Property Budget to brief
 
-    function test6
-        int msg1 = allocate_memory {size} 64
-        int msg2 = allocate_memory {size} 64
-        int msg3 = allocate_memory {size} 64
-        string_format msg1 = "Brief 0AD0 one"
-        string_format msg2 = "Brief 0AD0 two"
-        string_format msg3 = "Brief 0AD0 three"
-        
-        clear_prints
-        print_formatted {format} msg1 {time} 9000
-        print_formatted {format} msg2 {time} 9000
-        print_formatted {format} msg3 {time} 9000
-        string_format msg1 = "--VOID--"
-        string_format msg2 = "--VOID--"
-        string_format msg3 = "--VOID--"
-        
-        free_memory {address} msg1
-        free_memory {address} msg2
-        free_memory {address} msg3
-        msg1 = 0
-        msg2 = 0
-        msg3 = 0
-        
-        // PreviousBriefs inserts at index 0 (most recent first)
-        int str0 = getBriefTextAt(0)
-        int str1 = getBriefTextAt(1)
-        int str2 = getBriefTextAt(2)
-        assert_eqs(str0, "Brief 0AD0 three")
-        assert_eqs(str1, "Brief 0AD0 two")
-        assert_eqs(str2, "Brief 0AD0 one")
+        print_brief_messages()
+
+        assert_brief_at(0, "Property Budget")
+        assert_brief_at(1, "Fashion Budget")
+        assert_brief_at(2, "Weapon Budget")
     end
 end
 
+function assert_brief_at(index: int, expected: string)
+    int str = getBriefTextAt(index)
+    assert_eqs(str, expected)
+end
 
-// get pointer to current subtitle text 
+function print_brief_messages
+    int msg1 = allocate_memory {size} 64
+    int msg2 = allocate_memory {size} 64
+    int msg3 = allocate_memory {size} 64
+    string_format msg1 = "Brief 0AD0 one"
+    string_format msg2 = "Brief 0AD0 two"
+    string_format msg3 = "Brief 0AD0 three"
+
+    clear_prints
+
+    print_formatted {format} msg1 {time} 9000            // msg1 is added to brief
+
+    add_next_message_to_previous_briefs {state} false
+    print_formatted {format} msg2 {time} 9000            // msg2 is NOT added to brief
+
+    add_next_message_to_previous_briefs {state} true    // no effect as flag is true already
+    print_formatted {format} msg3 {time} 9000            // msg3 is added to brief
+
+    string_format msg1 = "--VOID--"
+    string_format msg2 = "--VOID--"
+    string_format msg3 = "--VOID--"
+
+    free_memory {address} msg1
+    free_memory {address} msg2
+    free_memory {address} msg3
+    msg1 = 0
+    msg2 = 0
+    msg3 = 0
+end
+
+// get pointer to current subtitle text
 function getCurrSubtitleText(): int
     int txt = read_memory {address} 0x00C1A7F0 {size} 4 {vp} false // GTA SA 1.0: CMessages::BriefMessages[0].text
     return txt

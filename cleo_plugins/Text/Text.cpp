@@ -22,18 +22,17 @@ class Text
     static ScriptDrawing scriptDrawing;
     static CTextManager textManager;
 
-    static const size_t MsgBriefCount    = 8;  // matches CMessages::BriefMessages queue size
+    static const size_t MsgQueueCount    = 8;  // matches CMessages::BriefMessages queue size
     static const size_t MsgHistoryCount  = 20; // matches CMessages::PreviousBriefs count
     static const size_t MsgBigStyleCount = 7;  // matches CMessages::BIGMessages count
 
-    static size_t msgBuffLowIdx;
-    static size_t msgBuffHighIdx;
+    static size_t msgQueueIdx;
     static size_t msgBuffBriefIdx;
 
-    static char msgBuffLow[MsgBriefCount][400];
-    static char msgBuffHigh[MsgBriefCount][400];
+    static char msgQueueBuff[MsgQueueCount][400];
     static char msgBuffBrief[MsgHistoryCount][400];
     static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
+    static char msgNowBuff[400];
 
     static WORD genericLabelCounter;
 
@@ -153,8 +152,10 @@ class Text
         return result;
     }
 
-    static void AddToBriefHistory(const char* text)
+    static void AddToBriefHistory(CLEO::CRunningScript* pScript, const char* text)
     {
+        if (IsLegacyScript(pScript)) return;
+
         const auto next = CTheScripts::bAddNextMessageToPreviousBriefs;
 
         CTheScripts::bAddNextMessageToPreviousBriefs = true;
@@ -237,7 +238,7 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
 
         CHud::SetHelpMessage(text, true, false, false);
-        AddToBriefHistory(text);
+        AddToBriefHistory(thread, text);
         return OR_CONTINUE;
     }
 
@@ -260,10 +261,11 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        msgBuffLowIdx = (msgBuffLowIdx + 1) % MsgBriefCount;
-        strncpy_s(msgBuffLow[msgBuffLowIdx], text, sizeof(msgBuffLow[msgBuffLowIdx]) - 1);
-        CMessages::AddMessage(msgBuffLow[msgBuffLowIdx], time, false, false);
-        AddToBriefHistory(msgBuffLow[msgBuffLowIdx]);
+        msgQueueIdx = (msgQueueIdx + 1) % MsgQueueCount;
+        strncpy_s(msgQueueBuff[msgQueueIdx], text, sizeof(msgQueueBuff[msgQueueIdx]) - 1);
+        CMessages::AddMessage(msgQueueBuff[msgQueueIdx], time, false, false);
+
+        AddToBriefHistory(thread, msgQueueBuff[msgQueueIdx]);
         return OR_CONTINUE;
     }
 
@@ -273,10 +275,9 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        msgBuffHighIdx = (msgBuffHighIdx + 1) % MsgBriefCount;
-        strncpy_s(msgBuffHigh[msgBuffHighIdx], text, sizeof(msgBuffHigh[msgBuffHighIdx]) - 1);
-        CMessages::AddMessageJumpQ(msgBuffHigh[msgBuffHighIdx], time, false, false);
-        AddToBriefHistory(msgBuffHigh[msgBuffHighIdx]);
+        strncpy_s(msgNowBuff, text, sizeof(msgNowBuff) - 1);
+        CMessages::AddMessageJumpQ(msgNowBuff, time, false, false);
+        AddToBriefHistory(thread, msgNowBuff);
         return OR_CONTINUE;
     }
 
@@ -286,7 +287,7 @@ class Text
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
         CHud::SetHelpMessage(text, true, false, false);
-        AddToBriefHistory(text);
+        AddToBriefHistory(thread, text);
         return OR_CONTINUE;
     }
 
@@ -311,10 +312,10 @@ class Text
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        msgBuffLowIdx = (msgBuffLowIdx + 1) % MsgBriefCount;
-        strncpy_s(msgBuffLow[msgBuffLowIdx], text, sizeof(msgBuffLow[msgBuffLowIdx]) - 1);
-        CMessages::AddMessage(msgBuffLow[msgBuffLowIdx], time, false, false);
-        AddToBriefHistory(msgBuffLow[msgBuffLowIdx]);
+        msgQueueIdx = (msgQueueIdx + 1) % MsgQueueCount;
+        strncpy_s(msgQueueBuff[msgQueueIdx], text, sizeof(msgQueueBuff[msgQueueIdx]) - 1);
+        CMessages::AddMessage(msgQueueBuff[msgQueueIdx], time, false, false);
+        AddToBriefHistory(thread, msgQueueBuff[msgQueueIdx]);
         return OR_CONTINUE;
     }
 
@@ -325,10 +326,9 @@ class Text
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        msgBuffHighIdx = (msgBuffHighIdx + 1) % MsgBriefCount;
-        strncpy_s(msgBuffHigh[msgBuffHighIdx], text, sizeof(msgBuffHigh[msgBuffHighIdx]) - 1);
-        CMessages::AddMessageJumpQ(msgBuffHigh[msgBuffHighIdx], time, false, false);
-        AddToBriefHistory(msgBuffHigh[msgBuffHighIdx]);
+        strncpy_s(msgNowBuff, text, sizeof(msgNowBuff) - 1);
+        CMessages::AddMessageJumpQ(msgNowBuff, time, false, false);
+        AddToBriefHistory(thread, msgNowBuff);
         return OR_CONTINUE;
     }
 
@@ -724,13 +724,12 @@ class Text
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
 
-size_t Text::msgBuffLowIdx   = 0;
-size_t Text::msgBuffHighIdx  = 0;
+size_t Text::msgQueueIdx   = 0;
 size_t Text::msgBuffBriefIdx = 0;
 
-char Text::msgBuffLow[Text::MsgBriefCount][400];
-char Text::msgBuffHigh[Text::MsgBriefCount][400];
+char Text::msgQueueBuff[Text::MsgQueueCount][400];
 char Text::msgBuffBrief[Text::MsgHistoryCount][400];
+char Text::msgNowBuff[400];
 char Text::msgBuffBig[Text::MsgBigStyleCount][MAX_STR_LEN + 1];
 
 WORD Text::genericLabelCounter;

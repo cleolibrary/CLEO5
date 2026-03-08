@@ -328,6 +328,11 @@ end
 /// checks if value is a valid pointer, otherwise stops the test execution
 function assert_ptr(ptr: int)
     _cleo_tester_increment_assert()
+    _assert_ptr(ptr)
+end
+
+/// checks if value is a valid pointer, otherwise stops the test execution. does not increment assert count
+function _assert_ptr(ptr: int)
     if
         ptr <= 0x10000 // possibly valid pointer
     then
@@ -353,6 +358,8 @@ end
 /// checks if two string values are equal, otherwise stops the test execution
 function assert_eqs(actual: string, expected: string)
     _cleo_tester_increment_assert()
+    _assert_ptr(actual)
+    _assert_ptr(expected)
     if
         not is_text_equal {text} actual {another} expected {ignoreCase} false
     then
@@ -366,6 +373,8 @@ end
 /// checks if two string values are not equal, otherwise stops the test execution
 function assert_neqs(actual: string, expected: string)
     _cleo_tester_increment_assert()
+    _assert_ptr(actual)
+    _assert_ptr(expected)
     if
         is_text_equal {text} actual {another} expected {ignoreCase} false
     then
@@ -379,6 +388,8 @@ end
 /// checks if string starts with prefix, otherwise stops the test execution
 function assert_prefix(actual: string, expectedPrefix: string, ignoreCase: int)
     _cleo_tester_increment_assert()
+    _assert_ptr(actual)
+    _assert_ptr(expectedPrefix)
     if
         not is_text_prefix {text} actual {prefix} expectedPrefix {ignoreCase} ignoreCase
     then
@@ -392,6 +403,8 @@ end
 /// checks if string ends with suffix, otherwise stops the test execution
 function assert_suffix(actual: string, expectedSuffix: string, ignoreCase: int)
     _cleo_tester_increment_assert()
+    _assert_ptr(actual)
+    _assert_ptr(expectedSuffix)
     if
         not is_text_suffix {text} actual {prefix} expectedSuffix {ignoreCase} ignoreCase
     then
