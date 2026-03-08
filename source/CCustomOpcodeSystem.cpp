@@ -1072,7 +1072,7 @@ namespace CLEO
         static SCRIPT_VAR arguments[32];
         SCRIPT_VAR* locals       = thread->IsMission() ? missionLocals : thread->GetVarPtr();
         SCRIPT_VAR* localsEnd    = locals + 32;
-        SCRIPT_VAR* storedLocals = scmFunc->savedTls;
+        SCRIPT_VAR* storedLocals = &scmFunc->savedLocalVar[0];
 
         // collect arguments
         for (DWORD i = 0; i < nParams; i++)

@@ -75,7 +75,7 @@ namespace CLEO
         savedSP = cs->SP;
 
         auto scope = cs->IsMission() ? missionLocals : cs->LocalVar;
-        std::copy(scope, scope + _countof(CRunningScript::LocalVar), savedTls);
+        std::copy(scope, scope + _countof(CRunningScript::LocalVar), savedLocalVar.begin());
 
         savedCondResult = cs->bCondResult;
         savedLogicalOp  = cs->LogicalOp;
@@ -102,11 +102,11 @@ namespace CLEO
         if (cs->IsCustom()) cs->SetCodeSize(savedCodeSize);
 
         // restore parent scope's gosub call stack
-        std::copy(std::begin(savedStack), std::end(savedStack), std::begin(cs->Stack));
+        std::copy(savedStack.begin(), savedStack.end(), std::begin(cs->Stack));
         cs->SP = savedSP;
 
         // restore parent scope's local variables
-        std::copy(savedTls, savedTls + 32, cs->IsMission() ? missionLocals : cs->LocalVar);
+        std::copy(savedLocalVar.begin(), savedLocalVar.end(), cs->IsMission() ? missionLocals : cs->LocalVar);
 
         // process conditional result of just ended function in parent scope
         bool condResult = cs->bCondResult;
