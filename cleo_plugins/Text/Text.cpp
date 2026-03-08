@@ -22,9 +22,19 @@ class Text
     static ScriptDrawing scriptDrawing;
     static CTextManager textManager;
 
-    static char msgBuffLow[400]; // same as in CMessages' text processing functions
-    static char msgBuffHigh[400];
-    static const size_t MsgBigStyleCount = 7;
+    static const size_t MsgBriefCount    = 8;  // matches CMessages::BriefMessages queue size
+    static const size_t MsgHistoryCount  = 20; // matches CMessages::PreviousBriefs count
+    static const size_t MsgBigStyleCount = 7;  // matches CMessages::BIGMessages count
+
+    static size_t msgBuffLowIdx;
+    static size_t msgBuffHighIdx;
+    static size_t msgBuffHelpIdx;
+    static size_t msgBuffBriefIdx;
+
+    static char msgBuffLow[MsgBriefCount][400];
+    static char msgBuffHigh[MsgBriefCount][400];
+    static char msgBuffHelp[MsgBriefCount][400];
+    static char msgBuffBrief[MsgHistoryCount][400];
     static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
 
     static WORD genericLabelCounter;
@@ -145,6 +155,40 @@ class Text
         return result;
     }
 
+    static void AddToBriefHistory(const char* text)
+    {
+        const auto next = CTheScripts::bAddNextMessageToPreviousBriefs;
+
+        CTheScripts::bAddNextMessageToPreviousBriefs = true;
+
+        if (!next) return;
+
+        // Content-based dedup: skip if this text is already present in PreviousBriefs
+        for (size_t i = 0; i < MsgHistoryCount; i++)
+        {
+            auto pText = CMessages::PreviousBriefs[i].m_pText;
+            if (pText == nullptr) break; // end of populated entries
+            if (strcmp(pText, text) == 0) return;
+        }
+
+        msgBuffBriefIdx = (msgBuffBriefIdx + 1) % MsgHistoryCount;
+
+        // Clear the buffer slot still referenced by a PreviousBriefs entry,
+        // so the game's dedup won't skip the new entry.
+        for (size_t i = 0; i < MsgHistoryCount; i++)
+        {
+            auto& pText = CMessages::PreviousBriefs[i].m_pText;
+            if (pText == msgBuffBrief[msgBuffBriefIdx])
+            {
+                pText = nullptr;
+                break;
+            }
+        }
+
+        strncpy_s(msgBuffBrief[msgBuffBriefIdx], text, sizeof(msgBuffBrief[msgBuffBriefIdx]) - 1);
+        CMessages::AddToPreviousBriefArray(msgBuffBrief[msgBuffBriefIdx], -1, -1, -1, -1, -1, -1, 0);
+    }
+
     // 0390=1,load_texture_dictionary %1s%
     static OpcodeResult __stdcall opcode_0390(CLEO::CRunningScript* thread)
     {
@@ -189,12 +233,15 @@ class Text
         return CLEO_CallNativeOpcode(thread, 0x0391);
     }
 
-    // 0ACA=1,show_text_box %1d%
+    // 0ACA=1,print_help_string %1d%
     static OpcodeResult __stdcall opcode_0ACA(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
 
-        CHud::SetHelpMessage(text, true, false, false);
+        msgBuffHelpIdx = (msgBuffHelpIdx + 1) % MsgBriefCount;
+        strncpy_s(msgBuffHelp[msgBuffHelpIdx], text, sizeof(msgBuffHelp[msgBuffHelpIdx]) - 1);
+        CHud::SetHelpMessage(msgBuffHelp[msgBuffHelpIdx], true, false, false);
+        AddToBriefHistory(msgBuffHelp[msgBuffHelpIdx]);
         return OR_CONTINUE;
     }
 
@@ -211,38 +258,45 @@ class Text
         return OR_CONTINUE;
     }
 
-    // 0ACC=2,show_text_lowpriority %1d% time %2d%
+    // 0ACC=2,print_string %1d% time %2d%
     static OpcodeResult __stdcall opcode_0ACC(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow) - 1);
-        CMessages::AddMessage(msgBuffLow, time, false, false);
+        msgBuffLowIdx = (msgBuffLowIdx + 1) % MsgBriefCount;
+        strncpy_s(msgBuffLow[msgBuffLowIdx], text, sizeof(msgBuffLow[msgBuffLowIdx]) - 1);
+        CMessages::AddMessage(msgBuffLow[msgBuffLowIdx], time, false, false);
+        AddToBriefHistory(msgBuffLow[msgBuffLowIdx]);
         return OR_CONTINUE;
     }
 
-    // 0ACD=2,show_text_highpriority %1d% time %2d%
+    // 0ACD=2,print_string_now %1d% time %2d%
     static OpcodeResult __stdcall opcode_0ACD(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh) - 1);
-        CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
+        msgBuffHighIdx = (msgBuffHighIdx + 1) % MsgBriefCount;
+        strncpy_s(msgBuffHigh[msgBuffHighIdx], text, sizeof(msgBuffHigh[msgBuffHighIdx]) - 1);
+        CMessages::AddMessageJumpQ(msgBuffHigh[msgBuffHighIdx], time, false, false);
+        AddToBriefHistory(msgBuffHigh[msgBuffHighIdx]);
         return OR_CONTINUE;
     }
 
-    // 0ACE=-1,show_formatted_text_box %1d%
+    // 0ACE=-1,print_help_formatted %1d%
     static OpcodeResult __stdcall opcode_0ACE(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
-        CHud::SetHelpMessage(text, true, false, false);
+        msgBuffHelpIdx = (msgBuffHelpIdx + 1) % MsgBriefCount;
+        strncpy_s(msgBuffHelp[msgBuffHelpIdx], text, sizeof(msgBuffHelp[msgBuffHelpIdx]) - 1);
+        CHud::SetHelpMessage(msgBuffHelp[msgBuffHelpIdx], true, false, false);
+        AddToBriefHistory(msgBuffHelp[msgBuffHelpIdx]);
         return OR_CONTINUE;
     }
 
-    // 0ACF=-1,show_formatted_styled_text %1d% time %2d% style %3d%
+    // 0ACF=-1,print_big_formatted %1d% time %2d% style %3d%
     static OpcodeResult __stdcall opcode_0ACF(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
@@ -256,27 +310,31 @@ class Text
         return OR_CONTINUE;
     }
 
-    // 0AD0=-1,show_formatted_text_lowpriority %1d% time %2d%
+    // 0AD0=-1,print_formatted %1d% time %2d%
     static OpcodeResult __stdcall opcode_0AD0(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow) - 1);
-        CMessages::AddMessage(msgBuffLow, time, false, false);
+        msgBuffLowIdx = (msgBuffLowIdx + 1) % MsgBriefCount;
+        strncpy_s(msgBuffLow[msgBuffLowIdx], text, sizeof(msgBuffLow[msgBuffLowIdx]) - 1);
+        CMessages::AddMessage(msgBuffLow[msgBuffLowIdx], time, false, false);
+        AddToBriefHistory(msgBuffLow[msgBuffLowIdx]);
         return OR_CONTINUE;
     }
 
-    // 0AD1=-1,show_formatted_text_highpriority %1d% time %2d%
+    // 0AD1=-1,print_formatted_now %1d% time %2d%
     static OpcodeResult __stdcall opcode_0AD1(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh) - 1);
-        CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
+        msgBuffHighIdx = (msgBuffHighIdx + 1) % MsgBriefCount;
+        strncpy_s(msgBuffHigh[msgBuffHighIdx], text, sizeof(msgBuffHigh[msgBuffHighIdx]) - 1);
+        CMessages::AddMessageJumpQ(msgBuffHigh[msgBuffHighIdx], time, false, false);
+        AddToBriefHistory(msgBuffHigh[msgBuffHighIdx]);
         return OR_CONTINUE;
     }
 
@@ -671,9 +729,18 @@ class Text
 
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
-char Text::msgBuffLow[400];
-char Text::msgBuffHigh[400];
-char Text::msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
+
+size_t Text::msgBuffLowIdx   = 0;
+size_t Text::msgBuffHighIdx  = 0;
+size_t Text::msgBuffHelpIdx  = 0;
+size_t Text::msgBuffBriefIdx = 0;
+
+char Text::msgBuffLow[Text::MsgBriefCount][400];
+char Text::msgBuffHigh[Text::MsgBriefCount][400];
+char Text::msgBuffHelp[Text::MsgBriefCount][400];
+char Text::msgBuffBrief[Text::MsgHistoryCount][400];
+char Text::msgBuffBig[Text::MsgBigStyleCount][MAX_STR_LEN + 1];
+
 WORD Text::genericLabelCounter;
 
 // exports

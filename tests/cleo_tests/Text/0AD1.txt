@@ -1,51 +1,51 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name '0ACD'
-test("0ACD (print_string_now)", tests)
+script_name '0AD1'
+test("0AD1 (print_formatted_now)", tests)
 terminate_this_custom_script
 
 function tests
     it("should print short string variable", test1)
     it("should print long string variable", test2)
     it("should print string pointer", test3)
-    it("should print very long string pointer", test4)
+    it("should print formatted string with args", test4)
     it("should add to brief history", test5)
     it("should add multiple to brief history", test6)
     return
 
     function test1
-        shortString a = 'From ACD' // 8 characters
+        shortString a = 'From AD1' // 8 characters
         shortString b = '12345678'
 
         clear_prints
-        print_string_now {text} a {time} 100
+        print_formatted_now {format} a {time} 100
         a = '--VOID--'
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "From ACD")
+        assert_eqs(str, "From AD1")
     end
 
     function test2
-        longString a = "Message from ACD" // 16 characters
+        longString a = "Message from AD1" // 16 characters
         shortString b = '12345678'
 
         clear_prints
-        print_string_now {text} a {time} 100
+        print_formatted_now {format} a {time} 100
         a = "--VOID--"
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Message from ACD")
+        assert_eqs(str, "Message from AD1")
     end
 
     function test3
         int msg = allocate_memory {size} 64
-        string_format msg = "Hello from 0ACD!"
+        string_format msg = "Hello from 0AD1!"
 
         clear_prints
-        print_string_now {text} msg {time} 100
+        print_formatted_now {format} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
 
@@ -53,61 +53,45 @@ function tests
         msg = 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Hello from 0ACD!")
+        assert_eqs(str, "Hello from 0AD1!")
     end
 
     function test4
-        int msg = allocate_memory {size} 513
-        write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
-
         clear_prints
-        print_string_now {text} msg {time} 100
-        string_format msg = "--VOID--"
+        print_formatted_now {format} "Val %d from %s" {time} 100 {args} 42 "0AD1"
         wait {time} 0
 
-        free_memory {address} msg
-        msg = 0
-
-        int expected = allocate_memory {size} 400 // same as game's internal limit
-        write_memory {address} expected {size} 399 {value} 0x41 {vp} false // fill with A
-
         int str = getCurrSubtitleText()
-
-        // assert_eqs(str, expected) // assert error message will not be able to display strings that long
-        is_text_equal {text} str {another} expected {ignoreCase} false
-        assert_result_true()
-
-        free_memory {address} expected
-        expected = 0
+        assert_eqs(str, "Val 42 from 0AD1")
     end
 
     function test5
         int msg = allocate_memory {size} 64
-        string_format msg = "Brief from 0ACD"
+        string_format msg = "Brief from 0AD1"
 
         clear_prints
-        print_string_now {text} msg {time} 100
+        print_formatted_now {format} msg {time} 100
         string_format msg = "--VOID--"
 
         free_memory {address} msg
         msg = 0
 
         int str = getBriefTextAt(0)
-        assert_eqs(str, "Brief from 0ACD")
+        assert_eqs(str, "Brief from 0AD1")
     end
 
     function test6
         int msg1 = allocate_memory {size} 64
         int msg2 = allocate_memory {size} 64
         int msg3 = allocate_memory {size} 64
-        string_format msg1 = "Brief 0ACD one"
-        string_format msg2 = "Brief 0ACD two"
-        string_format msg3 = "Brief 0ACD three"
+        string_format msg1 = "Brief 0AD1 one"
+        string_format msg2 = "Brief 0AD1 two"
+        string_format msg3 = "Brief 0AD1 three"
 
         clear_prints
-        print_string_now {text} msg1 {time} 9000
-        print_string_now {text} msg2 {time} 9000
-        print_string_now {text} msg3 {time} 9000
+        print_formatted_now {format} msg1 {time} 9000
+        print_formatted_now {format} msg2 {time} 9000
+        print_formatted_now {format} msg3 {time} 9000
         string_format msg1 = "--VOID--"
         string_format msg2 = "--VOID--"
         string_format msg3 = "--VOID--"
@@ -123,9 +107,9 @@ function tests
         int str0 = getBriefTextAt(0)
         int str1 = getBriefTextAt(1)
         int str2 = getBriefTextAt(2)
-        assert_eqs(str0, "Brief 0ACD three")
-        assert_eqs(str1, "Brief 0ACD two")
-        assert_eqs(str2, "Brief 0ACD one")
+        assert_eqs(str0, "Brief 0AD1 three")
+        assert_eqs(str1, "Brief 0AD1 two")
+        assert_eqs(str2, "Brief 0AD1 one")
     end
 end
 

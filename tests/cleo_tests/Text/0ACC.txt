@@ -5,89 +5,146 @@ script_name '0ACC'
 test("0ACC (print_string)", tests)
 terminate_this_custom_script
 
-
-// get pointer to current subtitle text 
-function getCurrSubtitleText(): int
-    int txt = read_memory {address} 0x00C1A7F0 {size} 4 {vp} false // GTA SA 1.0: CMessages::BriefMessages[0].text
-    return txt
-end
-
-
 function tests
     it("should print short string variable", test1)
     it("should print long string variable", test2)
     it("should print string pointer", test3)
     it("should print very long string pointer", test4)
+    it("should add to brief history", test5)
+    it("should add multiple to brief history", test6)
     return
 
 
     function test1
         shortString a = 'From ACC' // 8 characters
         shortString b = '12345678'
-        
+
         clear_prints
         print_string {text} a {time} 100
         a = '--VOID--'
         wait {time} 0
-        
+
         int str = getCurrSubtitleText()
         assert_eqs(str, "From ACC")
     end
-    
-    
+
+
     function test2
         longString a = "Message from ACC" // 16 characters
         shortString b = '12345678'
-        
+
         clear_prints
         print_string {text} a {time} 100
         a = "--VOID--"
         wait {time} 0
-        
+
         int str = getCurrSubtitleText()
         assert_eqs(str, "Message from ACC")
     end
-    
-    
+
+
     function test3
         int msg = allocate_memory {size} 64
         string_format msg = "Hello from 0ACC!"
-        
+
         clear_prints
         print_string {text} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
-        
+
         free_memory {address} msg
         msg = 0
-        
+
         int str = getCurrSubtitleText()
         assert_eqs(str, "Hello from 0ACC!")
     end
-    
-    
+
+
     function test4
         int msg = allocate_memory {size} 513
         write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
-        
+
         clear_prints
         print_string {text} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
-        
+
         free_memory {address} msg
         msg = 0
-        
+
         int expected = allocate_memory {size} 400 // same as game's internal limit
         write_memory {address} expected {size} 399 {value} 0x41 {vp} false // fill with A
-        
+
         int str = getCurrSubtitleText()
-        
+
         // assert_eqs(str, expected) // assert error message will not be able to display strings that long
         is_text_equal {text} str {another} expected {ignoreCase} false
         assert_result_true()
-        
+
         free_memory {address} expected
         expected = 0
     end
+
+
+    function test5
+        int msg = allocate_memory {size} 64
+        string_format msg = "Brief from 0ACC"
+
+        clear_prints
+        print_string {text} msg {time} 100
+        string_format msg = "--VOID--"
+
+        free_memory {address} msg
+        msg = 0
+
+        int str = getBriefTextAt(0)
+        assert_eqs(str, "Brief from 0ACC")
+    end
+
+
+    function test6
+        int msg1 = allocate_memory {size} 64
+        int msg2 = allocate_memory {size} 64
+        int msg3 = allocate_memory {size} 64
+        string_format msg1 = "Brief 0ACC one"
+        string_format msg2 = "Brief 0ACC two"
+        string_format msg3 = "Brief 0ACC three"
+
+        clear_prints
+        print_string {text} msg1 {time} 9000
+        print_string {text} msg2 {time} 9000
+        print_string {text} msg3 {time} 9000
+        string_format msg1 = "--VOID--"
+        string_format msg2 = "--VOID--"
+        string_format msg3 = "--VOID--"
+
+        free_memory {address} msg1
+        free_memory {address} msg2
+        free_memory {address} msg3
+        msg1 = 0
+        msg2 = 0
+        msg3 = 0
+
+        // PreviousBriefs inserts at index 0 (most recent first)
+        int str0 = getBriefTextAt(0)
+        int str1 = getBriefTextAt(1)
+        int str2 = getBriefTextAt(2)
+        assert_eqs(str0, "Brief 0ACC three")
+        assert_eqs(str1, "Brief 0ACC two")
+        assert_eqs(str2, "Brief 0ACC one")
+    end
+end
+
+// get pointer to current subtitle text
+function getCurrSubtitleText(): int
+    int txt = read_memory {address} 0x00C1A7F0 {size} 4 {vp} false // GTA SA 1.0: CMessages::BriefMessages[0].text
+    return txt
+end
+
+
+// get pointer to previous brief
+function getBriefTextAt(index: int): int
+    int offset = index * 0x20 // sizeof(PreviousBrief) = 0x20, m_pText at offset 0
+    int txt = read_memory_with_offset {address} 0x00C1A570 {offset} offset {size} 4 // GTA SA 1.0: CMessages::PreviousBriefs[index].m_pText
+    return txt
 end

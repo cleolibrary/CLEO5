@@ -1,139 +1,133 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name '0ACD'
-test("0ACD (print_string_now)", tests)
+script_name '0AD0'
+test("0AD0 (print_formatted)", tests)
 terminate_this_custom_script
+
+
 
 function tests
     it("should print short string variable", test1)
     it("should print long string variable", test2)
     it("should print string pointer", test3)
-    it("should print very long string pointer", test4)
+    it("should print formatted string with args", test4)
     it("should add to brief history", test5)
     it("should add multiple to brief history", test6)
     return
 
-    function test1
-        shortString a = 'From ACD' // 8 characters
-        shortString b = '12345678'
 
+    function test1
+        shortString a = 'From AD0' // 8 characters
+        shortString b = '12345678'
+        
         clear_prints
-        print_string_now {text} a {time} 100
+        print_formatted {format} a {time} 100
         a = '--VOID--'
         wait {time} 0
-
+        
         int str = getCurrSubtitleText()
-        assert_eqs(str, "From ACD")
+        assert_eqs(str, "From AD0")
     end
+
 
     function test2
-        longString a = "Message from ACD" // 16 characters
+        longString a = "Message from AD0" // 16 characters
         shortString b = '12345678'
-
+        
         clear_prints
-        print_string_now {text} a {time} 100
+        print_formatted {format} a {time} 100
         a = "--VOID--"
         wait {time} 0
-
+        
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Message from ACD")
+        assert_eqs(str, "Message from AD0")
     end
+
 
     function test3
         int msg = allocate_memory {size} 64
-        string_format msg = "Hello from 0ACD!"
-
+        string_format msg = "Hello from 0AD0!"
+        
         clear_prints
-        print_string_now {text} msg {time} 100
+        print_formatted {format} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
-
+        
         free_memory {address} msg
         msg = 0
-
+        
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Hello from 0ACD!")
+        assert_eqs(str, "Hello from 0AD0!")
     end
+
 
     function test4
-        int msg = allocate_memory {size} 513
-        write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
-
         clear_prints
-        print_string_now {text} msg {time} 100
-        string_format msg = "--VOID--"
+        print_formatted {format} "Val %d from %s" {time} 100 {args} 42 "0AD0"
         wait {time} 0
-
-        free_memory {address} msg
-        msg = 0
-
-        int expected = allocate_memory {size} 400 // same as game's internal limit
-        write_memory {address} expected {size} 399 {value} 0x41 {vp} false // fill with A
-
+        
         int str = getCurrSubtitleText()
-
-        // assert_eqs(str, expected) // assert error message will not be able to display strings that long
-        is_text_equal {text} str {another} expected {ignoreCase} false
-        assert_result_true()
-
-        free_memory {address} expected
-        expected = 0
+        assert_eqs(str, "Val 42 from 0AD0")
     end
+
 
     function test5
         int msg = allocate_memory {size} 64
-        string_format msg = "Brief from 0ACD"
-
+        string_format msg = "Brief from 0AD0"
+        
         clear_prints
-        print_string_now {text} msg {time} 100
+        print_formatted {format} msg {time} 100
         string_format msg = "--VOID--"
-
+        
         free_memory {address} msg
         msg = 0
-
+        
         int str = getBriefTextAt(0)
-        assert_eqs(str, "Brief from 0ACD")
+        assert_eqs(str, "Brief from 0AD0")
     end
+
 
     function test6
         int msg1 = allocate_memory {size} 64
         int msg2 = allocate_memory {size} 64
         int msg3 = allocate_memory {size} 64
-        string_format msg1 = "Brief 0ACD one"
-        string_format msg2 = "Brief 0ACD two"
-        string_format msg3 = "Brief 0ACD three"
-
+        string_format msg1 = "Brief 0AD0 one"
+        string_format msg2 = "Brief 0AD0 two"
+        string_format msg3 = "Brief 0AD0 three"
+        
         clear_prints
-        print_string_now {text} msg1 {time} 9000
-        print_string_now {text} msg2 {time} 9000
-        print_string_now {text} msg3 {time} 9000
+        print_formatted {format} msg1 {time} 9000
+        print_formatted {format} msg2 {time} 9000
+        print_formatted {format} msg3 {time} 9000
         string_format msg1 = "--VOID--"
         string_format msg2 = "--VOID--"
         string_format msg3 = "--VOID--"
-
+        
         free_memory {address} msg1
         free_memory {address} msg2
         free_memory {address} msg3
         msg1 = 0
         msg2 = 0
         msg3 = 0
-
+        
         // PreviousBriefs inserts at index 0 (most recent first)
         int str0 = getBriefTextAt(0)
         int str1 = getBriefTextAt(1)
         int str2 = getBriefTextAt(2)
-        assert_eqs(str0, "Brief 0ACD three")
-        assert_eqs(str1, "Brief 0ACD two")
-        assert_eqs(str2, "Brief 0ACD one")
+        assert_eqs(str0, "Brief 0AD0 three")
+        assert_eqs(str1, "Brief 0AD0 two")
+        assert_eqs(str2, "Brief 0AD0 one")
     end
 end
 
-// get pointer to current subtitle text
+
+// get pointer to current subtitle text 
 function getCurrSubtitleText(): int
     int txt = read_memory {address} 0x00C1A7F0 {size} 4 {vp} false // GTA SA 1.0: CMessages::BriefMessages[0].text
     return txt
 end
+
 
 // get pointer to previous brief
 function getBriefTextAt(index: int): int
@@ -141,3 +135,4 @@ function getBriefTextAt(index: int): int
     int txt = read_memory_with_offset {address} 0x00C1A570 {offset} offset {size} 4 // GTA SA 1.0: CMessages::PreviousBriefs[index].m_pText
     return txt
 end
+
