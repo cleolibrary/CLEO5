@@ -28,12 +28,10 @@ class Text
 
     static size_t msgBuffLowIdx;
     static size_t msgBuffHighIdx;
-    static size_t msgBuffHelpIdx;
     static size_t msgBuffBriefIdx;
 
     static char msgBuffLow[MsgBriefCount][400];
     static char msgBuffHigh[MsgBriefCount][400];
-    static char msgBuffHelp[MsgBriefCount][400];
     static char msgBuffBrief[MsgHistoryCount][400];
     static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
 
@@ -238,10 +236,8 @@ class Text
     {
         OPCODE_READ_PARAM_STRING(text);
 
-        msgBuffHelpIdx = (msgBuffHelpIdx + 1) % MsgBriefCount;
-        strncpy_s(msgBuffHelp[msgBuffHelpIdx], text, sizeof(msgBuffHelp[msgBuffHelpIdx]) - 1);
-        CHud::SetHelpMessage(msgBuffHelp[msgBuffHelpIdx], true, false, false);
-        AddToBriefHistory(msgBuffHelp[msgBuffHelpIdx]);
+        CHud::SetHelpMessage(text, true, false, false);
+        AddToBriefHistory(text);
         return OR_CONTINUE;
     }
 
@@ -289,10 +285,8 @@ class Text
     {
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
-        msgBuffHelpIdx = (msgBuffHelpIdx + 1) % MsgBriefCount;
-        strncpy_s(msgBuffHelp[msgBuffHelpIdx], text, sizeof(msgBuffHelp[msgBuffHelpIdx]) - 1);
-        CHud::SetHelpMessage(msgBuffHelp[msgBuffHelpIdx], true, false, false);
-        AddToBriefHistory(msgBuffHelp[msgBuffHelpIdx]);
+        CHud::SetHelpMessage(text, true, false, false);
+        AddToBriefHistory(text);
         return OR_CONTINUE;
     }
 
@@ -732,12 +726,10 @@ CTextManager Text::textManager;
 
 size_t Text::msgBuffLowIdx   = 0;
 size_t Text::msgBuffHighIdx  = 0;
-size_t Text::msgBuffHelpIdx  = 0;
 size_t Text::msgBuffBriefIdx = 0;
 
 char Text::msgBuffLow[Text::MsgBriefCount][400];
 char Text::msgBuffHigh[Text::MsgBriefCount][400];
-char Text::msgBuffHelp[Text::MsgBriefCount][400];
 char Text::msgBuffBrief[Text::MsgHistoryCount][400];
 char Text::msgBuffBig[Text::MsgBigStyleCount][MAX_STR_LEN + 1];
 
