@@ -12,19 +12,19 @@ namespace CLEO
         static void Clear(); // clear storage
 
         BYTE callArgCount = 0; // args provided to cleo_call
-        BYTE* callIP;          // address of 0AB1 for error messages
+        BYTE* callIP = nullptr;// address of 0AB1 for error messages
 
         // saved nesting context state
-        void* savedBaseIP;
-        size_t savedCodeSize; // Custom Scripts only
-        BYTE* retnAddress;
-        BYTE* savedStack[8]; // gosub stack
-        WORD savedSP;
-        SCRIPT_VAR savedTls[32];
+        void* savedBaseIP = nullptr;
+        size_t savedCodeSize = 0; // Custom Scripts only
+        BYTE* retnAddress = nullptr;
+        std::array<BYTE*, _countof(CRunningScript::Stack)> savedStack = {}; // gosub stack
+        WORD savedSP = 0;
+        std::array<SCRIPT_VAR, _countof(CRunningScript::LocalVar)> savedLocalVar = {};
         std::list<std::string> stringParams; // texts with this scope lifetime
-        bool savedCondResult;
-        eLogicalOperation savedLogicalOp;
-        bool savedNotFlag;
+        bool savedCondResult = false;
+        eLogicalOperation savedLogicalOp = {};
+        bool savedNotFlag = false;
         std::string savedScriptFileDir;  // modules switching
         std::string savedScriptFileName; // modules switching
 
@@ -41,6 +41,7 @@ namespace CLEO
         static ScmFunction* store[Store_Size];
         static WORD lastAllocIdx;
 
-        WORD prevScmFunctionId, thisScmFunctionId;
+        WORD prevScmFunctionId = Id_None;
+        WORD thisScmFunctionId = Id_None;
     };
 } // namespace CLEO
