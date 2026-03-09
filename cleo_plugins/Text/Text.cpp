@@ -188,6 +188,33 @@ class Text
         CMessages::AddToPreviousBriefArray(msgBuffBrief[msgBuffBriefIdx], -1, -1, -1, -1, -1, -1, 0);
     }
 
+    static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time)
+    {
+        msgQueueIdx = (msgQueueIdx + 1) % MsgQueueCount;
+
+        // before reusing this slot, clear any PreviousBriefs reference to it so the game's pointer-based
+        // dedup won't reject the incoming text as a duplicate
+        for (size_t i = 0; i < MsgHistoryCount; i++)
+        {
+            auto& pText = CMessages::PreviousBriefs[i].m_pText;
+            if (pText == msgQueueBuff[msgQueueIdx])
+            {
+                pText = nullptr;
+                break;
+            }
+        }
+
+        strncpy_s(msgQueueBuff[msgQueueIdx], text, sizeof(msgQueueBuff[msgQueueIdx]) - 1);
+
+        bool addToBrief = false;
+        if (!IsLegacyScript(pScript))
+        {
+            addToBrief                                   = CTheScripts::bAddNextMessageToPreviousBriefs;
+            CTheScripts::bAddNextMessageToPreviousBriefs = true; // consume flag (reset to default)
+        }
+        CMessages::AddMessage(msgQueueBuff[msgQueueIdx], time, false, addToBrief);
+    }
+
     // 0390=1,load_texture_dictionary %1s%
     static OpcodeResult __stdcall opcode_0390(CLEO::CRunningScript* thread)
     {
@@ -261,11 +288,7 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        msgQueueIdx = (msgQueueIdx + 1) % MsgQueueCount;
-        strncpy_s(msgQueueBuff[msgQueueIdx], text, sizeof(msgQueueBuff[msgQueueIdx]) - 1);
-        CMessages::AddMessage(msgQueueBuff[msgQueueIdx], time, false, false);
-
-        AddToBriefHistory(thread, msgQueueBuff[msgQueueIdx]);
+        AddToMessageQueue(thread, text, time);
         return OR_CONTINUE;
     }
 
@@ -312,10 +335,7 @@ class Text
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        msgQueueIdx = (msgQueueIdx + 1) % MsgQueueCount;
-        strncpy_s(msgQueueBuff[msgQueueIdx], text, sizeof(msgQueueBuff[msgQueueIdx]) - 1);
-        CMessages::AddMessage(msgQueueBuff[msgQueueIdx], time, false, false);
-        AddToBriefHistory(thread, msgQueueBuff[msgQueueIdx]);
+        AddToMessageQueue(thread, text, time);
         return OR_CONTINUE;
     }
 
@@ -486,7 +506,7 @@ class Text
         auto modelIndex = OPCODE_READ_PARAM_UINT();
 
         CVehicleModelInfo* model;
-        // if 1.0 US, prefer GetModelInfo function  makes it compatible with fastman92's limit adjuster
+        // if 1.0 US, prefer GetModelInfo function - makes it compatible with fastman92's limit adjuster
         if (CLEO_GetGameVersion() == CLEO::GV_US10)
             model = plugin::CallAndReturn<CVehicleModelInfo*, 0x403DA0, int>(modelIndex);
         else
@@ -724,7 +744,7 @@ class Text
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
 
-size_t Text::msgQueueIdx   = 0;
+size_t Text::msgQueueIdx     = 0;
 size_t Text::msgBuffBriefIdx = 0;
 
 char Text::msgQueueBuff[Text::MsgQueueCount][400];

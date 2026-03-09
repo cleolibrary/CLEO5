@@ -14,10 +14,12 @@ function tests
     it("should print formatted string with args", test4)
     it_cs5("should add CLEO texts to brief history", test5_cs5)
     it_cs4("should not add CLEO texts to brief history", test5_cs4)
+    it_cs5("should reset bAddNextMessageToPreviousBriefs flag after print", test6_cs5)
+    it_cs4("should not reset bAddNextMessageToPreviousBriefs flag after print", test6_cs4)
     return
 
     :cleanup
-    write_memory {address} 0xC1A570 {size} 640 {value} 0 {vp} false // reset CMessages::PreviousBriefs
+    CMessages_ClearPreviousBriefArray()
     return
 
     function test1
@@ -94,6 +96,24 @@ function tests
         assert_brief_at(1, "Fashion Budget")
         assert_brief_at(2, "Weapon Budget")
     end
+    
+    function test6_cs5
+        add_next_message_to_previous_briefs {state} false
+        print_formatted_now {format} "Flag test AD1" {time} 100
+
+        int flag = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
+        assert_true(flag) // flag must be reset to true after print_formatted_now
+    end
+
+    function test6_cs4
+        add_next_message_to_previous_briefs {state} false
+        print_formatted_now {format} "Flag test AD1 cs4" {time} 100
+
+        int flag = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
+        assert_false(flag) // flag must NOT be reset for legacy scripts
+
+        add_next_message_to_previous_briefs {state} true // restore flag
+    end
 end
 
 function assert_brief_at(index: int, expected: string)
@@ -130,6 +150,8 @@ function print_brief_messages
     msg2 = 0
     msg3 = 0
 end
+
+function CMessages_ClearPreviousBriefArray<cdecl, 0x69DE70>()
 
 // get pointer to current subtitle text
 function getCurrSubtitleText(): int

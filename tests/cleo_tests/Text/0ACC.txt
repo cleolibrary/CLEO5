@@ -14,12 +14,15 @@ function tests
     it("should print very long string pointer", test4)
     it_cs5("should add CLEO texts to brief history", test5_cs5)
     it_cs4("should not add CLEO texts to brief history", test5_cs4)
+    it_cs5("should reset bAddNextMessageToPreviousBriefs flag after print", test6_cs5)
+    it_cs4("should not reset bAddNextMessageToPreviousBriefs flag after print", test6_cs4)
+    it_cs5("should add 9th message to brief after queue wraps around", test7_queue_wrap)
+    it_cs4("should not add 9th message to brief in legacy mode after queue wraps", test7_queue_wrap_cs4)
     return
 
     :cleanup
-    write_memory {address} 0xC1A570 {size} 640 {value} 0 {vp} false // reset CMessages::PreviousBriefs
+    CMessages_ClearPreviousBriefArray()
     return
-
 
     function test1
         shortString a = 'From ACC' // 8 characters
@@ -34,7 +37,6 @@ function tests
         assert_eqs(str, "From ACC")
     end
 
-
     function test2
         longString a = "Message from ACC" // 16 characters
         shortString b = '12345678'
@@ -47,7 +49,6 @@ function tests
         int str = getCurrSubtitleText()
         assert_eqs(str, "Message from ACC")
     end
-
 
     function test3
         int msg = allocate_memory {size} 64
@@ -64,7 +65,6 @@ function tests
         int str = getCurrSubtitleText()
         assert_eqs(str, "Hello from 0ACC!")
     end
-
 
     function test4
         int msg = allocate_memory {size} 513
@@ -91,17 +91,16 @@ function tests
         expected = 0
     end
 
-
     function test5_cs5
         print_now {key} 'STAT000' {time} 100 {flag} 1 // add Progress made to brief
         print_now {key} 'STAT001' {time} 100 {flag} 1 // add Total progress to brief
 
         print_brief_messages()
 
-        assert_brief_at(0, "Brief 0ACC three")
-        assert_brief_at(1, "Brief 0ACC one")
-        assert_brief_at(2, "Total progress")
-        assert_brief_at(3, "Progress made")
+        // only msg1 is added immediately (queue was empty); msg2 is skipped (flag=false); msg3 is deferred (queued at slot 2)
+        assert_brief_at(0, "Brief 0ACC one")
+        assert_brief_at(1, "Total progress")
+        assert_brief_at(2, "Progress made")
     end
 
     function test5_cs4
@@ -114,6 +113,70 @@ function tests
         assert_brief_at(0, "Property Budget")
         assert_brief_at(1, "Fashion Budget")
         assert_brief_at(2, "Weapon Budget")
+    end
+
+    function test6_cs5
+        add_next_message_to_previous_briefs {state} false
+        print_string {text} "Flag test ACC" {time} 100
+
+        int flag = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
+        assert_true(flag) // flag must be reset to true after print_string
+    end
+
+    function test6_cs4
+        add_next_message_to_previous_briefs {state} false
+        print_string {text} "Flag test ACC cs4" {time} 100
+
+        int flag = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
+        assert_false(flag) // flag must NOT be reset for legacy scripts
+
+        add_next_message_to_previous_briefs {state} true // restore flag
+    end
+
+    function test7_queue_wrap
+        // Fill the entire 8-slot queue with short-lived messages.
+        // After wait 1000ms they are long gone; their pointers (msgQueueBuff[0..7]) still live in
+        // PreviousBriefs. On the 9th call msgQueueBuff[0] is reused - without the null-out fix
+        // AddToPreviousBriefArray would reject the new text as a duplicate pointer.
+        clear_prints
+        print_string {text} "Wrap msg 1" {time} 100
+        print_string {text} "Wrap msg 2" {time} 100
+        print_string {text} "Wrap msg 3" {time} 100
+        print_string {text} "Wrap msg 4" {time} 100
+        print_string {text} "Wrap msg 5" {time} 100
+        print_string {text} "Wrap msg 6" {time} 100
+        print_string {text} "Wrap msg 7" {time} 100
+        print_string {text} "Wrap msg 8" {time} 100
+
+        wait {time} 1500 // let all 8 messages expire and be dequeued by the game
+
+        print_string {text} "Wrap msg 9" {time} 100 // reuses msgQueueBuff[0]; must still reach brief
+
+        assert_brief_at(0, "Wrap msg 9")
+    end
+
+    function test7_queue_wrap_cs4
+        // Same queue-wrap scenario in legacy mode: message must still display but must NOT appear in brief.
+        clear_prints
+        print_string {text} "Wrap msg 1" {time} 100
+        print_string {text} "Wrap msg 2" {time} 100
+        print_string {text} "Wrap msg 3" {time} 100
+        print_string {text} "Wrap msg 4" {time} 100
+        print_string {text} "Wrap msg 5" {time} 100
+        print_string {text} "Wrap msg 6" {time} 100
+        print_string {text} "Wrap msg 7" {time} 100
+        print_string {text} "Wrap msg 8" {time} 100
+
+        wait {time} 1500 // let all 8 messages expire and be dequeued by the game
+
+        print_string {text} "Wrap msg 9" {time} 9000 // reuses msgQueueBuff[0]; must display but not reach brief
+        wait {time} 0
+
+        int str = getCurrSubtitleText()
+        assert_eqs(str, "Wrap msg 9") // message must still display correctly
+
+        int brief = getBriefTextAt(0)
+        assert_eq(brief, 0) // brief must remain empty in legacy mode
     end
 end
 
@@ -138,7 +201,7 @@ function print_brief_messages
     print_string {text} msg2 {time} 9000            // msg2 is NOT added to brief
 
     add_next_message_to_previous_briefs {state} true    // no effect as flag is true already
-    print_string {text} msg3 {time} 9000            // msg3 is added to brief
+    print_string {text} msg3 {time} 9000            // msg3 will be added to brief when it becomes current (deferred)
 
     string_format msg1 = "--VOID--"
     string_format msg2 = "--VOID--"
@@ -151,6 +214,8 @@ function print_brief_messages
     msg2 = 0
     msg3 = 0
 end
+
+function CMessages_ClearPreviousBriefArray<cdecl, 0x69DE70>()
 
 // get pointer to current subtitle text
 function getCurrSubtitleText(): int
