@@ -22,17 +22,17 @@ class Text
     static ScriptDrawing scriptDrawing;
     static CTextManager textManager;
 
-    static const size_t MsgQueueCount    = 8;  // matches CMessages::BriefMessages queue size
-    static const size_t MsgHistoryCount  = 20; // matches CMessages::PreviousBriefs count
-    static const size_t MsgBigStyleCount = 7;  // matches CMessages::BIGMessages count
+    static const size_t MessageQueueSize = 8;  // matches CMessages::BriefMessages queue size
+    static const size_t BriefSize        = 20; // matches CMessages::PreviousBriefs count
+    static const size_t BigStylesCount   = 7;  // matches CMessages::BIGMessages count
 
-    static size_t msgQueueIdx;
-    static size_t msgBuffBriefIdx;
+    static size_t queueIdx;
+    static size_t briefIdx;
 
-    static char msgQueueBuff[MsgQueueCount][400];
-    static char msgBuffBrief[MsgHistoryCount][400];
-    static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
-    static char msgNowBuff[400];
+    static char messageQueue[MessageQueueSize][400];
+    static char bigMessages[BigStylesCount][MAX_STR_LEN + 1];
+    static char messageNow[400];
+    static char briefs[BriefSize][400];
 
     static WORD genericLabelCounter;
 
@@ -152,67 +152,64 @@ class Text
         return result;
     }
 
-    static void AddToBriefHistory(CLEO::CRunningScript* pScript, const char* text)
+    static bool CanTextInThisSlotBeAddedToBrief(const char* slot)
     {
-        if (IsLegacyScript(pScript)) return;
-
-        const auto next = CTheScripts::bAddNextMessageToPreviousBriefs;
-
-        CTheScripts::bAddNextMessageToPreviousBriefs = true;
-
-        if (!next) return;
-
-        // Content-based dedup: skip if this text is already present in PreviousBriefs
-        for (size_t i = 0; i < MsgHistoryCount; i++)
+        // content dedup: exits early if another entry already holds the same text.
+        for (size_t i = 0; i < BriefSize; i++)
         {
-            auto pText = CMessages::PreviousBriefs[i].m_pText;
-            if (pText == nullptr) break; // end of populated entries
-            if (strcmp(pText, text) == 0) return;
+            const auto pText = CMessages::PreviousBriefs[i].m_pText;
+            if (pText == nullptr) break; // end of used entries
+            if (pText == slot) continue; // stale self-reference, skip to avoid a false positive duplicate
+            if (strcmp(pText, slot) == 0) return false; // content duplicate, exit
         }
 
-        msgBuffBriefIdx = (msgBuffBriefIdx + 1) % MsgHistoryCount;
-
-        // Clear the buffer slot still referenced by a PreviousBriefs entry,
-        // so the game's dedup won't skip the new entry.
-        for (size_t i = 0; i < MsgHistoryCount; i++)
+        // stale pointer eviction: prevents the game's pointer-based dedup from rejecting the insertion
+        for (size_t i = 0; i < BriefSize; i++)
         {
             auto& pText = CMessages::PreviousBriefs[i].m_pText;
-            if (pText == msgBuffBrief[msgBuffBriefIdx])
+            if (pText == slot)
             {
                 pText = nullptr;
                 break;
             }
         }
+        return true;
+    }
 
-        strncpy_s(msgBuffBrief[msgBuffBriefIdx], text, sizeof(msgBuffBrief[msgBuffBriefIdx]) - 1);
-        CMessages::AddToPreviousBriefArray(msgBuffBrief[msgBuffBriefIdx], -1, -1, -1, -1, -1, -1, 0);
+    static void AddToBriefHistory(const char* text)
+    {
+        if (CTheScripts::bAddNextMessageToPreviousBriefs)
+        {
+            briefIdx        = (briefIdx + 1) % BriefSize;
+            auto& briefSlot = briefs[briefIdx];
+
+            strncpy_s(briefSlot, text, sizeof(briefSlot) - 1);
+
+            if (CanTextInThisSlotBeAddedToBrief(briefSlot))
+            {
+                CMessages::AddToPreviousBriefArray(briefSlot, -1, -1, -1, -1, -1, -1, 0);
+            }
+        }
+
+        CTheScripts::bAddNextMessageToPreviousBriefs = true;
     }
 
     static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time)
     {
-        msgQueueIdx = (msgQueueIdx + 1) % MsgQueueCount;
-
-        // before reusing this slot, clear any PreviousBriefs reference to it so the game's pointer-based
-        // dedup won't reject the incoming text as a duplicate
-        for (size_t i = 0; i < MsgHistoryCount; i++)
-        {
-            auto& pText = CMessages::PreviousBriefs[i].m_pText;
-            if (pText == msgQueueBuff[msgQueueIdx])
-            {
-                pText = nullptr;
-                break;
-            }
-        }
-
-        strncpy_s(msgQueueBuff[msgQueueIdx], text, sizeof(msgQueueBuff[msgQueueIdx]) - 1);
+        queueIdx          = (queueIdx + 1) % MessageQueueSize;
+        auto& messageSlot = messageQueue[queueIdx];
+        strncpy_s(messageSlot, text, sizeof(messageSlot) - 1);
 
         bool addToBrief = false;
         if (!IsLegacyScript(pScript))
         {
-            addToBrief                                   = CTheScripts::bAddNextMessageToPreviousBriefs;
-            CTheScripts::bAddNextMessageToPreviousBriefs = true; // consume flag (reset to default)
+            if (CTheScripts::bAddNextMessageToPreviousBriefs)
+            {
+                addToBrief = CanTextInThisSlotBeAddedToBrief(messageSlot);
+            }
+            CTheScripts::bAddNextMessageToPreviousBriefs = true;
         }
-        CMessages::AddMessage(msgQueueBuff[msgQueueIdx], time, false, addToBrief);
+        CMessages::AddMessage(messageSlot, time, false, addToBrief);
     }
 
     // 0390=1,load_texture_dictionary %1s%
@@ -265,7 +262,7 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
 
         CHud::SetHelpMessage(text, true, false, false);
-        AddToBriefHistory(thread, text);
+        if (!IsLegacyScript(thread)) AddToBriefHistory(text);
         return OR_CONTINUE;
     }
 
@@ -276,9 +273,11 @@ class Text
         auto time  = OPCODE_READ_PARAM_INT();
         auto style = OPCODE_READ_PARAM_INT();
 
-        auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]) - 1);
-        CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
+        auto styleIdx    = std::clamp(style, 0, (int)BigStylesCount - 1);
+        auto& bigMessage = bigMessages[styleIdx];
+
+        strncpy_s(bigMessage, text, sizeof(bigMessage) - 1);
+        CMessages::AddBigMessage(bigMessage, time, style - 1);
         return OR_CONTINUE;
     }
 
@@ -298,9 +297,9 @@ class Text
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
 
-        strncpy_s(msgNowBuff, text, sizeof(msgNowBuff) - 1);
-        CMessages::AddMessageJumpQ(msgNowBuff, time, false, false);
-        AddToBriefHistory(thread, msgNowBuff);
+        strncpy_s(messageNow, text, sizeof(messageNow) - 1);
+        CMessages::AddMessageJumpQ(messageNow, time, false, false);
+        if (!IsLegacyScript(thread)) AddToBriefHistory(messageNow);
         return OR_CONTINUE;
     }
 
@@ -310,7 +309,7 @@ class Text
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
 
         CHud::SetHelpMessage(text, true, false, false);
-        AddToBriefHistory(thread, text);
+        if (!IsLegacyScript(thread)) AddToBriefHistory(text);
         return OR_CONTINUE;
     }
 
@@ -322,9 +321,11 @@ class Text
         auto style = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]) - 1);
-        CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
+        auto styleIdx    = std::clamp(style, 0, (int)BigStylesCount - 1);
+        auto& bigMessage = bigMessages[styleIdx];
+
+        strncpy_s(bigMessage, text, sizeof(bigMessage) - 1);
+        CMessages::AddBigMessage(bigMessage, time, style - 1);
         return OR_CONTINUE;
     }
 
@@ -346,9 +347,9 @@ class Text
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        strncpy_s(msgNowBuff, text, sizeof(msgNowBuff) - 1);
-        CMessages::AddMessageJumpQ(msgNowBuff, time, false, false);
-        AddToBriefHistory(thread, msgNowBuff);
+        strncpy_s(messageNow, text, sizeof(messageNow) - 1);
+        CMessages::AddMessageJumpQ(messageNow, time, false, false);
+        if (!IsLegacyScript(thread)) AddToBriefHistory(messageNow);
         return OR_CONTINUE;
     }
 
@@ -744,13 +745,13 @@ class Text
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
 
-size_t Text::msgQueueIdx     = 0;
-size_t Text::msgBuffBriefIdx = 0;
+size_t Text::queueIdx = 0;
+size_t Text::briefIdx = 0;
 
-char Text::msgQueueBuff[Text::MsgQueueCount][400];
-char Text::msgBuffBrief[Text::MsgHistoryCount][400];
-char Text::msgNowBuff[400];
-char Text::msgBuffBig[Text::MsgBigStyleCount][MAX_STR_LEN + 1];
+char Text::messageQueue[Text::MessageQueueSize][400];
+char Text::briefs[Text::BriefSize][400];
+char Text::bigMessages[Text::BigStylesCount][MAX_STR_LEN + 1];
+char Text::messageNow[400];
 
 WORD Text::genericLabelCounter;
 

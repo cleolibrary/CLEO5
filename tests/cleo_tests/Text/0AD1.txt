@@ -6,6 +6,7 @@ test("0AD1 (print_formatted_now)", tests)
 terminate_this_custom_script
 
 function tests
+    before_each(@setup)
     after_each(@cleanup)
 
     it("should print short string variable", test1)
@@ -22,11 +23,14 @@ function tests
     CMessages_ClearPreviousBriefArray()
     return
 
+    :setup
+    clear_prints
+    return
+
     function test1
         shortString a = 'From AD1' // 8 characters
         shortString b = '12345678'
 
-        clear_prints
         print_formatted_now {format} a {time} 100
         a = '--VOID--'
         wait {time} 0
@@ -39,7 +43,6 @@ function tests
         longString a = "Message from AD1" // 16 characters
         shortString b = '12345678'
 
-        clear_prints
         print_formatted_now {format} a {time} 100
         a = "--VOID--"
         wait {time} 0
@@ -52,7 +55,6 @@ function tests
         int msg = allocate_memory {size} 64
         string_format msg = "Hello from 0AD1!"
 
-        clear_prints
         print_formatted_now {format} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
@@ -65,7 +67,6 @@ function tests
     end
 
     function test4
-        clear_prints
         print_formatted_now {format} "Val %d from %s" {time} 100 {args} 42 "0AD1"
         wait {time} 0
 
@@ -96,7 +97,7 @@ function tests
         assert_brief_at(1, "Fashion Budget")
         assert_brief_at(2, "Weapon Budget")
     end
-    
+
     function test6_cs5
         add_next_message_to_previous_briefs {state} false
         print_formatted_now {format} "Flag test AD1" {time} 100

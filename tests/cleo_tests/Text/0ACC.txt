@@ -6,6 +6,7 @@ test("0ACC (print_string)", tests)
 terminate_this_custom_script
 
 function tests
+    before_each(@setup)
     after_each(@cleanup)
 
     it("should print short string variable", test1)
@@ -18,17 +19,22 @@ function tests
     it_cs4("should not reset bAddNextMessageToPreviousBriefs flag after print", test6_cs4)
     it_cs5("should add 9th message to brief after queue wraps around", test7_queue_wrap)
     it_cs4("should not add 9th message to brief in legacy mode after queue wraps", test7_queue_wrap_cs4)
+    it_cs5("should not add duplicate text to brief history", test8_queue_dedup)
+    it_cs4("should not add any text to brief history in legacy mode", test8_queue_dedup_cs4)
     return
 
     :cleanup
     CMessages_ClearPreviousBriefArray()
     return
 
+    :setup
+    clear_prints
+    return
+
     function test1
         shortString a = 'From ACC' // 8 characters
         shortString b = '12345678'
 
-        clear_prints
         print_string {text} a {time} 100
         a = '--VOID--'
         wait {time} 0
@@ -41,7 +47,6 @@ function tests
         longString a = "Message from ACC" // 16 characters
         shortString b = '12345678'
 
-        clear_prints
         print_string {text} a {time} 100
         a = "--VOID--"
         wait {time} 0
@@ -54,7 +59,6 @@ function tests
         int msg = allocate_memory {size} 64
         string_format msg = "Hello from 0ACC!"
 
-        clear_prints
         print_string {text} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
@@ -70,7 +74,6 @@ function tests
         int msg = allocate_memory {size} 513
         write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
 
-        clear_prints
         print_string {text} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
@@ -138,7 +141,6 @@ function tests
         // After wait 1000ms they are long gone; their pointers (msgQueueBuff[0..7]) still live in
         // PreviousBriefs. On the 9th call msgQueueBuff[0] is reused - without the null-out fix
         // AddToPreviousBriefArray would reject the new text as a duplicate pointer.
-        clear_prints
         print_string {text} "Wrap msg 1" {time} 100
         print_string {text} "Wrap msg 2" {time} 100
         print_string {text} "Wrap msg 3" {time} 100
@@ -157,7 +159,6 @@ function tests
 
     function test7_queue_wrap_cs4
         // Same queue-wrap scenario in legacy mode: message must still display but must NOT appear in brief.
-        clear_prints
         print_string {text} "Wrap msg 1" {time} 100
         print_string {text} "Wrap msg 2" {time} 100
         print_string {text} "Wrap msg 3" {time} 100
@@ -174,6 +175,32 @@ function tests
 
         int str = getCurrSubtitleText()
         assert_eqs(str, "Wrap msg 9") // message must still display correctly
+
+        int brief = getBriefTextAt(0)
+        assert_eq(brief, 0) // brief must remain empty in legacy mode
+    end
+    function test8_queue_dedup
+        // Printing the same text twice must produce only one brief entry.
+        // msg1 becomes current immediately (empty queue) -> brief[0] = "Dedup check".
+        // msg2 queues behind msg1; after msg1 expires msg2 becomes current and the game
+        // would call AddToPreviousBriefArray for it - but only if addToBrief was set.
+        // Our content-based dedup in AddToMessageQueue must suppress that flag for msg2.
+        print_string {text} "Dedup check" {time} 100 // msg1: becomes current, brief[0] set
+        print_string {text} "Dedup check" {time} 100 // msg2: dedup flag cleared at enqueue time
+
+        wait {time} 500 // let both messages expire so msg2 has cycled through to current
+
+        assert_brief_at(0, "Dedup check") // exactly one entry
+        int second = getBriefTextAt(1)
+        assert_eq(second, 0) // brief[1] must be empty - dedup suppressed the second entry
+    end
+
+    function test8_queue_dedup_cs4
+        // In legacy mode print_string must never touch the brief regardless of duplicates.
+        print_string {text} "Dedup check cs4" {time} 100
+        print_string {text} "Dedup check cs4" {time} 100
+
+        wait {time} 500
 
         int brief = getBriefTextAt(0)
         assert_eq(brief, 0) // brief must remain empty in legacy mode

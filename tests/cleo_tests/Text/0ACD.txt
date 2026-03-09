@@ -6,6 +6,7 @@ test("0ACD (print_string_now)", tests)
 terminate_this_custom_script
 
 function tests
+    before_each(@setup)
     after_each(@cleanup)
 
     it("should print short string variable", test1)
@@ -22,11 +23,14 @@ function tests
     CMessages_ClearPreviousBriefArray()
     return
 
+    :setup
+    clear_prints
+    return
+
     function test1
         shortString a = 'From ACD' // 8 characters
         shortString b = '12345678'
 
-        clear_prints
         print_string_now {text} a {time} 100
         a = '--VOID--'
         wait {time} 0
@@ -39,7 +43,6 @@ function tests
         longString a = "Message from ACD" // 16 characters
         shortString b = '12345678'
 
-        clear_prints
         print_string_now {text} a {time} 100
         a = "--VOID--"
         wait {time} 0
@@ -52,7 +55,6 @@ function tests
         int msg = allocate_memory {size} 64
         string_format msg = "Hello from 0ACD!"
 
-        clear_prints
         print_string_now {text} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
@@ -68,7 +70,6 @@ function tests
         int msg = allocate_memory {size} 513
         write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
 
-        clear_prints
         print_string_now {text} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
