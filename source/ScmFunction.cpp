@@ -6,8 +6,7 @@
 namespace CLEO
 {
     ScmFunction* ScmFunction::store[Store_Size] = {0};
-    const size_t Default_Index                  = 1;
-    size_t ScmFunction::allocationPlace         = Default_Index;
+    size_t ScmFunction::allocationPlace         = ScmFunction::Default_Index;
 
     ScmFunction* ScmFunction::Get(unsigned short idx)
     {
@@ -22,7 +21,7 @@ namespace CLEO
         {
             if (scmFunc != nullptr) delete scmFunc;
         }
-        ScmFunction::allocationPlace = Default_Index;
+        ScmFunction::allocationPlace = ScmFunction::Default_Index;
     }
 
     void* ScmFunction::operator new(size_t size)
@@ -30,7 +29,7 @@ namespace CLEO
         size_t start_search = allocationPlace;
         while (store[allocationPlace] != nullptr) // find first unused position in store
         {
-            if (++allocationPlace >= Store_Size) allocationPlace = Default_Index; // end of store reached
+            if (++allocationPlace >= Store_Size) allocationPlace = ScmFunction::Default_Index; // end of store reached
             if (allocationPlace == start_search)
             {
                 SHOW_ERROR("CLEO function storage stack overflow!");

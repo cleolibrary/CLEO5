@@ -6,7 +6,8 @@ namespace CLEO
 {
     struct ScmFunction
     {
-        static const size_t Store_Size = 0x400;
+        static constexpr size_t Store_Size = 0x400;
+        static constexpr size_t Default_Index = 1;
         static ScmFunction* store[Store_Size];
         static size_t allocationPlace; // contains an index of last allocated object
         static ScmFunction* Get(unsigned short idx);
