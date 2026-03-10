@@ -25,10 +25,12 @@ function tests
 
     :cleanup
     CMessages_ClearPreviousBriefArray()
+    add_next_message_to_previous_briefs {state} true // restore flag
     return
 
     :setup
     clear_prints
+    add_next_message_to_previous_briefs {state} true // restore flag
     return
 
     function test1
@@ -120,25 +122,21 @@ function tests
 
     function test6_cs5
         add_next_message_to_previous_briefs {state} false
+        assert_brief_flag(false)
         print_string {text} "Flag test ACC" {time} 100
-
-        int flag = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
-        assert_true(flag) // flag must be reset to true after print_string
+        assert_brief_flag(true) // flag must be reset to true after print_string
     end
 
     function test6_cs4
         add_next_message_to_previous_briefs {state} false
+        assert_brief_flag(false)
         print_string {text} "Flag test ACC cs4" {time} 100
-
-        int flag = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
-        assert_false(flag) // flag must NOT be reset for legacy scripts
-
-        add_next_message_to_previous_briefs {state} true // restore flag
+        assert_brief_flag(false) // flag must NOT be reset for legacy scripts
     end
 
     function test7_queue_wrap
         // Fill the entire 8-slot queue with short-lived messages.
-        // After wait 1000ms they are long gone; their pointers (msgQueueBuff[0..7]) still live in
+        // After wait 1500ms they are long gone; their pointers (msgQueueBuff[0..7]) still live in
         // PreviousBriefs. On the 9th call msgQueueBuff[0] is reused - without the null-out fix
         // AddToPreviousBriefArray would reject the new text as a duplicate pointer.
         print_string {text} "Wrap msg 1" {time} 100
@@ -154,6 +152,9 @@ function tests
 
         print_string {text} "Wrap msg 9" {time} 100 // reuses msgQueueBuff[0]; must still reach brief
 
+        int str = getCurrSubtitleText()
+        assert_eqs(str, "Wrap msg 9") // message must display correctly
+        
         assert_brief_at(0, "Wrap msg 9")
     end
 
@@ -179,6 +180,7 @@ function tests
         int brief = getBriefTextAt(0)
         assert_eq(brief, 0) // brief must remain empty in legacy mode
     end
+    
     function test8_queue_dedup
         // Printing the same text twice must produce only one brief entry.
         // msg1 becomes current immediately (empty queue) -> brief[0] = "Dedup check".
@@ -205,6 +207,11 @@ function tests
         int brief = getBriefTextAt(0)
         assert_eq(brief, 0) // brief must remain empty in legacy mode
     end
+end
+
+function assert_brief_flag(expected: int)
+    int actual = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
+    assert_eq(actual, expected) // flag must be set to false
 end
 
 function assert_brief_at(index: int, expected: string)
