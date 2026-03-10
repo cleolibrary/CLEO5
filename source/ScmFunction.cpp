@@ -6,21 +6,19 @@
 namespace CLEO
 {
     ScmFunction* ScmFunction::store[Store_Size] = {0};
-    WORD ScmFunction::lastAllocIdx              = 0;
+    WORD ScmFunction::lastAllocIdx              = Id_None + 1;
 
     ScmFunction* ScmFunction::Get(WORD id)
     {
         if (id == Id_None) return nullptr;
 
-        auto idx = id - 1; // skip Id_None
-
-        if (idx >= Store_Size || store[idx] == nullptr)
+        if (id >= Store_Size || store[id] == nullptr)
         {
             SHOW_ERROR("CLEO function with id %d not found in the storage!", id);
             return nullptr;
         }
 
-        return store[idx];
+        return store[id];
     }
 
     void ScmFunction::Clear()
@@ -38,7 +36,7 @@ namespace CLEO
         while (store[lastAllocIdx] != nullptr) // find first unused position in store
         {
             lastAllocIdx++;
-            if (lastAllocIdx >= Store_Size) lastAllocIdx = 0; // warp around
+            if (lastAllocIdx >= Store_Size) lastAllocIdx = Id_None + 1; // warp around
 
             if (lastAllocIdx == searchStart)
             {
@@ -54,8 +52,15 @@ namespace CLEO
 
     void ScmFunction::operator delete(void* mem)
     {
-        auto idx   = reinterpret_cast<ScmFunction*>(mem)->thisScmFunctionId - 1;
-        store[idx] = nullptr;
+        auto id = reinterpret_cast<ScmFunction*>(mem)->thisScmFunctionId;
+
+        if (store[id] != mem)
+        {
+            SHOW_ERROR("Failed to delete corrupted CLEO function from storage!");
+            return;
+        }
+
+        store[id] = nullptr;
         ::operator delete(mem);
     }
 
@@ -63,7 +68,7 @@ namespace CLEO
     {
         auto cs = reinterpret_cast<CCustomScript*>(thread);
 
-        thisScmFunctionId = ScmFunction::lastAllocIdx + 1; // skip Id_None
+        thisScmFunctionId = ScmFunction::lastAllocIdx;
         prevScmFunctionId = cs->GetScmFunction();
         this->callIP      = callIP;
 
@@ -137,7 +142,7 @@ namespace CLEO
 
     size_t ScmFunction::GetCallStackSize() const
     {
-        if (prevScmFunctionId == Id_None) return 0;
-        return 1 + Get(prevScmFunctionId)->GetCallStackSize();
+        auto parent = Get(prevScmFunctionId);
+        return parent ? 1 + parent->GetCallStackSize() : 0;
     }
 }; // namespace CLEO
