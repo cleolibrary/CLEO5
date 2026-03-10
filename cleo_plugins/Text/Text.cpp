@@ -3,6 +3,7 @@
 #include "CLEO_Utils.h"
 #include "ScriptDrawing.h"
 #include "CTextManager.h"
+#include "CMenuManager.h"
 #include <CGame.h>
 #include <CHud.h>
 #include <CMessages.h>
@@ -199,27 +200,37 @@ class Text
 
     static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time, bool now)
     {
-        queueIdx          = (queueIdx + 1) % MessageQueueSize;
-        auto& messageSlot = messageQueue[queueIdx];
-        strncpy_s(messageSlot, text, sizeof(messageSlot) - 1);
+        /*
+            CLEO4 scripts: always show messages, no brief change, no subtitle suppression (~z~)
+            CLEO5 scripts: show messages conditionally based on user preference, update brief
+        */
 
-        bool addToBrief = false;
-        if (!IsLegacyScript(pScript))
+        const auto isLegacy       = IsLegacyScript(pScript);
+        const auto shouldSuppress = StringStartsWith(text, "~z~", false) && !FrontEndMenuManager.m_bPrefsShowSubtitles;
+
+        // in CLEO5 if message starts with ~z~ and subtitles are off, don't show the message
+        if (isLegacy || !shouldSuppress)
         {
-            if (CTheScripts::bAddNextMessageToPreviousBriefs)
+            // put the message into a free slot in our static buffer to get a persistent pointer
+            queueIdx          = (queueIdx + 1) % MessageQueueSize;
+            auto& messageSlot = messageQueue[queueIdx];
+            strncpy_s(messageSlot, text, sizeof(messageSlot) - 1);
+
+            // check game brief and decide whether this message can be added to it.
+            // Note: legacy scripts never modify the game brief.
+            const auto addToBrief = !isLegacy && CTheScripts::bAddNextMessageToPreviousBriefs &&
+                                    CanTextInThisSlotBeAddedToBrief(messageSlot);
+
+            if (now)
             {
-                addToBrief = CanTextInThisSlotBeAddedToBrief(messageSlot);
+                CMessages::AddMessageJumpQ(messageSlot, time, false, addToBrief);
             }
-            CTheScripts::bAddNextMessageToPreviousBriefs = true;
+            else
+            {
+                CMessages::AddMessage(messageSlot, time, false, addToBrief);
+            }
         }
-        if (now)
-        {
-            CMessages::AddMessageJumpQ(messageSlot, time, false, addToBrief);
-        }
-        else
-        {
-            CMessages::AddMessage(messageSlot, time, false, addToBrief);
-        }
+        if (!isLegacy) CTheScripts::bAddNextMessageToPreviousBriefs = true;
     }
 
     // 0390=1,load_texture_dictionary %1s%
@@ -346,7 +357,7 @@ class Text
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
-        OPCODE_READ_PARAMS_FORMATTED(format, text)
+        OPCODE_READ_PARAMS_FORMATTED(format, text);
         AddToMessageQueue(thread, text, time, true);
         return OR_CONTINUE;
     }

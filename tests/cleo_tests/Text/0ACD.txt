@@ -17,6 +17,9 @@ function tests
     it_cs4("should not add CLEO texts to brief history", test5_cs4)
     it_cs5("should reset bAddNextMessageToPreviousBriefs flag after print", test6_cs5)
     it_cs4("should not reset bAddNextMessageToPreviousBriefs flag after print", test6_cs4)
+    it_cs5("should not display message starting with ~z~ with subtitles off", test7_cs5)
+    it_cs4("should display message starting with ~z~ with subtitles off", test7_cs4)
+
     return
 
     :cleanup
@@ -129,7 +132,40 @@ function tests
         print_string_now {text} "Flag test ACD cs4" {time} 100
         assert_brief_flag(false) // flag must NOT be reset for legacy scripts
     end
+
+    function test7_cs5
+        toggle_subtitles(true)
+        print_string_now {text} "~z~Subtitle 1" {time} 100
+        assert_subtitle("~z~Subtitle 1") // should display ~z~ message when subtitles ON
+
+        wait 500
+        toggle_subtitles(false)
+        print_string_now {text} "~z~Subtitle 2" {time} 100
+        assert_subtitle(0) // should skip last subtitle when subtitles OFF
+
+        wait 500
+        print_string_now {text} "Regular Text" {time} 100
+        assert_subtitle("Regular Text") // should display non ~z~ when subtitles OFF
+
+    end
+
+    function test7_cs4
+        toggle_subtitles(true)
+        print_string_now {text} "~z~Subtitle 1" {time} 100
+        assert_subtitle("~z~Subtitle 1") // should display ~z~ message when subtitles ON
+
+        wait 500
+        toggle_subtitles(false)
+        print_string_now {text} "~z~Subtitle 2" {time} 100
+        assert_subtitle("~z~Subtitle 2") // should NOT skip last subtitle when subtitles OFF
+
+        wait 500
+        print_string_now {text} "Regular Text" {time} 100
+        assert_subtitle("Regular Text") // should display non ~z~ when subtitles OFF
+    end
 end
+
+{$INCLUDE_ONCE helpers.inc}
 
 function print_brief_messages
     int msg1 = allocate_memory {size} 64
@@ -159,29 +195,4 @@ function print_brief_messages
     msg1 = 0
     msg2 = 0
     msg3 = 0
-end
-
-function CMessages_ClearPreviousBriefArray<cdecl, 0x69DE70>()
-
-function assert_brief_flag(expected: int)
-    int actual = read_memory {address} 0x00A4448B {size} 1 {vp} false // CTheScripts::bAddNextMessageToPreviousBriefs
-    assert_eq(actual, expected) // flag must be set to false
-end
-
-function assert_brief_at(index: int, expected: string)
-    int str = getBriefTextAt(index)
-    assert_eqs(str, expected)
-end
-
-// get pointer to current subtitle text
-function getCurrSubtitleText(): int
-    int txt = read_memory {address} 0x00C1A7F0 {size} 4 {vp} false // GTA SA 1.0: CMessages::BriefMessages[0].text
-    return txt
-end
-
-// get pointer to previous brief
-function getBriefTextAt(index: int): int
-    int offset = index * 0x20 // sizeof(PreviousBrief) = 0x20, m_pText at offset 0
-    int txt = read_memory_with_offset {address} 0x00C1A570 {offset} offset {size} 4 // GTA SA 1.0: CMessages::PreviousBriefs[index].m_pText
-    return txt
 end
