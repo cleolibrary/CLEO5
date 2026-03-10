@@ -175,8 +175,12 @@ class Text
         return true;
     }
 
-    static void AddToBriefHistory(const char* text)
+    static void PrintHelp(CLEO::CRunningScript* thread, const char* text)
     {
+        CHud::SetHelpMessage(text, true, false, false);
+
+        if (IsLegacyScript(thread)) return;
+
         if (CTheScripts::bAddNextMessageToPreviousBriefs)
         {
             briefIdx        = (briefIdx + 1) % BriefSize;
@@ -266,9 +270,7 @@ class Text
     static OpcodeResult __stdcall opcode_0ACA(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
-
-        CHud::SetHelpMessage(text, true, false, false);
-        if (!IsLegacyScript(thread)) AddToBriefHistory(text);
+        PrintHelp(thread, text);
         return OR_CONTINUE;
     }
 
@@ -309,9 +311,7 @@ class Text
     static OpcodeResult __stdcall opcode_0ACE(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
-
-        CHud::SetHelpMessage(text, true, false, false);
-        if (!IsLegacyScript(thread)) AddToBriefHistory(text);
+        PrintHelp(thread, text);
         return OR_CONTINUE;
     }
 
