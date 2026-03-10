@@ -3,6 +3,7 @@
 #include "CLEO_Utils.h"
 #include "ScriptDrawing.h"
 #include "CTextManager.h"
+#include "CMenuManager.h"
 #include <CGame.h>
 #include <CHud.h>
 #include <CMessages.h>
@@ -22,10 +23,16 @@ class Text
     static ScriptDrawing scriptDrawing;
     static CTextManager textManager;
 
-    static char msgBuffLow[400]; // same as in CMessages' text processing functions
-    static char msgBuffHigh[400];
-    static const size_t MsgBigStyleCount = 7;
-    static char msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
+    static const size_t MessageQueueSize = 8;  // matches CMessages::BriefMessages queue size
+    static const size_t BriefSize        = 20; // matches CMessages::PreviousBriefs count
+    static const size_t BigStylesCount   = 7;  // matches CMessages::BIGMessages count
+
+    static size_t queueIdx;
+    static size_t briefIdx;
+
+    static char messageQueue[MessageQueueSize][400];
+    static char bigMessages[BigStylesCount][MAX_STR_LEN + 1];
+    static char briefs[BriefSize][400];
 
     static WORD genericLabelCounter;
 
@@ -145,6 +152,87 @@ class Text
         return result;
     }
 
+    static bool CanTextInThisSlotBeAddedToBrief(const char* slot)
+    {
+        // content dedup: exits early if another entry already holds the same text.
+        for (size_t i = 0; i < BriefSize; i++)
+        {
+            const auto pText = CMessages::PreviousBriefs[i].m_pText;
+            if (pText == nullptr) break; // end of used entries
+            if (pText == slot) continue; // stale self-reference, skip to avoid a false positive duplicate
+            if (strcmp(pText, slot) == 0) return false; // content duplicate, exit
+        }
+
+        // stale pointer eviction: prevents the game's pointer-based dedup from rejecting the insertion
+        for (size_t i = 0; i < BriefSize; i++)
+        {
+            auto& pText = CMessages::PreviousBriefs[i].m_pText;
+            if (pText == slot)
+            {
+                pText = nullptr;
+                break;
+            }
+        }
+        return true;
+    }
+
+    static void PrintHelp(CLEO::CRunningScript* thread, const char* text)
+    {
+        CHud::SetHelpMessage(text, true, false, false);
+
+        if (IsLegacyScript(thread)) return;
+
+        if (CTheScripts::bAddNextMessageToPreviousBriefs)
+        {
+            briefIdx        = (briefIdx + 1) % BriefSize;
+            auto& briefSlot = briefs[briefIdx];
+
+            strncpy_s(briefSlot, text, sizeof(briefSlot) - 1);
+
+            if (CanTextInThisSlotBeAddedToBrief(briefSlot))
+            {
+                CMessages::AddToPreviousBriefArray(briefSlot, -1, -1, -1, -1, -1, -1, 0);
+            }
+        }
+
+        CTheScripts::bAddNextMessageToPreviousBriefs = true;
+    }
+
+    static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time, bool now)
+    {
+        /*
+            CLEO4 scripts: always show messages, no brief change, no subtitle suppression (~z~)
+            CLEO5 scripts: show messages conditionally based on user preference, update brief
+        */
+
+        const auto isLegacy       = IsLegacyScript(pScript);
+        const auto shouldSuppress = StringStartsWith(text, "~z~", false) && !FrontEndMenuManager.m_bPrefsShowSubtitles;
+
+        // in CLEO5 if message starts with ~z~ and subtitles are off, don't show the message
+        if (isLegacy || !shouldSuppress)
+        {
+            // put the message into a free slot in our static buffer to get a persistent pointer
+            queueIdx          = (queueIdx + 1) % MessageQueueSize;
+            auto& messageSlot = messageQueue[queueIdx];
+            strncpy_s(messageSlot, text, sizeof(messageSlot) - 1);
+
+            // check game brief and decide whether this message can be added to it.
+            // Note: legacy scripts never modify the game brief.
+            const auto addToBrief = !isLegacy && CTheScripts::bAddNextMessageToPreviousBriefs &&
+                                    CanTextInThisSlotBeAddedToBrief(messageSlot);
+
+            if (now)
+            {
+                CMessages::AddMessageJumpQ(messageSlot, time, false, addToBrief);
+            }
+            else
+            {
+                CMessages::AddMessage(messageSlot, time, false, addToBrief);
+            }
+        }
+        if (!isLegacy) CTheScripts::bAddNextMessageToPreviousBriefs = true;
+    }
+
     // 0390=1,load_texture_dictionary %1s%
     static OpcodeResult __stdcall opcode_0390(CLEO::CRunningScript* thread)
     {
@@ -189,60 +277,56 @@ class Text
         return CLEO_CallNativeOpcode(thread, 0x0391);
     }
 
-    // 0ACA=1,show_text_box %1d%
+    // 0ACA=1,print_help_string %1d%
     static OpcodeResult __stdcall opcode_0ACA(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
-
-        CHud::SetHelpMessage(text, true, false, false);
+        PrintHelp(thread, text);
         return OR_CONTINUE;
     }
 
-    // 0ACB=3,show_styled_text %1d% time %2d% style %3d%
+    // 0ACB=3,print_big_string %1d% time %2d% style %3d%
     static OpcodeResult __stdcall opcode_0ACB(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time  = OPCODE_READ_PARAM_INT();
         auto style = OPCODE_READ_PARAM_INT();
 
-        auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]) - 1);
-        CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
+        auto styleIdx    = std::clamp(style - 1, 0, (int)BigStylesCount - 1);
+        auto& bigMessage = bigMessages[styleIdx];
+
+        strncpy_s(bigMessage, text, sizeof(bigMessage) - 1);
+        CMessages::AddBigMessage(bigMessage, time, styleIdx);
         return OR_CONTINUE;
     }
 
-    // 0ACC=2,show_text_lowpriority %1d% time %2d%
+    // 0ACC=2,print_string %1d% time %2d%
     static OpcodeResult __stdcall opcode_0ACC(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
-
-        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow) - 1);
-        CMessages::AddMessage(msgBuffLow, time, false, false);
+        AddToMessageQueue(thread, text, time, false);
         return OR_CONTINUE;
     }
 
-    // 0ACD=2,show_text_highpriority %1d% time %2d%
+    // 0ACD=2,print_string_now %1d% time %2d%
     static OpcodeResult __stdcall opcode_0ACD(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
-
-        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh) - 1);
-        CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
+        AddToMessageQueue(thread, text, time, true);
         return OR_CONTINUE;
     }
 
-    // 0ACE=-1,show_formatted_text_box %1d%
+    // 0ACE=-1,print_help_formatted %1d%
     static OpcodeResult __stdcall opcode_0ACE(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING_FORMATTED(text);
-
-        CHud::SetHelpMessage(text, true, false, false);
+        PrintHelp(thread, text);
         return OR_CONTINUE;
     }
 
-    // 0ACF=-1,show_formatted_styled_text %1d% time %2d% style %3d%
+    // 0ACF=-1,print_big_formatted %1d% time %2d% style %3d%
     static OpcodeResult __stdcall opcode_0ACF(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
@@ -250,33 +334,31 @@ class Text
         auto style = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        auto styleIdx = std::clamp(style, 0, (int)MsgBigStyleCount - 1);
-        strncpy_s(msgBuffBig[styleIdx], text, sizeof(msgBuffBig[styleIdx]) - 1);
-        CMessages::AddBigMessage(msgBuffBig[styleIdx], time, style - 1);
+        auto styleIdx    = std::clamp(style - 1, 0, (int)BigStylesCount - 1);
+        auto& bigMessage = bigMessages[styleIdx];
+
+        strncpy_s(bigMessage, text, sizeof(bigMessage) - 1);
+        CMessages::AddBigMessage(bigMessage, time, styleIdx);
         return OR_CONTINUE;
     }
 
-    // 0AD0=-1,show_formatted_text_lowpriority %1d% time %2d%
+    // 0AD0=-1,print_formatted %1d% time %2d%
     static OpcodeResult __stdcall opcode_0AD0(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
-
-        strncpy_s(msgBuffLow, text, sizeof(msgBuffLow) - 1);
-        CMessages::AddMessage(msgBuffLow, time, false, false);
+        AddToMessageQueue(thread, text, time, false);
         return OR_CONTINUE;
     }
 
-    // 0AD1=-1,show_formatted_text_highpriority %1d% time %2d%
+    // 0AD1=-1,print_formatted_now %1d% time %2d%
     static OpcodeResult __stdcall opcode_0AD1(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
-
-        strncpy_s(msgBuffHigh, text, sizeof(msgBuffHigh) - 1);
-        CMessages::AddMessageJumpQ(msgBuffHigh, time, false, false);
+        AddToMessageQueue(thread, text, time, true);
         return OR_CONTINUE;
     }
 
@@ -434,7 +516,7 @@ class Text
         auto modelIndex = OPCODE_READ_PARAM_UINT();
 
         CVehicleModelInfo* model;
-        // if 1.0 US, prefer GetModelInfo function  makes it compatible with fastman92's limit adjuster
+        // if 1.0 US, prefer GetModelInfo function - makes it compatible with fastman92's limit adjuster
         if (CLEO_GetGameVersion() == CLEO::GV_US10)
             model = plugin::CallAndReturn<CVehicleModelInfo*, 0x403DA0, int>(modelIndex);
         else
@@ -671,9 +753,14 @@ class Text
 
 ScriptDrawing Text::scriptDrawing;
 CTextManager Text::textManager;
-char Text::msgBuffLow[400];
-char Text::msgBuffHigh[400];
-char Text::msgBuffBig[MsgBigStyleCount][MAX_STR_LEN + 1];
+
+size_t Text::queueIdx = 0;
+size_t Text::briefIdx = 0;
+
+char Text::messageQueue[Text::MessageQueueSize][400];
+char Text::briefs[Text::BriefSize][400];
+char Text::bigMessages[Text::BigStylesCount][MAX_STR_LEN + 1];
+
 WORD Text::genericLabelCounter;
 
 // exports

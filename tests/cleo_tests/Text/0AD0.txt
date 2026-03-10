@@ -1,8 +1,8 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name '0ACC'
-test("0ACC (print_string)", tests)
+script_name '0AD0'
+test("0AD0 (print_formatted)", tests)
 terminate_this_custom_script
 
 function tests
@@ -12,7 +12,7 @@ function tests
     it("should print short string variable", test1)
     it("should print long string variable", test2)
     it("should print string pointer", test3)
-    it("should print very long string pointer", test4)
+    it("should print formatted string with args", test4)
     it_cs5("should add CLEO texts to brief history", test5_cs5)
     it_cs4("should not add CLEO texts to brief history", test5_cs4)
     it_cs5("should reset bAddNextMessageToPreviousBriefs flag after print", test6_cs5)
@@ -22,7 +22,7 @@ function tests
     it_cs5("should not add duplicate text to brief history", test8_queue_dedup)
     it_cs4("should not add any text to brief history in legacy mode", test8_queue_dedup_cs4)
     it_cs5("should not display message starting with ~z~ with subtitles off", test9_cs5)
-    it_cs4("should display message starting with ~z~ with subtitles off", test9_cs4)
+    it_cs4("should display message starting with ~z~ with subtitles off", test9_cs4)    
     return
 
     :cleanup
@@ -36,34 +36,34 @@ function tests
     return
 
     function test1
-        shortString a = 'From ACC' // 8 characters
+        shortString a = 'From AD0' // 8 characters
         shortString b = '12345678'
 
-        print_string {text} a {time} 100
+        print_formatted {format} a {time} 100
         a = '--VOID--'
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "From ACC")
+        assert_eqs(str, "From AD0")
     end
 
     function test2
-        longString a = "Message from ACC" // 16 characters
+        longString a = "Message from AD0" // 16 characters
         shortString b = '12345678'
 
-        print_string {text} a {time} 100
+        print_formatted {format} a {time} 100
         a = "--VOID--"
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Message from ACC")
+        assert_eqs(str, "Message from AD0")
     end
 
     function test3
         int msg = allocate_memory {size} 64
-        string_format msg = "Hello from 0ACC!"
+        string_format msg = "Hello from 0AD0!"
 
-        print_string {text} msg {time} 100
+        print_formatted {format} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
 
@@ -71,31 +71,15 @@ function tests
         msg = 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Hello from 0ACC!")
+        assert_eqs(str, "Hello from 0AD0!")
     end
 
     function test4
-        int msg = allocate_memory {size} 513
-        write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
-
-        print_string {text} msg {time} 100
-        string_format msg = "--VOID--"
+        print_formatted {format} "Val %d from %s" {time} 100 {args} 42 "0AD0"
         wait {time} 0
 
-        free_memory {address} msg
-        msg = 0
-
-        int expected = allocate_memory {size} 400 // same as game's internal limit
-        write_memory {address} expected {size} 399 {value} 0x41 {vp} false // fill with A
-
         int str = getCurrSubtitleText()
-
-        // assert_eqs(str, expected) // assert error message will not be able to display strings that long
-        is_text_equal {text} str {another} expected {ignoreCase} false
-        assert_result_true()
-
-        free_memory {address} expected
-        expected = 0
+        assert_eqs(str, "Val 42 from 0AD0")
     end
 
     function test5_cs5
@@ -105,7 +89,7 @@ function tests
         print_brief_messages()
 
         // only msg1 is added immediately (queue was empty); msg2 is skipped (flag=false); msg3 is deferred (queued at slot 2)
-        assert_brief_at(0, "Brief 0ACC one")
+        assert_brief_at(0, "Brief 0AD0 one")
         assert_brief_at(1, "Total progress")
         assert_brief_at(2, "Progress made")
     end
@@ -125,14 +109,14 @@ function tests
     function test6_cs5
         add_next_message_to_previous_briefs {state} false
         assert_brief_flag(false)
-        print_string {text} "Flag test ACC" {time} 100
-        assert_brief_flag(true) // flag must be reset to true after print_string
+        print_formatted {format} "Flag test AD0" {time} 100
+        assert_brief_flag(true) // flag must be reset to true after print_formatted
     end
 
     function test6_cs4
         add_next_message_to_previous_briefs {state} false
         assert_brief_flag(false)
-        print_string {text} "Flag test ACC cs4" {time} 100
+        print_formatted {format} "Flag test AD0 cs4" {time} 100
         assert_brief_flag(false) // flag must NOT be reset for legacy scripts
     end
 
@@ -141,18 +125,18 @@ function tests
         // After wait 1500ms they are long gone; their pointers (msgQueueBuff[0..7]) still live in
         // PreviousBriefs. On the 9th call msgQueueBuff[0] is reused - without the null-out fix
         // AddToPreviousBriefArray would reject the new text as a duplicate pointer.
-        print_string {text} "Wrap msg 1" {time} 100
-        print_string {text} "Wrap msg 2" {time} 100
-        print_string {text} "Wrap msg 3" {time} 100
-        print_string {text} "Wrap msg 4" {time} 100
-        print_string {text} "Wrap msg 5" {time} 100
-        print_string {text} "Wrap msg 6" {time} 100
-        print_string {text} "Wrap msg 7" {time} 100
-        print_string {text} "Wrap msg 8" {time} 100
+        print_formatted {format} "Wrap msg 1" {time} 100
+        print_formatted {format} "Wrap msg 2" {time} 100
+        print_formatted {format} "Wrap msg 3" {time} 100
+        print_formatted {format} "Wrap msg 4" {time} 100
+        print_formatted {format} "Wrap msg 5" {time} 100
+        print_formatted {format} "Wrap msg 6" {time} 100
+        print_formatted {format} "Wrap msg 7" {time} 100
+        print_formatted {format} "Wrap msg 8" {time} 100
 
         wait {time} 1500 // let all 8 messages expire and be dequeued by the game
 
-        print_string {text} "Wrap msg 9" {time} 100 // reuses msgQueueBuff[0]; must still reach brief
+        print_formatted {format} "Wrap msg 9" {time} 100 // reuses msgQueueBuff[0]; must still reach brief
 
         int str = getCurrSubtitleText()
         assert_eqs(str, "Wrap msg 9") // message must display correctly
@@ -162,18 +146,18 @@ function tests
 
     function test7_queue_wrap_cs4
         // Same queue-wrap scenario in legacy mode: message must still display but must NOT appear in brief.
-        print_string {text} "Wrap msg 1" {time} 100
-        print_string {text} "Wrap msg 2" {time} 100
-        print_string {text} "Wrap msg 3" {time} 100
-        print_string {text} "Wrap msg 4" {time} 100
-        print_string {text} "Wrap msg 5" {time} 100
-        print_string {text} "Wrap msg 6" {time} 100
-        print_string {text} "Wrap msg 7" {time} 100
-        print_string {text} "Wrap msg 8" {time} 100
+        print_formatted {format} "Wrap msg 1" {time} 100
+        print_formatted {format} "Wrap msg 2" {time} 100
+        print_formatted {format} "Wrap msg 3" {time} 100
+        print_formatted {format} "Wrap msg 4" {time} 100
+        print_formatted {format} "Wrap msg 5" {time} 100
+        print_formatted {format} "Wrap msg 6" {time} 100
+        print_formatted {format} "Wrap msg 7" {time} 100
+        print_formatted {format} "Wrap msg 8" {time} 100
 
         wait {time} 1500 // let all 8 messages expire and be dequeued by the game
 
-        print_string {text} "Wrap msg 9" {time} 9000 // reuses msgQueueBuff[0]; must display but not reach brief
+        print_formatted {format} "Wrap msg 9" {time} 9000 // reuses msgQueueBuff[0]; must display but not reach brief
         wait {time} 0
 
         int str = getCurrSubtitleText()
@@ -182,15 +166,14 @@ function tests
         int brief = getBriefTextAt(0)
         assert_eq(brief, 0) // brief must remain empty in legacy mode
     end
-
     function test8_queue_dedup
         // Printing the same text twice must produce only one brief entry.
         // msg1 becomes current immediately (empty queue) -> brief[0] = "Dedup check".
         // msg2 queues behind msg1; after msg1 expires msg2 becomes current and the game
         // would call AddToPreviousBriefArray for it - but only if addToBrief was set.
         // Our content-based dedup in AddToMessageQueue must suppress that flag for msg2.
-        print_string {text} "Dedup check" {time} 100 // msg1: becomes current, brief[0] set
-        print_string {text} "Dedup check" {time} 100 // msg2: dedup flag cleared at enqueue time
+        print_formatted {format} "Dedup check" {time} 100 // msg1: becomes current, brief[0] set
+        print_formatted {format} "Dedup check" {time} 100 // msg2: dedup flag cleared at enqueue time
 
         wait {time} 500 // let both messages expire so msg2 has cycled through to current
 
@@ -200,9 +183,9 @@ function tests
     end
 
     function test8_queue_dedup_cs4
-        // In legacy mode print_string must never touch the brief regardless of duplicates.
-        print_string {text} "Dedup check cs4" {time} 100
-        print_string {text} "Dedup check cs4" {time} 100
+        // In legacy mode print_formatted must never touch the brief regardless of duplicates.
+        print_formatted {format} "Dedup check cs4" {time} 100
+        print_formatted {format} "Dedup check cs4" {time} 100
 
         wait {time} 500
 
@@ -212,32 +195,32 @@ function tests
 
     function test9_cs5
         toggle_subtitles(true)
-        print_string {text} "~z~Subtitle 1" {time} 100
+        print_formatted {text} "~z~Subtitle 1" {time} 100
         assert_subtitle("~z~Subtitle 1") // should display ~z~ message when subtitles ON
 
         wait 500
         toggle_subtitles(false)
-        print_string {text} "~z~Subtitle 2" {time} 100
+        print_formatted {text} "~z~Subtitle 2" {time} 100
         assert_subtitle(0) // should skip last subtitle when subtitles OFF
 
         wait 500
-        print_string {text} "Regular Text" {time} 100
+        print_formatted {text} "Regular Text" {time} 100
         assert_subtitle("Regular Text") // should display non ~z~ when subtitles OFF
 
     end
 
     function test9_cs4
         toggle_subtitles(true)
-        print_string {text} "~z~Subtitle 1" {time} 100
+        print_formatted {text} "~z~Subtitle 1" {time} 100
         assert_subtitle("~z~Subtitle 1") // should display ~z~ message when subtitles ON
 
         wait 500
         toggle_subtitles(false)
-        print_string {text} "~z~Subtitle 2" {time} 100
+        print_formatted {text} "~z~Subtitle 2" {time} 100
         assert_subtitle("~z~Subtitle 2") // should NOT skip last subtitle when subtitles OFF
 
         wait 500
-        print_string {text} "Regular Text" {time} 100
+        print_formatted {text} "Regular Text" {time} 100
         assert_subtitle("Regular Text") // should display non ~z~ when subtitles OFF
     end
 end
@@ -248,19 +231,19 @@ function print_brief_messages
     int msg1 = allocate_memory {size} 64
     int msg2 = allocate_memory {size} 64
     int msg3 = allocate_memory {size} 64
-    string_format msg1 = "Brief 0ACC one"
-    string_format msg2 = "Brief 0ACC two"
-    string_format msg3 = "Brief 0ACC three"
+    string_format msg1 = "Brief 0AD0 one"
+    string_format msg2 = "Brief 0AD0 two"
+    string_format msg3 = "Brief 0AD0 three"
 
     clear_prints
 
-    print_string {text} msg1 {time} 9000            // msg1 is added to brief
+    print_formatted {format} msg1 {time} 9000            // msg1 is added to brief
 
     add_next_message_to_previous_briefs {state} false
-    print_string {text} msg2 {time} 9000            // msg2 is NOT added to brief
+    print_formatted {format} msg2 {time} 9000            // msg2 is NOT added to brief
 
     add_next_message_to_previous_briefs {state} true    // no effect as flag is true already
-    print_string {text} msg3 {time} 9000            // msg3 will be added to brief when it becomes current (deferred)
+    print_formatted {format} msg3 {time} 9000            // msg3 will be added to brief when it becomes current (deferred)
 
     string_format msg1 = "--VOID--"
     string_format msg2 = "--VOID--"

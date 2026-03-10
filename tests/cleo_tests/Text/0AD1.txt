@@ -1,8 +1,8 @@
 {$CLEO .s}
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
-script_name '0ACD'
-test("0ACD (print_string_now)", tests)
+script_name '0AD1'
+test("0AD1 (print_formatted_now)", tests)
 terminate_this_custom_script
 
 function tests
@@ -12,14 +12,14 @@ function tests
     it("should print short string variable", test1)
     it("should print long string variable", test2)
     it("should print string pointer", test3)
-    it("should print very long string pointer", test4)
+    it("should print formatted string with args", test4)
     it_cs5("should add CLEO texts to brief history", test5_cs5)
     it_cs4("should not add CLEO texts to brief history", test5_cs4)
     it_cs5("should reset bAddNextMessageToPreviousBriefs flag after print", test6_cs5)
     it_cs4("should not reset bAddNextMessageToPreviousBriefs flag after print", test6_cs4)
     it_cs5("should not display message starting with ~z~ with subtitles off", test7_cs5)
     it_cs4("should display message starting with ~z~ with subtitles off", test7_cs4)
-
+    
     return
 
     :cleanup
@@ -33,34 +33,34 @@ function tests
     return
 
     function test1
-        shortString a = 'From ACD' // 8 characters
+        shortString a = 'From AD1' // 8 characters
         shortString b = '12345678'
 
-        print_string_now {text} a {time} 100
+        print_formatted_now {format} a {time} 100
         a = '--VOID--'
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "From ACD")
+        assert_eqs(str, "From AD1")
     end
 
     function test2
-        longString a = "Message from ACD" // 16 characters
+        longString a = "Message from AD1" // 16 characters
         shortString b = '12345678'
 
-        print_string_now {text} a {time} 100
+        print_formatted_now {format} a {time} 100
         a = "--VOID--"
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Message from ACD")
+        assert_eqs(str, "Message from AD1")
     end
 
     function test3
         int msg = allocate_memory {size} 64
-        string_format msg = "Hello from 0ACD!"
+        string_format msg = "Hello from 0AD1!"
 
-        print_string_now {text} msg {time} 100
+        print_formatted_now {format} msg {time} 100
         string_format msg = "--VOID--"
         wait {time} 0
 
@@ -68,31 +68,15 @@ function tests
         msg = 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Hello from 0ACD!")
+        assert_eqs(str, "Hello from 0AD1!")
     end
 
     function test4
-        int msg = allocate_memory {size} 513
-        write_memory {address} msg {size} 512 {value} 0x41 {vp} false // fill with A
-
-        print_string_now {text} msg {time} 100
-        string_format msg = "--VOID--"
+        print_formatted_now {format} "Val %d from %s" {time} 100 {args} 42 "0AD1"
         wait {time} 0
 
-        free_memory {address} msg
-        msg = 0
-
-        int expected = allocate_memory {size} 400 // same as game's internal limit
-        write_memory {address} expected {size} 399 {value} 0x41 {vp} false // fill with A
-
         int str = getCurrSubtitleText()
-
-        // assert_eqs(str, expected) // assert error message will not be able to display strings that long
-        is_text_equal {text} str {another} expected {ignoreCase} false
-        assert_result_true()
-
-        free_memory {address} expected
-        expected = 0
+        assert_eqs(str, "Val 42 from 0AD1")
     end
 
     function test5_cs5
@@ -101,8 +85,8 @@ function tests
 
         print_brief_messages()
 
-        assert_brief_at(0, "Brief 0ACD three")
-        assert_brief_at(1, "Brief 0ACD one")
+        assert_brief_at(0, "Brief 0AD1 three")
+        assert_brief_at(1, "Brief 0AD1 one")
         assert_brief_at(2, "Total progress")
         assert_brief_at(3, "Progress made")
     end
@@ -122,45 +106,45 @@ function tests
     function test6_cs5
         add_next_message_to_previous_briefs {state} false
         assert_brief_flag(false)
-        print_string_now {text} "Flag test ACD" {time} 100
+        print_formatted_now {format} "Flag test AD1" {time} 100
         assert_brief_flag(true) // flag must be reset to true after print_string_now
     end
 
     function test6_cs4
         add_next_message_to_previous_briefs {state} false
         assert_brief_flag(false)
-        print_string_now {text} "Flag test ACD cs4" {time} 100
+        print_formatted_now {format} "Flag test AD1 cs4" {time} 100
         assert_brief_flag(false) // flag must NOT be reset for legacy scripts
     end
-
+    
     function test7_cs5
         toggle_subtitles(true)
-        print_string_now {text} "~z~Subtitle 1" {time} 100
+        print_formatted_now {text} "~z~Subtitle 1" {time} 100
         assert_subtitle("~z~Subtitle 1") // should display ~z~ message when subtitles ON
 
         wait 500
         toggle_subtitles(false)
-        print_string_now {text} "~z~Subtitle 2" {time} 100
+        print_formatted_now {text} "~z~Subtitle 2" {time} 100
         assert_subtitle(0) // should skip last subtitle when subtitles OFF
 
         wait 500
-        print_string_now {text} "Regular Text" {time} 100
+        print_formatted_now {text} "Regular Text" {time} 100
         assert_subtitle("Regular Text") // should display non ~z~ when subtitles OFF
 
     end
 
     function test7_cs4
         toggle_subtitles(true)
-        print_string_now {text} "~z~Subtitle 1" {time} 100
+        print_formatted_now {text} "~z~Subtitle 1" {time} 100
         assert_subtitle("~z~Subtitle 1") // should display ~z~ message when subtitles ON
 
         wait 500
         toggle_subtitles(false)
-        print_string_now {text} "~z~Subtitle 2" {time} 100
+        print_formatted_now {text} "~z~Subtitle 2" {time} 100
         assert_subtitle("~z~Subtitle 2") // should NOT skip last subtitle when subtitles OFF
 
         wait 500
-        print_string_now {text} "Regular Text" {time} 100
+        print_formatted_now {text} "Regular Text" {time} 100
         assert_subtitle("Regular Text") // should display non ~z~ when subtitles OFF
     end
 end
@@ -171,19 +155,19 @@ function print_brief_messages
     int msg1 = allocate_memory {size} 64
     int msg2 = allocate_memory {size} 64
     int msg3 = allocate_memory {size} 64
-    string_format msg1 = "Brief 0ACD one"
-    string_format msg2 = "Brief 0ACD two"
-    string_format msg3 = "Brief 0ACD three"
+    string_format msg1 = "Brief 0AD1 one"
+    string_format msg2 = "Brief 0AD1 two"
+    string_format msg3 = "Brief 0AD1 three"
 
     clear_prints
 
-    print_string_now {text} msg1 {time} 9000            // msg1 is added to brief
+    print_formatted_now {format} msg1 {time} 9000            // msg1 is added to brief
 
     add_next_message_to_previous_briefs {state} false
-    print_string_now {text} msg2 {time} 9000            // msg2 is NOT added to brief
+    print_formatted_now {format} msg2 {time} 9000            // msg2 is NOT added to brief
 
     add_next_message_to_previous_briefs {state} true    // no effect as flag is true already
-    print_string_now {text} msg3 {time} 9000            // msg3 is added to brief
+    print_formatted_now {format} msg3 {time} 9000            // msg3 is added to brief
 
     string_format msg1 = "--VOID--"
     string_format msg2 = "--VOID--"
@@ -196,3 +180,4 @@ function print_brief_messages
     msg2 = 0
     msg3 = 0
 end
+
