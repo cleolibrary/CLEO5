@@ -31,7 +31,6 @@ class Text
 
     static char messageQueue[MessageQueueSize][400];
     static char bigMessages[BigStylesCount][MAX_STR_LEN + 1];
-    static char messageNow[400];
     static char briefs[BriefSize][400];
 
     static WORD genericLabelCounter;
@@ -194,7 +193,7 @@ class Text
         CTheScripts::bAddNextMessageToPreviousBriefs = true;
     }
 
-    static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time)
+    static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time, bool now)
     {
         queueIdx          = (queueIdx + 1) % MessageQueueSize;
         auto& messageSlot = messageQueue[queueIdx];
@@ -209,7 +208,14 @@ class Text
             }
             CTheScripts::bAddNextMessageToPreviousBriefs = true;
         }
-        CMessages::AddMessage(messageSlot, time, false, addToBrief);
+        if (now)
+        {
+            CMessages::AddMessageJumpQ(messageSlot, time, false, addToBrief);
+        }
+        else
+        {
+            CMessages::AddMessage(messageSlot, time, false, addToBrief);
+        }
     }
 
     // 0390=1,load_texture_dictionary %1s%
@@ -286,8 +292,7 @@ class Text
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
-
-        AddToMessageQueue(thread, text, time);
+        AddToMessageQueue(thread, text, time, false);
         return OR_CONTINUE;
     }
 
@@ -296,10 +301,7 @@ class Text
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time = OPCODE_READ_PARAM_INT();
-
-        strncpy_s(messageNow, text, sizeof(messageNow) - 1);
-        CMessages::AddMessageJumpQ(messageNow, time, false, false);
-        if (!IsLegacyScript(thread)) AddToBriefHistory(messageNow);
+        AddToMessageQueue(thread, text, time, true);
         return OR_CONTINUE;
     }
 
@@ -335,8 +337,7 @@ class Text
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
-
-        AddToMessageQueue(thread, text, time);
+        AddToMessageQueue(thread, text, time, false);
         return OR_CONTINUE;
     }
 
@@ -345,11 +346,8 @@ class Text
     {
         OPCODE_READ_PARAM_STRING(format);
         auto time = OPCODE_READ_PARAM_INT();
-        OPCODE_READ_PARAMS_FORMATTED(format, text);
-
-        strncpy_s(messageNow, text, sizeof(messageNow) - 1);
-        CMessages::AddMessageJumpQ(messageNow, time, false, false);
-        if (!IsLegacyScript(thread)) AddToBriefHistory(messageNow);
+        OPCODE_READ_PARAMS_FORMATTED(format, text)
+        AddToMessageQueue(thread, text, time, true);
         return OR_CONTINUE;
     }
 
@@ -751,7 +749,6 @@ size_t Text::briefIdx = 0;
 char Text::messageQueue[Text::MessageQueueSize][400];
 char Text::briefs[Text::BriefSize][400];
 char Text::bigMessages[Text::BigStylesCount][MAX_STR_LEN + 1];
-char Text::messageNow[400];
 
 WORD Text::genericLabelCounter;
 
