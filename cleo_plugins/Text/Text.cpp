@@ -266,18 +266,18 @@ class Text
         return OR_CONTINUE;
     }
 
-    // 0ACB=3,show_styled_text %1d% time %2d% style %3d%
+    // 0ACB=3,print_big_string %1d% time %2d% style %3d%
     static OpcodeResult __stdcall opcode_0ACB(CLEO::CRunningScript* thread)
     {
         OPCODE_READ_PARAM_STRING(text);
         auto time  = OPCODE_READ_PARAM_INT();
         auto style = OPCODE_READ_PARAM_INT();
 
-        auto styleIdx    = std::clamp(style, 0, (int)BigStylesCount - 1);
+        auto styleIdx    = std::clamp(style - 1, 0, (int)BigStylesCount - 1);
         auto& bigMessage = bigMessages[styleIdx];
 
         strncpy_s(bigMessage, text, sizeof(bigMessage) - 1);
-        CMessages::AddBigMessage(bigMessage, time, style - 1);
+        CMessages::AddBigMessage(bigMessage, time, styleIdx);
         return OR_CONTINUE;
     }
 
@@ -321,11 +321,11 @@ class Text
         auto style = OPCODE_READ_PARAM_INT();
         OPCODE_READ_PARAMS_FORMATTED(format, text);
 
-        auto styleIdx    = std::clamp(style, 0, (int)BigStylesCount - 1);
+        auto styleIdx    = std::clamp(style - 1, 0, (int)BigStylesCount - 1);
         auto& bigMessage = bigMessages[styleIdx];
 
         strncpy_s(bigMessage, text, sizeof(bigMessage) - 1);
-        CMessages::AddBigMessage(bigMessage, time, style - 1);
+        CMessages::AddBigMessage(bigMessage, time, styleIdx);
         return OR_CONTINUE;
     }
 
