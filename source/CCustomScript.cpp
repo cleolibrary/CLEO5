@@ -9,7 +9,7 @@ using namespace CLEO;
 
 // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
 CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScript* parent, int label)
-    : CRunningScript(), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR)
+    : CRunningScript(), m_ownedBuffer(nullptr), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR)
 {
     TRACE(""); // separator
     TRACE("Loading custom script '%s'...", szFileName);
@@ -34,7 +34,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             m_scriptFileDir  = cs->GetScriptFileDir();
             m_scriptFileName = cs->GetScriptFileName();
             m_workDir        = cs->GetWorkDir();
-            BaseIP           = cs->GetBasePointer();
+            BaseIP           = cs->GetBasePointer(); // shared, not owned
             CurrentIP        = cs->GetBasePointer() - label;
             m_codeChecksum   = cs->m_codeChecksum;
             m_parentScript   = cs;
@@ -135,6 +135,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             }
 
             BaseIP = CurrentIP = new BYTE[length];
+            m_ownedBuffer      = CurrentIP;
             is.read(reinterpret_cast<char*>(BaseIP), length);
 
             m_codeSize = length;
@@ -173,7 +174,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
 CCustomScript::~CCustomScript()
 {
-    if (BaseIP) delete[] BaseIP;
+    if (m_ownedBuffer) delete[] m_ownedBuffer;
     CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
 
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
