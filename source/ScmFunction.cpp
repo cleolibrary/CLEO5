@@ -76,7 +76,9 @@ namespace CLEO
 
         thisScmFunctionId = ScmFunction::lastAllocIdx + 1; // index to id
         prevScmFunctionId = cs->GetScmFunction();
-        this->callIP      = callIP;
+
+        caller       = cs;
+        this->callIP = callIP;
 
         // create snapshot of current scope
         savedBaseIP   = cs->BaseIP;
@@ -144,6 +146,8 @@ namespace CLEO
 
         cs->SetIp(retnAddress);
         cs->SetScmFunction(prevScmFunctionId);
+
+        delete this; // remove from storage
     }
 
     size_t ScmFunction::GetCallStackSize() const

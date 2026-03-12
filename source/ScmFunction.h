@@ -9,10 +9,18 @@ namespace CLEO
       public:
         static const WORD Id_None = 0;
         static ScmFunction* Get(WORD id);
-        static void Clear(); // clear storage
+        static void Clear(); // clear entire storage
 
-        BYTE callArgCount = 0;       // args provided to cleo_call
-        BYTE* callIP      = nullptr; // address of 0AB1 for error messages
+        void* operator new(size_t size);
+        void operator delete(void* mem);
+
+        ScmFunction(CRunningScript* thread, BYTE* callIP); // create
+        void Return(CRunningScript* thread);               // remove
+        size_t GetCallStackSize() const;
+
+        CRunningScript* caller = nullptr;
+        BYTE callArgCount      = 0;       // args provided to cleo_call
+        BYTE* callIP           = nullptr; // address of 0AB1 for error messages
 
         // saved nesting context state
         void* savedBaseIP                                                        = nullptr;
@@ -27,14 +35,6 @@ namespace CLEO
         bool savedNotFlag                = false;
         std::string savedScriptFileDir;  // modules switching
         std::string savedScriptFileName; // modules switching
-
-        void* operator new(size_t size);
-        void operator delete(void* mem);
-        ScmFunction(CRunningScript* thread, BYTE* callIP);
-
-        void Return(CRunningScript* thread);
-
-        size_t GetCallStackSize() const;
 
       private:
         static const WORD Store_Size = 0x400;

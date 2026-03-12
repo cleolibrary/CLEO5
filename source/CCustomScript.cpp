@@ -183,7 +183,7 @@ CCustomScript::~CCustomScript()
     CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
 
     if (BaseIP && !m_parentScript) delete[] BaseIP;
-   
+
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
 }
 

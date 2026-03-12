@@ -624,8 +624,10 @@ namespace CLEO
         }
 
         ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
-        if (scmFunc == nullptr)
+        if (scmFunc == nullptr || scmFunc->caller != cs)
         {
+            thread->ScmFunction = ScmFunction::Id_None; // clear invalid reference
+            thread->BaseIP      = nullptr;              // might be somebody's else, do not release during cleanup
             SUSPEND("Cleo function call stack corruption detected");
         }
 
@@ -680,7 +682,6 @@ namespace CLEO
         // handle program flow
         scmFunc->Return(cs); // jump back to cleo_call, right after last input
                              // param. Return slot var args starts here
-        delete scmFunc;
 
         if (returnArgs)
         {
