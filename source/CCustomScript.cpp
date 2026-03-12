@@ -34,7 +34,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
             m_scriptFileDir  = cs->GetScriptFileDir();
             m_scriptFileName = cs->GetScriptFileName();
             m_workDir        = cs->GetWorkDir();
-            BaseIP           = cs->GetBasePointer(); // shared, not owned
+            BaseIP           = cs->GetBasePointer();
             CurrentIP        = cs->GetBasePointer() - label;
             m_codeChecksum   = cs->m_codeChecksum;
             m_parentScript   = cs;
