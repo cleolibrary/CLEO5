@@ -3,6 +3,7 @@
 #include "CleoBase.h"
 #include "crc32.h"
 #include "CScriptEngine.h"
+#include "ScmFunction.h"
 #include "ScriptUtils.h"
 
 using namespace CLEO;
@@ -173,9 +174,16 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
 CCustomScript::~CCustomScript()
 {
-    if (BaseIP) delete[] BaseIP;
+    // release entire call stack and retrieve original BaseIP
+    while (auto fun = ScmFunction::Get(this->ScmFunction))
+    {
+        fun->Return(this);
+    }
+
     CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
 
+    if (BaseIP && !m_parentScript) delete[] BaseIP;
+   
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
 }
 
