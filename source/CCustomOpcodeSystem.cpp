@@ -618,10 +618,15 @@ namespace CLEO
     {
         auto cs = reinterpret_cast<CCustomScript*>(thread);
 
+        if (cs->GetScmFunction() == ScmFunction::Id_None)
+        {
+            SUSPEND("[%04X] used without preceding [0AB1]", opcode);
+        }
+
         ScmFunction* scmFunc = ScmFunction::Get(cs->GetScmFunction());
         if (scmFunc == nullptr)
         {
-            SUSPEND("Invalid Cleo Call reference. [%04X] possibly used without preceding [0AB1]", opcode);
+            SUSPEND("Cleo function call stack corruption detected");
         }
 
         // store return arguments

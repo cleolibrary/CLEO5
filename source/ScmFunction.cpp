@@ -12,7 +12,7 @@ namespace CLEO
     {
         if (id == Id_None) return nullptr;
 
-        auto idx = id - 1; // skip Id_None
+        auto idx = id - 1; // id to index
 
         if (idx >= Store_Size || store[idx] == nullptr)
         {
@@ -25,9 +25,13 @@ namespace CLEO
 
     void ScmFunction::Clear()
     {
-        for (auto scmFunc : store)
+        for (auto& scmFunc : store)
         {
-            if (scmFunc != nullptr) delete scmFunc;
+            if (scmFunc != nullptr)
+            {
+                ::operator delete(scmFunc); // delete without extra checks
+                scmFunc = nullptr;
+            }
         }
         lastAllocIdx = 0;
     }
@@ -54,7 +58,14 @@ namespace CLEO
 
     void ScmFunction::operator delete(void* mem)
     {
-        auto idx   = reinterpret_cast<ScmFunction*>(mem)->thisScmFunctionId - 1;
+        auto idx = reinterpret_cast<ScmFunction*>(mem)->thisScmFunctionId - 1; // id to index
+
+        if (idx >= Store_Size || store[idx] != mem)
+        {
+            SHOW_ERROR("Failed to delete corrupted CLEO function from storage!");
+            return; // keep allocated
+        }
+
         store[idx] = nullptr;
         ::operator delete(mem);
     }
@@ -63,7 +74,7 @@ namespace CLEO
     {
         auto cs = reinterpret_cast<CCustomScript*>(thread);
 
-        thisScmFunctionId = ScmFunction::lastAllocIdx + 1; // skip Id_None
+        thisScmFunctionId = ScmFunction::lastAllocIdx + 1; // index to id
         prevScmFunctionId = cs->GetScmFunction();
         this->callIP      = callIP;
 
@@ -137,7 +148,7 @@ namespace CLEO
 
     size_t ScmFunction::GetCallStackSize() const
     {
-        if (prevScmFunctionId == Id_None) return 0;
-        return 1 + Get(prevScmFunctionId)->GetCallStackSize();
+        auto parent = Get(prevScmFunctionId);
+        return parent ? 1 + parent->GetCallStackSize() : 0;
     }
 }; // namespace CLEO
