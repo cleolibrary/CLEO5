@@ -24,7 +24,7 @@ namespace CLEO
         static const char* GetConfigPath();
 
         // Clears the cached values and forces a re-read from disk on next access
-        static void Reload();
+        static void Reset();
 
       private:
         static CSimpleIniA ini;

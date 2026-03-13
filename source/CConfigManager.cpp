@@ -217,7 +217,7 @@ namespace CLEO
         ini.LoadFile(path);
     }
 
-    void CConfigManager::Reload()
+    void CConfigManager::Reset()
     {
         iniLoaded = false;
         cache.clear();
