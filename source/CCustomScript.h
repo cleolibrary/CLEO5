@@ -11,6 +11,7 @@ namespace CLEO
         DWORD m_codeSize;
         DWORD m_codeChecksum;
 
+        BYTE* m_ownedBuffer; // originally allocated code buffer; nullptr if this script doesn't own it
         bool m_saveEnabled;
         bool m_ok;
         eCLEO_Version m_compatVer;

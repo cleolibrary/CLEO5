@@ -819,11 +819,6 @@ namespace CLEO
             CTheScripts::bAlreadyRunningAMissionScript = false; // on_mission
         }
 
-        if (cs->m_parentScript)
-        {
-            cs->BaseIP = 0; // don't delete BaseIP if child thread
-        }
-
         for (auto childThread : cs->m_childScripts)
         {
             RemoveScript(childThread);
