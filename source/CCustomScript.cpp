@@ -175,7 +175,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 CCustomScript::~CCustomScript()
 {
     CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
-    
+
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
     if (m_ownedBuffer) delete[] m_ownedBuffer;
 }
