@@ -201,15 +201,35 @@ class Text
     static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time, bool now)
     {
         /*
-            CLEO4 scripts: always show messages, no brief change, no subtitle suppression (~z~)
-            CLEO5 scripts: show messages conditionally based on user preference, update brief
+            CLEO 4: always show messages, no brief change, no subtitle suppression (~z~)
+            CLEO 5: show messages conditionally based on user preference, update brief
+
+            Both: if message queue is full, don't show the message, unless it's a NOW message.
         */
 
-        const auto isLegacy       = IsLegacyScript(pScript);
-        const auto shouldSuppress = StringStartsWith(text, "~z~", false) && !FrontEndMenuManager.m_bPrefsShowSubtitles;
+        const auto isLegacy = IsLegacyScript(pScript);
 
-        // in CLEO5 if message starts with ~z~ and subtitles are off, don't show the message
-        if (isLegacy || !shouldSuppress)
+        auto display = true;
+
+        if (!now &&
+            std::none_of(std::begin(CMessages::BriefMessages), std::end(CMessages::BriefMessages), [](const auto& msg) {
+                return msg.m_pText == nullptr;
+            }))
+        {
+            // no room in the message queue for the queued message
+            display = false;
+        }
+
+        if (display && !isLegacy)
+        {
+            if (!FrontEndMenuManager.m_bPrefsShowSubtitles && StringStartsWith(text, "~z~", false))
+            {
+                // in CLEO5 if message starts with ~z~ and subtitles are off, don't show the message
+                display = false;
+            }
+        }
+
+        if (display)
         {
             // put the message into a free slot in our static buffer to get a persistent pointer
             queueIdx          = (queueIdx + 1) % MessageQueueSize;

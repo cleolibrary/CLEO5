@@ -23,6 +23,7 @@ function tests
     it_cs4("should not add any text to brief history in legacy mode", test8_queue_dedup_cs4)
     it_cs5("should not display message starting with ~z~ with subtitles off", test9_cs5)
     it_cs4("should display message starting with ~z~ with subtitles off", test9_cs4)    
+    it("should not display message when game queue is full", test10_queue_full)
     return
 
     :cleanup
@@ -222,6 +223,25 @@ function tests
         wait 500
         print_formatted {text} "Regular Text" {time} 100
         assert_subtitle("Regular Text") // should display non ~z~ when subtitles OFF
+    end
+
+    function test10_queue_full
+        // Fill all 8 game message queue slots with long-lived messages
+        print_formatted {format} "Fill Q 1" {time} 900
+        print_formatted {format} "Fill Q 2" {time} 900
+        print_formatted {format} "Fill Q 3" {time} 900
+        print_formatted {format} "Fill Q 4" {time} 900
+        print_formatted {format} "Fill Q 5" {time} 900
+        print_formatted {format} "Fill Q 6" {time} 900
+        print_formatted {format} "Fill Q 7" {time} 900
+        print_formatted {format} "Fill Q 8" {time} 900
+
+        // Queue is full; print_formatted must be silently dropped
+        print_formatted {format} "Queue Full Fmt" {time} 900
+        wait 0
+
+        // current subtitle must still be the first fill message, not the dropped one
+        assert_subtitle("Fill Q 1")
     end
 end
 
