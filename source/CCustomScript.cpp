@@ -134,8 +134,8 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
                 CleoInstance.ScriptEngine.missionIndex     = -1;
             }
 
-            BaseIP = CurrentIP = new BYTE[length];
-            m_ownedBuffer      = CurrentIP;
+            m_ownedBuffer = new BYTE[length];
+            BaseIP = CurrentIP = m_ownedBuffer;
             is.read(reinterpret_cast<char*>(BaseIP), length);
 
             m_codeSize = length;
@@ -174,10 +174,10 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
 CCustomScript::~CCustomScript()
 {
-    if (m_ownedBuffer) delete[] m_ownedBuffer;
     CleoInstance.OpcodeSystem.scriptDeleteDelegate(this);
-
+    
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
+    if (m_ownedBuffer) delete[] m_ownedBuffer;
 }
 
 void CCustomScript::AddScriptToList(CRunningScript** queuelist)
