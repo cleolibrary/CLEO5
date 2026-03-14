@@ -20,7 +20,7 @@ function tests
     it_cs5("should not display message starting with ~z~ with subtitles off", test7_cs5)
     it_cs4("should display message starting with ~z~ with subtitles off", test7_cs4)
     it("should display NOW message even when game queue is full", test8_queue_full_now)
-
+    it_cs5("should dedup brief messages in loop", test9_dedup_loop_cs5)
     return
 
     :cleanup
@@ -179,9 +179,24 @@ function tests
         // Queue is full; print_string_now must still display (bypasses full-queue check)
         print_string_now {text} "Now Bypasses Q" {time} 100
         wait 0
-        
+
         // NOW message must jump to front despite full queue
         assert_subtitle("Now Bypasses Q")
+    end
+
+    function test9_dedup_loop_cs5
+        print_string_now "STAT001" 1000
+        TIMERA = 0
+        while TIMERA < 1000
+            wait 0
+            print_string_now "STAT002" 100
+        end
+
+        assert_brief_at(0, "STAT002")
+        assert_brief_at(1, "STAT001")
+
+        int brief = getBriefTextAt(2)
+        assert_eq(brief, 0)
     end
 end
 

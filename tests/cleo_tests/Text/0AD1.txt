@@ -20,7 +20,7 @@ function tests
     it_cs5("should not display message starting with ~z~ with subtitles off", test7_cs5)
     it_cs4("should display message starting with ~z~ with subtitles off", test7_cs4)
     it("should display NOW message even when game queue is full", test8_queue_full_now)
-    
+    it_cs5("should dedup brief messages in loop", test9_dedup_loop_cs5)
     return
 
     :cleanup
@@ -117,7 +117,7 @@ function tests
         print_formatted_now {format} "Flag test AD1 cs4" {time} 100
         assert_brief_flag(false) // flag must NOT be reset for legacy scripts
     end
-    
+
     function test7_cs5
         toggle_subtitles(true)
         print_formatted_now {text} "~z~Subtitle 1" {time} 100
@@ -167,6 +167,21 @@ function tests
         // NOW message must jump to front despite full queue
         assert_subtitle("Now Bypasses Q")
     end
+
+    function test9_dedup_loop_cs5
+        print_formatted_now "STAT001" 1000
+        TIMERA = 0
+        while TIMERA < 1000
+            wait 0
+            print_formatted_now "STAT002" 100
+        end
+
+        assert_brief_at(0, "STAT002")
+        assert_brief_at(1, "STAT001")
+
+        int brief = getBriefTextAt(2)
+        assert_eq(brief, 0)
+    end
 end
 
 {$INCLUDE_ONCE helpers.inc}
@@ -200,4 +215,3 @@ function print_brief_messages
     msg2 = 0
     msg3 = 0
 end
-
