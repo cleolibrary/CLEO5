@@ -200,10 +200,10 @@ class Text
     static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time, bool now)
     {
         /*
-            CLEO 4: always show messages, no brief change, no subtitle suppression (~z~)
-            CLEO 5: show messages conditionally based on user preference, update brief
+            CLEO 4: show subtitle ~z~ regarless of "Show Subtitles"; no brief update ever
+            CLEO 5: show subtitle ~z~ only if "Show Subtitles" is ON; update brief if needed
 
-            Both: if message queue is full, don't show the message, unless it's a NOW message.
+            Both: Queue messages; if the queue is full, skip the next message, unless it's a NOW message.
         */
 
         const auto isLegacy = IsLegacyScript(pScript);
