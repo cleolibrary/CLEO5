@@ -229,7 +229,7 @@ namespace CLEO
         TRACE("Config summary:");
         TRACE(" MainScmLegacyMode = %d", CConfigManager::ReadInt("General", "MainScmLegacyMode", 0));
         TRACE(" StrictValidation = %d", CConfigManager::ReadInt("Plugins", "StrictValidation", 0));
-        auto scriptLogEnabled = CConfigManager::ReadInt("Plugins", "DebugUtils.ScriptLog.Enabled", 0);
+        const auto scriptLogEnabled = CConfigManager::ReadInt("Plugins", "DebugUtils.ScriptLog.Enabled", 0);
         if (scriptLogEnabled != 0)
         {
             const auto path = (GetLogDirectory() + "\\cleo_script.log").c_str();
