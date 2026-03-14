@@ -22,8 +22,9 @@ function tests
     it_cs5("should not add duplicate text to brief history", test8_queue_dedup)
     it_cs4("should not add any text to brief history in legacy mode", test8_queue_dedup_cs4)
     it_cs5("should not display message starting with ~z~ with subtitles off", test9_cs5)
-    it_cs4("should display message starting with ~z~ with subtitles off", test9_cs4)    
+    it_cs4("should display message starting with ~z~ with subtitles off", test9_cs4)
     it("should not display message when game queue is full", test10_queue_full)
+    it_cs5("should dedup brief messages in loop", test11_dedup_loop_cs5)
     return
 
     :cleanup
@@ -242,6 +243,22 @@ function tests
 
         // current subtitle must still be the first fill message, not the dropped one
         assert_subtitle("Fill Q 1")
+    end
+
+    function test11_dedup_loop_cs5
+        print_formatted "STAT001" 100
+        wait 500
+        TIMERA = 0
+        while TIMERA < 1000
+            wait 0
+            print_formatted "STAT002" 100
+        end
+
+        assert_brief_at(0, "STAT002")
+        assert_brief_at(1, "STAT001")
+
+        int brief = getBriefTextAt(2)
+        assert_eq(brief, 0)
     end
 end
 

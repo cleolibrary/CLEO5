@@ -152,28 +152,35 @@ class Text
         return result;
     }
 
-    static bool CanTextInThisSlotBeAddedToBrief(const char* slot)
+    static bool CanThisTextBeAddedToBrief(const char* text)
     {
-        // content dedup: exits early if another entry already holds the same text.
-        for (size_t i = 0; i < BriefSize; i++)
-        {
-            const auto pText = CMessages::PreviousBriefs[i].m_pText;
-            if (pText == nullptr) break; // end of used entries
-            if (pText == slot) continue; // stale self-reference, skip to avoid a false positive duplicate
-            if (strcmp(pText, slot) == 0) return false; // content duplicate, exit
-        }
+        if (!CTheScripts::bAddNextMessageToPreviousBriefs) return false;
 
-        // stale pointer eviction: prevents the game's pointer-based dedup from rejecting the insertion
-        for (size_t i = 0; i < BriefSize; i++)
+        for (const auto& brief : CMessages::PreviousBriefs)
         {
-            auto& pText = CMessages::PreviousBriefs[i].m_pText;
-            if (pText == slot)
-            {
-                pText = nullptr;
-                break;
-            }
+            const auto briefText = brief.m_pText;
+            if (briefText && strcmp(briefText, text) == 0) return false;
         }
         return true;
+    }
+
+    static char* PrepareThisTextForBrief(const char* text)
+    {
+        briefIdx      = (briefIdx + 1) % BriefSize;
+        char* msgSlot = briefs[briefIdx];
+
+        for (auto& brief : CMessages::PreviousBriefs)
+        {
+            // stale pointer eviction: prevents the game's pointer-based brief dedup from rejecting the insertion
+            const auto briefText = brief.m_pText;
+            if (briefText == msgSlot) brief.m_pText = nullptr;
+        }
+
+        // put the message into a free slot in the static buffer to get a persistent pointer
+        const auto msgSlotSize = sizeof(briefs[briefIdx]);
+        strncpy_s(msgSlot, msgSlotSize, text, msgSlotSize - 1);
+
+        return msgSlot;
     }
 
     static void PrintHelp(CLEO::CRunningScript* thread, const char* text)
@@ -182,17 +189,9 @@ class Text
 
         if (IsLegacyScript(thread)) return;
 
-        if (CTheScripts::bAddNextMessageToPreviousBriefs)
+        if (CanThisTextBeAddedToBrief(text))
         {
-            briefIdx        = (briefIdx + 1) % BriefSize;
-            auto& briefSlot = briefs[briefIdx];
-
-            strncpy_s(briefSlot, text, sizeof(briefSlot) - 1);
-
-            if (CanTextInThisSlotBeAddedToBrief(briefSlot))
-            {
-                CMessages::AddToPreviousBriefArray(briefSlot, -1, -1, -1, -1, -1, -1, 0);
-            }
+            CMessages::AddToPreviousBriefArray(PrepareThisTextForBrief(text), -1, -1, -1, -1, -1, -1, 0);
         }
 
         CTheScripts::bAddNextMessageToPreviousBriefs = true;
@@ -201,10 +200,10 @@ class Text
     static void AddToMessageQueue(CLEO::CRunningScript* pScript, const char* text, int time, bool now)
     {
         /*
-            CLEO 4: always show messages, no brief change, no subtitle suppression (~z~)
-            CLEO 5: show messages conditionally based on user preference, update brief
+            CLEO 4: show subtitle ~z~ regarless of "Show Subtitles"; no brief update ever
+            CLEO 5: show subtitle ~z~ only if "Show Subtitles" is ON; update brief if needed
 
-            Both: if message queue is full, don't show the message, unless it's a NOW message.
+            Both: Queue messages; if the queue is full, skip the next message, unless it's a NOW message.
         */
 
         const auto isLegacy = IsLegacyScript(pScript);
@@ -231,15 +230,20 @@ class Text
 
         if (display)
         {
-            // put the message into a free slot in our static buffer to get a persistent pointer
-            queueIdx          = (queueIdx + 1) % MessageQueueSize;
-            auto& messageSlot = messageQueue[queueIdx];
-            strncpy_s(messageSlot, text, sizeof(messageSlot) - 1);
+            // put the message into a free slot in the static buffer to get a persistent pointer
+            queueIdx           = (queueIdx + 1) % MessageQueueSize;
+            char* messageSlot  = messageQueue[queueIdx];
+            const auto bufSize = sizeof(messageQueue[queueIdx]);
+            strncpy_s(messageSlot, bufSize, text, bufSize - 1);
 
             // check game brief and decide whether this message can be added to it.
             // Note: legacy scripts never modify the game brief.
-            const auto addToBrief = !isLegacy && CTheScripts::bAddNextMessageToPreviousBriefs &&
-                                    CanTextInThisSlotBeAddedToBrief(messageSlot);
+            const auto addToBrief = !isLegacy && CanThisTextBeAddedToBrief(text);
+
+            if (addToBrief)
+            {
+                messageSlot = PrepareThisTextForBrief(text);
+            }
 
             if (now)
             {
