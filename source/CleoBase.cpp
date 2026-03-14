@@ -225,6 +225,21 @@ namespace CLEO
         CleoInstance.saveSlot = saveSlot;
         TRACE("Starting new game session, save slot: %d", saveSlot);
 
+        // log important config settings
+        TRACE("Config summary:");
+        TRACE(" MainScmLegacyMode = %d", CConfigManager::ReadInt("General", "MainScmLegacyMode", 0));
+        TRACE(" StrictValidation = %d", CConfigManager::ReadInt("Plugins", "StrictValidation", 0));
+        const auto scriptLogEnabled = CConfigManager::ReadInt("Plugins", "DebugUtils.ScriptLog.Enabled", 0);
+        if (scriptLogEnabled != 0)
+        {
+            const auto path = (GetLogDirectory() + "\\cleo_script.log").c_str();
+            TRACE(" DebugUtils.ScriptLog.Enabled = %d, path: %s", scriptLogEnabled, path);
+        }
+        else
+        {
+            TRACE(" DebugUtils.ScriptLog.Enabled = 0");
+        }
+
         // execute registered callbacks
         CleoInstance.CallCallbacks(eCallbackId::GameBegin, saveSlot);
     }
