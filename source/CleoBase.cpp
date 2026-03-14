@@ -210,6 +210,7 @@ namespace CLEO
 
     void CCleoInstance::Stop()
     {
+        m_isStarted = false;
         GameEnd();
         PluginSystem.UnloadPlugins();
     }
