@@ -235,7 +235,6 @@ namespace CLEO
             const auto path = (GetLogDirectory() + "\\cleo_script.log").c_str();
             TRACE(" DebugUtils.ScriptLog.Enabled = %d, path: %s", scriptLogEnabled, path);
         }
-
         else
         {
             TRACE(" DebugUtils.ScriptLog.Enabled = 0");
