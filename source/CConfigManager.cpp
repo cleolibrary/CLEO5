@@ -217,6 +217,13 @@ namespace CLEO
         ini.LoadFile(path);
     }
 
+    void CConfigManager::Reset()
+    {
+        iniLoaded = false;
+        cache.clear();
+        ini.Reset();
+    }
+
     bool CConfigManager::SaveIni()
     {
         std::ofstream out(GetConfigPath(), std::ios::binary);

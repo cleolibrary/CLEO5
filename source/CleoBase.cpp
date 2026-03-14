@@ -220,6 +220,8 @@ namespace CLEO
         if (m_bGameInProgress) return;
         m_bGameInProgress = true;
 
+        CConfigManager::Reset(); // re-read config file to apply any user changes made in background
+
         CleoInstance.saveSlot = saveSlot;
         TRACE("Starting new game session, save slot: %d", saveSlot);
 
