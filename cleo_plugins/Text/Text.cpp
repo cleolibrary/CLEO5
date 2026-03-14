@@ -154,6 +154,8 @@ class Text
 
     static bool CanThisTextBeAddedToBrief(const char* text)
     {
+        if (!CTheScripts::bAddNextMessageToPreviousBriefs) return false;
+
         for (const auto& brief : CMessages::PreviousBriefs)
         {
             const auto briefText = brief.m_pText;
@@ -187,7 +189,7 @@ class Text
 
         if (IsLegacyScript(thread)) return;
 
-        if (CTheScripts::bAddNextMessageToPreviousBriefs && CanThisTextBeAddedToBrief(text))
+        if (CanThisTextBeAddedToBrief(text))
         {
             CMessages::AddToPreviousBriefArray(PrepareThisTextForBrief(text), -1, -1, -1, -1, -1, -1, 0);
         }
@@ -236,8 +238,7 @@ class Text
 
             // check game brief and decide whether this message can be added to it.
             // Note: legacy scripts never modify the game brief.
-            const auto addToBrief =
-                !isLegacy && CTheScripts::bAddNextMessageToPreviousBriefs && CanThisTextBeAddedToBrief(text);
+            const auto addToBrief = !isLegacy && CanThisTextBeAddedToBrief(text);
 
             if (addToBrief)
             {
