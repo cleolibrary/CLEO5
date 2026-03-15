@@ -1,3 +1,21 @@
+## 5.4.0
+
+- fixed discrepancy between CLEO and native subtitle behavior:
+  - `PRINT_STRING` and `PRINT_FORMATTED` now queue correctly
+  - CLEO messages are now added to the Brief Menu history, respecting the `ADD_NEXT_MESSAGE_TO_PREVIOUS_BRIEFS` flag (no behavior change for `.cs4` scripts)
+  - CLEO doesn't display subtitles starting with a `~z~` token when "Show Subtitles" option is disabled (no behavior change for `.cs4` scripts)
+- CLEO config improvements:
+  - new `LogDirectory` option to configure where `cleo.log` and `cleo_script.log` are stored (root by default)
+  - config is now auto-recreated if missing, and new config keys are appended to existing user configs automatically
+  - config is reloaded on a new game session
+- [read_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2401) and [write_memory_with_offset](https://library.sannybuilder.com/#/sa/memory/2402) now behave identically to `read_memory`/`write_memory` with an additional offset calculation, without the Virtual Protect flag.
+- removed a check preventing allocation of 0-sized memory blocks
+- hardened paths validation to prevent access to files outside of game root and settings directories
+- fixed an issue causing scripts to load and execute twice on a new game session
+- fixed multiple bugs related to game crashes and script handling
+- fixed script corruption when loading a CLEO mission exceeding 69,000 bytes
+- updated BASS and simdjson libraries; removed deprecated EAX check from BASS
+
 ## 5.3.0
 
 - moved CLEO core and plugin settings into a shared configuration file (`CLEO\.cleo_config.ini`)
@@ -5,7 +23,7 @@
 - refactored error handling and relaxed checks for non‑critical errors
 - keyboard input is now ignored when the game window is not focused
 - increased text length limit from **255** to **399** for:
-  - [PRINT_STRING](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACC) 
+  - [PRINT_STRING](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACC)
   - [PRINT_STRING_NOW](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0ACD)
 - fixed a memory leak caused by creating too many script TXDs
 - fixed multiple issues with string‑formatting opcodes
@@ -14,6 +32,7 @@
 - fixed an incompatibility with the result of [SAMP_RAKNET_HOOK_RETURN](https://library.sannybuilder.com/#/sa/script/extensions/SAMPFUNCS/0BE0)
 
 ## 5.2.0
+
 - added script execution log (`cleo\_cleo_script.log`). By default, it's disabled. Configurable via `cleo_plugins\DebugUtils.ini`.
 - added call stack overflow error check to **gosub** and **gosub_if_false** commands
 - added check for preceding **gosub** call in **0AA1 ([return_if_false](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AA1))**
@@ -28,6 +47,7 @@
 - new SDK method: `CLEO_CallNativeOpcode`. See SDK documentation: https://github.com/cleolibrary/CLEO5/wiki/CLEO-5-SDK
 
 ## 5.1.0
+
 - fixed collision of GXT texts hook with SAMP and other mods
 - rewritten script drawing handling code. Logic moved from **CLEO.asi** to **Text.cleo** plugin
 - relocated several opcodes from CLEO core into new **GameEntities.cleo** plugin
@@ -47,12 +67,14 @@
 - added missing **terminate_this_script** command error message for scripts compiled with extra SCM info
 
 ## 5.0.3
+
 - added **GxtHook.cleo** plugin to ignored list
 - fixed audio streams stopping when volume was set to 0.0
 - fixed audio streams potentially not starting to play if still decoding or downloading
 - volume of audio streams with type None and UserInterface no longer affected by screen fades
 
 ## 5.0.2
+
 - updated BASS library
 - fixed Doppler effect calculations for 3d audio streams
 - fixed sound glitches of 3d audio streams when playback starts or the camera mode changes
@@ -68,6 +90,7 @@
 - fixed audio playback not working in SAMP
 
 ## 5.0.1
+
 - cleo.log file moved back to the game root (as in CLEO4)
 - restored behavior of '.\\' prefix for scripts in legacy compat mode
 - fixed **0AB9 ([get_audio_stream_state](https://library.sannybuilder.com/#/sa/audio/0AB9))** not always returning Stopped, despite playback ended
@@ -78,6 +101,7 @@
 - fixed **0AA3 ([free_dynamic_library](https://library.sannybuilder.com/#/sa/script/extensions/CLEO/0AA3))** clearing reference to libraries loaded more than once
 
 ## 5.0.0
+
 - support for CLEO modules feature https://github.com/sannybuilder/dev/issues/264
 - new [Audio](https://github.com/cleolibrary/CLEO5/tree/master/cleo_plugins/Audio) plugin
   - audio related opcodes moved from CLEO core into separated plugin
@@ -182,6 +206,7 @@
 - updated included Silent's ASI Loader to version 1.3
 
 #### Bug Fixes
+
 - fixed error in **004E (terminate_this_script)** allowing to run multiple missions
 - fixed handling of strings longer than 128 characters causing errors in some cases
 - fixed error in handling of first string argument in **0AF5 (write_string to_ini_file)**
@@ -192,6 +217,7 @@
 - fixed an undefined behavior caused by **0459 (terminate_all_scripts_with_this_name)** when the name matches a custom script
 
 #### SDK and plugins
+
 - now all opcodes in range **0-7FFF** can be registered by plugins
 - plugins moved to _cleo\cleo_plugins_ directory
 - new SDK methods:
@@ -227,6 +253,7 @@
   - CLEO_Log
 
 #### CLEO internal
+
 - introduced unit test scripts
 - project migrated to VS 2022
 - configured game debugging settings
@@ -235,9 +262,10 @@
 - added setup_env.bat script
 
 ## Older
+
 For previous changes, see [CLEO4 changelog](https://github.com/cleolibrary/CLEO4/blob/master/CHANGELOG.md)
 
 ## Special Thanks
+
 - **123nir** for the v5.0.0-alpha testing, troubleshooting and valuable bug reports
 - **Hamal** for the v5.0.0-beta testing, troubleshooting and valuable bug reports
-
