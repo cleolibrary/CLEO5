@@ -6,7 +6,7 @@
   - CLEO subtitles starting with a `~z~` token are now hidden when "Show Subtitles" option is disabled (no change for `.cs4` scripts)
 - CLEO config improvements:
   - new `LogDirectory` option to configure where `cleo.log` and `cleo_script.log` are stored (root by default)
-  - config is now automatically recreated if missing, and new config keys are appended to existing user configs automatically
+  - config is now recreated if missing, and new config keys are appended to existing user configs
   - config is reloaded on a new game session
 - [READ_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2401) and [WRITE_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2402) now behave identically to `READ_MEMORY`/`WRITE_MEMORY`; READ_MEMORY_WITH_OFFSET no longer reads input as a null-terminated string when the output is a string variable
 - removed a check preventing allocation of zero-sized memory blocks
