@@ -8,7 +8,7 @@
   - new `LogDirectory` option to configure where `cleo.log` and `cleo_script.log` are stored (root by default)
   - config is now recreated if missing, and new config keys are appended to existing user configs
   - config is reloaded on a new game session
-- [READ_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2401) and [WRITE_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2402) now behave identically to `READ_MEMORY`/`WRITE_MEMORY`; READ_MEMORY_WITH_OFFSET no longer reads input as a null-terminated string when the output is a string variable
+- `READ_MEMORY_WITH_OFFSET` and `WRITE_MEMORY_WITH_OFFSET` now behave identically to `READ_MEMORY`/`WRITE_MEMORY`; `READ_MEMORY_WITH_OFFSET` no longer reads input as a null-terminated string when the output is a string variable
 - removed a check preventing allocation of zero-sized memory blocks
 - hardened path validation to prevent access to files outside of game root and settings directories
 - fixed an issue causing scripts to load and execute twice on a new game session
