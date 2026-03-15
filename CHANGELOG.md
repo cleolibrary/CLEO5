@@ -10,7 +10,7 @@
   - config is reloaded on a new game session
 - [READ_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2401) and [WRITE_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2402) now behave identically to `READ_MEMORY`/`WRITE_MEMORY`; READ_MEMORY_WITH_OFFSET no longer reads input as a null-terminated string when the output is a string variable
 - removed a check preventing allocation of zero-sized memory blocks
-- hardened paths validation to prevent access to files outside of game root and settings directories
+- hardened path validation to prevent access to files outside of game root and settings directories
 - fixed an issue causing scripts to load and execute twice on a new game session
 - fixed multiple bugs related to game crashes and script handling
 - fixed script corruption when loading a CLEO mission exceeding 69,000 bytes
