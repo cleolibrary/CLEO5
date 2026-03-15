@@ -1,6 +1,6 @@
 ## 5.4.0
 
-- fixed discrepancy between CLEO and native subtitle behavior:
+- fixed discrepancy between CLEO and native subtitles behavior:
   - `PRINT_STRING` and `PRINT_FORMATTED` now queue correctly
   - CLEO messages are now added to the Brief Menu history, respecting the `ADD_NEXT_MESSAGE_TO_PREVIOUS_BRIEFS` flag (no behavior change for `.cs4` scripts)
   - CLEO subtitles starting with a `~z~` token are now hidden when "Show Subtitles" option is disabled (no behavior change for `.cs4` scripts)
@@ -8,7 +8,7 @@
   - new `LogDirectory` option to configure where `cleo.log` and `cleo_script.log` are stored (root by default)
   - config is now automatically recreated if missing, and new config keys are appended to existing user configs automatically
   - config is reloaded on a new game session
-- [READ_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2401) and [WRITE_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2402) now behave identically to `READ_MEMORY`/`WRITE_MEMORY` with an additional offset calculation, without the Virtual Protect flag.
+- [READ_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2401) and [WRITE_MEMORY_WITH_OFFSET](https://library.sannybuilder.com/#/sa/memory/2402) now behave identically to `READ_MEMORY`/`WRITE_MEMORY`, READ_MEMORY_WITH_OFFSET no longer copies reads input as a null-terminated string when the output is a string variable
 - removed a check preventing allocation of zero-sized memory blocks
 - hardened paths validation to prevent access to files outside of game root and settings directories
 - fixed an issue causing scripts to load and execute twice on a new game session
