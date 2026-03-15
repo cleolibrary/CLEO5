@@ -2,8 +2,8 @@
 
 - fixed discrepancy between CLEO and native subtitles behavior:
   - `PRINT_STRING` and `PRINT_FORMATTED` now queue correctly
-  - CLEO messages are now added to the Brief Menu history, respecting the `ADD_NEXT_MESSAGE_TO_PREVIOUS_BRIEFS` flag (no behavior change for `.cs4` scripts)
-  - CLEO subtitles starting with a `~z~` token are now hidden when "Show Subtitles" option is disabled (no behavior change for `.cs4` scripts)
+  - CLEO messages are now added to the Brief Menu history, respecting the `ADD_NEXT_MESSAGE_TO_PREVIOUS_BRIEFS` flag (no change for `.cs4` scripts)
+  - CLEO subtitles starting with a `~z~` token are now hidden when "Show Subtitles" option is disabled (no change for `.cs4` scripts)
 - CLEO config improvements:
   - new `LogDirectory` option to configure where `cleo.log` and `cleo_script.log` are stored (root by default)
   - config is now automatically recreated if missing, and new config keys are appended to existing user configs automatically
