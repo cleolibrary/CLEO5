@@ -265,10 +265,10 @@ class Text
             return CLEO_CallNativeOpcode(thread, 0x0390); // call original opcode
         }
 
-        // check if this TXD has been loaded already
         auto cursor = thread->GetBytePointer();
         OPCODE_READ_PARAM_STRING(txdName);
 
+        // check if this TXD has been loaded already, and if so, load from the cache
         if (instance.scriptDrawing.IsTxdLoaded(thread, txdName))
         {
             instance.scriptDrawing.MakeActiveTxd(thread, txdName);
