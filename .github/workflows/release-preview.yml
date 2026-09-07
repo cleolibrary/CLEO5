@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   Release_Preview:
-    if: (github.ref_type != 'tag' || !endsWith(github.ref, '/preview')) && (github.ref_type != 'branch' || endsWith(github.ref, '/master')) # ignore 'preview' tag, ignore pushes other than to master
+    if: github.ref_type == 'branch' && endsWith(github.ref, '/master') # build preview only on pushes to master; release tag pushes must not run another preview workflow (the Release workflow deletes the stale 'preview' instead)
 
     runs-on: windows-2022
     steps:
@@ -98,6 +98,10 @@ jobs:
           @echo Download Sanny Builder Library json
           curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
           curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/enums.json -o .output\Release\cleo\.config\enums.json
+
+      - name: Download NewOpcodes plugin
+        shell: cmd
+        run: curl -fL https://github.com/cleolibrary/NewOpcodes/releases/latest/download/NewOpcodes.cleo -o .output\Release\cleo\cleo_plugins\NewOpcodes.cleo
 
       - name: Pack archive
         if: ${{ hashFiles('preview_changes.md') != '' }}
