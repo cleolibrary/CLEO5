@@ -274,14 +274,14 @@ class Text
             instance.scriptDrawing.MakeActiveTxd(thread, txdName);
             return OR_CONTINUE;
         }
-        
+
         // prevent this TXD to be stored in the mission cleanup list.
-        auto bUseMissionCleanup = thread->bUseMissionCleanup;
+        auto bUseMissionCleanup    = thread->bUseMissionCleanup;
         thread->bUseMissionCleanup = false;
 
         // rewind position and call the original opcode
-        thread->SetIp(cursor); 
-        auto result = CLEO_CallNativeOpcode(thread, 0x0390);
+        thread->SetIp(cursor);
+        auto result                = CLEO_CallNativeOpcode(thread, 0x0390);
         thread->bUseMissionCleanup = bUseMissionCleanup;
 
         // cache this TXD
