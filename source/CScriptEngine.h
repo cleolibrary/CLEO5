@@ -80,6 +80,7 @@ namespace CLEO
 
       private:
         void RemoveCustomScript(CCustomScript*);
+        void DeleteWaitingScripts();
 
         static void __cdecl HOOK_DrawScriptText(char beforeFade);
         void(__cdecl* DrawScriptTextBeforeFade_Orig)(char beforeFade) = nullptr;

@@ -238,6 +238,9 @@ namespace CLEO
 
     void __fastcall CScriptEngine::HOOK_ProcessScript(CLEO::CRunningScript* pScript)
     {
+        // free scripts pending removal
+        CleoInstance.ScriptEngine.DeleteWaitingScripts();
+
         CleoInstance.ScriptEngine.GameBegin(); // all initialized and ready to process scripts
 
         // run registered callbacks
@@ -571,13 +574,13 @@ namespace CLEO
 
             CleoSafeHeader header = {CleoSafeHeader::sign, savedThreads.size(), InactiveScriptHashes.size()};
 
-            char safe_name[MAX_PATH];
-            sprintf_s(safe_name, "./cleo/cleo_saves/cs%d.sav", FrontEndMenuManager.m_nSelectedSaveGame);
-            TRACE("Saving script engine state to the file '%s'", safe_name);
+            auto slot     = FrontEndMenuManager.m_nSelectedSaveGame;
+            auto saveFile = FS::path(GetCleoDirectory()).append(StringPrintf("cleo_saves\\cs%d.sav", slot)).string();
 
-            CreateDirectory("cleo", NULL);
-            CreateDirectory("cleo/cleo_saves", NULL);
-            std::ofstream ss(safe_name, std::ios::binary);
+            TRACE("Saving script engine state to the file '%s'", saveFile.c_str());
+
+            FS::create_directories(FS::path(saveFile).parent_path());
+            std::ofstream ss(saveFile, std::ios::binary);
             if (ss.is_open())
             {
                 ss.exceptions(std::ios::failbit | std::ios::badbit);
@@ -601,7 +604,7 @@ namespace CLEO
             }
             else
             {
-                TRACE("Failed to write save file '%s'!", safe_name);
+                TRACE("Failed to write save file '%s'!", saveFile.c_str());
             }
         }
         catch (std::exception& ex)
@@ -793,7 +796,15 @@ namespace CLEO
 
         if (script->IsCustom())
         {
-            RemoveCustomScript((CCustomScript*)script);
+            auto cs = (CCustomScript*)script;
+
+            RemoveCustomScript(cs);
+
+            if (cs->m_saveEnabled && !cs->IsMission())
+            {
+                TRACE("Stopping custom script named '%s'", cs->GetName().c_str());
+                InactiveScriptHashes.insert(cs->GetCodeChecksum());
+            }
         }
         else // native script
         {
@@ -813,30 +824,43 @@ namespace CLEO
             ((callback*)func)(cs);
         }
 
+        // detach this script from the parent
+        if (cs->m_parentScript != nullptr)
+        {
+            cs->m_parentScript->m_childScripts.remove(cs);
+        }
+
         if (cs == CustomMission)
         {
             CustomMission                              = nullptr;
             CTheScripts::bAlreadyRunningAMissionScript = false; // on_mission
         }
 
-        for (auto childThread : cs->m_childScripts)
+        // iterate a copy: each child's removal detaches it from this list
+        auto children = cs->m_childScripts;
+        for (auto childThread : children)
         {
-            RemoveScript(childThread);
+            RemoveCustomScript(childThread);
         }
 
         cs->SetActive(false);
         cs->RemoveScriptFromList((CRunningScript**)&CTheScripts::pActiveScripts);
         CustomScripts.remove(cs);
 
-        if (cs->m_saveEnabled && !cs->IsMission())
+        TRACE("Unregistering custom %s named '%s'", cs->IsMission() ? "mission" : "script", cs->GetName().c_str());
+        ScriptsWaitingForDelete.insert(cs);
+    }
+
+    void CScriptEngine::DeleteWaitingScripts()
+    {
+        // clone the set to avoid destructors affecting the iterator
+        std::set<CCustomScript*> waiting;
+        waiting.swap(ScriptsWaitingForDelete);
+
+        for (auto& script : waiting)
         {
-            TRACE("Stopping custom script named '%s'", cs->GetName().c_str());
-            InactiveScriptHashes.insert(cs->GetCodeChecksum());
-        }
-        else
-        {
-            TRACE("Unregistering custom %s named '%s'", cs->IsMission() ? "mission" : "script", cs->GetName().c_str());
-            ScriptsWaitingForDelete.insert(cs);
+            TRACE(" Deleting inactive script named '%s'", script->GetName().c_str());
+            delete script;
         }
     }
 
@@ -844,6 +868,9 @@ namespace CLEO
     {
         TRACE("");
         TRACE("Unloading scripts...");
+
+        // reset the stop-list; it will be re-populated from the save file on the next load.
+        InactiveScriptHashes.clear();
 
         if (CustomMission)
         {
@@ -855,12 +882,7 @@ namespace CLEO
             RemoveCustomScript(CustomScripts.back());
         }
 
-        for (auto& script : ScriptsWaitingForDelete)
-        {
-            TRACE(" Deleting inactive script named '%s'", script->GetName().c_str());
-            delete script;
-        }
-        ScriptsWaitingForDelete.clear();
+        DeleteWaitingScripts();
     }
 
     void CScriptEngine::UnregisterAllCustomScripts()

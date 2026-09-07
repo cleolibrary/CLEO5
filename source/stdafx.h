@@ -86,9 +86,46 @@ inline void UpdateUserDirectoryPath()
     const_cast<std::string&>(GetUserDirectory()) = std::move(p);
 }
 
+// cleo.asi directory
+inline const std::string& GetAsiDirectory()
+{
+    static std::string path = [] {
+        HMODULE hModule = nullptr;
+        
+        // get CLEO.asi module path
+        GetModuleHandleEx(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            (LPCTSTR)&GetAsiDirectory, &hModule
+        );
+
+        std::string p;
+        if (hModule != nullptr)
+        {
+            p.resize(MAX_PATH);
+            if (GetModuleFileNameA(hModule, p.data(), p.size()) != 0)
+            {
+                p.resize(CLEO::FilepathGetParent(p).length()); // strip the file name
+            }
+            else
+            {
+                p.clear();
+            }
+        }
+
+        if (p.empty())
+        {
+            p = GetGameDirectory(); // fallback to the game executable directory
+        }
+
+        CLEO::FilepathNormalize(p);
+        return p;
+    }();
+    return path;
+}
+
 inline const std::string& GetCleoDirectory()
 {
-    static std::string path = GetGameDirectory() + "\\cleo";
+    static std::string path = GetAsiDirectory() + "\\cleo";
     return path;
 }
 

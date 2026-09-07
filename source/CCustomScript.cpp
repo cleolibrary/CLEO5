@@ -9,7 +9,8 @@ using namespace CLEO;
 
 // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
 CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScript* parent, int label)
-    : CRunningScript(), m_ownedBuffer(nullptr), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR)
+    : CRunningScript(), m_ownedBuffer(nullptr), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR),
+      m_parentScript(nullptr)
 {
     TRACE(""); // separator
     TRACE("Loading custom script '%s'...", szFileName);
@@ -273,7 +274,7 @@ void CCustomScript::SetWorkDir(const char* directory)
         m_workDir = resolved;
 }
 
-std::string CCustomScript::ResolvePath(const char* path, const char* customWorkDir) const
+std::string CCustomScript::ResolvePath(const char* path, const char* _customWorkDir) const
 {
     if (path == nullptr)
     {
@@ -292,6 +293,9 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
         Cleo,
         Modules
     } virtualPrefix = VPref::None;
+
+    auto customWorkDir = _customWorkDir;
+
     if (!fsPath.empty())
     {
         const auto root = fsPath.begin()->string(); // first path element
@@ -307,6 +311,16 @@ std::string CCustomScript::ResolvePath(const char* path, const char* customWorkD
             virtualPrefix = VPref::Cleo;
         else if (_strcmpi(r, DIR_MODULES) == 0)
             virtualPrefix = VPref::Modules;
+        else if (_strcmpi(r, "CLEO") == 0)
+        {
+            // strip CLEO/ prefix and change workdir to CleoDirectory path
+            // (not always root-based!)
+            customWorkDir = DIR_CLEO;
+            FS::path stripped;
+            for (auto it = ++fsPath.begin(); it != fsPath.end(); it++)
+                stripped /= *it;
+            fsPath = stripped;
+        }
     }
 
     // not virtual
