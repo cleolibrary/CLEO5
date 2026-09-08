@@ -1,16 +1,14 @@
 <Solution>
   <Configurations>
-    <BuildType Name="Debug" />
-    <BuildType Name="Release" />
     <Platform Name="Win32" />
   </Configurations>
-  <Project Path="FileSystemOperations\FileSystemOperations.vcxproj" />
-  <Project Path="IniFiles\IniFiles.vcxproj" />
-  <Project Path="DebugUtils\DebugUtils.vcxproj" />
-  <Project Path="MemoryOperations\MemoryOperations.vcxproj" />
-  <Project Path="Audio\Audio.vcxproj" />
-  <Project Path="Text\Text.vcxproj" />
-  <Project Path="Math\Math.vcxproj" />
-  <Project Path="GameEntities\GameEntities.vcxproj" />
-  <Project Path="Input\Input.vcxproj" />
+  <Project Path="FileSystemOperations\FileSystemOperations.vcxproj" Id="b212dda4-2a8e-45b2-914d-7beeb31d06b1" />
+  <Project Path="IniFiles\IniFiles.vcxproj" Id="6831362d-5226-4634-9db4-266a1b6c3e6c" />
+  <Project Path="DebugUtils\DebugUtils.vcxproj" Id="481896c4-0c19-4992-9602-729537774b32" />
+  <Project Path="MemoryOperations\MemoryOperations.vcxproj" Id="35c80f79-8b18-4925-8c32-94b320dbe76f" />
+  <Project Path="Audio\Audio.vcxproj" Id="897344a5-1af1-493a-8b0b-196c0423d5da" />
+  <Project Path="Text\Text.vcxproj" Id="bd19aefd-626b-40ae-8d83-6d444d2efbf8" />
+  <Project Path="Math\Math.vcxproj" Id="68a434cf-6390-4fdf-9a15-36a8a9eceaa9" />
+  <Project Path="GameEntities\GameEntities.vcxproj" Id="028fa524-5840-4948-98a0-8d7b6c873948" />
+  <Project Path="Input\Input.vcxproj" Id="5d335ff7-afcf-42f4-a8ad-b2ab230168ad" />
 </Solution>

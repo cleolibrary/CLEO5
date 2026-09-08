@@ -33,8 +33,8 @@
 
 #include <plugin.h>
 #include <CFont.h>
-#include <CGame.h>
 #include <CMenuManager.h>
+#include <CGame.h>
 #include <CRGBA.h>
 #include <CRunningScript.h>
 #include <CSprite2d.h>
