@@ -91,7 +91,7 @@ inline const std::string& GetAsiDirectory()
 {
     static std::string path = [] {
         HMODULE hModule = nullptr;
-        
+
         // get CLEO.asi module path
         GetModuleHandleEx(
             GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
