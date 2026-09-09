@@ -265,28 +265,28 @@ class Text
             return CLEO_CallNativeOpcode(thread, 0x0390); // call original opcode
         }
 
+        auto cursor = thread->GetBytePointer();
         OPCODE_READ_PARAM_STRING(txdName);
 
+        // check if this TXD has been loaded already, and if so, load from the cache
         if (instance.scriptDrawing.IsTxdLoaded(thread, txdName))
         {
             instance.scriptDrawing.MakeActiveTxd(thread, txdName);
-        }
-        else
-        {
-            std::string path = "models\\txd\\";
-            path += txdName;
-            path += ".txd";
-
-            auto slot = CTxdStore::FindTxdSlot("script");
-            if (slot == -1) slot = CTxdStore::AddTxdSlot("script");
-
-            CTxdStore::LoadTxd(slot, path.c_str());
-            CTxdStore::AddRef(slot);
-
-            instance.scriptDrawing.StoreTxd(thread, txdName);
+            return OR_CONTINUE;
         }
 
-        return OR_CONTINUE;
+        // prevent this TXD to be stored in the mission cleanup list.
+        auto bUseMissionCleanup    = thread->bUseMissionCleanup;
+        thread->bUseMissionCleanup = false;
+
+        // rewind position and call the original opcode
+        thread->SetIp(cursor);
+        auto result                = CLEO_CallNativeOpcode(thread, 0x0390);
+        thread->bUseMissionCleanup = bUseMissionCleanup;
+
+        // cache this TXD
+        instance.scriptDrawing.StoreTxd(thread, txdName);
+        return result;
     }
 
     // 0391=0,remove_texture_dictionary
