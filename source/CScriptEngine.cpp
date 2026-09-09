@@ -523,14 +523,14 @@ namespace CLEO
 
         if (saveSlot == -1) return; // new game started
 
-        auto saveFile = FS::path(GetCleoDirectory()).append(StringPrintf("cleo_saves\\cs%d.sav", saveSlot)).string();
+        auto saveFile = FS::path(GetCleoDirectory()).append(StringPrintf("cleo_saves\\cs%d.sav", saveSlot));
 
         // load cleo saving file
         try
         {
             TRACE(""); // separator
             TRACE("Loading cleo safe '%s'", saveFile.c_str());
-            std::ifstream ss(saveFile.c_str(), std::ios::binary);
+            std::ifstream ss(saveFile, std::ios::binary);
             if (ss.is_open())
             {
                 ss.exceptions(std::ios::eofbit | std::ios::badbit | std::ios::failbit);
@@ -575,11 +575,11 @@ namespace CLEO
             CleoSafeHeader header = {CleoSafeHeader::sign, savedThreads.size(), InactiveScriptHashes.size()};
 
             auto slot     = FrontEndMenuManager.m_nSelectedSaveGame;
-            auto saveFile = FS::path(GetCleoDirectory()).append(StringPrintf("cleo_saves\\cs%d.sav", slot)).string();
+            auto saveFile = FS::path(GetCleoDirectory()).append(StringPrintf("cleo_saves\\cs%d.sav", slot));
 
             TRACE("Saving script engine state to the file '%s'", saveFile.c_str());
 
-            FS::create_directories(FS::path(saveFile).parent_path());
+            FS::create_directories(saveFile.parent_path());
             std::ofstream ss(saveFile, std::ios::binary);
             if (ss.is_open())
             {
@@ -828,6 +828,7 @@ namespace CLEO
         if (cs->m_parentScript != nullptr)
         {
             cs->m_parentScript->m_childScripts.remove(cs);
+            cs->m_parentScript = nullptr;
         }
 
         if (cs == CustomMission)
