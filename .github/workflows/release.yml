@@ -114,6 +114,10 @@ jobs:
           @echo Copy SDK
           copy .output\Release\CLEO.lib cleo_sdk\CLEO.lib
 
+      - name: Download NewOpcodes plugin
+        shell: cmd
+        run: curl -fL https://github.com/cleolibrary/NewOpcodes/releases/latest/download/NewOpcodes.cleo -o .output\Release\cleo\cleo_plugins\NewOpcodes.cleo
+
       - name: Convert Markdown to HTML
         run: |
           npm ci --prefix .github/workflows --ignore-scripts --no-audit --no-fund
@@ -184,3 +188,9 @@ jobs:
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
           artifacts: "SA.CLEO*.zip"
           allowUpdates: true
+
+      - name: Delete 'preview' release
+        run: gh release delete preview --cleanup-tag --yes
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
