@@ -71,3 +71,4 @@ EXPORTS
 	_CLEO_SetConfigText@8					@68
 	_CLEO_IsValidScriptPtr@4				@69
 	_CLEO_GetLogDirectory@0					@70
+	_CLEO_GetCleoDirectory@0				@71
