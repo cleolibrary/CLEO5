@@ -15,10 +15,10 @@ jobs:
   Release_Preview:
     if: github.ref_type == 'branch' && endsWith(github.ref, '/master') # build preview only on pushes to master; release tag pushes must not run another preview workflow (the Release workflow deletes the stale 'preview' instead)
 
-    runs-on: windows-2022
+    runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
           submodules: "recursive"
@@ -58,7 +58,7 @@ jobs:
 
       - name: Set up MsBuild
         if: ${{ hashFiles('preview_changes.md') != '' }}
-        uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2.0.0
+        uses: microsoft/setup-msbuild@30375c66a4eea26614e0d39710365f22f8b0af57 # v3
 
       - name: Build CLEO Core
         if: ${{ hashFiles('preview_changes.md') != '' }}
@@ -66,7 +66,7 @@ jobs:
         run: |
           @echo off
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild CLEO5.sln /property:Configuration=Release /property:Platform=GTASA /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
+          msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Core compilation"
 
       - name: Build CLEO Plugins
@@ -75,7 +75,7 @@ jobs:
         run: |
           @echo off
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild cleo_plugins/CLEO_Plugins.sln /property:Configuration=Release /property:Platform=x86 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
+          msbuild cleo_plugins/CLEO_Plugins.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Plugins compilation"
 
       - name: Gather output files
@@ -122,7 +122,7 @@ jobs:
 
       - name: Create 'preview' release
         if: ${{ hashFiles('preview_changes.md') != '' }}
-        uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
+        uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # 1.21.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: 'Next version preview'

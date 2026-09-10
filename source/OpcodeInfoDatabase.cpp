@@ -35,7 +35,7 @@ bool OpcodeInfoDatabase::LoadCommands(const char* filepath)
         return false;
     }
 
-    for (auto& e : ext)
+    for (auto e : ext)
     {
         const char* extensionName;
         if (e["name"].get_c_str().get(extensionName))
@@ -49,7 +49,7 @@ bool OpcodeInfoDatabase::LoadCommands(const char* filepath)
             continue; // invalid extension
         }
 
-        for (auto& c : commands)
+        for (auto c : commands)
         {
             // unsupported?
             bool unsupported;
@@ -125,7 +125,7 @@ bool OpcodeInfoDatabase::LoadCommands(const char* filepath)
                 dom::array args;
                 if (!c[obj].get_array().get(args))
                 {
-                    for (auto& p : args)
+                    for (auto p : args)
                     {
                         const char* argName;
                         if (!p["name"].get_c_str().get(argName))

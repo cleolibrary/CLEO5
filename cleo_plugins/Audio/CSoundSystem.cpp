@@ -235,9 +235,11 @@ namespace CLEO
                     velocity = vel;
                 }
 
-                BASS_Set3DPosition(
-                    &toBass(position), &toBass(velocity), &toBass(direction), &toBass(TheCamera.GetUp())
-                );
+                auto bPos = toBass(position);
+                auto bVel = toBass(velocity);
+                auto bDir = toBass(direction);
+                auto bUp  = toBass(TheCamera.GetUp());
+                BASS_Set3DPosition(&bPos, &bVel, &bDir, &bUp);
             }
 
             // process streams

@@ -193,7 +193,7 @@ void ScreenLog::DrawLine(const char* msg, size_t row)
     CFont::PrintString(posX, posY, msg);
 }
 
-size_t ScreenLog::CountLines(std::string& msg)
+size_t ScreenLog::CountLines(const std::string& msg)
 {
     size_t lines = 1;
 

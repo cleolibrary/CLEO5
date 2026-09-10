@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
@@ -67,10 +67,10 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\source;..\..\third-party\simdjson\singleheader;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\source;..\..\third-party\simdjson\singleheader;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\plugin_sa\game_sa\enums;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -101,10 +101,10 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\"
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\source;..\..\third-party\simdjson\singleheader;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\cleo_sdk;..\..\source;..\..\third-party\simdjson\singleheader;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\plugin_sa\game_sa\enums;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

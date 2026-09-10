@@ -74,7 +74,7 @@ void C3DAudioStream::Process()
 
     // position and velocity
     CVector relPos = position - CSoundSystem::position;
-    float distance = relPos.NormaliseAndMag();
+    float distance = relPos.NormalizeAndMag();
     float inFactor = (float)CalculateDistanceDecay(
         radius * 5.0f, distance * 5.0f
     ); // use decay curve for blending inside-outside source effects
@@ -86,7 +86,9 @@ void C3DAudioStream::Process()
 
     CVector percVel = lerp(velocity, CSoundSystem::velocity, inFactor);
 
-    BASS_ChannelSet3DPosition(streamInternal, &toBass(percPos), nullptr, &toBass(percVel));
+    auto bassPercPos = toBass(percPos);
+    auto bassPercVel = toBass(percVel);
+    BASS_ChannelSet3DPosition(streamInternal, &bassPercPos, nullptr, &bassPercVel);
 }
 
 float C3DAudioStream::CalculateVolume()
@@ -97,7 +99,7 @@ float C3DAudioStream::CalculateVolume()
     }
 
     CVector relPos = position - CSoundSystem::position;
-    float distance = relPos.NormaliseAndMag();
+    float distance = relPos.NormalizeAndMag();
     float inFactor = (float)CalculateDistanceDecay(
         radius * 5.0f, distance * 5.0f
     ); // use decay curve for blending inside-outside source effects
@@ -216,7 +218,7 @@ void C3DAudioStream::UpdatePosition()
             return;
         }
 
-        RwV3dTransformPoint((RwV3d*)&position, (RwV3d*)&offset, (RwMatrix*)host->GetMatrix());
+        RwV3dTransformPoint((RwV3d*)&position, (RwV3d*)&offset, (RwMatrix*)&host->GetMatrix());
     }
     else // world offset
     {

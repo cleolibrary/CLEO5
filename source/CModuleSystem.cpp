@@ -15,7 +15,7 @@ const ScriptDataRef CModuleSystem::GetExport(std::string modulePath, std::string
 {
     NormalizePath(modulePath);
 
-    auto& it = modules.find(modulePath);
+    auto it = modules.find(modulePath);
     if (it == modules.end()) // module not loaded yet?
     {
         if (!LoadFile(modulePath.c_str()))
@@ -238,7 +238,7 @@ const ScriptDataRef CModuleSystem::CModule::GetExport(std::string name)
 {
     ModuleExport::NormalizeName(name);
 
-    auto& it = exports.find(name);
+    auto it = exports.find(name);
     if (it == exports.end())
     {
         return {};

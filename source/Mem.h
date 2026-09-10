@@ -44,7 +44,7 @@ template <typename T, typename U> inline void MemJump(U p, const T v, T* r = nul
 {
     if (r != nullptr)
     {
-        *r = MemReadInstrucionDestination<std::remove_pointer<T>::type>(p);
+        *r = MemReadInstrucionDestination<std::remove_pointer_t<T>>(p);
     }
 
     MemWrite<BYTE>(p++, OP_JMP);
@@ -56,7 +56,7 @@ template <typename T, typename U> inline void MemCall(U p, const T v, T* r = nul
 {
     if (r != nullptr)
     {
-        *r = MemReadInstrucionDestination<std::remove_pointer<T>::type>(p);
+        *r = MemReadInstrucionDestination<std::remove_pointer_t<T>>(p);
     }
 
     MemWrite<BYTE>(p++, OP_CALL);

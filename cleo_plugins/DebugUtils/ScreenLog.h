@@ -118,7 +118,7 @@ class ScreenLog
         }
     };
 
-    static size_t CountLines(std::string& msg);
+    static size_t CountLines(const std::string& msg);
     static DWORD GetTime();
 
     std::deque<Entry> entries;

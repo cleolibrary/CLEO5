@@ -17,7 +17,7 @@ namespace CLEO
 
     void ScmFunction::Clear()
     {
-        for each (ScmFunction* scmFunc in store)
+        for (ScmFunction* scmFunc : store)
         {
             if (scmFunc != nullptr) delete scmFunc;
         }

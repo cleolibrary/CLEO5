@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
@@ -72,8 +72,8 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_NDEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>bass;..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>bass;..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\plugin_sa\game_sa\enums;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <DebugInformationFormat>None</DebugInformationFormat>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -103,8 +103,8 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>TARGET_NAME=R"($(TargetName))";NOMINMAX;RW;GTASA;_DEBUG</PreprocessorDefinitions>
       <AdditionalOptions>/Zc:threadSafeInit- %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)bass;..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)bass;..\..\cleo_sdk;..\..\third-party\plugin-sdk\plugin_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa;..\..\third-party\plugin-sdk\plugin_sa\game_sa\rw;..\..\third-party\plugin-sdk\plugin_sa\game_sa\enums;..\..\third-party\plugin-sdk\shared;..\..\third-party\plugin-sdk\shared\game;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -157,10 +157,6 @@ xcopy /Y "$(OutDir)$(TargetName).*" "$(GTA_SA_DIR)\cleo\cleo_plugins\" </Command
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>
     <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CTimer.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <DisableSpecificWarnings>4073</DisableSpecificWarnings>
-    </ClCompile>
-    <ClCompile Include="..\..\third-party\plugin-sdk\plugin_sa\game_sa\CVector.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <DisableSpecificWarnings>4073</DisableSpecificWarnings>
     </ClCompile>

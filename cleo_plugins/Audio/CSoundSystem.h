@@ -27,7 +27,7 @@ namespace CLEO
         bool paused           = false;
 
         static bool useFloatAudio;
-        static bool CSoundSystem::allowNetworkSources;
+        static bool allowNetworkSources;
 
         static CVector position;
         static CVector direction;
