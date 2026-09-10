@@ -602,8 +602,7 @@ namespace CLEO
         // absolute log files directory filepath without trailing path separator
         LPCSTR WINAPI CLEO_GetLogDirectory();
 
-        // absolute cleo directory filepath (folder with CLEO scripts, located next to cleo.asi) without trailing path
-        // separator
+        // absolute CLEO directory filepath without trailing path separator
         LPCSTR WINAPI CLEO_GetCleoDirectory();
 
         void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
