@@ -97,10 +97,11 @@ namespace CLEO
         TRACE("Loading CLEO text files...");
 
         // create FXT directory if not present yet
-        FS::create_directory(std::string(CLEO_GetGameDirectory()) + "\\cleo\\cleo_text");
+        auto cleoDir = std::string(CLEO_GetCleoDirectory());
+        FS::create_directories(cleoDir + "\\cleo_text");
 
         // load whole FXT files directory
-        auto list = CLEO::CLEO_ListDirectory(nullptr, "cleo\\cleo_text\\*.fxt", false, true);
+        auto list = CLEO::CLEO_ListDirectory(nullptr, (cleoDir + "\\cleo_text\\*.fxt").c_str(), false, true);
         for (DWORD i = 0; i < list.count; i++)
         {
             try
