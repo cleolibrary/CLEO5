@@ -529,7 +529,7 @@ namespace CLEO
         try
         {
             TRACE(""); // separator
-            TRACE("Loading cleo safe '%s'", saveFile.c_str());
+            TRACE("Loading cleo safe '%s'", saveFile.string().c_str());
             std::ifstream ss(saveFile, std::ios::binary);
             if (ss.is_open())
             {
@@ -557,7 +557,7 @@ namespace CLEO
         }
         catch (std::exception& ex)
         {
-            TRACE("Loading of cleo safe '%s' failed: %s", saveFile.c_str(), ex.what());
+            TRACE("Loading of cleo safe '%s' failed: %s", saveFile.string().c_str(), ex.what());
             safe_header.n_saved_threads = safe_header.n_stopped_threads = 0;
             memset(CleoVariables, 0, sizeof(CleoVariables));
         }
@@ -577,7 +577,7 @@ namespace CLEO
             auto slot     = FrontEndMenuManager.m_nSelectedSaveGame;
             auto saveFile = FS::path(GetCleoDirectory()).append(StringPrintf("cleo_saves\\cs%d.sav", slot));
 
-            TRACE("Saving script engine state to the file '%s'", saveFile.c_str());
+            TRACE("Saving script engine state to the file '%s'", saveFile.string().c_str());
 
             FS::create_directories(saveFile.parent_path());
             std::ofstream ss(saveFile, std::ios::binary);
@@ -604,7 +604,7 @@ namespace CLEO
             }
             else
             {
-                TRACE("Failed to write save file '%s'!", saveFile.c_str());
+                TRACE("Failed to write save file '%s'!", saveFile.string().c_str());
             }
         }
         catch (std::exception& ex)
