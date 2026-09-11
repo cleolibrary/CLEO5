@@ -25,13 +25,17 @@ jobs:
         id: read_version
         run: node.exe .github/workflows/version.js
 
-      - name: Core - Build
+      - name: Generate Project Files
+        shell: cmd
+        run: premake5.exe vs2026
+
+      - name: Build
         shell: cmd
         run: |
           @echo off
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
-          node .github/workflows/analyze-build-log.js "Core compilation"
+          node .github/workflows/analyze-build-log.js "Compilation"
 
 #      - name: Core - Sign
 #        uses: x87/code-sign-action@develop
@@ -57,14 +61,6 @@ jobs:
         if: steps.scan_core.outcome == 'success'
         run: echo "::notice title=CLEO Core virus scan::${{steps.scan_core.outputs.analysis}}"
 
-      - name: Plugins - Build
-        shell: cmd
-        run: |
-          @echo off
-          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild cleo_plugins/CLEO_Plugins.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
-          node .github/workflows/analyze-build-log.js "Plugins compilation"
-
 #      - name: Plugins - Sign
 #        uses: x87/code-sign-action@develop
 #        with:
@@ -87,7 +83,7 @@ jobs:
 
       - name: Plugins - VirusTotal log
         if: steps.scan_plugins.outcome == 'success'
-        run: echo "::notice title=CLEO Core virus scan::${{steps.scan_plugins.outputs.analysis}}"
+        run: echo "::notice title=CLEO Plugins virus scan::${{steps.scan_plugins.outputs.analysis}}"
 
       - name: Gather output files
         shell: cmd
