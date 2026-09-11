@@ -157,14 +157,26 @@ namespace CLEO
         CleoInstance.CallCallbacks(eCallbackId::DrawingFinished);      // execute registered callbacks
     }
 
+    // Creates a directory (together with any missing parent) without ever throwing.
+    static void EnsureDirectory(const std::string& path)
+    {
+        std::error_code ec;
+        FS::create_directories(path, ec);
+
+        if (ec)
+        {
+            TRACE("Failed to create directory '%s': %s", path.c_str(), ec.message().c_str());
+        }
+    }
+
     void CCleoInstance::Start()
     {
         TRACE("CLEO initialization: Phase 1");
 
-        FS::create_directory(GetCleoDirectory());
-        FS::create_directory(GetCleoDirectory() + "\\cleo_modules");
-        FS::create_directory(GetCleoDirectory() + "\\cleo_plugins");
-        FS::create_directory(GetCleoDirectory() + "\\cleo_saves");
+        EnsureDirectory(GetCleoDirectory());
+        EnsureDirectory(GetCleoDirectory() + "\\cleo_modules");
+        EnsureDirectory(GetCleoDirectory() + "\\cleo_plugins");
+        EnsureDirectory(GetCleoDirectory() + "\\cleo_saves");
 
         OpcodeInfoDb.LoadCommands((GetCleoDirectory() + "\\.config\\sa.json").c_str());
 
@@ -232,8 +244,8 @@ namespace CLEO
         const auto scriptLogEnabled = CConfigManager::ReadInt("Plugins", "DebugUtils.ScriptLog.Enabled", 0);
         if (scriptLogEnabled != 0)
         {
-            const auto path = (GetLogDirectory() + "\\cleo_script.log").c_str();
-            TRACE(" DebugUtils.ScriptLog.Enabled = %d, path: %s", scriptLogEnabled, path);
+            const auto path = GetLogDirectory() + "\\cleo_script.log";
+            TRACE(" DebugUtils.ScriptLog.Enabled = %d, path: %s", scriptLogEnabled, path.c_str());
         }
         else
         {

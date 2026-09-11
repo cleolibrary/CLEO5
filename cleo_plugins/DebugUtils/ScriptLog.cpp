@@ -42,12 +42,12 @@ ScriptLog::ScriptLog()
     CLEO_RegisterCallback(eCallbackId::DrawingFinished, callbackDrawingFinished);
     CLEO_RegisterCallback(eCallbackId::MainWindowFocus, callbackMainWindowFocus);
 
-    std::string path = CLEO_GetGameDirectory();
-    path += "\\cleo\\.config\\sa.json";
+    std::string path = CLEO_GetCleoDirectory();
+    path += "\\.config\\sa.json";
     m_opcodeDatabase.LoadCommands(path.c_str());
 
-    path = CLEO_GetGameDirectory();
-    path += "\\cleo\\.config\\enums.json";
+    path = CLEO_GetCleoDirectory();
+    path += "\\.config\\enums.json";
     m_opcodeDatabase.LoadEnums(path.c_str());
 
     m_logBuffer.reserve(Initial_Buff_Size);
