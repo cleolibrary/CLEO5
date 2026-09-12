@@ -5,6 +5,8 @@ script_name '0ADD'
 test("0ADD (spawn_vehicle_by_cheating)", tests)
 terminate_this_custom_script
 
+const MODEL_LANDSTAL = 400
+
 function tests
     before_each(@setup)
     after_each(@cleanup)
@@ -51,7 +53,7 @@ function tests
         vehHandle, pedHandle = store_closest_entities $scplayer
         assert_eq(vehHandle, -1)
         
-        spawn_vehicle_by_cheating {modelId} #LANDSTAL
+        spawn_vehicle_by_cheating {modelId} MODEL_LANDSTAL
         wait {time} 250
         vehHandle, pedHandle = store_closest_entities $scplayer
         assert_neq(vehHandle, -1)

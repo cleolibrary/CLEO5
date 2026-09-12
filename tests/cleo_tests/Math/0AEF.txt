@@ -1,0 +1,35 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AEF'
+test("0AEF (log)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should calculate logarithm in given base", test1)
+    it("should handle special values", test2)
+    return
+
+    function test1
+        0@ = log {number} 8.0 {base} 2.0
+        assert_rangef(0@, 2.9999, 3.0001) // log2(8) = 3
+
+        0@ = log {number} 100.0 {base} 10.0
+        assert_rangef(0@, 1.9999, 2.0001) // log10(100) = 2
+
+        0@ = log {number} 81.0 {base} 3.0
+        assert_rangef(0@, 3.9999, 4.0001) // log3(81) = 4
+    end
+
+    function test2
+        0@ = log {number} 1.0 {base} 10.0
+        assert_eqf(0@, 0.0) // log(1) = 0 in any base
+
+        0@ = log {number} 5.0 {base} 5.0
+        assert_rangef(0@, 0.9999, 1.0001) // log(b) in base b = 1
+
+        0@ = log {number} 0.5 {base} 2.0
+        assert_rangef(0@, -1.0001, -0.9999) // log2(0.5) = -1
+    end
+end

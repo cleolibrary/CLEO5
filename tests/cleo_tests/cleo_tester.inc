@@ -415,6 +415,14 @@ function assert_suffix(actual: string, expectedSuffix: string, ignoreCase: int)
     end
 end
 
+/// allocates a CRunningScript instance starting at `ip`
+function CRunningScript_new(ip: int): int
+    int struct = allocate_memory {size} 0xE0
+    write_memory_with_offset {address} struct {offset} 0x10 {size} 4 {value} ip // baseIp
+    write_memory_with_offset {address} struct {offset} 0x14 {size} 4 {value} ip // currentIp
+    return struct
+end
+
 /// checks if code at label suspends current script
 function assert_suspend(label: int)
     int code = get_label_pointer label
@@ -427,12 +435,6 @@ function assert_suspend(label: int)
     cleo_return 0
 
     function CRunningScript_ProcessOneCommand<thiscall, 0x469EB0>(struct: int { CRunningScript* }): int
-    function CRunningScript_new(ip: int): int
-        int struct = allocate_memory {size} 0xE0
-        write_memory_with_offset {address} struct {offset} 0x10 {size} 4 {value} ip // baseIp
-        write_memory_with_offset {address} struct {offset} 0x14 {size} 4 {value} ip // currentIp
-        return struct
-    end
 end
 
 /// registers a callback that runs before each unit test (test setup)

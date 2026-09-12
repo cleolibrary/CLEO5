@@ -10,16 +10,16 @@ function tests
     return
     
     function test1
-        0AEE: pow {number} 3.0 {power} 4.0 {var_result} 0@
+        pow {number} 3.0 {power} 4.0 {var_result} 0@
         assert_eqf(0@, 81.0)
         
-        0AEE: pow {number} 16.0 {power} 0.25 {var_result} 0@
+        pow {number} 16.0 {power} 0.25 {var_result} 0@
         assert_eqf(0@, 2.0)
         
-        0AEE: pow {number} 3.1415 {power} 0.0 {var_result} 0@
+        pow {number} 3.1415 {power} 0.0 {var_result} 0@
         assert_eqf(0@, 1.0)
         
-        0AEE: pow {number} 3.0 {power} 1.0 {var_result} 0@
+        pow {number} 3.0 {power} 1.0 {var_result} 0@
         assert_eqf(0@, 3.0)
     end
 end

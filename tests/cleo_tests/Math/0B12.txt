@@ -1,0 +1,52 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B12'
+test("0B12 (bit_xor)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should XOR matching bits of both operands", test1)
+    it("should return zero when both operands are equal", test2)
+    it("should return the other operand when one of them is zero", test3)
+    return
+
+    function test1
+        int a = 0x0F0F
+        int b = 0x00FF
+        int c = 0
+
+        c = a ^ b
+        assert_eq(c, 0x0FF0)
+
+        a = 0xFFFFFFFF
+        b = 0x0F0F
+        c = a ^ b
+        assert_eq(c, 0xFFFFF0F0)
+    end
+
+    function test2
+        int a = 0x12345678
+        int b = 0x12345678
+        int c = 0xCCCCCCCC
+
+        c = a ^ b
+        assert_eq(c, 0)
+
+        a = 0xFFFFFFFF
+        c = a ^ a
+        assert_eq(c, 0)
+    end
+
+    function test3
+        int a = 0x12345678
+        int b = 0
+
+        int c = a ^ b
+        assert_eq(c, 0x12345678)
+
+        c = b ^ a
+        assert_eq(c, 0x12345678)
+    end
+end

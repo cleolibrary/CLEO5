@@ -5,6 +5,8 @@ script_name '0AE3'
 test("0AE3 (get_random_object_in_sphere_no_save_recursive)", tests)
 terminate_this_custom_script
 
+const MODEL_BOMB = 364
+
 function tests
     before_each(@setup)
     after_each(@cleanup)
@@ -59,7 +61,7 @@ function tests
         assert_eq(found, -1)
         
         // mission object
-        int handle = SpawnObject(#BOMB)
+        int handle = SpawnObject(MODEL_BOMB)
         found = 0x666
         found = get_random_object_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false
         assert_result_true()
@@ -82,8 +84,8 @@ function tests
         float x, y, z
         x, y, z = get_char_coordinates $scplayer
         
-        int objectA = SpawnObject(#BOMB)
-        int objectB = SpawnObject(#BOMB)
+        int objectA = SpawnObject(MODEL_BOMB)
+        int objectB = SpawnObject(MODEL_BOMB)
         mark_object_as_no_longer_needed objectB
         
         // #1

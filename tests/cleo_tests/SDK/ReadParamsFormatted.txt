@@ -190,13 +190,6 @@ function ExpectError(label: int)
     assert_eq(formatted, 0)
 end
 
-function CRunningScript_new(ip: int): int
-    int struct = allocate_memory {size} 0xE0
-    write_memory_with_offset {address} struct {offset} 0x10 {size} 4 {value} ip // baseIp
-    write_memory_with_offset {address} struct {offset} 0x14 {size} 4 {value} ip // currentIp
-    return struct
-end
-
 /// Reads format string and arguments from the script and returns a formatted string or nullptr if error
 function CLEO_ReadParamsFormatted(script: int, format: int, buf: int, buf_size: int): int
     if ReadParamsFormatted fn = GetCLEOSDK("_CLEO_ReadParamsFormatted@16")

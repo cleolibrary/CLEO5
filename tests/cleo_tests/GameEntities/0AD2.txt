@@ -5,6 +5,8 @@ script_name '0AD2'
 test("0AD2 (get_char_player_is_targeting)", tests)
 terminate_this_custom_script
 
+const MODEL_MALE01 = 7
+
 function tests
     int pedHandle
     before_each(@setup)
@@ -35,7 +37,7 @@ function tests
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
         
         // spawn test entities
-        pedHandle = SpawnPed(#MALE01)
+        pedHandle = SpawnPed(MODEL_MALE01)
     return
 
 

@@ -1,0 +1,53 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B15'
+test("0B15 (bit_shr)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should shift bits right", test1)
+    it("should shift by zero", test2)
+    it("should shift signed values arithmetically", test3)
+    return
+
+    function test1
+        int a = 0x00010000
+        int b = 4
+        int c = 0
+
+        c = a >> b
+        assert_eq(c, 0x00001000)
+
+        a = 0x0000000F
+        b = 1
+        c = a >> b
+        assert_eq(c, 0x00000007)
+
+        a = 0x00000001
+        c = a >> 1
+        assert_eq(c, 0) // bits are dropped
+    end
+
+    function test2
+        int a = 0xFF
+        int c = a >> 0
+        assert_eq(c, 0xFF)
+    end
+
+    function test3
+        // the value is read as a signed integer, so the sign bit is replicated
+        int a = 0x80000000
+        int c = a >> 1
+        assert_eq(c, 0xC0000000)
+
+        a = 0xFFFFFFFF
+        c = a >> 4
+        assert_eq(c, 0xFFFFFFFF)
+
+        a = 0x7FFFFFFF
+        c = a >> 1
+        assert_eq(c, 0x3FFFFFFF)
+    end
+end

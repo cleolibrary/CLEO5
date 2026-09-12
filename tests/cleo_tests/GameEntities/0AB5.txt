@@ -5,6 +5,9 @@ script_name '0AB5'
 test("0AB5 (store_closest_entities)", tests)
 terminate_this_custom_script
 
+const MODEL_LANDSTAL = 400
+const MODEL_MALE01 = 7
+
 
 function tests
     int carHandle = -1
@@ -38,8 +41,8 @@ function tests
         clear_area {pos} 0.0 0.0 0.0 {radius} 100000.0 {clearParticles} true
         
         // spawn test entities
-        carHandle = SpawnCar(#LANDSTAL)
-        pedHandle = SpawnPed(#MALE01)
+        carHandle = SpawnCar(MODEL_LANDSTAL)
+        pedHandle = SpawnPed(MODEL_MALE01)
     return
 
 

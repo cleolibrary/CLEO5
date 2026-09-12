@@ -10,7 +10,7 @@ function tests
     it("should scan characters", test2)
     it("should scan strings", test3)
     it("should report arg count mismatch", test4)
-    it_cs5("should respect target string size", test5_strict) // needs StrictValidation=1
+    it_cs5("should respect target string size", test5_strict) // expectation depends on StrictValidation in cleo_config.ini
     it_cs4("should respect target string size", test5_cs4)
     it("should support non-capturing sequences", test6)
     return
@@ -76,10 +76,36 @@ function tests
         scan_string {string} "first_very_long_test_text second_very_long_test_text" {format} "%s %s" {var_nValues} 0@ {var_values} 1@s 4@v
         assert_result_true()
         assert_eq(0@, 2) // read values count
-        assert_eqs(1@s, "first_ve") // clamped to variable size
-        assert_eq(3@, 0x99999999) // unchanged
-        assert_eqs(4@v, "second_very_long") // clamped to variable size
-        assert_eq(8@, 0xEEEEEEEE) // unchanged
+
+        // the first bytes of both targets are written the same way in either mode
+        assert_eq(1@, 0x73726966) // "firs"
+        assert_eq(2@, 0x65765F74) // "t_ve"
+
+        // clamping to the target variable size is only active while StrictValidation is enabled in cleo_config.ini.
+        // 11@ is scratch: scan_string above writes 0@..7@ (and 9@/10@ when overflowing)
+        11@ = 0
+        11@ = read_int_from_ini_file {path} "cleo:\.cleo_config.ini" {section} "Plugins" {key} "StrictValidation"
+        assert_result_true() // the key is always present in the generated config
+
+        if 11@ == 1
+        then
+            assert_eq(3@, 0x99999999) // unchanged - 1@s holds exactly 8 bytes ("first_ve")
+        else
+            assert_eq(3@, 0x6C5F7972) // "ry_l" - overflow of "first_very_long_test_text"
+        end
+
+        assert_eq(4@, 0x6F636573) // "seco"
+        assert_eq(5@, 0x765F646E) // "nd_v"
+        assert_eq(6@, 0x5F797265) // "ery_"
+        assert_eq(7@, 0x676E6F6C) // "long"
+
+        if 11@ == 1
+        then
+            assert_eq(8@, 0xEEEEEEEE) // unchanged - 4@v holds exactly 16 bytes ("second_very_long")
+        else
+            assert_eq(8@, 0x7365745F) // "_tes" - overflow of "second_very_long_test_text"
+            assert_eq(9@, 0x65745F74) // "t_te"
+        end
     end
 
     function test5_cs4

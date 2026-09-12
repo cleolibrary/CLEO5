@@ -1,57 +1,33 @@
 {$CLEO .s}
-{$USE debug}
-{$USE file}
-{$USE bitwise}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0A9B" // close_file
-debug_on
-
-trace "0A9B (close_file)"
-
-
-wait 0
-// open file
-if
-    0@ = open_file "cleo\.cleo_config.ini" {mode} "r+"
-then
-    trace "~g~~h~~h~0A9B (close_file), #0 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A9B (close_file), #0 FAILED! Failed to open file."
-end
-
-
-wait 0
-// close file
-0A9B: close_file 0@ // tested opcode
-trace "~g~~h~~h~0A9B (close_file), #1 PASSED"
-
-
-wait 0
-// open file again
-if
-    0@ = open_file "cleo\.cleo_config.ini" {mode} "r+"
-then
-    trace "~g~~h~~h~0A9B (close_file), #2 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0A9B (close_file), #2 FAILED! Failed to open file."
-end
-
-
-wait 0
-// close file again
-0A9B: close_file 0@ // tested opcode
-trace "~g~~h~~h~0A9B (close_file), #3 PASSED"
-
-
+test("0A9B (close_file)", tests)
 terminate_this_custom_script
+
+const Test_File = "cleo\.cleo_config.ini"
+
+
+function tests
+    it("should close the file and release the handle", test1)
+    return
+
+
+    function test1
+        int fh = open_file Test_File {mode} "r+"
+        assert_result_true()
+
+        close_file fh // tested opcode
+
+        // the handle is released: the file can be opened and closed again
+        fh = open_file Test_File {mode} "r+"
+        assert_result_true()
+
+        close_file fh // tested opcode
+
+        fh = open_file Test_File {mode} "r+"
+        assert_result_true()
+
+        close_file fh
+    end
+end
