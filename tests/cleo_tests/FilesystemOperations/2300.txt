@@ -1,0 +1,61 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2300'
+test("2300 (get_file_position)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\test_file_2300.dat"
+
+function tests
+    int fh
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should return position of the write caret", test1)
+    it("should follow file seeks and reads", test2)
+    return
+
+    :setup
+        if
+            does_file_exist {path} Test_File
+        then
+            delete_file {path} Test_File
+        end
+
+        fh = open_file Test_File {mode} "w+"
+        assert_result_true()
+
+        write_to_file fh {size} 4 {var_source} 0x11223344
+        write_to_file fh {size} 4 {var_source} 0x55667788
+    return
+
+    :cleanup
+        close_file fh
+        delete_file {path} Test_File
+    return
+
+    function test1(fh: int)
+        int pos = -1
+
+        pos = get_file_position fh
+        assert_eq(pos, 8) // two 4 byte values were written
+    end
+
+    function test2(fh: int)
+        int pos = -1
+        int data = 0
+
+        file_seek fh {offset} 2 {origin} SeekOrigin.Begin
+        pos = get_file_position fh
+        assert_eq(pos, 2)
+
+        read_from_file fh {size} 1 {destination} data
+        pos = get_file_position fh
+        assert_eq(pos, 3)
+
+        file_seek fh {offset} 0 {origin} SeekOrigin.End
+        pos = get_file_position fh
+        assert_eq(pos, 8)
+    end
+end

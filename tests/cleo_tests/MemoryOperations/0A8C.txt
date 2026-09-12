@@ -76,7 +76,7 @@ function tests
 
     function test8
         4@ = 100.0
-        0A8C: write_memory {address} 0@ {size} 4 {value} 4@ {vp} false // tested opcode
+        write_memory {address} 0@ {size} 4 {value} 4@ {vp} false // tested opcode
         assert_eq(1@, 0xcccccccc)
         assert_eqf(2@, 100.0)
         assert_eq(3@, 0xeeeeeeee)

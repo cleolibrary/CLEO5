@@ -1,0 +1,47 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B16'
+test("0B16 (bit_shl)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should shift bits left", test1)
+    it("should shift by zero", test2)
+    it("should drop bits shifted out of the value", test3)
+    return
+
+    function test1
+        int a = 1
+        int b = 4
+        int c = 0
+
+        c = a << b
+        assert_eq(c, 0x00000010)
+
+        a = 0x01000000
+        c = a << 1
+        assert_eq(c, 0x02000000)
+
+        a = 0x00000001
+        c = a << 31
+        assert_eq(c, 0x80000000)
+    end
+
+    function test2
+        int a = 0x12345678
+        int c = a << 0
+        assert_eq(c, 0x12345678)
+    end
+
+    function test3
+        int a = 0xFFFFFFFF
+        int c = a << 4
+        assert_eq(c, 0xFFFFFFF0)
+
+        a = 0x80000000
+        c = a << 1
+        assert_eq(c, 0) // the only set bit is shifted out
+    end
+end

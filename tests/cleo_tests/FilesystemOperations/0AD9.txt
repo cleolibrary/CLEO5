@@ -1,0 +1,64 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AD9'
+test("0AD9 (write_formatted_string_to_file)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\test_file_0AD9.dat"
+
+function tests
+    int fh
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should write a formatted string to the file", test1)
+    it("should append consecutive writes", test2)
+    return
+
+    :setup
+        if
+            does_file_exist {path} Test_File
+        then
+            delete_file {path} Test_File
+        end
+
+        fh = open_file Test_File {mode} "w+"
+        assert_result_true()
+    return
+
+    :cleanup
+        close_file fh
+        delete_file {path} Test_File
+    return
+
+    function test1(fh: int)
+        int pos = -1
+
+        write_formatted_string_to_file fh {format} "%d" {args} 4242
+
+        file_seek fh {offset} 0 {origin} SeekOrigin.Begin
+        pos = get_file_position fh
+        assert_eq(pos, 0)
+
+        2@s = ''
+        read_string_from_file fh {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eqs(2@s, "4242")
+    end
+
+    function test2(fh: int)
+        write_formatted_string_to_file fh {format} "%s %d" {args} "ab" 7
+        write_formatted_string_to_file fh {format} "%d" {args} 9
+
+        int pos = get_file_position fh
+        assert_eq(pos, 5) // "ab 7" is 4 characters, "9" is 1
+
+        file_seek fh {offset} 0 {origin} SeekOrigin.Begin
+
+        2@s = ''
+        read_string_from_file fh {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eqs(2@s, "ab 79") // both writes land next to each other
+    end
+end

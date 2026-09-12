@@ -121,7 +121,7 @@ DEL "%PROBE_OUT%" >NUL 2>&1
 REM --- 1. copy the sources into the game folder -------------------------------
 ECHO:
 ECHO ==^> Copying "%REPO_TESTS%" to "%DST_TESTS%"
-ROBOCOPY "%REPO_TESTS%" "%DST_TESTS%" /E /NFL /NDL /NJH /NJS /NP >NUL
+ROBOCOPY "%REPO_TESTS%" "%DST_TESTS%" /MIR /NFL /NDL /NJH /NJS /NP >NUL
 IF ERRORLEVEL 8 GOTO :COPY_FAILED
 
 REM remove stale outputs first (mirrors the old .Compile_All.bat)

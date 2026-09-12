@@ -11,27 +11,27 @@ function tests
     
     function test1
         0@ = 0x12345678
-        2701: set_bit {var_number} 0@ {bitIndex} 0
+        set_bit {var_number} 0@ {bitIndex} 0
         assert_eq(0@, 0x12345679)
         
         0@ = 0x12345678
-        2701: set_bit {var_number} 0@ {bitIndex} 3 // already set
+        set_bit {var_number} 0@ {bitIndex} 3 // already set
         assert_eq(0@, 0x12345678)
         
         0@ = 0x12345678
-        2701: set_bit {var_number} 0@ {bitIndex} 13
+        set_bit {var_number} 0@ {bitIndex} 13
         assert_eq(0@, 0x12347678)
         
         0@ = 0x12345678
-        2701: set_bit {var_number} 0@ {bitIndex} 14 // already set
+        set_bit {var_number} 0@ {bitIndex} 14 // already set
         assert_eq(0@, 0x12345678)
         
         0@ = 0x12345678
-        2701: set_bit {var_number} 0@ {bitIndex} 28 // already set
+        set_bit {var_number} 0@ {bitIndex} 28 // already set
         assert_eq(0@, 0x12345678)
         
         0@ = 0x12345678
-        2701: set_bit {var_number} 0@ {bitIndex} 31
+        set_bit {var_number} 0@ {bitIndex} 31
         assert_eq(0@, 0x92345678)
     end    
 end

@@ -59,7 +59,7 @@ function tests
         int buf = 0xcccccccc
         int ptr = get_var_pointer buf
 
-        2301: read_block_from_file fh {size} 0 {address} ptr // tested opcode
+        read_block_from_file fh {size} 0 {address} ptr // tested opcode
         assert_result_true()
         assert_eq(buf, 0xcccccccc) // unchanged
     end
@@ -69,7 +69,7 @@ function tests
         int buf = 0xcccccccc
         int ptr = get_var_pointer buf
 
-        2301: read_block_from_file fh {size} 1 {address} ptr // tested opcode
+        read_block_from_file fh {size} 1 {address} ptr // tested opcode
         assert_result_true()
         assert_eq(buf, 0xccccccFF) // "FF"
     end
@@ -79,7 +79,7 @@ function tests
         int buf = 0xcccccccc
         int ptr = get_var_pointer buf
 
-        2301: read_block_from_file fh {size} 2 {address} ptr // tested opcode
+        read_block_from_file fh {size} 2 {address} ptr // tested opcode
         assert_result_true()
         assert_eq(buf, 0xccccEEFF) // "FF EE"
     end
@@ -89,7 +89,7 @@ function tests
         int buf = 0xcccccccc
         int ptr = get_var_pointer buf
 
-        2301: read_block_from_file fh {size} 3 {address} ptr // tested opcode
+        read_block_from_file fh {size} 3 {address} ptr // tested opcode
         assert_result_true()
         assert_eq(buf, 0xccDDEEFF) // "FF EE DD"
     end
@@ -99,7 +99,7 @@ function tests
         int buf = 0xcccccccc
         int ptr = get_var_pointer buf
 
-        2301: read_block_from_file fh {size} 4 {address} ptr // tested opcode
+        read_block_from_file fh {size} 4 {address} ptr // tested opcode
         assert_result_true()
         assert_eq(buf, 0xCCDDEEFF) // "FF EE DD CC"
     end
@@ -110,7 +110,7 @@ function tests
         int buf2 = 0xcccccccc
         int ptr = get_var_pointer buf
 
-        2301: read_block_from_file fh {size} 6 {address} ptr // tested opcode
+        read_block_from_file fh {size} 6 {address} ptr // tested opcode
         assert_result_true()
         assert_eq(buf, 0xCCDDEEFF)  // "FF EE DD CC"
         assert_eq(buf2, 0xccccAABB) // "AA BB"

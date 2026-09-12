@@ -53,7 +53,7 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 0 {address} ptr // tested opcode
+        write_block_to_file fh {size} 0 {address} ptr // tested opcode
         assert_result_true()
 
         int size = get_file_size fh
@@ -67,7 +67,7 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 1 {address} ptr // tested opcode
+        write_block_to_file fh {size} 1 {address} ptr // tested opcode
         assert_result_true()
 
         int size = get_file_size fh
@@ -81,7 +81,7 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 2 {address} ptr // tested opcode
+        write_block_to_file fh {size} 2 {address} ptr // tested opcode
         assert_result_true()
 
         int size = get_file_size fh
@@ -95,7 +95,7 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 3 {address} ptr // tested opcode
+        write_block_to_file fh {size} 3 {address} ptr // tested opcode
         assert_result_true()
 
         int size = get_file_size fh
@@ -109,7 +109,7 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 4 {address} ptr // tested opcode
+        write_block_to_file fh {size} 4 {address} ptr // tested opcode
         assert_result_true()
 
         int size = get_file_size fh
@@ -123,7 +123,7 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 5 {address} ptr // tested opcode
+        write_block_to_file fh {size} 5 {address} ptr // tested opcode
         assert_result_true()
 
         int size = get_file_size fh
@@ -137,7 +137,7 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 9 {address} ptr // tested opcode
+        write_block_to_file fh {size} 9 {address} ptr // tested opcode
         assert_result_true()
 
         int size = get_file_size fh
@@ -151,13 +151,13 @@ function tests
         int src3 = 0xFFEECCDD
         int ptr = get_var_pointer src
 
-        2302: write_block_to_file fh {size} 0 {address} ptr
-        2302: write_block_to_file fh {size} 1 {address} ptr
-        2302: write_block_to_file fh {size} 2 {address} ptr
-        2302: write_block_to_file fh {size} 3 {address} ptr
-        2302: write_block_to_file fh {size} 4 {address} ptr
-        2302: write_block_to_file fh {size} 5 {address} ptr
-        2302: write_block_to_file fh {size} 9 {address} ptr
+        write_block_to_file fh {size} 0 {address} ptr
+        write_block_to_file fh {size} 1 {address} ptr
+        write_block_to_file fh {size} 2 {address} ptr
+        write_block_to_file fh {size} 3 {address} ptr
+        write_block_to_file fh {size} 4 {address} ptr
+        write_block_to_file fh {size} 5 {address} ptr
+        write_block_to_file fh {size} 9 {address} ptr
 
         int size = get_file_size fh
         assert_eq(size, 24) // 0 + 1 + 2 + 3 + 4 + 5 + 9

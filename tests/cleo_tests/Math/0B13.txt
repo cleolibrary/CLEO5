@@ -1,0 +1,45 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B13'
+test("0B13 (bit_not)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should negate all bits", test1)
+    it("should leave the source operand unchanged", test2)
+    return
+
+    function test1
+        int a = 0
+        int c = 0
+
+        c = ~a
+        assert_eq(c, 0xFFFFFFFF)
+
+        a = 0xFFFFFFFF
+        c = ~a
+        assert_eq(c, 0)
+
+        a = 0x0F0F
+        c = ~a
+        assert_eq(c, 0xFFFFF0F0)
+
+        a = 0x80000000
+        c = ~a
+        assert_eq(c, 0x7FFFFFFF)
+
+        a = 0x7FFFFFFF
+        c = ~a
+        assert_eq(c, 0x80000000)
+    end
+
+    function test2
+        int a = 0x12345678
+        int c = ~a
+
+        assert_eq(a, 0x12345678)
+        assert_eq(c, 0xEDCBA987)
+    end
+end
