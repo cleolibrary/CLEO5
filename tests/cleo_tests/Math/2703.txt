@@ -85,3 +85,4 @@ function tests
         2703: toggle_bit {var_number} 0@ {bitIndex} 0 {state} 0x10000000
         assert_eq(0@, 0x1)
 end
+end
