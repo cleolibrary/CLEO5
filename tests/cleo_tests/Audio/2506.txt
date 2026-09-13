@@ -13,7 +13,7 @@ function tests
     before_each(@setup)
     after_each(@cleanup)
 
-    it("should play a 3d stream at the given coords", test1)
+    it("should set 3d stream source size", test1)
     return
 
 
