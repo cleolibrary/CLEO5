@@ -211,16 +211,16 @@ namespace CLEO
 
             // prevent camera jump-cut glitches
             int skipFramePrev = skipFrame;
-            skipFrame =
-                TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd;
-
-            CVector prevPos = position;
-            position        = TheCamera.GetPosition();
-            direction       = TheCamera.GetForward();
+            skipFrame         = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored ||
+                        CPad::GetPad(0)->JustOutOfFrontEnd || timeStep <= 0.0f;
 
             // new camera velocity
             if (!skipFrame)
             {
+                CVector prevPos = position;
+                position        = TheCamera.GetPosition();
+                direction       = TheCamera.GetForward();
+
                 CVector vel = position - prevPos;
                 vel /= timeStep; // meters per second
 
