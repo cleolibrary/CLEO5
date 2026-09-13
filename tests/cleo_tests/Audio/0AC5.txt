@@ -2,7 +2,7 @@
 {$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AC5"
-test("0AC5 (set_play_3d_audio_stream_at_object)", tests)
+test("0AC5 (set_play_3d_audio_stream_at_car)", tests)
 terminate_this_custom_script
 
 const Test_File = "cleo:\cleo_tests\Audio\Ding.mp3"

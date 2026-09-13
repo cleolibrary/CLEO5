@@ -22,12 +22,12 @@ function tests
         
         ptr = -1
         ptr = get_script_struct_named {scriptName} '0AAA'
-        assert_ptr(thisPtr)
+        assert_ptr(ptr)
         assert_eq(ptr, thisPtr)
     
         ptr = -1
         ptr = get_script_struct_named {scriptName} "CleoTest" // test runner
-        assert_ptr(thisPtr)
+        assert_ptr(ptr)
         assert_neq(ptr, thisPtr)
     end
 end
