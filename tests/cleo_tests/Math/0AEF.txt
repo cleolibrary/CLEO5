@@ -12,24 +12,24 @@ function tests
     return
 
     function test1
-        0@ = log {number} 8.0 {base} 2.0
-        assert_rangef(0@, 2.9999, 3.0001) // log2(8) = 3
+        float value = log {number} 8.0 {base} 2.0
+        assert_rangef(value, 2.9999, 3.0001) // log2(8) = 3
 
-        0@ = log {number} 100.0 {base} 10.0
-        assert_rangef(0@, 1.9999, 2.0001) // log10(100) = 2
+        value = log {number} 100.0 {base} 10.0
+        assert_rangef(value, 1.9999, 2.0001) // log10(100) = 2
 
-        0@ = log {number} 81.0 {base} 3.0
-        assert_rangef(0@, 3.9999, 4.0001) // log3(81) = 4
+        value = log {number} 81.0 {base} 3.0
+        assert_rangef(value, 3.9999, 4.0001) // log3(81) = 4
     end
 
     function test2
-        0@ = log {number} 1.0 {base} 10.0
-        assert_eqf(0@, 0.0) // log(1) = 0 in any base
+        float value = log {number} 1.0 {base} 10.0
+        assert_eqf(value, 0.0) // log(1) = 0 in any base
 
-        0@ = log {number} 5.0 {base} 5.0
-        assert_rangef(0@, 0.9999, 1.0001) // log(b) in base b = 1
+        value = log {number} 5.0 {base} 5.0
+        assert_rangef(value, 0.9999, 1.0001) // log(b) in base b = 1
 
-        0@ = log {number} 0.5 {base} 2.0
-        assert_rangef(0@, -1.0001, -0.9999) // log2(0.5) = -1
+        value = log {number} 0.5 {base} 2.0
+        assert_rangef(value, -1.0001, -0.9999) // log2(0.5) = -1
     end
 end

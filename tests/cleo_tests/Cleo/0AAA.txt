@@ -1,0 +1,33 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AAA'
+test("0AAA (get_script_struct_named)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should get script struct by name", test1)
+    return
+    
+    function test1
+        int thisPtr = get_this_script_struct
+        assert_ptr(thisPtr)
+        
+        int ptr
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "pAAdHK2" // random not existing
+        assert_eq(ptr, 0)
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} '0AAA'
+        assert_ptr(thisPtr)
+        assert_eq(ptr, thisPtr)
+    
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "CleoTest" // test runner
+        assert_ptr(thisPtr)
+        assert_neq(ptr, thisPtr)
+    end
+end
