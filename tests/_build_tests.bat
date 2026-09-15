@@ -6,10 +6,12 @@ REM detect, streams the build progress and waits at the end so a failure stays
 REM readable. Pure cmd.exe - no bash, no MSYS/Git-for-Windows needed.
 REM
 REM What it does - always these three steps, nothing conditional:
-REM   1. copies tests\cleo_tests -> <GTA_SA_DIR>\cleo\cleo_tests
-REM   2. deletes the *.s there and recompiles every *.txt in place. The output
-REM      extension comes from the file's "{$CLEO .ext}" header (default ".s"),
-REM      so testMission.txt -> .cm and testModule.txt -> .mod.
+REM   1. mirrors tests\cleo_tests -> <GTA_SA_DIR>\cleo\cleo_tests, so the folder
+REM      holds exactly the sources - whatever an earlier build left there is
+REM      purged by the mirror.
+REM   2. recompiles every *.txt there in place. The output extension comes from
+REM      the file's "{$CLEO .ext}" header (default ".s"), so
+REM      testMission.txt -> .cm and testModule.txt -> .mod.
 REM   3. compiles .cleo_tests_runner.txt -> <GTA_SA_DIR>\cleo\cleo_tests_runner.cs
 REM
 REM A script only counts as OK when its output exists AND sanny's compile.log
@@ -123,9 +125,6 @@ ECHO:
 ECHO ==^> Copying "%REPO_TESTS%" to "%DST_TESTS%"
 ROBOCOPY "%REPO_TESTS%" "%DST_TESTS%" /MIR /NFL /NDL /NJH /NJS /NP >NUL
 IF ERRORLEVEL 8 GOTO :COPY_FAILED
-
-REM remove stale outputs first (mirrors the old .Compile_All.bat)
-DEL /S /Q "%DST_TESTS%\*.s" >NUL 2>&1
 
 REM --- 2. compile every test script in place ----------------------------------
 DIR /B /S /A-D "%DST_TESTS%\*.txt" | SORT > "%FILELIST%"
