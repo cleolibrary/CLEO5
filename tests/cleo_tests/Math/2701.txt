@@ -10,28 +10,28 @@ function tests
     return
     
     function test1
-        0@ = 0x12345678
-        set_bit {var_number} 0@ {bitIndex} 0
-        assert_eq(0@, 0x12345679)
+        int value = 0x12345678
+        set_bit {var_number} value {bitIndex} 0
+        assert_eq(value, 0x12345679)
         
-        0@ = 0x12345678
-        set_bit {var_number} 0@ {bitIndex} 3 // already set
-        assert_eq(0@, 0x12345678)
+        value = 0x12345678
+        set_bit {var_number} value {bitIndex} 3 // already set
+        assert_eq(value, 0x12345678)
         
-        0@ = 0x12345678
-        set_bit {var_number} 0@ {bitIndex} 13
-        assert_eq(0@, 0x12347678)
+        value = 0x12345678
+        set_bit {var_number} value {bitIndex} 13
+        assert_eq(value, 0x12347678)
         
-        0@ = 0x12345678
-        set_bit {var_number} 0@ {bitIndex} 14 // already set
-        assert_eq(0@, 0x12345678)
+        value = 0x12345678
+        set_bit {var_number} value {bitIndex} 14 // already set
+        assert_eq(value, 0x12345678)
         
-        0@ = 0x12345678
-        set_bit {var_number} 0@ {bitIndex} 28 // already set
-        assert_eq(0@, 0x12345678)
+        value = 0x12345678
+        set_bit {var_number} value {bitIndex} 28 // already set
+        assert_eq(value, 0x12345678)
         
-        0@ = 0x12345678
-        set_bit {var_number} 0@ {bitIndex} 31
-        assert_eq(0@, 0x92345678)
+        value = 0x12345678
+        set_bit {var_number} value {bitIndex} 31
+        assert_eq(value, 0x92345678)
     end    
 end

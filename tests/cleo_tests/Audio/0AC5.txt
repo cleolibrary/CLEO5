@@ -1,0 +1,66 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name "0AC5"
+test("0AC5 (set_play_3d_audio_stream_at_car)", tests)
+terminate_this_custom_script
+
+const Test_File = "cleo:\cleo_tests\Audio\Ding.mp3"
+const MODEL_LANDSTAL = 400
+
+
+function tests
+    int stream, carHandle
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should play a 3d stream at the given car", test1)
+    return
+
+
+    :setup
+        stream = load_3d_audio_stream Test_File
+        assert_result_true()
+        
+        carHandle = SpawnCar(MODEL_LANDSTAL)
+        does_vehicle_exist {handle} carHandle
+        assert_result_true()
+    return
+
+
+    :cleanup
+        remove_audio_stream stream
+        stream = 0
+        
+        delete_car carHandle
+        carHandle = -1
+    return
+
+
+    function test1(stream: int, carHandle: int)
+        set_play_3d_audio_stream_at_car stream {car} carHandle // tested opcode
+        set_audio_stream_volume stream {volume} 10.0
+        set_audio_stream_state stream {action} AudioStreamAction.Play
+
+        int state = 0x666
+        state = get_audio_stream_state stream
+        assert_eq(state, 1) // AudioStreamState.Playing
+    end
+end
+
+
+function SpawnCar(modelIdx: int): int
+    float x, y, z
+    x = generate_random_float_in_range {min} -5.0 {max} 5.0
+    y = generate_random_float_in_range {min} 4.0 {max} 6.0
+    z = -1.0
+
+    x, y, z = get_offset_from_char_in_world_coords $scplayer {offset} x y z
+    
+    request_model modelIdx
+    load_all_models_now
+    int carHandle = create_car {modelId} modelIdx {pos} x y z
+    mark_model_as_no_longer_needed modelIdx
+        
+    return carHandle
+end

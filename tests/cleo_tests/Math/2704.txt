@@ -15,32 +15,32 @@ function tests
         is_truthy {value} 0
         assert_result_false()
         
-        0@ = 0
-        is_truthy {value} 0@
+        int iVal = 0
+        is_truthy {value} iVal
         assert_result_false()
         
     // float
         is_truthy {value} 0.0
         assert_result_false()
         
-        0@ = 0.0
-        is_truthy {value} 0@
+        float fVal = 0.0
+        is_truthy {value} fVal
         assert_result_false()
         
     // short string
         is_truthy {value} ''
         assert_result_false()
         
-        0@s = ''
-        is_truthy {value} 0@s
+        shortString ssVal = ''
+        is_truthy {value} ssVal
         assert_result_false()
         
     // long string
         is_truthy {value} ""
         assert_result_false()
         
-        0@v = ""
-        is_truthy {value} 0@v
+        longString lsVal = ""
+        is_truthy {value} lsVal
         assert_result_false()
     end
     
@@ -49,8 +49,8 @@ function tests
         is_truthy {value} 1
         assert_result_true()
         
-        0@ = 1
-        is_truthy {value} 0@
+        int iVal = 1
+        is_truthy {value} iVal
         assert_result_true()
         
         is_truthy {value} 0x00001000
@@ -60,15 +60,15 @@ function tests
         assert_result_true()
                 
     // float
-        0@ = 0.000001
-        is_truthy {value} 0@
+        float fVal = 0.000001
+        is_truthy {value} fVal
         assert_result_true()
         
         is_truthy {value} 1.0
         assert_result_true()
                 
-        0@ = 0.000001
-        is_truthy {value} 0@
+        fVal = -0.000001
+        is_truthy {value} fVal
         assert_result_true()
         
         is_truthy {value} 0.000001
@@ -81,8 +81,8 @@ function tests
         is_truthy {value} 'a'
         assert_result_true()
         
-        0@s = 'a'
-        is_truthy {value} 0@s
+        shortString ssVal = 'a'
+        is_truthy {value} ssVal
         assert_result_true()
         
         is_truthy {value} ' '
@@ -95,8 +95,8 @@ function tests
         is_truthy {value} "a"
         assert_result_true()
         
-        0@v = "a"
-        is_truthy {value} 0@v
+        longString lsVal = "a"
+        is_truthy {value} lsVal
         assert_result_true()
         
         is_truthy {value} " "
