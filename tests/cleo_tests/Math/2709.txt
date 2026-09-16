@@ -1,0 +1,22 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2709'
+test("2709 (float_add)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should sum two floats", test1)
+    return
+    
+    function test1
+        float a = 10.0
+        float b = 40.0
+        float c = 80.0
+        2709: c = a + b
+        assert_eqf(a, 10.0)
+        assert_eqf(b, 40.0)
+        assert_eqf(c, 50.0)
+    end
+end
