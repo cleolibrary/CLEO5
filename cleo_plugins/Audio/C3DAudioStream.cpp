@@ -227,8 +227,11 @@ void C3DAudioStream::UpdatePosition()
 
     if (prevPos.Magnitude() > 0.0f) // not equal to 0,0,0
     {
-        velocity = position - prevPos;
-        velocity /= CSoundSystem::timeStep;
+        if (CSoundSystem::timeStep > 0.0f)
+        {
+            velocity = position - prevPos;
+            velocity /= CSoundSystem::timeStep;
+        }
         placed = true;
     }
     else
