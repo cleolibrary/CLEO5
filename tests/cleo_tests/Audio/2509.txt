@@ -1,0 +1,56 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2509'
+test("2509 (get_audio_stream_type)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\Speech.mp3"
+
+function tests
+    int stream
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should return the default stream type", test1)
+    it("should return the type set by set_audio_stream_type", test2)
+    return
+
+    :setup
+        // loaded in CS5 mode, so the legacy default stream type does not apply
+        stream = load_audio_stream Test_File
+        assert_result_true()
+    return
+
+    :cleanup
+        remove_audio_stream stream
+        stream = -1
+    return
+
+    function test1(stream: int)
+        int type = -1
+
+        type = get_audio_stream_type stream
+        assert_eq(type, 1) // AudioStreamType.Sfx (eStreamType::SoundEffect)
+    end
+
+    function test2(stream: int)
+        int type = -1
+
+        set_audio_stream_type stream {type} AudioStreamType.Music
+        type = get_audio_stream_type stream
+        assert_eq(type, 2) // AudioStreamType.Music
+
+        set_audio_stream_type stream {type} AudioStreamType.UserInterface
+        type = get_audio_stream_type stream
+        assert_eq(type, 3) // AudioStreamType.UserInterface
+
+        set_audio_stream_type stream {type} AudioStreamType.None
+        type = get_audio_stream_type stream
+        assert_eq(type, 0) // AudioStreamType.None
+
+        set_audio_stream_type stream {type} AudioStreamType.Sfx
+        type = get_audio_stream_type stream
+        assert_eq(type, 1) // AudioStreamType.Sfx
+    end
+end

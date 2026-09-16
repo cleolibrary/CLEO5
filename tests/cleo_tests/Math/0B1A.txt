@@ -1,0 +1,44 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B1A'
+test("0B1A (bit_not_compound)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should negate all bits of the variable", test1)
+    it("should restore the original value when applied twice", test2)
+    return
+
+    function test1
+        int a = 0
+
+        ~a
+        assert_eq(a, 0xFFFFFFFF)
+
+        a = 0xFFFFFFFF
+        ~a
+        assert_eq(a, 0)
+
+        a = 0x0F0F
+        ~a
+        assert_eq(a, 0xFFFFF0F0)
+
+        a = 0x80000000
+        ~a
+        assert_eq(a, 0x7FFFFFFF)
+    end
+
+    function test2
+        int a = 0x12345678
+        int b = a
+
+        ~a
+        assert_eq(a, 0xEDCBA987)
+        assert_eq(b, 0x12345678) // the other variable is untouched
+
+        ~a
+        assert_eq(a, b)
+    end
+end

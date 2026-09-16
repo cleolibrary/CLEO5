@@ -5,6 +5,9 @@ script_name '0AB7'
 test("0AB7 (get_car_number_of_gears)", tests)
 terminate_this_custom_script
 
+const MODEL_LANDSTAL = 400
+const MODEL_BUS = 431
+
 function tests
     it("should get car gear count", test1)
     return
@@ -13,14 +16,14 @@ function tests
         int carHandle, count
     
         // Landstalker: 5 gears
-        carHandle = SpawnCar(#LANDSTAL)
+        carHandle = SpawnCar(MODEL_LANDSTAL)
         count = 0x666
         count = get_car_number_of_gears carHandle
         assert_eq(count, 5)
         delete_car carHandle
         
         // Bus: 4 gears
-        carHandle = SpawnCar(#BUS)
+        carHandle = SpawnCar(MODEL_BUS)
         count = 0x666
         count = get_car_number_of_gears carHandle
         assert_eq(count, 4)

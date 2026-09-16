@@ -12,7 +12,7 @@ function tests
     it_cs5("should handle .\ prefix", test3_cs5)
     it_cs4("should handle .\ prefix", test3_cs4)
     it("should fail on paths outside of game or user directory", test4)
-    it("should allow virtual prefixes game or user directory", test4)
+    it("should allow virtual prefixes game or user directory", test5)
     return
 
     function test1

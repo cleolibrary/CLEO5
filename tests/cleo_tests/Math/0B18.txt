@@ -1,0 +1,37 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B18'
+test("0B18 (bit_or_compound)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should OR the variable with the operand", test1)
+    it("should keep the variable unchanged when ORed with zero", test2)
+    it("should set all bits when ORed with all bits set", test3)
+    return
+
+    function test1
+        int a = 0x0F0F
+        int b = 0x00FF
+
+        a |= b
+        assert_eq(a, 0x0FFF)
+        assert_eq(b, 0x00FF) // the operand is only read
+    end
+
+    function test2
+        int a = 0x12345678
+
+        a |= 0
+        assert_eq(a, 0x12345678)
+    end
+
+    function test3
+        int a = 0x12345678
+
+        a |= 0xFFFFFFFF
+        assert_eq(a, 0xFFFFFFFF)
+    end
+end

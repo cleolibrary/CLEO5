@@ -1,0 +1,64 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0AD8'
+test("0AD8 (write_string_to_file)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\test_file_0AD8.dat"
+
+function tests
+    int fh
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should write a string to the file", test1)
+    it("should append the next string at the current position", test2)
+    return
+
+    :setup
+        if
+            does_file_exist {path} Test_File
+        then
+            delete_file {path} Test_File
+        end
+
+        fh = open_file Test_File {mode} "w+"
+        assert_result_true()
+    return
+
+    :cleanup
+        close_file fh
+        delete_file {path} Test_File
+    return
+
+    function test1(fh: int)
+        int pos = -1
+
+        write_string_to_file fh {source} "hello"
+        assert_result_true()
+
+        file_seek fh {offset} 0 {origin} SeekOrigin.Begin
+        pos = get_file_position fh
+        assert_eq(pos, 0)
+
+        2@s = ''
+        read_string_from_file fh {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eqs(2@s, "hello")
+    end
+
+    function test2(fh: int)
+        write_string_to_file fh {source} "one"
+        assert_result_true()
+        write_string_to_file fh {source} "two"
+        assert_result_true()
+
+        file_seek fh {offset} 0 {origin} SeekOrigin.Begin
+
+        2@s = ''
+        read_string_from_file fh {storeTo} 2@s {maxLength} 8
+        assert_result_true()
+        assert_eqs(2@s, "onetwo")
+    end
+end

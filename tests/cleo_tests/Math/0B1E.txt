@@ -1,0 +1,58 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B1E'
+test("0B1E (sign_extend)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should keep positive values unchanged", test1)
+    it("should fill upper bits of negative values with ones", test2)
+    it("should suspend on invalid size", test3)
+    return
+
+    function test1
+        int a = 0x0000007F // 127 as 1 byte
+        sign_extend {var_value} a {fromSize} 1
+        assert_eq(a, 0x0000007F)
+
+        a = 0x00007FFF // 32767 as 2 bytes
+        sign_extend {var_value} a {fromSize} 2
+        assert_eq(a, 0x00007FFF)
+
+        a = 0x007FFFFF // 8388607 as 3 bytes
+        sign_extend {var_value} a {fromSize} 3
+        assert_eq(a, 0x007FFFFF)
+
+        a = 0x7FFFFFFF // the sign bit of a 4 byte value
+        sign_extend {var_value} a {fromSize} 4
+        assert_eq(a, 0x7FFFFFFF)
+    end
+
+    function test2
+        int a = 0x00000080 // -128 as 1 byte
+        sign_extend {var_value} a {fromSize} 1
+        assert_eq(a, 0xFFFFFF80)
+
+        a = 0x00008000 // -32768 as 2 bytes
+        sign_extend {var_value} a {fromSize} 2
+        assert_eq(a, 0xFFFF8000)
+
+        a = 0x00800000 // -8388608 as 3 bytes
+        sign_extend {var_value} a {fromSize} 3
+        assert_eq(a, 0xFF800000)
+
+        a = 0x000000FF // -1 as 1 byte
+        sign_extend {var_value} a {fromSize} 1
+        assert_eq(a, 0xFFFFFFFF)
+    end
+
+    function test3
+        assert_suspend(@suspend_size_too_big)
+    end
+end
+
+:suspend_size_too_big
+int 0@
+sign_extend {var_value} 0@ {fromSize} 5

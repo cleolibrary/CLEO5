@@ -5,6 +5,8 @@ script_name '0AB8'
 test("0AB8 (get_car_current_gear)", tests)
 terminate_this_custom_script
 
+const MODEL_LANDSTAL = 400
+
 function tests
     it("should get car current gear", test1)
     return
@@ -12,7 +14,7 @@ function tests
     function test1()
         int carHandle, gear
     
-        carHandle = SpawnCar(#LANDSTAL)
+        carHandle = SpawnCar(MODEL_LANDSTAL)
         int pedHandle = create_random_char_as_driver {vehicle} carHandle
 
         wait {time} 250

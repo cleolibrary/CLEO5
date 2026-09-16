@@ -1,0 +1,60 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '2304'
+test("2304 (get_script_filename)", tests)
+terminate_this_custom_script
+
+function tests
+    it("should return the file name of this script", test1)
+    it("should return the full path when requested", test2)
+    it("should suspend on an invalid script pointer", test3)
+    return
+
+    function test1
+        int name = allocate_memory {size} 64
+
+        name = get_script_filename {address} -1 {fullPath} false
+        assert_result_true()
+        assert_suffix(name, ".s", true)
+        is_text_in_text {text} name {subText} "2304" {ignoreCase} true
+        assert_result_true()
+
+        // any running script can be addressed by its struct pointer
+        int script = get_this_script_struct
+        name = get_script_filename {address} script {fullPath} false
+        assert_result_true()
+        assert_suffix(name, ".s", true)
+
+        free_memory {address} name
+    end
+
+    function test2
+        // the full path is longer than a script string variable, so both results
+        // go into allocated buffers
+        int name = allocate_memory {size} 64
+        int full = allocate_memory {size} 260
+
+        name = get_script_filename {address} -1 {fullPath} false
+        assert_result_true()
+        full = get_script_filename {address} -1 {fullPath} true
+        assert_result_true()
+
+        assert_suffix(full, ".s", true)
+        assert_neqs(full, name) // it is a path now, not just the file name
+        is_text_in_text {text} full {subText} "2304" {ignoreCase} true
+        assert_result_true()
+
+        free_memory {address} name
+        free_memory {address} full
+    end
+
+    function test3
+        assert_suspend(@suspend_invalid_pointer)
+    end
+end
+
+:suspend_invalid_pointer
+int 0@
+int 1@
+2@s = get_script_filename {address} 0@ {fullPath} 1@

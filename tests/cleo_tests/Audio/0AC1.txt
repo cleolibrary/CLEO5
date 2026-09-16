@@ -1,44 +1,31 @@
 {$CLEO .s}
-{$USE debug}
-{$USE memory}
-var 0@ : Integer
-var 1@ : Integer
-var 2@ : Integer
-var 3@ : Integer
-var 4@ : Integer
-var 5@ : Integer
-var 6@ : Integer
-var 7@ : Integer
-var 8@ : Integer
-var 9@ : Integer
-var 10@ : Integer
+{$INCLUDE_ONCE ../cleo_tester.inc}
 
 script_name "0AC1" // load_3d_audio_stream
-debug_on
-
-trace "0AC1 (load_3d_audio_stream)"
-
-
-// load not existing file
-wait 0
-if
-    0AC1: load_3d_audio_stream ".\invalid name.mp3" store_to 0@ // tested opcode
-then
-    breakpoint "~r~~h~~h~~h~0AC1 (load_3d_audio_stream), #0 FAILED!~n~Non existing file loaded? Handle: %d" 0@
-else
-    trace "~g~~h~~h~0AC1 (load_3d_audio_stream), #0 PASSED (with expected warning)"
-end
-
-
-// load existing file
-wait 0
-if
-    load_3d_audio_stream ".\Ding.mp3" store_to 0@ // tested opcode
-then
-    trace "~g~~h~~h~0AC1 (load_3d_audio_stream), #1 PASSED"
-else
-    breakpoint "~r~~h~~h~~h~0AC1 (load_3d_audio_stream), #1 FAILED!~n~Failed to load file. Handle: %d" 0@
-end
-
-
+test("0AC1 (load_3d_audio_stream)", tests)
 terminate_this_custom_script
+
+const Test_File = "cleo:\cleo_tests\Audio\Ding.mp3"
+
+
+function tests
+    it("should fail to load non-existing file", test1)
+    it("should load existing file", test2)
+    return
+
+
+    function test1
+        int stream = 0x666
+        stream = load_3d_audio_stream ".\invalid name.mp3" // tested opcode
+        assert_result_false()
+        assert_eq(stream, 0) // no stream created
+    end
+
+
+    function test2
+        int stream = load_3d_audio_stream Test_File // tested opcode
+        assert_result_true()
+        assert_ptr(stream)
+        remove_audio_stream stream
+    end
+end

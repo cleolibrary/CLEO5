@@ -5,7 +5,7 @@ script_name "0AD6"
 test("0AD6 (is_end_of_file_reached)", tests)
 terminate_this_custom_script
 
-const Test_File = ".\test_file.txt"
+const Test_File = ".\test_file.dat"
 
 function tests
     before_each(@setup)

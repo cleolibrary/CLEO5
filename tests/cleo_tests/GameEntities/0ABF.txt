@@ -5,6 +5,8 @@ script_name '0ABF'
 test("0ABF (cleo_set_car_engine_on)", tests)
 terminate_this_custom_script
 
+const MODEL_LANDSTAL = 400
+
 function tests
     it("should set car engine state", test1)
     return
@@ -12,7 +14,7 @@ function tests
     function test1()
         int carHandle
     
-        carHandle = SpawnCar(#LANDSTAL)
+        carHandle = SpawnCar(MODEL_LANDSTAL)
 
         wait {time} 0
         is_car_engine_on carHandle

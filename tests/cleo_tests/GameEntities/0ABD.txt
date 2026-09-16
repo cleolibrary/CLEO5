@@ -5,6 +5,8 @@ script_name '0ABD'
 test("0ABD (is_car_siren_on)", tests)
 terminate_this_custom_script
 
+const MODEL_AMBULAN = 416
+
 function tests
     it("should get car siren state", test1)
     return
@@ -12,7 +14,7 @@ function tests
     function test1()
         int carHandle
     
-        carHandle = SpawnCar(#AMBULAN)
+        carHandle = SpawnCar(MODEL_AMBULAN)
         //int pedHandle = create_random_char_as_driver {vehicle} carHandle // crashes the game
 
         wait {time} 0

@@ -1,0 +1,41 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0B1C'
+test("0B1C (bit_shr_compound)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should shift the variable right", test1)
+    it("should shift by zero", test2)
+    it("should replicate the sign bit of negative values", test3)
+    return
+
+    function test1
+        int a = 0x00010000
+
+        a >>= 4
+        assert_eq(a, 0x00001000)
+
+        a = 0x0000000F
+        a >>= 1
+        assert_eq(a, 0x00000007)
+    end
+
+    function test2
+        int a = 0xFF
+        a >>= 0
+        assert_eq(a, 0xFF)
+    end
+
+    function test3
+        int a = 0x80000000
+        a >>= 1
+        assert_eq(a, 0xC0000000)
+
+        a = 0xFFFFFFFF
+        a >>= 4
+        assert_eq(a, 0xFFFFFFFF)
+    end
+end

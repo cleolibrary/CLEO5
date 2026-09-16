@@ -5,6 +5,8 @@ script_name '0AE2'
 test("0AE2 (get_random_car_in_sphere_no_save_recursive)", tests)
 terminate_this_custom_script
 
+const MODEL_LANDSTAL = 400
+
 function tests
     before_each(@setup)
     after_each(@cleanup)
@@ -60,7 +62,7 @@ function tests
         assert_eq(found, -1)
         
         // mission car
-        int handle = SpawnCar(#LANDSTAL)
+        int handle = SpawnCar(MODEL_LANDSTAL)
         found = 0x666
         found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} true
         assert_result_true()
@@ -75,7 +77,7 @@ function tests
         
         // dead mission car
         delete_car handle
-        handle = SpawnCar(#LANDSTAL)
+        handle = SpawnCar(MODEL_LANDSTAL)
         explode_car handle
         wait 0
         wait 0
@@ -108,7 +110,7 @@ function tests
         assert_eq(found, -1)
         
         // mission car
-        int handle = SpawnCar(#LANDSTAL)
+        int handle = SpawnCar(MODEL_LANDSTAL)
         found = 0x666
         found = get_random_car_in_sphere_no_save_recursive {pos} x y z {radius} 50.0 {findNext} false {skipWrecked} false
         assert_result_true()
@@ -123,7 +125,7 @@ function tests
         
         // dead mission car
         delete_car handle
-        handle = SpawnCar(#LANDSTAL)
+        handle = SpawnCar(MODEL_LANDSTAL)
         explode_car handle
         wait 0
         wait 0
@@ -150,8 +152,8 @@ function test3()
     float x, y, z
     x, y, z = get_char_coordinates $scplayer
     
-    int carA = SpawnCar(#LANDSTAL)
-    int carB = SpawnCar(#LANDSTAL)
+    int carA = SpawnCar(MODEL_LANDSTAL)
+    int carB = SpawnCar(MODEL_LANDSTAL)
     mark_car_as_no_longer_needed carB
     
     // #1

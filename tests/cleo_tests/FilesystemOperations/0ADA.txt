@@ -1,0 +1,61 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '0ADA'
+test("0ADA (scan_file)", tests)
+terminate_this_custom_script
+
+const Test_File = ".\test_file_0ADA.dat"
+
+function tests
+    int fh
+    before_each(@setup)
+    after_each(@cleanup)
+
+    it("should read values from the file", test1)
+    it("should report zero values when nothing matches", test2)
+    return
+
+    :setup
+        if
+            does_file_exist {path} Test_File
+        then
+            delete_file {path} Test_File
+        end
+
+        fh = open_file Test_File {mode} "w+"
+        assert_result_true()
+
+        write_formatted_string_to_file fh {format} "%d %f %s" {args} 42 2.5 "text"
+        file_seek fh {offset} 0 {origin} SeekOrigin.Begin
+    return
+
+    :cleanup
+        close_file fh
+        delete_file {path} Test_File
+    return
+
+    function test1(fh: int)
+        3@ = 0
+        4@ = 0xCCCCCCCC
+        5@s = ''
+
+        scan_file fh {format} "%d %f %s" {var_nValues} 3@ {var_values} 4@ 6@ 5@s
+        assert_result_true()
+        assert_eq(3@, 3) // three values read
+        assert_eq(4@, 42)
+        assert_eqf(6@, 2.5)
+        assert_eqs(5@s, "text")
+    end
+
+    function test2(fh: int)
+        3@ = 0xCCCCCCCC
+        4@ = 0xCCCCCCCC
+
+        // the file content does not start with "number:" so nothing can be scanned
+        scan_file fh {format} "number: %d" {var_nValues} 3@ {var_values} 4@
+        assert_result_true()
+        assert_eq(3@, 0) // no values read
+        assert_eq(4@, 0xCCCCCCCC) // target left untouched
+    end
+end
