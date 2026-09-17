@@ -221,18 +221,21 @@ namespace CLEO
             // new camera velocity
             if (!skipFrame)
             {
-                CVector vel = position - prevPos;
-                vel /= timeStep; // meters per second
+                if (timeStep > 0.0f)
+                {
+                    CVector vel = position - prevPos;
+                    vel /= timeStep; // meters per second
 
-                if (!skipFramePrev)
-                {
-                    // averaging to smooth artifacts caused by GTA's janky mouse camera control
-                    velocity = (velocity * 2.0f) + vel;
-                    velocity /= 3.0f;
-                }
-                else
-                {
-                    velocity = vel;
+                    if (!skipFramePrev)
+                    {
+                        // averaging to smooth artifacts caused by GTA's janky mouse camera control
+                        velocity = (velocity * 2.0f) + vel;
+                        velocity /= 3.0f;
+                    }
+                    else
+                    {
+                        velocity = vel;
+                    }
                 }
 
                 auto bPos = toBass(position);
