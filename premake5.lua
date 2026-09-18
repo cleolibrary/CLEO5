@@ -142,7 +142,7 @@ local function define_cleo_plugin(config)
         targetextension ".cleo"
         characterset "MBCS"
 
-        targetdir "cleo_plugins/.output"
+        targetdir "cleo_plugins/.output/%{cfg.buildcfg}"
         objdir("cleo_plugins/.output/.obj/%{cfg.buildcfg}/" .. name)
 
         dependson { "CLEO" }
