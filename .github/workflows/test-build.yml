@@ -83,7 +83,7 @@ jobs:
         uses: crazy-max/ghaction-virustotal@936d8c5c00afe97d3d9a1af26d017cfdf26800a2 # 5.0.0
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: './cleo_plugins/.output/Release/*.cleo'
+          files: './.output/Release/cleo_plugins/*.cleo'
 
       - name: Plugins - VirusTotal log
         if: steps.scan_plugins.outcome == 'success'
@@ -98,7 +98,7 @@ jobs:
           mkdir .output\Release\cleo\cleo_plugins
 
           @echo Copy files
-          copy cleo_plugins\.output\Release\*.cleo .output\Release\cleo\cleo_plugins
+          copy .output\Release\cleo_plugins\*.cleo .output\Release\cleo\cleo_plugins
           
           @echo Download Sanny Builder Library json
           curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json
