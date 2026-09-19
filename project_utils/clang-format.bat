@@ -2,6 +2,7 @@
 echo Formatting all C/C++ files using clang-format...
 
 setlocal enabledelayedexpansion
+pushd "%~dp0.."
 
 set "ignore_files="
 for /f "delims=" %%i in (./.clang-format-ignore) do (
@@ -28,6 +29,7 @@ for %%e in (cpp h c hpp) do (
     )
 )
 
+popd
 echo.
 echo Formatting complete!
 pause

@@ -13,8 +13,7 @@ on:
       - '**.def'
       - '**.lib'
       - '**.rc'
-      - 'premake5.lua'
-      - 'premake5.exe'
+      - 'project_utils/**'
       - '**.lua'
       - '**.yml'
 
@@ -52,14 +51,14 @@ jobs:
 
       - name: Generate Project Files
         shell: cmd
-        run: premake5.exe vs2026
+        run: project_utils\premake5.exe --file=project_utils\premake5.lua vs2026
 
       - name: Build
         shell: cmd
         run: |
           @echo off
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild project/CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
+          msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Compilation"
 
       - name: Core - VirusTotal scan

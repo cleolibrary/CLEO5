@@ -72,17 +72,19 @@ CLEO is continually being improved and extended over time. In very rare circumst
 
 2. Generate Visual Studio project files using Premake:
    - For **Visual Studio 2022**:
+     Run `project_utils\generate-project-2022.bat` or execute:
      ```cmd
-     premake5.exe vs2022
+     project_utils\premake5.exe --file=project_utils\premake5.lua vs2022
      ```
    - For **Visual Studio 2026**:
+     Run `project_utils\generate-project-2026.bat` or execute:
      ```cmd
-     premake5.exe vs2026
+     project_utils\premake5.exe --file=project_utils\premake5.lua vs2026
      ```
 
-3. Open `project/CLEO5.sln` (for VS 2022) or `project/CLEO5.slnx` (for VS 2026) in Visual Studio and build the **Release** configuration (Win32), or build via command line:
+3. Open `CLEO5.sln` (for VS 2022) or `CLEO5.slnx` (for VS 2026) in Visual Studio and build the **Release** configuration (Win32), or build via command line:
    ```cmd
-   msbuild project/CLEO5.slnx /p:Configuration=Release /p:Platform=Win32
+   msbuild CLEO5.slnx /p:Configuration=Release /p:Platform=Win32
    ```
 
 Compiled binaries will be placed in `.output/Release/` (`CLEO.asi`) and `cleo_plugins/.output/Release/` (`SA.*.cleo`).
