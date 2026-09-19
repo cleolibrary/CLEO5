@@ -116,14 +116,14 @@ project "CLEO"
     filter "configurations:Release"
         rtti "Off"
         postbuildcommands {
-            'xcopy /Y "$(OutDir)$(TargetName).lib" "$(SolutionDir)cleo_sdk\\"',
-            'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y "$(OutDir)$(TargetName).asi" "$(GTA_SA_DIR)\\" )'
+            'xcopy /Y /R /I "$(OutDir)$(TargetName).lib" "$(SolutionDir)cleo_sdk\\"',
+            'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y /R /I "$(OutDir)$(TargetName).asi" "$(GTA_SA_DIR)\\" )'
         }
 
     filter "configurations:Debug"
         postbuildcommands {
-            'xcopy /Y "$(OutDir)$(TargetName).lib" "$(SolutionDir)cleo_sdk\\"',
-            'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y "$(OutDir)$(TargetName).asi" "$(GTA_SA_DIR)\\" & xcopy /Y "$(OutDir)$(TargetName).pdb" "$(GTA_SA_DIR)\\" )'
+            'xcopy /Y /R /I "$(OutDir)$(TargetName).lib" "$(SolutionDir)cleo_sdk\\"',
+            'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y /R /I "$(OutDir)$(TargetName).asi" "$(GTA_SA_DIR)\\" & xcopy /Y /R /I "$(OutDir)$(TargetName).pdb" "$(GTA_SA_DIR)\\" )'
         }
 
     filter {}
@@ -189,12 +189,12 @@ local function define_cleo_plugin(config)
 
         filter "configurations:Release"
             postbuildcommands {
-                'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y "$(OutDir)$(TargetName).cleo" "$(GTA_SA_DIR)\\cleo\\cleo_plugins\\\\" )'
+                'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y /R /I "$(OutDir)$(TargetName).cleo" "$(GTA_SA_DIR)\\cleo\\cleo_plugins\\" )'
             }
 
         filter "configurations:Debug"
             postbuildcommands {
-                'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y "$(OutDir)$(TargetName).cleo" "$(GTA_SA_DIR)\\cleo\\cleo_plugins\\\\" & xcopy /Y "$(OutDir)$(TargetName).pdb" "$(GTA_SA_DIR)\\cleo\\cleo_plugins\\\\" )'
+                'if defined GTA_SA_DIR ( taskkill /IM gta_sa.exe /F /FI "STATUS eq RUNNING" & xcopy /Y /R /I "$(OutDir)$(TargetName).cleo" "$(GTA_SA_DIR)\\cleo\\cleo_plugins\\" & xcopy /Y /R /I "$(OutDir)$(TargetName).pdb" "$(GTA_SA_DIR)\\cleo\\cleo_plugins\\" )'
             }
 
         filter {}
