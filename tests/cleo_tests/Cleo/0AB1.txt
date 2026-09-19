@@ -99,6 +99,8 @@ function tests
     
     it_cs5("should call module export", test2_cs5)
     it_cs4("should call module export", test2_cs4)
+
+    it("should clear function scope in a custom mission", test_function_scope_in_custom_mission)    
     
     return
 
@@ -451,6 +453,26 @@ function tests
         else
             assert_eq(result, -1)
         end
+    end
+
+    function test_function_scope_in_custom_mission
+        $300 = -1
+        $301 = -1
+        $302 = -1
+        $999 = 0
+
+        // 1@ and 2@ of the mission get non-zero values, which must NOT leak
+        // into the nested cleo_call's fresh scope
+        load_and_launch_custom_mission {scriptFileName} "cleo_tests/Cleo/cleoCallMission" {args} 99999 42 7
+
+        while $999 == 0
+            wait {time} 0
+        end
+        wait {time} 0
+
+        assert_eq($300, 99999)
+        assert_eq($301, 0)
+        assert_eq($302, 0)
     end
 end
 

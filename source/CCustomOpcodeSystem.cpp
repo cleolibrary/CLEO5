@@ -1113,7 +1113,7 @@ namespace CLEO
         {
             for (DWORD i = nParams; i < 32; i++)
             {
-                thread->SetIntVar(i, 0); // fill with zeros
+                locals[i].dwParam = 0; // fill with zeros
             }
         }
 
