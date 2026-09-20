@@ -28,6 +28,9 @@ workspace "CLEO5"
         "/SAFESEH:NO"
     }
 
+    debugcommand "$(GTA_SA_DIR)\\gta_sa.exe"
+    debugdir "$(GTA_SA_DIR)"
+
     filter "configurations:Debug"
         defines { "_DEBUG" }
         symbols "On"
