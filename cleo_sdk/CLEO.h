@@ -700,19 +700,14 @@ namespace CLEO
         void SetBaseIp(void* ip) { BaseIP = ip; }
         void Jump(int offset) { CLEO_ThreadJumpAtLabelPtr(this, offset); }
         CRunningScript* GetNext() const { return Next; }
+        void SetNext(CRunningScript* v) { Next = v; }
         CRunningScript* GetPrev() const { return Previous; }
+        void SetPrev(CRunningScript* v) { Previous = v; }
         void SetIsExternal(bool b) { bIsExternal = b; }
         void SetActive(bool b) { bIsActive = b; }
 
-        void SetNext(CRunningScript* v) { Next = v; }
-        void SetPrev(CRunningScript* v) { Previous = v; }
-        SCRIPT_VAR* GetVarPtr() { return LocalVar; }
-        SCRIPT_VAR* GetVarPtr(int i) { return &LocalVar[i]; }
-        int* GetIntVarPtr(int i) { return (int*)&LocalVar[i].dwParam; }
-        int GetIntVar(int i) const { return LocalVar[i].dwParam; }
-        void SetIntVar(int i, int v) { LocalVar[i].dwParam = v; }
-        void SetFloatVar(int i, float v) { LocalVar[i].fParam = v; }
-        char GetByteVar(int i) const { return LocalVar[i].bParam; }
+        SCRIPT_VAR* GetLocalVarPtr(int idx = 0) { return IsMission() ? &missionLocals[idx] : &LocalVar[idx]; }
+        const SCRIPT_VAR* GetLocalVarPtr(int idx = 0) const { return IsMission() ? &missionLocals[idx] : &LocalVar[idx]; }
         bool GetConditionResult() const { return bCondResult != false; }
         void SetConditionResult(bool result) { CLEO_SetThreadCondResult(this, result); }
         bool GetNotFlag() const { return NotFlag; }
