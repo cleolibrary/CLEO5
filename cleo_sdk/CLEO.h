@@ -707,7 +707,10 @@ namespace CLEO
         void SetActive(bool b) { bIsActive = b; }
 
         SCRIPT_VAR* GetLocalVarPtr(int idx = 0) { return IsMission() ? &missionLocals[idx] : &LocalVar[idx]; }
-        const SCRIPT_VAR* GetLocalVarPtr(int idx = 0) const { return IsMission() ? &missionLocals[idx] : &LocalVar[idx]; }
+        const SCRIPT_VAR* GetLocalVarPtr(int idx = 0) const
+        {
+            return IsMission() ? &missionLocals[idx] : &LocalVar[idx];
+        }
         bool GetConditionResult() const { return bCondResult != false; }
         void SetConditionResult(bool result) { CLEO_SetThreadCondResult(this, result); }
         bool GetNotFlag() const { return NotFlag; }
