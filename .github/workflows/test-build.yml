@@ -13,9 +13,8 @@ on:
       - '**.def'
       - '**.lib'
       - '**.rc'
-      - '**.vcproj'
-      - '**.vcxproj.filters'
-      - '**.sln'
+      - 'project_utils/**'
+      - '**.lua'
       - '**.yml'
 
 permissions:
@@ -50,13 +49,17 @@ jobs:
         id: custom_build
         run: node.exe .github/workflows/tag-custom-build.js
 
-      - name: Core - Build
+      - name: Generate Project Files
+        shell: cmd
+        run: project_utils\premake5.exe --file=project_utils\premake5.lua vs2026
+
+      - name: Build
         shell: cmd
         run: |
           @echo off
           set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
           msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
-          node .github/workflows/analyze-build-log.js "Core compilation"
+          node .github/workflows/analyze-build-log.js "Compilation"
 
       - name: Core - VirusTotal scan
         id: scan_core
@@ -72,14 +75,6 @@ jobs:
         if: steps.scan_core.outcome == 'success'
         run: echo "::notice title=CLEO Core virus scan::${{steps.scan_core.outputs.analysis}}"
 
-      - name: Plugins - Build
-        shell: cmd
-        run: |
-          @echo off
-          set PLUGIN_SDK_DIR=%GITHUB_WORKSPACE%\third-party\plugin-sdk
-          msbuild cleo_plugins/CLEO_Plugins.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
-          node .github/workflows/analyze-build-log.js "Plugins compilation"
-
       - name: Plugins - VirusTotal scan
         id: scan_plugins
         env:
@@ -88,22 +83,17 @@ jobs:
         uses: crazy-max/ghaction-virustotal@936d8c5c00afe97d3d9a1af26d017cfdf26800a2 # 5.0.0
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: './cleo_plugins/.output/*.cleo'
+          files: './.output/Release/cleo/cleo_plugins/*.cleo'
 
       - name: Plugins - VirusTotal log
         if: steps.scan_plugins.outcome == 'success'
-        run: echo "::notice title=CLEO Core virus scan::${{steps.scan_plugins.outputs.analysis}}"
+        run: echo "::notice title=CLEO Plugins virus scan::${{steps.scan_plugins.outputs.analysis}}"
 
       - name: Gather output files
         shell: cmd
         run: |
           @echo Create directories
-          mkdir .output\Release\cleo
           mkdir .output\Release\cleo\.config
-          mkdir .output\Release\cleo\cleo_plugins
-
-          @echo Copy files
-          copy cleo_plugins\.output\*.cleo .output\Release\cleo\cleo_plugins
           
           @echo Download Sanny Builder Library json
           curl -fL https://raw.githubusercontent.com/sannybuilder/library/master/sa/sa.json -o .output\Release\cleo\.config\sa.json

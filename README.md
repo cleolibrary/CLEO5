@@ -54,6 +54,41 @@ CLEO is continually being improved and extended over time. In very rare circumst
 - [CLEO scripting introduction](https://tutorial.sannybuilder.com/)
 - [Example CLEO5 scripts](https://github.com/cleolibrary/CLEO5/tree/master/examples)
 
+## Building from Source
+
+### Prerequisites
+- [Visual Studio 2022](https://visualstudio.microsoft.com/) or [Visual Studio 2026](https://visualstudio.microsoft.com/) with **Desktop development with C++** (v143 toolset)
+- Git with submodules
+
+### Build Instructions
+1. Clone the repository with submodules:
+   ```cmd
+   git clone --recursive https://github.com/cleolibrary/CLEO5.git
+   ```
+   If you already cloned without `--recursive`, run:
+   ```cmd
+   git submodule update --init --recursive
+   ```
+
+2. Generate Visual Studio project files using Premake:
+   - For **Visual Studio 2022**:
+     Run `project_utils\generate-project-2022.bat` or execute:
+     ```cmd
+     project_utils\premake5.exe --file=project_utils\premake5.lua vs2022
+     ```
+   - For **Visual Studio 2026**:
+     Run `project_utils\generate-project-2026.bat` or execute:
+     ```cmd
+     project_utils\premake5.exe --file=project_utils\premake5.lua vs2026
+     ```
+
+3. Open `CLEO5.sln` (for VS 2022) or `CLEO5.slnx` (for VS 2026) in Visual Studio and build the **Release** configuration (Win32), or build via command line:
+   ```cmd
+   msbuild CLEO5.slnx /p:Configuration=Release /p:Platform=Win32
+   ```
+
+Compiled binaries will be placed in `.output/Release/` (`CLEO.asi`) and `.output/Release/cleo/cleo_plugins/` (`SA.*.cleo`).
+
 ## Credits
 
 - Seemann - the author and original developer of the CLEO library

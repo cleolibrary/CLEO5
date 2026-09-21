@@ -1,7 +1,7 @@
 @ECHO OFF
 REM tests\_build_tests.bat - build the CLEO test scripts into a game folder.
 REM
-REM Double-click friendly, like clang-format.bat: it asks for whatever it cannot
+REM Double-click friendly, like project_utils\clang-format.bat: it asks for whatever it cannot
 REM detect, streams the build progress and waits at the end so a failure stays
 REM readable. Pure cmd.exe - no bash, no MSYS/Git-for-Windows needed.
 REM
