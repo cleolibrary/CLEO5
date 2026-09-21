@@ -12,6 +12,7 @@ workspace "CLEO5"
     functionlevellinking "On"
     warnings "Default"
     fatalwarnings { "All" }
+    externalwarnings "Off"
 
     defines {
         "NOMINMAX",
@@ -21,7 +22,8 @@ workspace "CLEO5"
 
     buildoptions {
         "/Zc:threadSafeInit-",
-        "/sdl"
+        "/sdl",
+        "/we26815"
     }
 
     linkoptions {
@@ -71,7 +73,10 @@ project "CLEO"
 
     includedirs {
         "../source",
-        "../cleo_sdk",
+        "../cleo_sdk"
+    }
+
+    externalincludedirs {
         PLUGIN_SDK_INCLUDES,
         "../third-party/simdjson/singleheader",
         "../third-party/simpleini"
@@ -154,8 +159,11 @@ local function define_cleo_plugin(config)
 
         includedirs {
             "../cleo_sdk",
-            PLUGIN_SDK_INCLUDES,
             config.extra_includedirs or {}
+        }
+
+        externalincludedirs {
+            PLUGIN_SDK_INCLUDES
         }
 
         resdefines {
