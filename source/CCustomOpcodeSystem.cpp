@@ -1108,10 +1108,7 @@ namespace CLEO
         // initialize (clear) rest of new scope local variables
         if (CLEO_GetScriptVersion(thread) >= CLEO_VER_4_MIN) // CLEO 3 did not cleared local variables
         {
-            for (int i = nParams; i < 32; i++)
-            {
-                thread->GetLocalVarPtr(i)->dwParam = 0; // fill with zeros
-            }
+            memset(thread->GetLocalVarPtr(nParams), 0, (32 - nParams) * sizeof(SCRIPT_VAR));
         }
 
         // jump to label

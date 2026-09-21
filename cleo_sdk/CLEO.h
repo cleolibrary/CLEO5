@@ -630,7 +630,7 @@ namespace CLEO
         BYTE* Stack[8];              // 0x18 return stack for 0050, 0051
         WORD SP;                     // 0x38 current item in stack
         BYTE _pad3A[2];              // 0x3A padding
-        SCRIPT_VAR LocalVar[32];     // 0x3C script's local variables
+        SCRIPT_VAR LocalVar[32];     // 0x3C script's local variables. Use GetLocalVarPtr to access!
         DWORD Timers[2];             // 0xBC script's timers
         bool bIsActive;              // 0xC4 is script active
         bool bCondResult;            // 0xC5 condition result. Use SetConditionResult to modify!
