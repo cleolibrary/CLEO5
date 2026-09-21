@@ -1067,9 +1067,6 @@ namespace CLEO
         scmFunc->callArgCount = (BYTE)nParams;
 
         static SCRIPT_VAR arguments[32];
-        SCRIPT_VAR* locals       = thread->IsMission() ? missionLocals : thread->GetVarPtr();
-        SCRIPT_VAR* localsEnd    = locals + 32;
-        SCRIPT_VAR* storedLocals = scmFunc->savedTls;
 
         // collect arguments
         for (DWORD i = 0; i < nParams; i++)
@@ -1106,15 +1103,12 @@ namespace CLEO
         scmFunc->retnAddress = thread->GetBytePointer();
 
         // pass arguments as new scope local variables
-        memcpy(locals, arguments, nParams * sizeof(SCRIPT_VAR));
+        memcpy(thread->GetLocalVarPtr(), arguments, nParams * sizeof(SCRIPT_VAR));
 
         // initialize (clear) rest of new scope local variables
         if (CLEO_GetScriptVersion(thread) >= CLEO_VER_4_MIN) // CLEO 3 did not cleared local variables
         {
-            for (DWORD i = nParams; i < 32; i++)
-            {
-                thread->SetIntVar(i, 0); // fill with zeros
-            }
+            memset(thread->GetLocalVarPtr(nParams), 0, (32 - nParams) * sizeof(SCRIPT_VAR));
         }
 
         // jump to label

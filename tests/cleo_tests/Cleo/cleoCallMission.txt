@@ -1,0 +1,19 @@
+{$CLEO .cm}
+// Fixture for Cleo/0AB1_mission test (issue #567)
+
+// Mission is called with 3 input arguments, setting 0@, 1@, and 2@.
+
+// Call Func with the first argument. Inside the Func 1@ and 2@ must be zeros
+0AB1: @Func 1 0@
+
+wait {time} 0
+
+$999 = 1
+terminate_this_script
+
+
+:Func
+008B: $300 = 0@ // the passed argument (mission's own first argument)
+008B: $301 = 1@ // must be 0 (was the mission's 1@ before the fix)
+008B: $302 = 2@ // must be 0 (was the mission's 2@ before the fix)
+0AB2: ret 0

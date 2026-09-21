@@ -630,7 +630,7 @@ namespace CLEO
         BYTE* Stack[8];              // 0x18 return stack for 0050, 0051
         WORD SP;                     // 0x38 current item in stack
         BYTE _pad3A[2];              // 0x3A padding
-        SCRIPT_VAR LocalVar[32];     // 0x3C script's local variables
+        SCRIPT_VAR LocalVar[32];     // 0x3C script's local variables. Use GetLocalVarPtr to access!
         DWORD Timers[2];             // 0xBC script's timers
         bool bIsActive;              // 0xC4 is script active
         bool bCondResult;            // 0xC5 condition result. Use SetConditionResult to modify!
@@ -700,19 +700,17 @@ namespace CLEO
         void SetBaseIp(void* ip) { BaseIP = ip; }
         void Jump(int offset) { CLEO_ThreadJumpAtLabelPtr(this, offset); }
         CRunningScript* GetNext() const { return Next; }
+        void SetNext(CRunningScript* v) { Next = v; }
         CRunningScript* GetPrev() const { return Previous; }
+        void SetPrev(CRunningScript* v) { Previous = v; }
         void SetIsExternal(bool b) { bIsExternal = b; }
         void SetActive(bool b) { bIsActive = b; }
 
-        void SetNext(CRunningScript* v) { Next = v; }
-        void SetPrev(CRunningScript* v) { Previous = v; }
-        SCRIPT_VAR* GetVarPtr() { return LocalVar; }
-        SCRIPT_VAR* GetVarPtr(int i) { return &LocalVar[i]; }
-        int* GetIntVarPtr(int i) { return (int*)&LocalVar[i].dwParam; }
-        int GetIntVar(int i) const { return LocalVar[i].dwParam; }
-        void SetIntVar(int i, int v) { LocalVar[i].dwParam = v; }
-        void SetFloatVar(int i, float v) { LocalVar[i].fParam = v; }
-        char GetByteVar(int i) const { return LocalVar[i].bParam; }
+        SCRIPT_VAR* GetLocalVarPtr(int idx = 0) { return IsMission() ? &missionLocals[idx] : &LocalVar[idx]; }
+        const SCRIPT_VAR* GetLocalVarPtr(int idx = 0) const
+        {
+            return IsMission() ? &missionLocals[idx] : &LocalVar[idx];
+        }
         bool GetConditionResult() const { return bCondResult != false; }
         void SetConditionResult(bool result) { CLEO_SetThreadCondResult(this, result); }
         bool GetNotFlag() const { return NotFlag; }
