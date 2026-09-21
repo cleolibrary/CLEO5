@@ -87,7 +87,7 @@ CLEO is continually being improved and extended over time. In very rare circumst
    msbuild CLEO5.slnx /p:Configuration=Release /p:Platform=Win32
    ```
 
-Compiled binaries will be placed in `.output/Release/` (`CLEO.asi`) and `.output/Release/cleo_plugins/` (`SA.*.cleo`).
+Compiled binaries will be placed in `.output/Release/` (`CLEO.asi`) and `.output/Release/cleo/cleo_plugins/` (`SA.*.cleo`).
 
 ## Credits
 

@@ -69,7 +69,7 @@ jobs:
 #          certificatename: 'Seemann'
 #          description: 'CLEO 5 Plugin'
 #          timestampUrl: 'http://timestamp.digicert.com'
-#          folder: './.output/Release/cleo_plugins'
+#          folder: './.output/Release/cleo/cleo_plugins'
 
       - name: Plugins - VirusTotal scan
         id: scan_plugins
@@ -79,7 +79,7 @@ jobs:
         uses: crazy-max/ghaction-virustotal@936d8c5c00afe97d3d9a1af26d017cfdf26800a2 # 5.0.0
         with:
           vt_api_key: ${{ secrets.VT_KEY }}
-          files: './.output/Release/cleo_plugins/*.cleo'
+          files: './.output/Release/cleo/cleo_plugins/*.cleo'
 
       - name: Plugins - VirusTotal log
         if: steps.scan_plugins.outcome == 'success'
@@ -89,17 +89,14 @@ jobs:
         shell: cmd
         run: |
           @echo Create directories
-          mkdir .output\Release\cleo
           mkdir .output\Release\cleo\.config
           mkdir .output\Release\cleo\cleo_modules
-          mkdir .output\Release\cleo\cleo_plugins
           mkdir .output\Release\cleo\cleo_saves
           mkdir .output\Release\cleo\cleo_text
           mkdir .output\Release\cleo_readme
           mkdir .output\Release\cleo_readme\examples
 
           @echo Copy files
-          copy .output\Release\cleo_plugins\*.cleo .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
           xcopy /E /I examples .output\Release\cleo_readme\examples
 

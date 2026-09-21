@@ -80,15 +80,11 @@ jobs:
         shell: cmd
         run: |
           @echo Create directories
-          mkdir .output\Release\cleo
           mkdir .output\Release\cleo\.config
-          mkdir .output\Release\cleo\cleo_plugins
           mkdir .output\Release\cleo_readme
 
           @echo Copy files
           copy preview_changes.md .output\Release\cleo_readme\CLEO5_Preview.md
-          copy .output\Release\cleo_plugins\*.cleo .output\Release\cleo\cleo_plugins
-          copy .output\Release\cleo_plugins\*.ini .output\Release\cleo\cleo_plugins
           copy cleo_plugins\Audio\bass\bass.dll .output\Release\bass.dll
 
           @echo Download Sanny Builder Library json
