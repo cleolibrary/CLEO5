@@ -93,7 +93,7 @@ jobs:
 
       - name: Download NewOpcodes plugin
         shell: cmd
-        run: curl -fL https://github.com/cleolibrary/NewOpcodes/releases/latest/download/NewOpcodes.cleo -o .output\Release\cleo\cleo_plugins\NewOpcodes.cleo
+        run: curl -fL https://github.com/cleolibrary/NewOpcodes/releases/latest/download/NewOpcodes.cleo -o .output\Release\cleo\NewOpcodes.cleo
 
       - name: Pack archive
         if: ${{ hashFiles('preview_changes.md') != '' }}
