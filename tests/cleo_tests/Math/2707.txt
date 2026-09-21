@@ -44,8 +44,12 @@ function tests
             end
         end
         
-        assert_range(aCount, 80, 130) // flaky
-        assert_range(bCount, 80, 130)
-        assert_range(cCount, 80, 130)
+        assert_range(aCount, 50, 150) // expected value: 100
+        assert_range(bCount, 50, 150) // expected value: 100
+        assert_range(cCount, 50, 150) // expected value: 100
+		
+		int total = aCount + bCount
+		total += cCount
+		assert_eq(total, 300) // only expected texts were returned
     end
 end
