@@ -232,8 +232,8 @@ namespace CLEO
         const auto scriptLogEnabled = CConfigManager::ReadInt("Plugins", "DebugUtils.ScriptLog.Enabled", 0);
         if (scriptLogEnabled != 0)
         {
-            const auto path = (GetLogDirectory() + "\\cleo_script.log").c_str();
-            TRACE(" DebugUtils.ScriptLog.Enabled = %d, path: %s", scriptLogEnabled, path);
+            const auto path = GetLogDirectory() + "\\cleo_script.log";
+            TRACE(" DebugUtils.ScriptLog.Enabled = %d, path: %s", scriptLogEnabled, path.c_str());
         }
         else
         {
