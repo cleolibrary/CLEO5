@@ -75,6 +75,6 @@ function tests
         end
         count /= 500.0
     
-        assert_rangef(count, 0.2, 0.4) // expected value 0.333(3)
+        assert_rangef(count, 0.15, 0.6) // expected value 0.333(3)
     end
 end

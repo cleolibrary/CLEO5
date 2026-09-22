@@ -428,6 +428,7 @@ function assert_suspend(label: int)
     int code = get_label_pointer label
     int script = CRunningScript_new(code)
     int op_result = CRunningScript_ProcessOneCommand(script)
+    op_result &= 0xFF // result is byte
 
     free_memory {address} script
     assert_eq(op_result, 0xFF) // OR_ERROR = -1
