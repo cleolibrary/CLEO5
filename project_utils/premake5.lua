@@ -166,16 +166,13 @@ local function define_cleo_plugin(config)
             PLUGIN_SDK_INCLUDES
         }
 
+        defines {
+            'TARGET_NAME=R"(' .. target_name .. ')"'
+        }
+
         resdefines {
             'TARGET_NAME=' .. target_name .. '.cleo'
         }
-
-        filter "files:**.c or files:**.cpp"
-            defines {
-                'TARGET_NAME=R"(' .. target_name .. ')"'
-            }
-
-        filter {}
 
         libdirs {
             "../cleo_sdk",
