@@ -171,7 +171,7 @@ local function define_cleo_plugin(config)
         }
 
         resdefines {
-            'TARGET_NAME=' .. target_name .. '.cleo'
+            'TARGET_FILENAME=' .. target_name .. '.cleo'
         }
 
         libdirs {
