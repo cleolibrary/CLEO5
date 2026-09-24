@@ -23,7 +23,8 @@ workspace "CLEO5"
     buildoptions {
         "/Zc:threadSafeInit-",
         "/sdl",
-        "/we26815"
+        "/we26815",
+        '/D"TARGET_NAME=R\\"($(TargetName))\\""'
     }
 
     linkoptions {
@@ -82,9 +83,6 @@ project "CLEO"
         "../third-party/simpleini"
     }
 
-    defines {
-        'TARGET_NAME=R"(CLEO)"'
-    }
 
     pchheader "stdafx.h"
     pchsource "../source/stdafx.cpp"
@@ -167,15 +165,9 @@ local function define_cleo_plugin(config)
         }
 
         resdefines {
-            'TARGET_NAME=' .. target_name .. '.cleo'
+            "TARGET_NAME=$(TargetFileName)"
         }
 
-        filter "files:**.c or files:**.cpp"
-            defines {
-                'TARGET_NAME=R"(' .. target_name .. ')"'
-            }
-
-        filter {}
 
         libdirs {
             "../cleo_sdk",
