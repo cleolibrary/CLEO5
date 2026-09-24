@@ -13,6 +13,8 @@ namespace CLEO
             return nullptr;
         }
 
+        if (buffLen > 0) buff[0] = '\0'; // valid cstr, even if error or nothing read
+
         auto paramType = thread->PeekDataType();
         auto arrayType = thread->PeekArrayType();
         auto isVariableInt =
@@ -63,6 +65,7 @@ namespace CLEO
             case DT_TEXTLABEL: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
                 memcpy(buff, str, std::min(buffLen, 8));
+                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
                 thread->IncPtr(8); // text data
                 return buff;
             }
@@ -70,6 +73,7 @@ namespace CLEO
             case DT_STRING: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
                 memcpy(buff, str, std::min(buffLen, 16));
+                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
                 thread->IncPtr(16); // ext data
                 return buff;
             }
