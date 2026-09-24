@@ -66,7 +66,7 @@ namespace CLEO
                 CleoInstance.OpcodeSystem.handledParamCount++;
                 memcpy(buff, str, std::min(buffLen, 8));
                 if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
-                thread->IncPtr(8); // text data
+                thread->IncPtr(8);               // text data
                 return buff;
             }
 
@@ -74,7 +74,7 @@ namespace CLEO
                 CleoInstance.OpcodeSystem.handledParamCount++;
                 memcpy(buff, str, std::min(buffLen, 16));
                 if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
-                thread->IncPtr(16); // ext data
+                thread->IncPtr(16);                // ext data
                 return buff;
             }
             }
