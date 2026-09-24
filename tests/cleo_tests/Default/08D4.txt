@@ -1,0 +1,66 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '08D4'
+test("08D4 (create_menu)", tests)
+terminate_this_custom_script
+
+
+// CMenuSystem::MenuNumber (SA 1.0 US)
+const MenuNumber = 0x00BA82D8
+// CMenuSystem::tMenuPanel
+const Panel_m_acTitle = 0x3CC
+const Panel_m_nNumColumns = 0x3F7
+
+
+function tests
+    it("should handle an 8 character GXT key as header", test1)
+    it("should handle an 8 character variable-length string as header", test2)
+    return
+
+    function test1
+        // 8 character key: game copies 8 bytes, no terminator - title ran away over the stack
+        int menuHandle = create_menu {header} 'LONGKEY1' {topLeftX} 29.0 {topLeftY} 170.0 {width} 180.0 {numColumns} 1 {interactive} false {background} true {alignment} Align.Center
+
+        int menuOffset = menuHandle * 4
+        int panel = read_memory_with_offset {address} MenuNumber {offset} menuOffset {size} 4
+        assert_neq(panel, 0) // menu was created
+
+        int titleValue = read_memory_with_offset {address} panel {offset} Panel_m_acTitle {size} 4
+        assert_eq(titleValue, 0x474E4F4C) // "LONG"
+
+        int titleTerminatorOffset = Panel_m_acTitle + 8
+        int titleTerminator = read_memory_with_offset {address} panel {offset} titleTerminatorOffset {size} 1
+        assert_eq(titleTerminator, 0) // key is null terminated
+
+        int numColumns = read_memory_with_offset {address} panel {offset} Panel_m_nNumColumns {size} 1
+        assert_eq(numColumns, 1) // panel fields were not overwritten
+
+        wait {time} 0 // let the game display the menu
+
+        delete_menu menuHandle
+    end
+
+    function test2
+        // same key as a variable-length string (0x0E), the reported form
+        int menuHandle = create_menu {header} "NON_EXIS" {topLeftX} 29.0 {topLeftY} 170.0 {width} 180.0 {numColumns} 1 {interactive} false {background} true {alignment} Align.Center
+
+        int menuOffset = menuHandle * 4
+        int panel = read_memory_with_offset {address} MenuNumber {offset} menuOffset {size} 4
+        assert_neq(panel, 0) // menu was created
+
+        int titleValue = read_memory_with_offset {address} panel {offset} Panel_m_acTitle {size} 4
+        assert_eq(titleValue, 0x5F4E4F4E) // "NON_"
+
+        int titleTerminatorOffset = Panel_m_acTitle + 8
+        int titleTerminator = read_memory_with_offset {address} panel {offset} titleTerminatorOffset {size} 1
+        assert_eq(titleTerminator, 0) // string is null terminated
+
+        int numColumns = read_memory_with_offset {address} panel {offset} Panel_m_nNumColumns {size} 1
+        assert_eq(numColumns, 1) // panel fields were not overwritten
+
+        wait {time} 0 // let the game display the menu
+
+        delete_menu menuHandle
+    end
+end

@@ -4,6 +4,14 @@
 
 namespace CLEO
 {
+    // Copies a text parameter into the destination buffer and null terminates it.
+    static void CopyStringParam(char* buff, int buffLen, const char* str, int strLen)
+    {
+        const int len = std::min(buffLen, strLen);
+        memcpy(buff, str, len);
+        if (buffLen > 0) buff[len] = '\0';
+    }
+
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
     {
         if (buff == nullptr || buffLen < 0)
@@ -33,10 +41,8 @@ namespace CLEO
                 return nullptr; // error
             }
 
-            auto len = std::min((int)strlen(str), buffLen);
-            memcpy(buff, str, len);
-            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
-            return str;                          // pointer to original data
+            CopyStringParam(buff, buffLen, str, (int)strlen(str));
+            return str; // pointer to original data
         }
         else if (paramType == DT_VARLEN_STRING)
         {
@@ -49,8 +55,8 @@ namespace CLEO
             char* str = (char*)thread->GetBytePointer();
             thread->IncPtr(length); // text data
 
-            memcpy(buff, str, std::min(buffLen, (int)length));
-            if ((int)length < buffLen) buff[length] = '\0'; // add terminator if possible
+            // variable-length strings carry no terminator in the script
+            CopyStringParam(buff, buffLen, str, (int)length);
             return buff;
         }
         else if (IsImmString(paramType))
@@ -62,14 +68,17 @@ namespace CLEO
             {
             case DT_TEXTLABEL: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 8));
+                // SCM text labels are always 7 characters + terminator, so this is a no-op at worst
+                CopyStringParam(buff, buffLen, str, 8);
                 thread->IncPtr(8); // text data
                 return buff;
             }
 
             case DT_STRING: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 16));
+                // 16 bytes long strings can hold up to 15 characters + terminator, which is lost
+                // when a shorter length is requested (e.g. an 8 characters long GXT key)
+                CopyStringParam(buff, buffLen, str, 16);
                 thread->IncPtr(16); // ext data
                 return buff;
             }
@@ -85,8 +94,7 @@ namespace CLEO
             case DT_VAR_TEXTLABEL_ARRAY:
             case DT_LVAR_TEXTLABEL_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 8));
-                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
+                CopyStringParam(buff, buffLen, str, 8);
                 return buff;
             }
 
@@ -96,8 +104,7 @@ namespace CLEO
             case DT_VAR_STRING_ARRAY:
             case DT_LVAR_STRING_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 16));
-                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
+                CopyStringParam(buff, buffLen, str, 16);
                 return buff;
             }
             }

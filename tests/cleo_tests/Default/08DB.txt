@@ -1,0 +1,42 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '08DB'
+test("08DB (set_menu_column)", tests)
+terminate_this_custom_script
+
+
+// CMenuSystem::MenuNumber (SA 1.0 US)
+const MenuNumber = 0x00BA82D8
+// CMenuSystem::tMenuPanel
+const Panel_m_aaacRowTitles = 0x41
+const Panel_m_aacColumnHeaders = 0x3A4
+
+
+function tests
+    it("should handle 8 character GXT keys in columns and rows", test1)
+    return
+
+    function test1
+        // 8 character column and row keys: game copies 8 bytes, no terminator - labels ran into the panel fields
+        int menuHandle = create_menu {header} 'HEADER01' {topLeftX} 29.0 {topLeftY} 170.0 {width} 180.0 {numColumns} 1 {interactive} false {background} true {alignment} Align.Center
+
+        int menuOffset = menuHandle * 4
+        int panel = read_memory_with_offset {address} MenuNumber {offset} menuOffset {size} 4
+        assert_neq(panel, 0) // menu was created
+
+        set_menu_column menuHandle {column} 0 {title} 'TITLE001' {data} 'ROWKEY01' 'ROWKEY02' 'ROWKEY03' 'ROWKEY04' 'ROWKEY05' 'ROWKEY06' 'ROWKEY07' 'ROWKEY08' 'ROWKEY09' 'ROWKEY10' 'ROWKEY11' 'ROWKEY12'
+
+        int columnHeaderTerminatorOffset = Panel_m_aacColumnHeaders + 8
+        int columnHeaderTerminator = read_memory_with_offset {address} panel {offset} columnHeaderTerminatorOffset {size} 1
+        assert_eq(columnHeaderTerminator, 0) // key is null terminated
+
+        int rowTitleTerminatorOffset = Panel_m_aaacRowTitles + 8
+        int rowTitleTerminator = read_memory_with_offset {address} panel {offset} rowTitleTerminatorOffset {size} 1
+        assert_eq(rowTitleTerminator, 0) // key is null terminated
+
+        wait {time} 0 // let the game display the menu
+
+        delete_menu menuHandle
+    end
+end
