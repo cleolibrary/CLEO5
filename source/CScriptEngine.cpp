@@ -58,8 +58,6 @@ namespace CLEO
 
             char* str = (char*)thread->GetBytePointer();
             thread->IncPtr(length); // text data
-
-            // variable-length strings carry no terminator in the script
             CopyResult(str, (int)length);
             return buff;
         }
