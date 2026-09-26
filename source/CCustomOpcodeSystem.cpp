@@ -234,11 +234,7 @@ namespace CLEO
 
     const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize)
     {
-        if (buffSize > 0)
-        {
-            buff[buffSize - 1] = '\0'; // buffer always terminated
-        }
-        return GetScriptStringParam(thread, 0, buff, buffSize - 1); // minus terminator
+        return GetScriptStringParam(thread, 0, buff, buffSize);
     }
 
     // write output\result string parameter
