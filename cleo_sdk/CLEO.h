@@ -573,8 +573,8 @@ namespace CLEO
 
         DWORD WINAPI CLEO_GetScriptTextureById(CRunningScript* thread, int id); // returns RwTexture*
 
-        // returns BASS' HSTREAM
-        DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* unused, DWORD scriptAudioStreamHandle);
+        // get native BASS stream handle for specified CLEO audio stream. NULL if streamHandle is not valid
+        DWORD WINAPI CLEO_GetInternalAudioStream(CRunningScript* unused, DWORD streamHandle); // returns HSTREAM
 
         struct StringList
         {
