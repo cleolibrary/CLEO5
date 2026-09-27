@@ -66,18 +66,18 @@ class ScreenLog
                     const char c = msg[i];
                     switch (c)
                     {
-                    case '\n':
-                        this->msg += "~n~";
-                        break;
+                        case '\n':
+                            this->msg += "~n~";
+                            break;
 
-                    // characters not represented correctly by game's font texture
-                    case '{':
-                    case '}':
-                        this->msg.push_back('_');
-                        break;
+                        // characters not represented correctly by game's font texture
+                        case '{':
+                        case '}':
+                            this->msg.push_back('_');
+                            break;
 
-                    default:
-                        this->msg.push_back(c);
+                        default:
+                            this->msg.push_back(c);
                     }
                 }
 

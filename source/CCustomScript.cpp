@@ -340,24 +340,24 @@ std::string CCustomScript::ResolvePath(const char* path, const char* _customWork
     FS::path resolved;
     switch (virtualPrefix)
     {
-    case VPref::User:
-        resolved = GetUserDirectory();
-        break;
-    case VPref::Script:
-        resolved = GetScriptFileDir();
-        break;
-    case VPref::Game:
-        resolved = GetGameDirectory();
-        break;
-    case VPref::Cleo:
-        resolved = GetCleoDirectory();
-        break;
-    case VPref::Modules:
-        resolved = GetCleoDirectory() + "\\cleo_modules";
-        break;
-    default:
-        resolved = "<error>";
-        break; // should never happen
+        case VPref::User:
+            resolved = GetUserDirectory();
+            break;
+        case VPref::Script:
+            resolved = GetScriptFileDir();
+            break;
+        case VPref::Game:
+            resolved = GetGameDirectory();
+            break;
+        case VPref::Cleo:
+            resolved = GetCleoDirectory();
+            break;
+        case VPref::Modules:
+            resolved = GetCleoDirectory() + "\\cleo_modules";
+            break;
+        default:
+            resolved = "<error>";
+            break; // should never happen
     }
 
     // append all but virtual prefix from original path

@@ -7,3 +7,4 @@ AlignConsecutiveAssignments: Consecutive
 AlignAfterOpenBracket: BlockIndent
 AllowShortFunctionsOnASingleLine: Inline
 NamespaceIndentation: All
+IndentCaseLabels: true

@@ -223,22 +223,22 @@ class GameEntities
         auto veh = (CVehicleModelInfo*)model;
         switch (veh->m_nVehicleType)
         {
-        case VEHICLE_AUTOMOBILE:
-        case VEHICLE_MTRUCK:
-        case VEHICLE_QUAD:
-        case VEHICLE_HELI:
-        case VEHICLE_PLANE:
-        case VEHICLE_BOAT:
-        // case VEHICLE_TRAIN:
-        // case VEHICLE_FHELI:
-        // case VEHICLE_FPLANE:
-        case VEHICLE_BIKE:
-        case VEHICLE_BMX:
-        case VEHICLE_TRAILER:
-            break;
+            case VEHICLE_AUTOMOBILE:
+            case VEHICLE_MTRUCK:
+            case VEHICLE_QUAD:
+            case VEHICLE_HELI:
+            case VEHICLE_PLANE:
+            case VEHICLE_BOAT:
+            // case VEHICLE_TRAIN:
+            // case VEHICLE_FHELI:
+            // case VEHICLE_FPLANE:
+            case VEHICLE_BIKE:
+            case VEHICLE_BMX:
+            case VEHICLE_TRAILER:
+                break;
 
-        default:
-            return OR_CONTINUE; // unsupported vehicle type
+            default:
+                return OR_CONTINUE; // unsupported vehicle type
         }
 
         CCheat::VehicleCheat(modelIndex);

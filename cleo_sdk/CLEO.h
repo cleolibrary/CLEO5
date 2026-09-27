@@ -89,68 +89,68 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_END:
-            return "VArgEnd";
-            break;
-        case DT_DWORD:
-            return "Int32";
-            break;
-        case DT_VAR:
-            return "GlobVar";
-            break;
-        case DT_LVAR:
-            return "LocVar";
-            break;
-        case DT_BYTE:
-            return "Int8";
-            break;
-        case DT_WORD:
-            return "Int16";
-            break;
-        case DT_FLOAT:
-            return "Float32";
-            break;
-        case DT_VAR_ARRAY:
-            return "GlobVarArr";
-            break;
-        case DT_LVAR_ARRAY:
-            return "LocVarArr";
-            break;
-        case DT_TEXTLABEL:
-            return "STxt";
-            break;
-        case DT_VAR_TEXTLABEL:
-            return "GlobVarSTxt";
-            break;
-        case DT_LVAR_TEXTLABEL:
-            return "LocVarSTxt";
-            break;
-        case DT_VAR_TEXTLABEL_ARRAY:
-            return "GlobVarSTxtArr";
-            break;
-        case DT_LVAR_TEXTLABEL_ARRAY:
-            return "LocVarSTxtArr";
-            break;
-        case DT_VARLEN_STRING:
-            return "Txt";
-            break;
-        case DT_STRING:
-            return "LTxt";
-            break;
-        case DT_VAR_STRING:
-            return "GlobVarLTxt";
-            break;
-        case DT_LVAR_STRING:
-            return "LocVarLTxt";
-            break;
-        case DT_VAR_STRING_ARRAY:
-            return "GlobVarLTxtArr";
-            break;
-        case DT_LVAR_STRING_ARRAY:
-            return "LocVarLTxtArr";
-            break;
-        default:
-            return "corrupted";
+            case DT_END:
+                return "VArgEnd";
+                break;
+            case DT_DWORD:
+                return "Int32";
+                break;
+            case DT_VAR:
+                return "GlobVar";
+                break;
+            case DT_LVAR:
+                return "LocVar";
+                break;
+            case DT_BYTE:
+                return "Int8";
+                break;
+            case DT_WORD:
+                return "Int16";
+                break;
+            case DT_FLOAT:
+                return "Float32";
+                break;
+            case DT_VAR_ARRAY:
+                return "GlobVarArr";
+                break;
+            case DT_LVAR_ARRAY:
+                return "LocVarArr";
+                break;
+            case DT_TEXTLABEL:
+                return "STxt";
+                break;
+            case DT_VAR_TEXTLABEL:
+                return "GlobVarSTxt";
+                break;
+            case DT_LVAR_TEXTLABEL:
+                return "LocVarSTxt";
+                break;
+            case DT_VAR_TEXTLABEL_ARRAY:
+                return "GlobVarSTxtArr";
+                break;
+            case DT_LVAR_TEXTLABEL_ARRAY:
+                return "LocVarSTxtArr";
+                break;
+            case DT_VARLEN_STRING:
+                return "Txt";
+                break;
+            case DT_STRING:
+                return "LTxt";
+                break;
+            case DT_VAR_STRING:
+                return "GlobVarLTxt";
+                break;
+            case DT_LVAR_STRING:
+                return "LocVarLTxt";
+                break;
+            case DT_VAR_STRING_ARRAY:
+                return "GlobVarLTxtArr";
+                break;
+            case DT_LVAR_STRING_ARRAY:
+                return "LocVarLTxtArr";
+                break;
+            default:
+                return "corrupted";
         }
     }
 
@@ -158,10 +158,10 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_BYTE:
-        case DT_WORD:
-        case DT_DWORD:
-            return true;
+            case DT_BYTE:
+            case DT_WORD:
+            case DT_DWORD:
+                return true;
         }
         return false;
     }
@@ -175,10 +175,10 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_STRING:
-        case DT_TEXTLABEL:
-        case DT_VARLEN_STRING:
-            return true;
+            case DT_STRING:
+            case DT_TEXTLABEL:
+            case DT_VARLEN_STRING:
+                return true;
         }
         return false;
     }
@@ -187,15 +187,15 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_LVAR_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING:
-        case DT_LVAR_STRING_ARRAY:
-        case DT_VAR_TEXTLABEL:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING:
-        case DT_VAR_STRING_ARRAY:
-            return true;
+            case DT_LVAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+                return true;
         }
         return false;
     }
@@ -204,11 +204,11 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_VAR:
-        case DT_VAR_ARRAY:
-        case DT_LVAR:
-        case DT_LVAR_ARRAY:
-            return true;
+            case DT_VAR:
+            case DT_VAR_ARRAY:
+            case DT_LVAR:
+            case DT_LVAR_ARRAY:
+                return true;
         }
         return false;
     }
@@ -217,13 +217,13 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING_ARRAY:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING_ARRAY:
-        case DT_VAR_ARRAY:
-        case DT_LVAR_ARRAY:
-            return true;
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING_ARRAY:
+            case DT_VAR_ARRAY:
+            case DT_LVAR_ARRAY:
+                return true;
         }
         return false;
     }
@@ -231,63 +231,63 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_BYTE:
-        case DT_WORD:
-        case DT_DWORD:
-            return "int";
-            break;
-
-        case DT_FLOAT:
-            return "float";
-            break;
-
-        case DT_STRING:
-        case DT_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING:
-        case DT_LVAR_STRING_ARRAY:
-        case DT_VAR_TEXTLABEL:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING:
-        case DT_VAR_STRING_ARRAY:
-        case DT_VARLEN_STRING:
-            return "string";
-            break;
-
-        case DT_VAR:
-        case DT_LVAR:
-            return "variable";
-            break;
-
-        case DT_VAR_ARRAY:
-        case DT_LVAR_ARRAY:
-            switch (arrType)
-            {
-            case AT_INT:
+            case DT_BYTE:
+            case DT_WORD:
+            case DT_DWORD:
                 return "int";
                 break;
 
-            case AT_FLOAT:
+            case DT_FLOAT:
                 return "float";
                 break;
 
-            case AT_TEXTLABEL:
-            case AT_STRING:
+            case DT_STRING:
+            case DT_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+            case DT_VARLEN_STRING:
                 return "string";
                 break;
 
-            default:
+            case DT_VAR:
+            case DT_LVAR:
                 return "variable";
-            }
+                break;
 
-        case DT_END:
-            return "varArgEnd";
-            break;
+            case DT_VAR_ARRAY:
+            case DT_LVAR_ARRAY:
+                switch (arrType)
+                {
+                    case AT_INT:
+                        return "int";
+                        break;
 
-        default:
-            return "corrupted";
-            break;
+                    case AT_FLOAT:
+                        return "float";
+                        break;
+
+                    case AT_TEXTLABEL:
+                    case AT_STRING:
+                        return "string";
+                        break;
+
+                    default:
+                        return "variable";
+                }
+
+            case DT_END:
+                return "varArgEnd";
+                break;
+
+            default:
+                return "corrupted";
+                break;
         }
     }
 

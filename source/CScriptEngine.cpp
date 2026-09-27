@@ -59,46 +59,46 @@ namespace CLEO
 
             switch (paramType)
             {
-            case DT_TEXTLABEL: {
-                CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 8));
-                thread->IncPtr(8); // text data
-                return buff;
-            }
+                case DT_TEXTLABEL: {
+                    CleoInstance.OpcodeSystem.handledParamCount++;
+                    memcpy(buff, str, std::min(buffLen, 8));
+                    thread->IncPtr(8); // text data
+                    return buff;
+                }
 
-            case DT_STRING: {
-                CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 16));
-                thread->IncPtr(16); // ext data
-                return buff;
-            }
+                case DT_STRING: {
+                    CleoInstance.OpcodeSystem.handledParamCount++;
+                    memcpy(buff, str, std::min(buffLen, 16));
+                    thread->IncPtr(16); // ext data
+                    return buff;
+                }
             }
         }
         else if (IsVarString(paramType))
         {
             switch (paramType)
             {
-            // short string variable
-            case DT_VAR_TEXTLABEL:
-            case DT_LVAR_TEXTLABEL:
-            case DT_VAR_TEXTLABEL_ARRAY:
-            case DT_LVAR_TEXTLABEL_ARRAY: {
-                auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 8));
-                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
-                return buff;
-            }
+                // short string variable
+                case DT_VAR_TEXTLABEL:
+                case DT_LVAR_TEXTLABEL:
+                case DT_VAR_TEXTLABEL_ARRAY:
+                case DT_LVAR_TEXTLABEL_ARRAY: {
+                    auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
+                    memcpy(buff, str, std::min(buffLen, 8));
+                    if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
+                    return buff;
+                }
 
-            // long string variable
-            case DT_VAR_STRING:
-            case DT_LVAR_STRING:
-            case DT_VAR_STRING_ARRAY:
-            case DT_LVAR_STRING_ARRAY: {
-                auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 16));
-                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
-                return buff;
-            }
+                // long string variable
+                case DT_VAR_STRING:
+                case DT_LVAR_STRING:
+                case DT_VAR_STRING_ARRAY:
+                case DT_LVAR_STRING_ARRAY: {
+                    auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
+                    memcpy(buff, str, std::min(buffLen, 16));
+                    if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
+                    return buff;
+                }
             }
         }
 
@@ -329,16 +329,16 @@ namespace CLEO
         int ver = CConfigManager::ReadInt("General", "MainScmLegacyMode", 0);
         switch (ver)
         {
-        case 3:
-            NativeScriptsVersion = eCLEO_Version::CLEO_VER_3;
-            break;
-        case 4:
-            NativeScriptsVersion = eCLEO_Version::CLEO_VER_4;
-            break;
-        default:
-            NativeScriptsVersion = eCLEO_Version::CLEO_VER_CUR;
-            ver                  = 0;
-            break;
+            case 3:
+                NativeScriptsVersion = eCLEO_Version::CLEO_VER_3;
+                break;
+            case 4:
+                NativeScriptsVersion = eCLEO_Version::CLEO_VER_4;
+                break;
+            default:
+                NativeScriptsVersion = eCLEO_Version::CLEO_VER_CUR;
+                ver                  = 0;
+                break;
         }
         if (ver != 0) TRACE("Legacy mode for native scripts active: CLEO%d", ver);
 

@@ -101,18 +101,18 @@ float C3DAudioStream::CalculateVolume()
 
     switch (type)
     {
-    case SoundEffect:
-        vol *= CSoundSystem::masterVolumeSfx;
-        break;
-    case Music:
-        vol *= CSoundSystem::masterVolumeMusic;
-        break;
-    case UserInterface:
-        vol *= CSoundSystem::masterVolumeSfx;
-        break;
-    default:
-        vol *= 1.0f;
-        break;
+        case SoundEffect:
+            vol *= CSoundSystem::masterVolumeSfx;
+            break;
+        case Music:
+            vol *= CSoundSystem::masterVolumeMusic;
+            break;
+        case UserInterface:
+            vol *= CSoundSystem::masterVolumeSfx;
+            break;
+        default:
+            vol *= 1.0f;
+            break;
     }
 
     // distance decay
@@ -144,17 +144,17 @@ float C3DAudioStream::CalculateSpeed()
     float masterSpeed;
     switch (type)
     {
-    case SoundEffect:
-        masterSpeed = CSoundSystem::masterSpeed;
-        break;
-    case Music:
-        masterSpeed = CSoundSystem::masterSpeed;
-        break;
-    case UserInterface:
-        masterSpeed = 1.0f;
-        break;
-    default:
-        masterSpeed = 1.0f;
+        case SoundEffect:
+            masterSpeed = CSoundSystem::masterSpeed;
+            break;
+        case Music:
+            masterSpeed = CSoundSystem::masterSpeed;
+            break;
+        case UserInterface:
+            masterSpeed = 1.0f;
+            break;
+        default:
+            masterSpeed = 1.0f;
     }
 
     return masterSpeed * speed.value();
@@ -191,17 +191,17 @@ void C3DAudioStream::UpdatePosition()
         bool hostValid = false;
         switch (hostType)
         {
-        case ENTITY_TYPE_OBJECT:
-            hostValid = CPools::ms_pObjectPool->IsObjectValid((CObject*)host);
-            break;
+            case ENTITY_TYPE_OBJECT:
+                hostValid = CPools::ms_pObjectPool->IsObjectValid((CObject*)host);
+                break;
 
-        case ENTITY_TYPE_PED:
-            hostValid = CPools::ms_pPedPool->IsObjectValid((CPed*)host);
-            break;
+            case ENTITY_TYPE_PED:
+                hostValid = CPools::ms_pPedPool->IsObjectValid((CPed*)host);
+                break;
 
-        case ENTITY_TYPE_VEHICLE:
-            hostValid = CPools::ms_pVehiclePool->IsObjectValid((CVehicle*)host);
-            break;
+            case ENTITY_TYPE_VEHICLE:
+                hostValid = CPools::ms_pVehiclePool->IsObjectValid((CVehicle*)host);
+                break;
         }
         if (!hostValid)
         {

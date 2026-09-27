@@ -96,18 +96,18 @@ class FileSystemOperations
             auto idx = OPCODE_READ_PARAM_INT();
             switch (idx)
             {
-            case 0:
-                path = DIR_GAME;
-                break;
-            case 1:
-                path = DIR_USER;
-                break;
-            case 2:
-                path = DIR_SCRIPT;
-                break;
-            default:
-                LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(thread).c_str());
-                return OR_CONTINUE;
+                case 0:
+                    path = DIR_GAME;
+                    break;
+                case 1:
+                    path = DIR_USER;
+                    break;
+                case 2:
+                    path = DIR_SCRIPT;
+                    break;
+                default:
+                    LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(thread).c_str());
+                    return OR_CONTINUE;
             }
 
             // Hack: restore global workDir if script used some hacky way to set it instead of 0A99 (SkinSelector)

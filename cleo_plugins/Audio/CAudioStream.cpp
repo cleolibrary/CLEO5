@@ -140,14 +140,14 @@ void CLEO::CAudioStream::SetType(eStreamType value)
 {
     switch (value)
     {
-    case eStreamType::SoundEffect:
-    case eStreamType::Music:
-    case eStreamType::UserInterface:
-        type = value;
-        break;
+        case eStreamType::SoundEffect:
+        case eStreamType::Music:
+        case eStreamType::UserInterface:
+            type = value;
+            break;
 
-    default:
-        type = None;
+        default:
+            type = None;
     }
 }
 
@@ -162,26 +162,26 @@ float CAudioStream::CalculateVolume()
 
     switch (type)
     {
-    case SoundEffect:
-        vol *= CSoundSystem::masterVolumeSfx;
-        break;
-    case Music:
-        vol *= CSoundSystem::masterVolumeMusic;
-        break;
-    case UserInterface:
-        vol *= CSoundSystem::masterVolumeSfx;
-        break;
+        case SoundEffect:
+            vol *= CSoundSystem::masterVolumeSfx;
+            break;
+        case Music:
+            vol *= CSoundSystem::masterVolumeMusic;
+            break;
+        case UserInterface:
+            vol *= CSoundSystem::masterVolumeSfx;
+            break;
     }
 
     // screen black fade
     switch (type)
     {
-    case SoundEffect:
-        vol *= AEAudioHardware.m_fEffectsFaderScalingFactor;
-        break;
-    case Music:
-        vol *= AEAudioHardware.m_fMusicFaderScalingFactor;
-        break;
+        case SoundEffect:
+            vol *= AEAudioHardware.m_fEffectsFaderScalingFactor;
+            break;
+        case Music:
+            vol *= AEAudioHardware.m_fMusicFaderScalingFactor;
+            break;
     }
 
     // music volume lowering in cutscenes, when characters talk, mission sounds are played etc.
@@ -201,17 +201,17 @@ float CAudioStream::CalculateSpeed()
     float masterSpeed;
     switch (type)
     {
-    case SoundEffect:
-        masterSpeed = CSoundSystem::masterSpeed;
-        break;
-    case Music:
-        masterSpeed = TheCamera.m_bWideScreenOn ? 1.0f : CSoundSystem::masterSpeed;
-        break;
-    case UserInterface:
-        masterSpeed = 1.0f;
-        break;
-    default:
-        masterSpeed = 1.0f;
+        case SoundEffect:
+            masterSpeed = CSoundSystem::masterSpeed;
+            break;
+        case Music:
+            masterSpeed = TheCamera.m_bWideScreenOn ? 1.0f : CSoundSystem::masterSpeed;
+            break;
+        case UserInterface:
+            masterSpeed = 1.0f;
+            break;
+        default:
+            masterSpeed = 1.0f;
     }
 
     return speed.value() * masterSpeed;

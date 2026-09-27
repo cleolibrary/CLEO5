@@ -314,25 +314,25 @@ namespace CLEO
         {
             switch (paramType)
             {
-            // short string variable
-            case DT_VAR_TEXTLABEL:
-            case DT_LVAR_TEXTLABEL:
-            case DT_VAR_TEXTLABEL_ARRAY:
-            case DT_LVAR_TEXTLABEL_ARRAY:
-                result.data           = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                result.size           = 8;
-                result.needTerminator = false;
-                return result;
+                // short string variable
+                case DT_VAR_TEXTLABEL:
+                case DT_LVAR_TEXTLABEL:
+                case DT_VAR_TEXTLABEL_ARRAY:
+                case DT_LVAR_TEXTLABEL_ARRAY:
+                    result.data           = (char*)CScriptEngine::GetScriptParamPointer(thread);
+                    result.size           = 8;
+                    result.needTerminator = false;
+                    return result;
 
-            // long string variable
-            case DT_VAR_STRING:
-            case DT_LVAR_STRING:
-            case DT_VAR_STRING_ARRAY:
-            case DT_LVAR_STRING_ARRAY:
-                result.data           = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                result.size           = 16;
-                result.needTerminator = false;
-                return result;
+                // long string variable
+                case DT_VAR_STRING:
+                case DT_LVAR_STRING:
+                case DT_VAR_STRING_ARRAY:
+                case DT_LVAR_STRING_ARRAY:
+                    result.data           = (char*)CScriptEngine::GetScriptParamPointer(thread);
+                    result.size           = 16;
+                    result.needTerminator = false;
+                    return result;
             }
         }
 
@@ -470,96 +470,96 @@ namespace CLEO
                 // check if argument is available
                 switch (tolower(*iter))
                 {
-                case 's':
-                case 'c':
-                case 'p':
-                case 'd':
-                case 'i':
-                case 'o':
-                case 'u':
-                case 'x':
-                case 'a':
-                case 'e':
-                case 'f':
-                case 'g': {
-                    if (thread->PeekDataType() == DT_END)
-                    {
-                    _ReadFormattedString_ArgMissing: // jump here on error
-                        LOG_WARNING(thread, "More tokens in format string than arguments in script %s", ScriptInfoStr(thread).c_str());
-                        thread->IncPtr(); // skip vararg terminator
-                        outputStr[written] = '\0';
-                        return nullptr; // error
+                    case 's':
+                    case 'c':
+                    case 'p':
+                    case 'd':
+                    case 'i':
+                    case 'o':
+                    case 'u':
+                    case 'x':
+                    case 'a':
+                    case 'e':
+                    case 'f':
+                    case 'g': {
+                        if (thread->PeekDataType() == DT_END)
+                        {
+                        _ReadFormattedString_ArgMissing: // jump here on error
+                            LOG_WARNING(thread, "More tokens in format string than arguments in script %s", ScriptInfoStr(thread).c_str());
+                            thread->IncPtr(); // skip vararg terminator
+                            outputStr[written] = '\0';
+                            return nullptr; // error
+                        }
                     }
-                }
                 }
 
                 switch (*iter)
                 {
-                case 'S':
-                case 's':
-                    if (ReadStringParam(thread, bufa, sizeof(bufa)) == nullptr)
-                    {
-                        strcpy_s(bufa, "(INVALID_STR)");
-                    }
-                    break;
+                    case 'S':
+                    case 's':
+                        if (ReadStringParam(thread, bufa, sizeof(bufa)) == nullptr)
+                        {
+                            strcpy_s(bufa, "(INVALID_STR)");
+                        }
+                        break;
 
-                case 'C':
-                case 'c':
-                    CScriptEngine::GetScriptParams(thread, 1);
-                    bufa[0] = (char)opcodeParams[0].nParam;
-                    bufa[1] = '\0';
-                    break;
+                    case 'C':
+                    case 'c':
+                        CScriptEngine::GetScriptParams(thread, 1);
+                        bufa[0] = (char)opcodeParams[0].nParam;
+                        bufa[1] = '\0';
+                        break;
 
-                case 'p':
-                    CScriptEngine::GetScriptParams(thread, 1);
-                    sprintf_s(bufa, "%08x", opcodeParams[0].dwParam);
-                    break;
-                case 'P':
-                    CScriptEngine::GetScriptParams(thread, 1);
-                    sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
-                    break;
-                case 'a':
-                case 'A':
-                case 'e':
-                case 'E':
-                case 'f':
-                case 'F':
-                case 'g':
-                case 'G':
-                    *fmta++ = *iter;
-                    *fmta   = '\0';
-                    CScriptEngine::GetScriptParams(thread, 1);
-                    sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
-                    break;
+                    case 'p':
+                        CScriptEngine::GetScriptParams(thread, 1);
+                        sprintf_s(bufa, "%08x", opcodeParams[0].dwParam);
+                        break;
+                    case 'P':
+                        CScriptEngine::GetScriptParams(thread, 1);
+                        sprintf_s(bufa, "%08X", opcodeParams[0].dwParam);
+                        break;
+                    case 'a':
+                    case 'A':
+                    case 'e':
+                    case 'E':
+                    case 'f':
+                    case 'F':
+                    case 'g':
+                    case 'G':
+                        *fmta++ = *iter;
+                        *fmta   = '\0';
+                        CScriptEngine::GetScriptParams(thread, 1);
+                        sprintf_s(bufa, fmtbufa, opcodeParams[0].fParam);
+                        break;
 
-                case 'd':
-                case 'D':
-                case 'i':
-                case 'I':
-                case 'o':
-                case 'O':
-                case 'u':
-                case 'U':
-                    *fmta++ = (char)tolower(*iter); // normalize to lowercase
-                    *fmta   = '\0';
-                    CScriptEngine::GetScriptParams(thread, 1);
-                    sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
-                    break;
-                case 'x':
-                case 'X':
-                    *fmta++ = *iter;
-                    *fmta   = '\0';
-                    CScriptEngine::GetScriptParams(thread, 1);
-                    sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
-                    break;
-                default:
-                    // unrecognized or incomplete specifier - error
-                    *fmta++ = *iter;
-                    *fmta   = '\0';
-                    LOG_WARNING(thread, "Unknown format specifier '%s' in script %s", fmtbufa, ScriptInfoStr(thread).c_str());
-                    SkipUnusedVarArgs(thread);
-                    outputStr[written] = '\0';
-                    return nullptr; // error
+                    case 'd':
+                    case 'D':
+                    case 'i':
+                    case 'I':
+                    case 'o':
+                    case 'O':
+                    case 'u':
+                    case 'U':
+                        *fmta++ = (char)tolower(*iter); // normalize to lowercase
+                        *fmta   = '\0';
+                        CScriptEngine::GetScriptParams(thread, 1);
+                        sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
+                        break;
+                    case 'x':
+                    case 'X':
+                        *fmta++ = *iter;
+                        *fmta   = '\0';
+                        CScriptEngine::GetScriptParams(thread, 1);
+                        sprintf_s(bufa, fmtbufa, opcodeParams[0].dwParam);
+                        break;
+                    default:
+                        // unrecognized or incomplete specifier - error
+                        *fmta++ = *iter;
+                        *fmta   = '\0';
+                        LOG_WARNING(thread, "Unknown format specifier '%s' in script %s", fmtbufa, ScriptInfoStr(thread).c_str());
+                        SkipUnusedVarArgs(thread);
+                        outputStr[written] = '\0';
+                        return nullptr; // error
                 }
 
                 char* bufaiter = bufa;

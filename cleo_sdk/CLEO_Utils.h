@@ -286,14 +286,14 @@ namespace CLEO
 
             switch (str[pos + 1])
             {
-            case 'n':
-            case 'N':
-                str.replace(pos, 3, "\n");
-                break;
+                case 'n':
+                case 'N':
+                    str.replace(pos, 3, "\n");
+                    break;
 
-            default:
-                str.erase(pos, 3);
-                break;
+                default:
+                    str.erase(pos, 3);
+                    break;
             }
         }
     }
@@ -499,10 +499,10 @@ namespace CLEO
     {
         switch (id)
         {
-        case -1: // player in focus
-        case 0:  // player 1
-        case 1:  // player 2
-            return true;
+            case -1: // player in focus
+            case 0:  // player 1
+            case 1:  // player 2
+                return true;
         }
 
         return false;

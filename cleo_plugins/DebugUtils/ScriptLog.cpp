@@ -90,18 +90,18 @@ void ScriptLog::LoadConfig(bool keepState)
     {
         switch (CLEO_GetConfigInt("DebugUtils.ScriptLog.Enabled", 0))
         {
-        case 0:
-            state = LoggingState::Disabled;
-            break;
+            case 0:
+                state = LoggingState::Disabled;
+                break;
 
-        case 1:
-        default:
-            state = LoggingState::OnCrash;
-            break;
+            case 1:
+            default:
+                state = LoggingState::OnCrash;
+                break;
 
-        case 2:
-            state = LoggingState::Full;
-            break;
+            case 2:
+                state = LoggingState::Full;
+                break;
         }
     }
 
@@ -150,13 +150,13 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         {
             switch (logCustomScriptsOnly)
             {
-            case -1:
-                m_currScriptLogging = m_customMain;
-                break; // automatic: log if not defaul main.scm
-            case 1:
-                m_currScriptLogging = false;
-                break; // only custom
-                // default: // log all
+                case -1:
+                    m_currScriptLogging = m_customMain;
+                    break; // automatic: log if not defaul main.scm
+                case 1:
+                    m_currScriptLogging = false;
+                    break; // only custom
+                    // default: // log all
             }
         }
 
@@ -236,18 +236,18 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             LogAppend(hasFlags ? ", " : " - ");
             switch (ver)
             {
-            case eCLEO_Version::CLEO_VER_3:
-                LogAppend("CLEO3 compat mode");
-                break;
-            case eCLEO_Version::CLEO_VER_4:
-                LogAppend("CLEO4 compat mode");
-                break;
-            case eCLEO_Version::CLEO_VER_5:
-                LogAppend("CLEO5 compat mode");
-                break;
-            default:
-                LogAppendHex(ver);
-                break;
+                case eCLEO_Version::CLEO_VER_3:
+                    LogAppend("CLEO3 compat mode");
+                    break;
+                case eCLEO_Version::CLEO_VER_4:
+                    LogAppend("CLEO4 compat mode");
+                    break;
+                case eCLEO_Version::CLEO_VER_5:
+                    LogAppend("CLEO5 compat mode");
+                    break;
+                default:
+                    LogAppendHex(ver);
+                    break;
             }
         }
 
@@ -408,17 +408,17 @@ bool ScriptLog::LogAppendScriptParam(
     bool isGlobalVar;
     switch (paramInfo.type)
     {
-    case DT_VAR:
-    case DT_VAR_ARRAY:
-    case DT_VAR_TEXTLABEL:
-    case DT_VAR_TEXTLABEL_ARRAY:
-    case DT_VAR_STRING:
-    case DT_VAR_STRING_ARRAY:
-        isGlobalVar = true;
-        break;
+        case DT_VAR:
+        case DT_VAR_ARRAY:
+        case DT_VAR_TEXTLABEL:
+        case DT_VAR_TEXTLABEL_ARRAY:
+        case DT_VAR_STRING:
+        case DT_VAR_STRING_ARRAY:
+            isGlobalVar = true;
+            break;
 
-    default:
-        isGlobalVar = false;
+        default:
+            isGlobalVar = false;
     }
 
     bool hasVariable = false;
@@ -426,57 +426,57 @@ bool ScriptLog::LogAppendScriptParam(
     {
         switch (paramInfo.type)
         {
-        case DT_END:
-            /*hasVariable = true;
-            if (hasName) LogAppend(' ';
-            LogAppend("ArgsEnd";*/
-            break;
+            case DT_END:
+                /*hasVariable = true;
+                if (hasName) LogAppend(' ';
+                LogAppend("ArgsEnd";*/
+                break;
 
-        case DT_VAR:
-        case DT_VAR_ARRAY:
-        case DT_VAR_TEXTLABEL:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING:
-        case DT_VAR_STRING_ARRAY:
-        case DT_LVAR:
-        case DT_LVAR_ARRAY:
-        case DT_LVAR_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING:
-        case DT_LVAR_STRING_ARRAY:
-            hasVariable = true;
-            if (hasName) LogAppend(' ');
-            if (isGlobalVar) LogAppend('$');
-            LogAppendNum(paramInfo.varIndex);
-            if (!isGlobalVar) LogAppend('@');
+            case DT_VAR:
+            case DT_VAR_ARRAY:
+            case DT_VAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+            case DT_LVAR:
+            case DT_LVAR_ARRAY:
+            case DT_LVAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING:
+            case DT_LVAR_STRING_ARRAY:
+                hasVariable = true;
+                if (hasName) LogAppend(' ');
+                if (isGlobalVar) LogAppend('$');
+                LogAppendNum(paramInfo.varIndex);
+                if (!isGlobalVar) LogAppend('@');
 
-            if (paramInfo.arrayType != eArrayType::AT_NONE)
-            {
-                auto idxVar = GetScriptVar(script, paramInfo.arrayFlags & ATF_INDEX_GLOBAL, paramInfo.arrayIndexVar);
-
-                LogAppend("[ ");
-                if (paramInfo.arrayFlags & ATF_INDEX_GLOBAL) LogAppend('$');
-                LogAppendNum(paramInfo.arrayIndexVar);
-                if ((paramInfo.arrayFlags & ATF_INDEX_GLOBAL) == 0) LogAppend('@');
-                LogAppend('(');
-                if (abs(idxVar->nParam) >= MinValidAddress)
+                if (paramInfo.arrayType != eArrayType::AT_NONE)
                 {
-                    LogAppend("0x");
-                    LogAppendHex(idxVar->dwParam);
+                    auto idxVar = GetScriptVar(script, paramInfo.arrayFlags & ATF_INDEX_GLOBAL, paramInfo.arrayIndexVar);
+
+                    LogAppend("[ ");
+                    if (paramInfo.arrayFlags & ATF_INDEX_GLOBAL) LogAppend('$');
+                    LogAppendNum(paramInfo.arrayIndexVar);
+                    if ((paramInfo.arrayFlags & ATF_INDEX_GLOBAL) == 0) LogAppend('@');
+                    LogAppend('(');
+                    if (abs(idxVar->nParam) >= MinValidAddress)
+                    {
+                        LogAppend("0x");
+                        LogAppendHex(idxVar->dwParam);
+                    }
+                    else
+                        LogAppendNum(idxVar->nParam);
+                    LogAppend(") ]");
                 }
-                else
-                    LogAppendNum(idxVar->nParam);
-                LogAppend(") ]");
-            }
-            break;
+                break;
         }
     }
 
     // no value to print
     switch (paramInfo.type)
     {
-    case DT_END:
-        logValue = false;
+        case DT_END:
+            logValue = false;
     }
 
     if (logValue)
@@ -489,16 +489,39 @@ bool ScriptLog::LogAppendScriptParam(
         // pick presentation style according to param type declared in the mode
         switch (command->arguments[paramIdx].type)
         {
-        case OpcodeInfoDatabase::CommandArgumentType::Other: // enum or class
-        {
-            auto e = m_opcodeDatabase.GetEnum(command->arguments[paramIdx].typeNameLower.c_str());
-            if (e)
+            case OpcodeInfoDatabase::CommandArgumentType::Other: // enum or class
             {
-                if (e->IsNumeric())
+                auto e = m_opcodeDatabase.GetEnum(command->arguments[paramIdx].typeNameLower.c_str());
+                if (e)
                 {
-                    if (!IsImmString(paramInfo.type) && !IsVarString(paramInfo.type))
+                    if (e->IsNumeric())
                     {
-                        auto entry = e->GetEntryName(paramInfo.value.nParam);
+                        if (!IsImmString(paramInfo.type) && !IsVarString(paramInfo.type))
+                        {
+                            auto entry = e->GetEntryName(paramInfo.value.nParam);
+                            if (entry)
+                            {
+                                LogAppend(e->name);
+                                LogAppend('.');
+                                LogAppend(entry);
+                            }
+                            else
+                            {
+                                // TODO: thread lock
+                                paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                                // TODO: thread unlock
+                            }
+                        }
+                        else
+                        {
+                            // TODO: thread lock
+                            paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                            // TODO: thread unlock
+                        }
+                    }
+                    else // text enums
+                    {
+                        auto entry = e->GetEntryName(std::string(paramInfo.GetText()).c_str());
                         if (entry)
                         {
                             LogAppend(e->name);
@@ -512,106 +535,83 @@ bool ScriptLog::LogAppendScriptParam(
                             // TODO: thread unlock
                         }
                     }
-                    else
-                    {
-                        // TODO: thread lock
-                        paramInfo.ValueToString(m_logBuffer); // print according to param type in script
-                        // TODO: thread unlock
-                    }
                 }
-                else // text enums
+                else // class or unknown enum
                 {
-                    auto entry = e->GetEntryName(std::string(paramInfo.GetText()).c_str());
-                    if (entry)
-                    {
-                        LogAppend(e->name);
-                        LogAppend('.');
-                        LogAppend(entry);
-                    }
-                    else
-                    {
-                        // TODO: thread lock
-                        paramInfo.ValueToString(m_logBuffer); // print according to param type in script
-                        // TODO: thread unlock
-                    }
+                    // TODO: thread lock
+                    paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                    // TODO: thread unlock
                 }
+                break;
             }
-            else // class or unknown enum
-            {
+
+                // case OpcodeInfoDatabase::CommandArgumentType::Any:
+                // case OpcodeInfoDatabase::CommandArgumentType::Arguments:
+
+            case OpcodeInfoDatabase::CommandArgumentType::Bool:
+                switch (paramInfo.value.nParam)
+                {
+                    case 0:
+                        LogAppend("false");
+                        break;
+                    case 1:
+                        LogAppend("true");
+                        break;
+                    default:
+                        LogAppendNum(paramInfo.value.nParam);
+                        break;
+                }
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::Float:
+                LogAppendFloat(paramInfo.value.fParam);
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::GxtKey:
+            case OpcodeInfoDatabase::CommandArgumentType::ZoneKey:
+            case OpcodeInfoDatabase::CommandArgumentType::String:
+            case OpcodeInfoDatabase::CommandArgumentType::String128:
+                LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
+                LogAppend(paramInfo.GetText());
+                LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::Int:
+                if (paramInfo.GetBaseType() == DT_DWORD || paramInfo.GetBaseType() == DT_VAR)
+                {
+                    // TODO: thread lock
+                    paramInfo.ValueToString(m_logBuffer);
+                    // TODO: thread unlock
+                }
+                else // expected integer, got something else. Print as hex
+                {
+                    LogAppend("0x");
+                    LogAppendHex(paramInfo.value.nParam);
+                }
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::Label:
+                LogAppend("@LABEL_");
+                LogAppendNum(abs(paramInfo.value.nParam));
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::ModelAny:
+            case OpcodeInfoDatabase::CommandArgumentType::ModelChar:
+            case OpcodeInfoDatabase::CommandArgumentType::ModelObject:
+            case OpcodeInfoDatabase::CommandArgumentType::ModelVehicle:
+                LogAppendNum(paramInfo.value.nParam);
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::ScriptId:
+                LogAppend("0x");
+                LogAppendHex(paramInfo.value.nParam);
+                break;
+
+            default: {
                 // TODO: thread lock
                 paramInfo.ValueToString(m_logBuffer); // print according to param type in script
                 // TODO: thread unlock
             }
-            break;
-        }
-
-            // case OpcodeInfoDatabase::CommandArgumentType::Any:
-            // case OpcodeInfoDatabase::CommandArgumentType::Arguments:
-
-        case OpcodeInfoDatabase::CommandArgumentType::Bool:
-            switch (paramInfo.value.nParam)
-            {
-            case 0:
-                LogAppend("false");
-                break;
-            case 1:
-                LogAppend("true");
-                break;
-            default:
-                LogAppendNum(paramInfo.value.nParam);
-                break;
-            }
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::Float:
-            LogAppendFloat(paramInfo.value.fParam);
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::GxtKey:
-        case OpcodeInfoDatabase::CommandArgumentType::ZoneKey:
-        case OpcodeInfoDatabase::CommandArgumentType::String:
-        case OpcodeInfoDatabase::CommandArgumentType::String128:
-            LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
-            LogAppend(paramInfo.GetText());
-            LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::Int:
-            if (paramInfo.GetBaseType() == DT_DWORD || paramInfo.GetBaseType() == DT_VAR)
-            {
-                // TODO: thread lock
-                paramInfo.ValueToString(m_logBuffer);
-                // TODO: thread unlock
-            }
-            else // expected integer, got something else. Print as hex
-            {
-                LogAppend("0x");
-                LogAppendHex(paramInfo.value.nParam);
-            }
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::Label:
-            LogAppend("@LABEL_");
-            LogAppendNum(abs(paramInfo.value.nParam));
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::ModelAny:
-        case OpcodeInfoDatabase::CommandArgumentType::ModelChar:
-        case OpcodeInfoDatabase::CommandArgumentType::ModelObject:
-        case OpcodeInfoDatabase::CommandArgumentType::ModelVehicle:
-            LogAppendNum(paramInfo.value.nParam);
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::ScriptId:
-            LogAppend("0x");
-            LogAppendHex(paramInfo.value.nParam);
-            break;
-
-        default: {
-            // TODO: thread lock
-            paramInfo.ValueToString(m_logBuffer); // print according to param type in script
-            // TODO: thread unlock
-        }
         }
 
         if (hasVariable) LogAppend(')');

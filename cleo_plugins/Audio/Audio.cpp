@@ -132,20 +132,20 @@ class Audio
         {
             switch (action)
             {
-            case eStreamAction::Stop:
-                stream->Stop();
-                break;
-            case eStreamAction::Play:
-                stream->Play();
-                break;
-            case eStreamAction::Pause:
-                stream->Pause();
-                break;
-            case eStreamAction::Resume:
-                stream->Resume();
-                break;
-            default:
-                LOG_WARNING(thread, "Unknown AudioStreamAction (%d) in script %s", action, ScriptInfoStr(thread).c_str());
+                case eStreamAction::Stop:
+                    stream->Stop();
+                    break;
+                case eStreamAction::Play:
+                    stream->Play();
+                    break;
+                case eStreamAction::Pause:
+                    stream->Pause();
+                    break;
+                case eStreamAction::Resume:
+                    stream->Resume();
+                    break;
+                default:
+                    LOG_WARNING(thread, "Unknown AudioStreamAction (%d) in script %s", action, ScriptInfoStr(thread).c_str());
             }
         }
 

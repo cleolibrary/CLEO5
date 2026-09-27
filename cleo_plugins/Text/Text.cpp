@@ -433,10 +433,10 @@ class Text
 
                         switch (*formatPos)
                         {
-                        case 's':
-                            return DT_STRING;
-                        default:
-                            return DT_VAR; // any32. TODO: actually parse and verify other types?
+                            case 's':
+                                return DT_STRING;
+                            default:
+                                return DT_VAR; // any32. TODO: actually parse and verify other types?
                         }
                     }
                 }

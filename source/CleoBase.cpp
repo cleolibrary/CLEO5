@@ -35,13 +35,13 @@ namespace CLEO
     {
         switch (msg)
         {
-        case WM_ACTIVATE:
-            CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
-            break;
+            case WM_ACTIVATE:
+                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
+                break;
 
-        case WM_KILLFOCUS:
-            CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
-            break;
+            case WM_KILLFOCUS:
+                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
+                break;
         }
 
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);

@@ -357,43 +357,43 @@ namespace CLEO
             {
                 switch (thread->ReadDataType())
                 {
-                case DT_VAR:
-                case DT_LVAR:
-                case DT_VAR_STRING:
-                case DT_LVAR_STRING:
-                case DT_VAR_TEXTLABEL:
-                case DT_LVAR_TEXTLABEL:
-                    thread->IncPtr(2);
-                    break;
-                case DT_VAR_ARRAY:
-                case DT_LVAR_ARRAY:
-                case DT_VAR_TEXTLABEL_ARRAY:
-                case DT_LVAR_TEXTLABEL_ARRAY:
-                case DT_VAR_STRING_ARRAY:
-                case DT_LVAR_STRING_ARRAY:
-                    thread->IncPtr(6);
-                    break;
-                case DT_BYTE:
-                    // case DT_END: // should be only skipped with var args dediacated functions
-                    thread->IncPtr();
-                    break;
-                case DT_WORD:
-                    thread->IncPtr(2);
-                    break;
-                case DT_DWORD:
-                case DT_FLOAT:
-                    thread->IncPtr(4);
-                    break;
-                case DT_VARLEN_STRING:
-                    thread->IncPtr((int)1 + *thread->GetBytePointer()); // as unsigned! length byte + string data
-                    break;
+                    case DT_VAR:
+                    case DT_LVAR:
+                    case DT_VAR_STRING:
+                    case DT_LVAR_STRING:
+                    case DT_VAR_TEXTLABEL:
+                    case DT_LVAR_TEXTLABEL:
+                        thread->IncPtr(2);
+                        break;
+                    case DT_VAR_ARRAY:
+                    case DT_LVAR_ARRAY:
+                    case DT_VAR_TEXTLABEL_ARRAY:
+                    case DT_LVAR_TEXTLABEL_ARRAY:
+                    case DT_VAR_STRING_ARRAY:
+                    case DT_LVAR_STRING_ARRAY:
+                        thread->IncPtr(6);
+                        break;
+                    case DT_BYTE:
+                        // case DT_END: // should be only skipped with var args dediacated functions
+                        thread->IncPtr();
+                        break;
+                    case DT_WORD:
+                        thread->IncPtr(2);
+                        break;
+                    case DT_DWORD:
+                    case DT_FLOAT:
+                        thread->IncPtr(4);
+                        break;
+                    case DT_VARLEN_STRING:
+                        thread->IncPtr((int)1 + *thread->GetBytePointer()); // as unsigned! length byte + string data
+                        break;
 
-                case DT_TEXTLABEL:
-                    thread->IncPtr(8);
-                    break;
-                case DT_STRING:
-                    thread->IncPtr(16);
-                    break;
+                    case DT_TEXTLABEL:
+                        thread->IncPtr(8);
+                        break;
+                    case DT_STRING:
+                        thread->IncPtr(16);
+                        break;
                 }
             }
 
