@@ -8,10 +8,7 @@ using namespace CLEO;
 C3DAudioStream::C3DAudioStream(const char* filepath) : CAudioStream()
 {
     // see https://github.com/cleolibrary/CLEO5/pull/230
-    static_assert(
-        offsetof(C3DAudioStream, streamInternal) == 4 && alignof(C3DAudioStream) == 4,
-        "C3DAudioStream compatibility with CLEO4 broken!"
-    );
+    static_assert(offsetof(C3DAudioStream, streamInternal) == 4 && alignof(C3DAudioStream) == 4, "C3DAudioStream compatibility with CLEO4 broken!");
 
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {
@@ -75,9 +72,7 @@ void C3DAudioStream::Process()
     // position and velocity
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormalizeAndMag();
-    float inFactor = (float)CalculateDistanceDecay(
-        radius * 5.0f, distance * 5.0f
-    ); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
 
     // stereo panning
     float sign        = dot(CSoundSystem::direction, relPos) > 0.0f ? 1.0f : -1.0f;
@@ -100,26 +95,24 @@ float C3DAudioStream::CalculateVolume()
 
     CVector relPos = position - CSoundSystem::position;
     float distance = relPos.NormalizeAndMag();
-    float inFactor = (float)CalculateDistanceDecay(
-        radius * 5.0f, distance * 5.0f
-    ); // use decay curve for blending inside-outside source effects
+    float inFactor = (float)CalculateDistanceDecay(radius * 5.0f, distance * 5.0f); // use decay curve for blending inside-outside source effects
 
     double vol = Volume_3D_Adjust;
 
     switch (type)
     {
-    case SoundEffect:
-        vol *= CSoundSystem::masterVolumeSfx;
-        break;
-    case Music:
-        vol *= CSoundSystem::masterVolumeMusic;
-        break;
-    case UserInterface:
-        vol *= CSoundSystem::masterVolumeSfx;
-        break;
-    default:
-        vol *= 1.0f;
-        break;
+        case SoundEffect:
+            vol *= CSoundSystem::masterVolumeSfx;
+            break;
+        case Music:
+            vol *= CSoundSystem::masterVolumeMusic;
+            break;
+        case UserInterface:
+            vol *= CSoundSystem::masterVolumeSfx;
+            break;
+        default:
+            vol *= 1.0f;
+            break;
     }
 
     // distance decay
@@ -151,17 +144,17 @@ float C3DAudioStream::CalculateSpeed()
     float masterSpeed;
     switch (type)
     {
-    case SoundEffect:
-        masterSpeed = CSoundSystem::masterSpeed;
-        break;
-    case Music:
-        masterSpeed = CSoundSystem::masterSpeed;
-        break;
-    case UserInterface:
-        masterSpeed = 1.0f;
-        break;
-    default:
-        masterSpeed = 1.0f;
+        case SoundEffect:
+            masterSpeed = CSoundSystem::masterSpeed;
+            break;
+        case Music:
+            masterSpeed = CSoundSystem::masterSpeed;
+            break;
+        case UserInterface:
+            masterSpeed = 1.0f;
+            break;
+        default:
+            masterSpeed = 1.0f;
     }
 
     return masterSpeed * speed.value();
@@ -198,17 +191,17 @@ void C3DAudioStream::UpdatePosition()
         bool hostValid = false;
         switch (hostType)
         {
-        case ENTITY_TYPE_OBJECT:
-            hostValid = CPools::ms_pObjectPool->IsObjectValid((CObject*)host);
-            break;
+            case ENTITY_TYPE_OBJECT:
+                hostValid = CPools::ms_pObjectPool->IsObjectValid((CObject*)host);
+                break;
 
-        case ENTITY_TYPE_PED:
-            hostValid = CPools::ms_pPedPool->IsObjectValid((CPed*)host);
-            break;
+            case ENTITY_TYPE_PED:
+                hostValid = CPools::ms_pPedPool->IsObjectValid((CPed*)host);
+                break;
 
-        case ENTITY_TYPE_VEHICLE:
-            hostValid = CPools::ms_pVehiclePool->IsObjectValid((CVehicle*)host);
-            break;
+            case ENTITY_TYPE_VEHICLE:
+                hostValid = CPools::ms_pVehiclePool->IsObjectValid((CVehicle*)host);
+                break;
         }
         if (!hostValid)
         {

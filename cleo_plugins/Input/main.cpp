@@ -69,25 +69,25 @@ class Input
             input.type = INPUT_MOUSE;
             switch (vKey)
             {
-            case VK_LBUTTON:
-                input.mi.dwFlags = down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
-                break;
-            case VK_MBUTTON:
-                input.mi.dwFlags = down ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
-                break;
-            case VK_RBUTTON:
-                input.mi.dwFlags = down ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
-                break;
+                case VK_LBUTTON:
+                    input.mi.dwFlags = down ? MOUSEEVENTF_LEFTDOWN : MOUSEEVENTF_LEFTUP;
+                    break;
+                case VK_MBUTTON:
+                    input.mi.dwFlags = down ? MOUSEEVENTF_MIDDLEDOWN : MOUSEEVENTF_MIDDLEUP;
+                    break;
+                case VK_RBUTTON:
+                    input.mi.dwFlags = down ? MOUSEEVENTF_RIGHTDOWN : MOUSEEVENTF_RIGHTUP;
+                    break;
 
-            case VK_XBUTTON1:
-                input.mi.dwFlags   = down ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-                input.mi.mouseData = XBUTTON1;
-                break;
+                case VK_XBUTTON1:
+                    input.mi.dwFlags   = down ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+                    input.mi.mouseData = XBUTTON1;
+                    break;
 
-            case VK_XBUTTON2:
-                input.mi.dwFlags   = down ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
-                input.mi.mouseData = XBUTTON2;
-                break;
+                case VK_XBUTTON2:
+                    input.mi.dwFlags   = down ? MOUSEEVENTF_XDOWN : MOUSEEVENTF_XUP;
+                    input.mi.mouseData = XBUTTON2;
+                    break;
             }
         }
         else // keyboard
@@ -98,15 +98,15 @@ class Input
 
             switch (vKey)
             {
-            case VK_RETURN:   // would be mapped to numpad's enter
-            case VK_LSHIFT:   // maps to VK_SHIFT
-            case VK_LCONTROL: // maps to VK_CONTROL
-            case VK_LMENU:    // maps to VK_MENU
-                break;        // do not use scan code
+                case VK_RETURN:   // would be mapped to numpad's enter
+                case VK_LSHIFT:   // maps to VK_SHIFT
+                case VK_LCONTROL: // maps to VK_CONTROL
+                case VK_LMENU:    // maps to VK_MENU
+                    break;        // do not use scan code
 
-            default:
-                input.ki.wScan = MapVirtualKey(vKey, MAPVK_VK_TO_VSC_EX);
-                input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+                default:
+                    input.ki.wScan = MapVirtualKey(vKey, MAPVK_VK_TO_VSC_EX);
+                    input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
             }
         }
 
@@ -136,9 +136,7 @@ class Input
         }
         if (key < 0 || key > Key_Code_Max)
         {
-            LOG_WARNING(
-                thread, "Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str()
-            ); // legacy opcode, just warning
+            LOG_WARNING(thread, "Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str()); // legacy opcode, just warning
             OPCODE_CONDITION_RESULT(false);
             return OR_CONTINUE;
         }
@@ -331,8 +329,7 @@ class Input
             if (k.keyCode == 0 || k.priority == 0) // key not assigned
                 continue;
 
-            if (k.keyCode == rsMOUSEWHEELUPBUTTON || k.keyCode == rsMOUSEWHEELDOWNBUTTON)
-                continue; // there is no VK codes for mouse wheel rolling
+            if (k.keyCode == rsMOUSEWHEELUPBUTTON || k.keyCode == rsMOUSEWHEELDOWNBUTTON) continue; // there is no VK codes for mouse wheel rolling
 
             mapping[k.priority] = k.keyCode;
         }
@@ -351,198 +348,198 @@ class Input
         // translate RsKeyCode to VirtualKey
         switch (keyCode)
         {
-        case rsMOUSELEFTBUTTON:
-            keyCode = VK_LBUTTON;
-            break;
-        case rsMOUSEMIDDLEBUTTON:
-            keyCode = VK_MBUTTON;
-            break;
-        case rsMOUSERIGHTBUTTON:
-            keyCode = VK_RBUTTON;
-            break;
-        // case rsMOUSEWHEELUPBUTTON:
-        // case rsMOUSEWHEELDOWNBUTTON:
-        case rsMOUSEX1BUTTON:
-            keyCode = VK_XBUTTON1;
-            break;
-        case rsMOUSEX2BUTTON:
-            keyCode = VK_XBUTTON2;
-            break;
+            case rsMOUSELEFTBUTTON:
+                keyCode = VK_LBUTTON;
+                break;
+            case rsMOUSEMIDDLEBUTTON:
+                keyCode = VK_MBUTTON;
+                break;
+            case rsMOUSERIGHTBUTTON:
+                keyCode = VK_RBUTTON;
+                break;
+            // case rsMOUSEWHEELUPBUTTON:
+            // case rsMOUSEWHEELDOWNBUTTON:
+            case rsMOUSEX1BUTTON:
+                keyCode = VK_XBUTTON1;
+                break;
+            case rsMOUSEX2BUTTON:
+                keyCode = VK_XBUTTON2;
+                break;
 
-        case rsESC:
-            keyCode = VK_ESCAPE;
-            break;
+            case rsESC:
+                keyCode = VK_ESCAPE;
+                break;
 
-        case rsF1:
-            keyCode = VK_F1;
-            break;
-        case rsF2:
-            keyCode = VK_F2;
-            break;
-        case rsF3:
-            keyCode = VK_F3;
-            break;
-        case rsF4:
-            keyCode = VK_F4;
-            break;
-        case rsF5:
-            keyCode = VK_F5;
-            break;
-        case rsF6:
-            keyCode = VK_F6;
-            break;
-        case rsF7:
-            keyCode = VK_F7;
-            break;
-        case rsF8:
-            keyCode = VK_F8;
-            break;
-        case rsF9:
-            keyCode = VK_F9;
-            break;
-        case rsF10:
-            keyCode = VK_F10;
-            break;
-        case rsF11:
-            keyCode = VK_F11;
-            break;
-        case rsF12:
-            keyCode = VK_F12;
-            break;
+            case rsF1:
+                keyCode = VK_F1;
+                break;
+            case rsF2:
+                keyCode = VK_F2;
+                break;
+            case rsF3:
+                keyCode = VK_F3;
+                break;
+            case rsF4:
+                keyCode = VK_F4;
+                break;
+            case rsF5:
+                keyCode = VK_F5;
+                break;
+            case rsF6:
+                keyCode = VK_F6;
+                break;
+            case rsF7:
+                keyCode = VK_F7;
+                break;
+            case rsF8:
+                keyCode = VK_F8;
+                break;
+            case rsF9:
+                keyCode = VK_F9;
+                break;
+            case rsF10:
+                keyCode = VK_F10;
+                break;
+            case rsF11:
+                keyCode = VK_F11;
+                break;
+            case rsF12:
+                keyCode = VK_F12;
+                break;
 
-        case rsINS:
-            keyCode = VK_INSERT;
-            break;
-        case rsDEL:
-            keyCode = VK_DELETE;
-            break;
-        case rsHOME:
-            keyCode = VK_HOME;
-            break;
-        case rsEND:
-            keyCode = VK_END;
-            break;
-        case rsPGUP:
-            keyCode = VK_PRIOR;
-            break;
-        case rsPGDN:
-            keyCode = VK_NEXT;
-            break;
+            case rsINS:
+                keyCode = VK_INSERT;
+                break;
+            case rsDEL:
+                keyCode = VK_DELETE;
+                break;
+            case rsHOME:
+                keyCode = VK_HOME;
+                break;
+            case rsEND:
+                keyCode = VK_END;
+                break;
+            case rsPGUP:
+                keyCode = VK_PRIOR;
+                break;
+            case rsPGDN:
+                keyCode = VK_NEXT;
+                break;
 
-        case rsUP:
-            keyCode = VK_UP;
-            break;
-        case rsDOWN:
-            keyCode = VK_DOWN;
-            break;
-        case rsLEFT:
-            keyCode = VK_LEFT;
-            break;
-        case rsRIGHT:
-            keyCode = VK_RIGHT;
-            break;
+            case rsUP:
+                keyCode = VK_UP;
+                break;
+            case rsDOWN:
+                keyCode = VK_DOWN;
+                break;
+            case rsLEFT:
+                keyCode = VK_LEFT;
+                break;
+            case rsRIGHT:
+                keyCode = VK_RIGHT;
+                break;
 
-        case rsDIVIDE:
-            keyCode = VK_DIVIDE;
-            break;
-        case rsTIMES:
-            keyCode = VK_MULTIPLY;
-            break;
-        case rsPLUS:
-            keyCode = VK_ADD;
-            break;
-        case rsMINUS:
-            keyCode = VK_SUBTRACT;
-            break;
-        case rsPADDEL:
-            keyCode = VK_DECIMAL;
-            break;
-        case rsPADEND:
-            keyCode = VK_NUMPAD1;
-            break;
-        case rsPADDOWN:
-            keyCode = VK_NUMPAD2;
-            break;
-        case rsPADPGDN:
-            keyCode = VK_NUMPAD3;
-            break;
-        case rsPADLEFT:
-            keyCode = VK_NUMPAD4;
-            break;
-        case rsPAD5:
-            keyCode = VK_NUMPAD5;
-            break;
-        case rsNUMLOCK:
-            keyCode = VK_NUMLOCK;
-            break;
-        case rsPADRIGHT:
-            keyCode = VK_NUMPAD6;
-            break;
-        case rsPADHOME:
-            keyCode = VK_NUMPAD7;
-            break;
-        case rsPADUP:
-            keyCode = VK_NUMPAD8;
-            break;
-        case rsPADPGUP:
-            keyCode = VK_NUMPAD9;
-            break;
-        case rsPADINS:
-            keyCode = VK_NUMPAD0;
-            break;
-        case rsPADENTER:
-            keyCode = VK_RETURN;
-            break; // not quite same
+            case rsDIVIDE:
+                keyCode = VK_DIVIDE;
+                break;
+            case rsTIMES:
+                keyCode = VK_MULTIPLY;
+                break;
+            case rsPLUS:
+                keyCode = VK_ADD;
+                break;
+            case rsMINUS:
+                keyCode = VK_SUBTRACT;
+                break;
+            case rsPADDEL:
+                keyCode = VK_DECIMAL;
+                break;
+            case rsPADEND:
+                keyCode = VK_NUMPAD1;
+                break;
+            case rsPADDOWN:
+                keyCode = VK_NUMPAD2;
+                break;
+            case rsPADPGDN:
+                keyCode = VK_NUMPAD3;
+                break;
+            case rsPADLEFT:
+                keyCode = VK_NUMPAD4;
+                break;
+            case rsPAD5:
+                keyCode = VK_NUMPAD5;
+                break;
+            case rsNUMLOCK:
+                keyCode = VK_NUMLOCK;
+                break;
+            case rsPADRIGHT:
+                keyCode = VK_NUMPAD6;
+                break;
+            case rsPADHOME:
+                keyCode = VK_NUMPAD7;
+                break;
+            case rsPADUP:
+                keyCode = VK_NUMPAD8;
+                break;
+            case rsPADPGUP:
+                keyCode = VK_NUMPAD9;
+                break;
+            case rsPADINS:
+                keyCode = VK_NUMPAD0;
+                break;
+            case rsPADENTER:
+                keyCode = VK_RETURN;
+                break; // not quite same
 
-        case rsSCROLL:
-            keyCode = VK_SCROLL;
-            break;
-        case rsPAUSE:
-            keyCode = VK_PAUSE;
-            break;
+            case rsSCROLL:
+                keyCode = VK_SCROLL;
+                break;
+            case rsPAUSE:
+                keyCode = VK_PAUSE;
+                break;
 
-        case rsBACKSP:
-            keyCode = VK_BACK;
-            break;
-        case rsTAB:
-            keyCode = VK_TAB;
-            break;
-        case rsCAPSLK:
-            keyCode = VK_CAPITAL;
-            break;
-        case rsENTER:
-            keyCode = VK_RETURN;
-            break;
-        case rsLSHIFT:
-            keyCode = VK_LSHIFT;
-            break;
-        case rsRSHIFT:
-            keyCode = VK_RSHIFT;
-            break;
-        case rsSHIFT:
-            keyCode = VK_SHIFT;
-            break;
-        case rsLCTRL:
-            keyCode = VK_LCONTROL;
-            break;
-        case rsRCTRL:
-            keyCode = VK_RCONTROL;
-            break;
-        case rsLALT:
-            keyCode = VK_LMENU;
-            break;
-        case rsRALT:
-            keyCode = VK_RMENU;
-            break;
-        case rsLWIN:
-            keyCode = VK_LWIN;
-            break;
-        case rsRWIN:
-            keyCode = VK_RWIN;
-            break;
-        case rsAPPS:
-            keyCode = VK_APPS;
-            break;
+            case rsBACKSP:
+                keyCode = VK_BACK;
+                break;
+            case rsTAB:
+                keyCode = VK_TAB;
+                break;
+            case rsCAPSLK:
+                keyCode = VK_CAPITAL;
+                break;
+            case rsENTER:
+                keyCode = VK_RETURN;
+                break;
+            case rsLSHIFT:
+                keyCode = VK_LSHIFT;
+                break;
+            case rsRSHIFT:
+                keyCode = VK_RSHIFT;
+                break;
+            case rsSHIFT:
+                keyCode = VK_SHIFT;
+                break;
+            case rsLCTRL:
+                keyCode = VK_LCONTROL;
+                break;
+            case rsRCTRL:
+                keyCode = VK_RCONTROL;
+                break;
+            case rsLALT:
+                keyCode = VK_LMENU;
+                break;
+            case rsRALT:
+                keyCode = VK_RMENU;
+                break;
+            case rsLWIN:
+                keyCode = VK_LWIN;
+                break;
+            case rsRWIN:
+                keyCode = VK_RWIN;
+                break;
+            case rsAPPS:
+                keyCode = VK_APPS;
+                break;
         }
 
         OPCODE_WRITE_PARAM_INT(keyCode);
@@ -581,295 +578,295 @@ class Input
             // based on CInputEvents::getEventKeyName
             switch (key)
             {
-            case Key_Code_None:
-                name = TheText.Get("FEC_UNB");
-                break;
+                case Key_Code_None:
+                    name = TheText.Get("FEC_UNB");
+                    break;
 
-            case VK_LBUTTON:
-                name = TheText.Get("FEC_MSL");
-                break;
-            case VK_RBUTTON:
-                name = TheText.Get("FEC_MSR");
-                break;
-            // case VK_CANCEL
-            case VK_MBUTTON:
-                name = TheText.Get("FEC_MSM");
-                break;
-            case VK_XBUTTON1:
-                name = TheText.Get("FEC_MXO");
-                break;
-            case VK_XBUTTON2:
-                name = TheText.Get("FEC_MXT");
-                break;
+                case VK_LBUTTON:
+                    name = TheText.Get("FEC_MSL");
+                    break;
+                case VK_RBUTTON:
+                    name = TheText.Get("FEC_MSR");
+                    break;
+                // case VK_CANCEL
+                case VK_MBUTTON:
+                    name = TheText.Get("FEC_MSM");
+                    break;
+                case VK_XBUTTON1:
+                    name = TheText.Get("FEC_MXO");
+                    break;
+                case VK_XBUTTON2:
+                    name = TheText.Get("FEC_MXT");
+                    break;
 
-            case VK_BACK:
-                name = TheText.Get("FEC_BSP");
-                break;
-            case VK_TAB:
-                name = TheText.Get("FEC_TAB");
-                break;
-            case VK_CLEAR:
-                name = "CLEAR";
-                break;
-            case VK_RETURN:
-                name = TheText.Get("FEC_RTN");
-                break;
-            case VK_SHIFT:
-                name = TheText.Get("FEC_SFT");
-                break;
-            case VK_CONTROL:
-                name = "CTRL";
-                break;
-            case VK_MENU:
-                name = "ALT";
-                break;
-            case VK_PAUSE:
-                name = TheText.Get("FEC_PSB");
-                break; // FEC_PAS
-            case VK_CAPITAL:
-                name = TheText.Get("FEC_CLK");
-                break;
-            // case VK_KANA
-            // case VK_IME_ON
-            // case VK_JUNJA
-            // case VK_FINAL
-            // case VK_HANJA
-            // case VK_IME_OFF
-            case VK_ESCAPE:
-                name = "ESC";
-                break;
-            // case VK_CONVERT
-            // case VK_NONCONVERT
-            // case VK_ACCEPT
-            // case VK_MODECHANGE
-            case VK_SPACE:
-                name = TheText.Get("FEC_SPC");
-                break;
-            case VK_PRIOR:
-                name = TheText.Get("FEC_PGU");
-                break;
-            case VK_NEXT:
-                name = TheText.Get("FEC_PGD");
-                break;
-            case VK_END:
-                name = TheText.Get("FEC_END");
-                break;
-            case VK_HOME:
-                name = TheText.Get("FEC_HME");
-                break;
-            case VK_LEFT:
-                name = TheText.Get("FEC_LFA");
-                break;
-            case VK_UP:
-                name = TheText.Get("FEC_UPA");
-                break;
-            case VK_RIGHT:
-                name = TheText.Get("FEC_RFA");
-                break;
-            case VK_DOWN:
-                name = TheText.Get("FEC_DWA");
-                break;
-            case VK_SELECT:
-                name = "SELECT";
-                break;
-            case VK_PRINT:
-                name = "PRINT";
-                break;
-            case VK_EXECUTE:
-                name = "EXECUTE";
-                break;
-            case VK_SNAPSHOT:
-                name = "PRTSCR";
-                break;
-            case VK_INSERT:
-                name = TheText.Get("FEC_IRT");
-                break;
-            case VK_DELETE:
-                name = TheText.Get("FEC_DLL");
-                break;
-            case VK_HELP:
-                name = "HELP";
-                break;
-            case VK_LWIN:
-                name = TheText.Get("FEC_LWD");
-                break;
-            case VK_RWIN:
-                name = TheText.Get("FEC_RWD");
-                break;
-            case VK_APPS:
-                name = TheText.Get("FEC_WRC");
-                break;
+                case VK_BACK:
+                    name = TheText.Get("FEC_BSP");
+                    break;
+                case VK_TAB:
+                    name = TheText.Get("FEC_TAB");
+                    break;
+                case VK_CLEAR:
+                    name = "CLEAR";
+                    break;
+                case VK_RETURN:
+                    name = TheText.Get("FEC_RTN");
+                    break;
+                case VK_SHIFT:
+                    name = TheText.Get("FEC_SFT");
+                    break;
+                case VK_CONTROL:
+                    name = "CTRL";
+                    break;
+                case VK_MENU:
+                    name = "ALT";
+                    break;
+                case VK_PAUSE:
+                    name = TheText.Get("FEC_PSB");
+                    break; // FEC_PAS
+                case VK_CAPITAL:
+                    name = TheText.Get("FEC_CLK");
+                    break;
+                // case VK_KANA
+                // case VK_IME_ON
+                // case VK_JUNJA
+                // case VK_FINAL
+                // case VK_HANJA
+                // case VK_IME_OFF
+                case VK_ESCAPE:
+                    name = "ESC";
+                    break;
+                // case VK_CONVERT
+                // case VK_NONCONVERT
+                // case VK_ACCEPT
+                // case VK_MODECHANGE
+                case VK_SPACE:
+                    name = TheText.Get("FEC_SPC");
+                    break;
+                case VK_PRIOR:
+                    name = TheText.Get("FEC_PGU");
+                    break;
+                case VK_NEXT:
+                    name = TheText.Get("FEC_PGD");
+                    break;
+                case VK_END:
+                    name = TheText.Get("FEC_END");
+                    break;
+                case VK_HOME:
+                    name = TheText.Get("FEC_HME");
+                    break;
+                case VK_LEFT:
+                    name = TheText.Get("FEC_LFA");
+                    break;
+                case VK_UP:
+                    name = TheText.Get("FEC_UPA");
+                    break;
+                case VK_RIGHT:
+                    name = TheText.Get("FEC_RFA");
+                    break;
+                case VK_DOWN:
+                    name = TheText.Get("FEC_DWA");
+                    break;
+                case VK_SELECT:
+                    name = "SELECT";
+                    break;
+                case VK_PRINT:
+                    name = "PRINT";
+                    break;
+                case VK_EXECUTE:
+                    name = "EXECUTE";
+                    break;
+                case VK_SNAPSHOT:
+                    name = "PRTSCR";
+                    break;
+                case VK_INSERT:
+                    name = TheText.Get("FEC_IRT");
+                    break;
+                case VK_DELETE:
+                    name = TheText.Get("FEC_DLL");
+                    break;
+                case VK_HELP:
+                    name = "HELP";
+                    break;
+                case VK_LWIN:
+                    name = TheText.Get("FEC_LWD");
+                    break;
+                case VK_RWIN:
+                    name = TheText.Get("FEC_RWD");
+                    break;
+                case VK_APPS:
+                    name = TheText.Get("FEC_WRC");
+                    break;
 
-            case '^': // German "double s" letter
-                buff[0] = '|';
-                buff[1] = '\0';
-                name    = buff;
-                break;
+                case '^': // German "double s" letter
+                    buff[0] = '|';
+                    buff[1] = '\0';
+                    name    = buff;
+                    break;
 
-            case VK_SLEEP:
-                name = "SLEEP";
-                break;
-            case VK_MULTIPLY:
-                name = TheText.Get("FECSTAR");
-                break;
-            case VK_ADD:
-                name = TheText.Get("FEC_PLS");
-                break;
-            // case VK_SEPARATOR ???
-            case VK_SUBTRACT:
-                name = TheText.Get("FEC_MIN");
-                break;
-            case VK_DECIMAL:
-                name = TheText.Get("FEC_DOT");
-                break;
-            case VK_DIVIDE:
-                name = TheText.Get("FEC_FWS");
-                break;
-            // case VK_NAVIGATION_VIEW
-            // case VK_NAVIGATION_MENU
-            // case VK_NAVIGATION_UP
-            // case VK_NAVIGATION_DOWN
-            // case VK_NAVIGATION_LEFT
-            // case VK_NAVIGATION_RIGHT
-            // case VK_NAVIGATION_ACCEPT
-            // case VK_NAVIGATION_CANCEL
-            case VK_NUMLOCK:
-                name = TheText.Get("FEC_NLK");
-                break;
-            case VK_SCROLL:
-                name = TheText.Get("FEC_SLK");
-                break;
-            case VK_OEM_NEC_EQUAL:
-                name = TheText.Get("FEC_ETR");
-                break;
-            // case VK_OEM_FJ_JISHO
-            // case VK_OEM_FJ_MASSHOU
-            // case VK_OEM_FJ_TOUROKU
-            // case VK_OEM_FJ_LOYA
-            // case VK_OEM_FJ_ROYA
-            case VK_LSHIFT:
-                name = TheText.Get("FEC_LSF");
-                break;
-            case VK_RSHIFT:
-                name = TheText.Get("FEC_RSF");
-                break;
-            case VK_LCONTROL:
-                name = TheText.Get("FEC_LCT");
-                break;
-            case VK_RCONTROL:
-                name = TheText.Get("FEC_RCT");
-                break;
-            case VK_LMENU:
-                name = TheText.Get("FEC_LAL");
-                break;
-            case VK_RMENU:
-                name = TheText.Get("FEC_RAL");
-                break;
-            // case VK_BROWSER_BACK
-            // case VK_BROWSER_FORWARD
-            // case VK_BROWSER_REFRESH
-            // case VK_BROWSER_STOP
-            // case VK_BROWSER_SEARCH
-            // case VK_BROWSER_FAVORITES
-            // case VK_BROWSER_HOME
-            // case VK_VOLUME_MUTE
-            // case VK_VOLUME_DOWN
-            // case VK_VOLUME_UP
-            // case VK_MEDIA_NEXT_TRACK
-            // case VK_MEDIA_PREV_TRACK
-            // case VK_MEDIA_STOP: in GTA some French letter?
-            // case VK_MEDIA_PLAY_PAUSE
-            // case VK_LAUNCH_MAIL
-            // case VK_LAUNCH_MEDIA_SELECT
-            // case VK_LAUNCH_APP1
-            // case VK_LAUNCH_APP2
-            case VK_OEM_1:
-                name = ",";
-                break;
-            case VK_OEM_PLUS:
-                name = "=";
-                break;
-            case VK_OEM_COMMA:
-                name = ",";
-                break;
-            case VK_OEM_MINUS:
-                name = "-";
-                break;
-            case VK_OEM_PERIOD:
-                name = ".";
-                break;
-            case VK_OEM_2:
-                name = "/";
-                break;
-            case VK_OEM_3:
-                name = "`";
-                break;
-            // case VK_GAMEPAD_A
-            // case VK_GAMEPAD_B
-            // case VK_GAMEPAD_X
-            // case VK_GAMEPAD_Y
-            // case VK_GAMEPAD_RIGHT_SHOULDER
-            // case VK_GAMEPAD_LEFT_SHOULDER
-            // case VK_GAMEPAD_LEFT_TRIGGER
-            // case VK_GAMEPAD_RIGHT_TRIGGER
-            // case VK_GAMEPAD_DPAD_UP
-            // case VK_GAMEPAD_DPAD_DOWN
-            // case VK_GAMEPAD_DPAD_LEFT
-            // case VK_GAMEPAD_DPAD_RIGHT
-            // case VK_GAMEPAD_MENU
-            // case VK_GAMEPAD_VIEW
-            // case VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON
-            // case VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON
-            // case VK_GAMEPAD_LEFT_THUMBSTICK_UP
-            // case VK_GAMEPAD_LEFT_THUMBSTICK_DOWN
-            // case VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT
-            // case VK_GAMEPAD_LEFT_THUMBSTICK_LEFT
-            // case VK_GAMEPAD_RIGHT_THUMBSTICK_UP
-            // case VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN
-            // case VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT
-            // case VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT
-            case VK_OEM_4:
-                name = "[";
-                break;
-            case VK_OEM_5:
-                name = "\\";
-                break;
-            case VK_OEM_6:
-                name = "]";
-                break;
-            case VK_OEM_7:
-                name = "'";
-                break;
-                // case VK_OEM_8
-                // case VK_OEM_AX
-                // case VK_OEM_102
-                // case VK_ICO_HELP
-                // case VK_ICO_00
-                // case VK_ICO_CLEAR
-                // case VK_PACKET
-                // case VK_OEM_RESET
-                // case VK_OEM_JUMP
-                // case VK_OEM_PA1
-                // case VK_OEM_PA2
-                // case VK_OEM_PA3
-                // case VK_OEM_WSCTRL
-                // case VK_OEM_CUSEL
-                // case VK_OEM_ATTN
-                // case VK_OEM_FINISH
-                // case VK_OEM_COPY
-                // case VK_OEM_AUTO
-                // case VK_OEM_ENLW
-                // case VK_OEM_BACKTAB
-                // case VK_OEM_BACKTAB
-                // case VK_ATTN
-                // case VK_CRSEL
-                // case VK_EXSEL
-                // case VK_EREOF
-                // case VK_PLAY
-                // case VK_ZOOM
-                // case VK_NONAME
-                // case VK_PA1
-                // case VK_OEM_CLEAR
+                case VK_SLEEP:
+                    name = "SLEEP";
+                    break;
+                case VK_MULTIPLY:
+                    name = TheText.Get("FECSTAR");
+                    break;
+                case VK_ADD:
+                    name = TheText.Get("FEC_PLS");
+                    break;
+                // case VK_SEPARATOR ???
+                case VK_SUBTRACT:
+                    name = TheText.Get("FEC_MIN");
+                    break;
+                case VK_DECIMAL:
+                    name = TheText.Get("FEC_DOT");
+                    break;
+                case VK_DIVIDE:
+                    name = TheText.Get("FEC_FWS");
+                    break;
+                // case VK_NAVIGATION_VIEW
+                // case VK_NAVIGATION_MENU
+                // case VK_NAVIGATION_UP
+                // case VK_NAVIGATION_DOWN
+                // case VK_NAVIGATION_LEFT
+                // case VK_NAVIGATION_RIGHT
+                // case VK_NAVIGATION_ACCEPT
+                // case VK_NAVIGATION_CANCEL
+                case VK_NUMLOCK:
+                    name = TheText.Get("FEC_NLK");
+                    break;
+                case VK_SCROLL:
+                    name = TheText.Get("FEC_SLK");
+                    break;
+                case VK_OEM_NEC_EQUAL:
+                    name = TheText.Get("FEC_ETR");
+                    break;
+                // case VK_OEM_FJ_JISHO
+                // case VK_OEM_FJ_MASSHOU
+                // case VK_OEM_FJ_TOUROKU
+                // case VK_OEM_FJ_LOYA
+                // case VK_OEM_FJ_ROYA
+                case VK_LSHIFT:
+                    name = TheText.Get("FEC_LSF");
+                    break;
+                case VK_RSHIFT:
+                    name = TheText.Get("FEC_RSF");
+                    break;
+                case VK_LCONTROL:
+                    name = TheText.Get("FEC_LCT");
+                    break;
+                case VK_RCONTROL:
+                    name = TheText.Get("FEC_RCT");
+                    break;
+                case VK_LMENU:
+                    name = TheText.Get("FEC_LAL");
+                    break;
+                case VK_RMENU:
+                    name = TheText.Get("FEC_RAL");
+                    break;
+                // case VK_BROWSER_BACK
+                // case VK_BROWSER_FORWARD
+                // case VK_BROWSER_REFRESH
+                // case VK_BROWSER_STOP
+                // case VK_BROWSER_SEARCH
+                // case VK_BROWSER_FAVORITES
+                // case VK_BROWSER_HOME
+                // case VK_VOLUME_MUTE
+                // case VK_VOLUME_DOWN
+                // case VK_VOLUME_UP
+                // case VK_MEDIA_NEXT_TRACK
+                // case VK_MEDIA_PREV_TRACK
+                // case VK_MEDIA_STOP: in GTA some French letter?
+                // case VK_MEDIA_PLAY_PAUSE
+                // case VK_LAUNCH_MAIL
+                // case VK_LAUNCH_MEDIA_SELECT
+                // case VK_LAUNCH_APP1
+                // case VK_LAUNCH_APP2
+                case VK_OEM_1:
+                    name = ",";
+                    break;
+                case VK_OEM_PLUS:
+                    name = "=";
+                    break;
+                case VK_OEM_COMMA:
+                    name = ",";
+                    break;
+                case VK_OEM_MINUS:
+                    name = "-";
+                    break;
+                case VK_OEM_PERIOD:
+                    name = ".";
+                    break;
+                case VK_OEM_2:
+                    name = "/";
+                    break;
+                case VK_OEM_3:
+                    name = "`";
+                    break;
+                // case VK_GAMEPAD_A
+                // case VK_GAMEPAD_B
+                // case VK_GAMEPAD_X
+                // case VK_GAMEPAD_Y
+                // case VK_GAMEPAD_RIGHT_SHOULDER
+                // case VK_GAMEPAD_LEFT_SHOULDER
+                // case VK_GAMEPAD_LEFT_TRIGGER
+                // case VK_GAMEPAD_RIGHT_TRIGGER
+                // case VK_GAMEPAD_DPAD_UP
+                // case VK_GAMEPAD_DPAD_DOWN
+                // case VK_GAMEPAD_DPAD_LEFT
+                // case VK_GAMEPAD_DPAD_RIGHT
+                // case VK_GAMEPAD_MENU
+                // case VK_GAMEPAD_VIEW
+                // case VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON
+                // case VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON
+                // case VK_GAMEPAD_LEFT_THUMBSTICK_UP
+                // case VK_GAMEPAD_LEFT_THUMBSTICK_DOWN
+                // case VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT
+                // case VK_GAMEPAD_LEFT_THUMBSTICK_LEFT
+                // case VK_GAMEPAD_RIGHT_THUMBSTICK_UP
+                // case VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN
+                // case VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT
+                // case VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT
+                case VK_OEM_4:
+                    name = "[";
+                    break;
+                case VK_OEM_5:
+                    name = "\\";
+                    break;
+                case VK_OEM_6:
+                    name = "]";
+                    break;
+                case VK_OEM_7:
+                    name = "'";
+                    break;
+                    // case VK_OEM_8
+                    // case VK_OEM_AX
+                    // case VK_OEM_102
+                    // case VK_ICO_HELP
+                    // case VK_ICO_00
+                    // case VK_ICO_CLEAR
+                    // case VK_PACKET
+                    // case VK_OEM_RESET
+                    // case VK_OEM_JUMP
+                    // case VK_OEM_PA1
+                    // case VK_OEM_PA2
+                    // case VK_OEM_PA3
+                    // case VK_OEM_WSCTRL
+                    // case VK_OEM_CUSEL
+                    // case VK_OEM_ATTN
+                    // case VK_OEM_FINISH
+                    // case VK_OEM_COPY
+                    // case VK_OEM_AUTO
+                    // case VK_OEM_ENLW
+                    // case VK_OEM_BACKTAB
+                    // case VK_OEM_BACKTAB
+                    // case VK_ATTN
+                    // case VK_CRSEL
+                    // case VK_EXSEL
+                    // case VK_EREOF
+                    // case VK_PLAY
+                    // case VK_ZOOM
+                    // case VK_NONAME
+                    // case VK_PA1
+                    // case VK_OEM_CLEAR
             }
         }
 

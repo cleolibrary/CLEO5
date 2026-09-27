@@ -8,11 +8,11 @@
 using namespace CLEO;
 using namespace plugin;
 
-#define OPCODE_READ_PARAM_STREAM(_varName)                                                                             \
-    auto _varName = (CAudioStream*)OPCODE_READ_PARAM_UINT();                                                           \
-    if (_varName != nullptr && !soundSystem.HasStream(_varName))                                                       \
-    {                                                                                                                  \
-        SUSPEND("Invalid or already closed '0x%X' audio stream handle param", _varName);                               \
+#define OPCODE_READ_PARAM_STREAM(_varName)                                                                                                           \
+    auto _varName = (CAudioStream*)OPCODE_READ_PARAM_UINT();                                                                                         \
+    if (_varName != nullptr && !soundSystem.HasStream(_varName))                                                                                     \
+    {                                                                                                                                                \
+        SUSPEND("Invalid or already closed '0x%X' audio stream handle param", _varName);                                                             \
     }
 
 class Audio
@@ -132,22 +132,20 @@ class Audio
         {
             switch (action)
             {
-            case eStreamAction::Stop:
-                stream->Stop();
-                break;
-            case eStreamAction::Play:
-                stream->Play();
-                break;
-            case eStreamAction::Pause:
-                stream->Pause();
-                break;
-            case eStreamAction::Resume:
-                stream->Resume();
-                break;
-            default:
-                LOG_WARNING(
-                    thread, "Unknown AudioStreamAction (%d) in script %s", action, ScriptInfoStr(thread).c_str()
-                );
+                case eStreamAction::Stop:
+                    stream->Stop();
+                    break;
+                case eStreamAction::Play:
+                    stream->Play();
+                    break;
+                case eStreamAction::Pause:
+                    stream->Pause();
+                    break;
+                case eStreamAction::Resume:
+                    stream->Resume();
+                    break;
+                default:
+                    LOG_WARNING(thread, "Unknown AudioStreamAction (%d) in script %s", action, ScriptInfoStr(thread).c_str());
             }
         }
 
@@ -252,10 +250,7 @@ class Audio
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(
-                thread, "3d audio stream command used with non-3d audio stream in script %s",
-                ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         CVector pos;
@@ -276,10 +271,7 @@ class Audio
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(
-                thread, "3d audio stream command used with non-3d audio stream in script %s",
-                ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         if (stream)
@@ -299,10 +291,7 @@ class Audio
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(
-                thread, "3d audio stream command used with non-3d audio stream in script %s",
-                ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         if (stream)
@@ -322,10 +311,7 @@ class Audio
 
         if (stream && !stream->Is3d())
         {
-            LOG_WARNING(
-                thread, "3d audio stream command used with non-3d audio stream in script %s",
-                ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "3d audio stream command used with non-3d audio stream in script %s", ScriptInfoStr(thread).c_str());
         }
 
         if (stream)

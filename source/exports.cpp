@@ -268,9 +268,7 @@ namespace CLEO
             return ReadStringParam(thread, buff, buffSize);
         }
 
-        void WINAPI CLEO_ReadStringParamWriteBuffer(
-            CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator
-        )
+        void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator)
         {
             if (thread == nullptr || outBuf == nullptr || outBufSize == nullptr || outNeedsTerminator == nullptr)
             {
@@ -359,43 +357,43 @@ namespace CLEO
             {
                 switch (thread->ReadDataType())
                 {
-                case DT_VAR:
-                case DT_LVAR:
-                case DT_VAR_STRING:
-                case DT_LVAR_STRING:
-                case DT_VAR_TEXTLABEL:
-                case DT_LVAR_TEXTLABEL:
-                    thread->IncPtr(2);
-                    break;
-                case DT_VAR_ARRAY:
-                case DT_LVAR_ARRAY:
-                case DT_VAR_TEXTLABEL_ARRAY:
-                case DT_LVAR_TEXTLABEL_ARRAY:
-                case DT_VAR_STRING_ARRAY:
-                case DT_LVAR_STRING_ARRAY:
-                    thread->IncPtr(6);
-                    break;
-                case DT_BYTE:
-                    // case DT_END: // should be only skipped with var args dediacated functions
-                    thread->IncPtr();
-                    break;
-                case DT_WORD:
-                    thread->IncPtr(2);
-                    break;
-                case DT_DWORD:
-                case DT_FLOAT:
-                    thread->IncPtr(4);
-                    break;
-                case DT_VARLEN_STRING:
-                    thread->IncPtr((int)1 + *thread->GetBytePointer()); // as unsigned! length byte + string data
-                    break;
+                    case DT_VAR:
+                    case DT_LVAR:
+                    case DT_VAR_STRING:
+                    case DT_LVAR_STRING:
+                    case DT_VAR_TEXTLABEL:
+                    case DT_LVAR_TEXTLABEL:
+                        thread->IncPtr(2);
+                        break;
+                    case DT_VAR_ARRAY:
+                    case DT_LVAR_ARRAY:
+                    case DT_VAR_TEXTLABEL_ARRAY:
+                    case DT_LVAR_TEXTLABEL_ARRAY:
+                    case DT_VAR_STRING_ARRAY:
+                    case DT_LVAR_STRING_ARRAY:
+                        thread->IncPtr(6);
+                        break;
+                    case DT_BYTE:
+                        // case DT_END: // should be only skipped with var args dediacated functions
+                        thread->IncPtr();
+                        break;
+                    case DT_WORD:
+                        thread->IncPtr(2);
+                        break;
+                    case DT_DWORD:
+                    case DT_FLOAT:
+                        thread->IncPtr(4);
+                        break;
+                    case DT_VARLEN_STRING:
+                        thread->IncPtr((int)1 + *thread->GetBytePointer()); // as unsigned! length byte + string data
+                        break;
 
-                case DT_TEXTLABEL:
-                    thread->IncPtr(8);
-                    break;
-                case DT_STRING:
-                    thread->IncPtr(16);
-                    break;
+                    case DT_TEXTLABEL:
+                        thread->IncPtr(8);
+                        break;
+                    case DT_STRING:
+                        thread->IncPtr(16);
+                        break;
                 }
             }
 
@@ -427,10 +425,7 @@ namespace CLEO
         void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
         {
             if (!WriteStringParam(thread, str))
-                LOG_WARNING(
-                    thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(),
-                    ((CCustomScript*)thread)->GetInfoStr().c_str()
-                );
+                LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
         }
 
         BOOL WINAPI CLEO_GetScriptDebugMode(const CLEO::CRunningScript* thread)
@@ -443,8 +438,7 @@ namespace CLEO
             reinterpret_cast<CCustomScript*>(thread)->SetDebugMode(enabled);
         }
 
-        CLEO::CRunningScript* WINAPI
-        CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* filePath, int label)
+        CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* filePath, int label)
         {
             return (CLEO::CRunningScript*)CleoInstance.ScriptEngine.CreateCustomScript(fromThread, filePath, label);
         }
@@ -454,8 +448,7 @@ namespace CLEO
             return CleoInstance.ScriptEngine.LastScriptCreated;
         }
 
-        CLEO::CRunningScript* WINAPI
-        CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
+        CLEO::CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
         {
             return CleoInstance.ScriptEngine.FindScriptNamed(threadName, standardScripts, customScripts, resultIndex);
         }
@@ -473,8 +466,7 @@ namespace CLEO
                 return (DWORD) nullptr;
             }
 
-            auto GetScriptTexture =
-                (RwTexture * (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
+            auto GetScriptTexture = (RwTexture * (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
             if (GetScriptTexture == nullptr)
             {
                 return (DWORD) nullptr;

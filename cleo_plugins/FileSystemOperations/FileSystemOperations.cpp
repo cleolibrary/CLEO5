@@ -10,11 +10,11 @@ using namespace CLEO;
 using namespace plugin;
 namespace FS = std::filesystem;
 
-#define OPCODE_READ_PARAM_FILE_HANDLE(handle)                                                                          \
-    auto handle = (DWORD)OPCODE_READ_PARAM_PTR();                                                                      \
-    if (m_hFiles.find(handle) == m_hFiles.end())                                                                       \
-    {                                                                                                                  \
-        SUSPEND("Invalid or already closed '0x%X' file handle param", handle);                                         \
+#define OPCODE_READ_PARAM_FILE_HANDLE(handle)                                                                                                        \
+    auto handle = (DWORD)OPCODE_READ_PARAM_PTR();                                                                                                    \
+    if (m_hFiles.find(handle) == m_hFiles.end())                                                                                                     \
+    {                                                                                                                                                \
+        SUSPEND("Invalid or already closed '0x%X' file handle param", handle);                                                                       \
     }
 
 class FileSystemOperations
@@ -96,20 +96,18 @@ class FileSystemOperations
             auto idx = OPCODE_READ_PARAM_INT();
             switch (idx)
             {
-            case 0:
-                path = DIR_GAME;
-                break;
-            case 1:
-                path = DIR_USER;
-                break;
-            case 2:
-                path = DIR_SCRIPT;
-                break;
-            default:
-                LOG_WARNING(
-                    0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(thread).c_str()
-                );
-                return OR_CONTINUE;
+                case 0:
+                    path = DIR_GAME;
+                    break;
+                case 1:
+                    path = DIR_USER;
+                    break;
+                case 2:
+                    path = DIR_SCRIPT;
+                    break;
+                default:
+                    LOG_WARNING(0, "Value (%d) not known by opcode [0A99] in script %s", idx, ScriptInfoStr(thread).c_str());
+                    return OR_CONTINUE;
             }
 
             // Hack: restore global workDir if script used some hacky way to set it instead of 0A99 (SkinSelector)
@@ -455,10 +453,7 @@ class FileSystemOperations
 
         if (m_hFileSearches.find(handle) == m_hFileSearches.end())
         {
-            LOG_WARNING(
-                thread, "Invalid or already closed file search handle (0x%X) in script %s", handle,
-                ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "Invalid or already closed file search handle (0x%X) in script %s", handle, ScriptInfoStr(thread).c_str());
             OPCODE_SKIP_PARAMS(1);
             OPCODE_CONDITION_RESULT(false);
             return OR_CONTINUE;
@@ -484,10 +479,7 @@ class FileSystemOperations
 
         if (m_hFileSearches.find(handle) == m_hFileSearches.end())
         {
-            LOG_WARNING(
-                thread, "Invalid or already closed file search handle (0x%X) in script %s", handle,
-                ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "Invalid or already closed file search handle (0x%X) in script %s", handle, ScriptInfoStr(thread).c_str());
             return OR_CONTINUE;
         }
 

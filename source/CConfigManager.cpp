@@ -11,10 +11,7 @@ namespace CLEO
     HMODULE GetCurrentModule()
     {
         HMODULE hModule = nullptr;
-        GetModuleHandleEx(
-            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-            (LPCTSTR)GetCurrentModule, &hModule
-        );
+        GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCTSTR)GetCurrentModule, &hModule);
 
         return hModule;
     }
@@ -71,9 +68,7 @@ namespace CLEO
         return value.empty() ? defaultValue : value;
     }
 
-    size_t CConfigManager::ReadString(
-        const char* section, const char* key, const char* defaultValue, char* buffer, size_t bufferSize
-    )
+    size_t CConfigManager::ReadString(const char* section, const char* key, const char* defaultValue, char* buffer, size_t bufferSize)
     {
         if (buffer == nullptr || bufferSize == 0) return 0;
 

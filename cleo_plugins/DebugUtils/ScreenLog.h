@@ -66,23 +66,22 @@ class ScreenLog
                     const char c = msg[i];
                     switch (c)
                     {
-                    case '\n':
-                        this->msg += "~n~";
-                        break;
+                        case '\n':
+                            this->msg += "~n~";
+                            break;
 
-                    // characters not represented correctly by game's font texture
-                    case '{':
-                    case '}':
-                        this->msg.push_back('_');
-                        break;
+                        // characters not represented correctly by game's font texture
+                        case '{':
+                        case '}':
+                            this->msg.push_back('_');
+                            break;
 
-                    default:
-                        this->msg.push_back(c);
+                        default:
+                            this->msg.push_back(c);
                     }
                 }
 
-                if (!this->msg.empty() &&
-                    this->msg.back() == ' ') // a bug(?) in game prevents drawing texts ending with whitespace
+                if (!this->msg.empty() && this->msg.back() == ' ') // a bug(?) in game prevents drawing texts ending with whitespace
                 {
                     this->msg.back() = '_'; // '_' is drawn as empty character too
                 }
@@ -107,15 +106,9 @@ class ScreenLog
             timeLeft = std::max(timeLeft, 0.001f * ScreenLog::timeDisplay); // not shorter than defined in config
         }
 
-        const char* GetMsg(bool prefix = true) const
-        {
-            return msg.c_str() + (prefix ? msgStartPos : Repeat_Prefix_Len);
-        }
+        const char* GetMsg(bool prefix = true) const { return msg.c_str() + (prefix ? msgStartPos : Repeat_Prefix_Len); }
 
-        bool operator==(const Entry& other) const
-        {
-            return level == other.level && !strcmp(GetMsg(false), other.GetMsg(false));
-        }
+        bool operator==(const Entry& other) const { return level == other.level && !strcmp(GetMsg(false), other.GetMsg(false)); }
     };
 
     static size_t CountLines(const std::string& msg);

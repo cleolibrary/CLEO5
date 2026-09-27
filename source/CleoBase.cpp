@@ -35,13 +35,13 @@ namespace CLEO
     {
         switch (msg)
         {
-        case WM_ACTIVATE:
-            CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
-            break;
+            case WM_ACTIVATE:
+                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, wparam != 0);
+                break;
 
-        case WM_KILLFOCUS:
-            CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
-            break;
+            case WM_KILLFOCUS:
+                CleoInstance.CallCallbacks(eCallbackId::MainWindowFocus, false);
+                break;
         }
 
         return CleoInstance.MainWndProc_Orig(wnd, msg, wparam, lparam);
@@ -85,9 +85,7 @@ namespace CLEO
             OnDebugDisplayTextBuffer_Frontend, gvm.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_FRONTEND),
             &CleoInstance.GameRestartDebugDisplayTextBuffer_FrontendOrig
         );
-        inj.ReplaceFunction(
-            OnGameProcess, gvm.TranslateMemoryAddress(MA_CALL_GAME_PROCESS), &CleoInstance.OnGameProcess_Orig
-        );
+        inj.ReplaceFunction(OnGameProcess, gvm.TranslateMemoryAddress(MA_CALL_GAME_PROCESS), &CleoInstance.OnGameProcess_Orig);
 
         CleoInstance.PluginSystem.LogLoadedPlugins();
 
@@ -174,33 +172,17 @@ namespace CLEO
         OpcodeSystem.Inject(CodeInjector);
         ScriptEngine.Inject(CodeInjector);
 
-        CodeInjector.ReplaceFunction(
-            OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig
-        );
+        CodeInjector.ReplaceFunction(OnCreateMainWnd, VersionManager.TranslateMemoryAddress(MA_CALL_CREATE_MAIN_WINDOW), &CreateMainWnd_Orig);
 
-        CodeInjector.ReplaceFunction(
-            OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig
-        );
-        CodeInjector.ReplaceFunction(
-            OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig
-        );
-        CodeInjector.ReplaceFunction(
-            OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig
-        );
+        CodeInjector.ReplaceFunction(OnScmInit1, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM1), &ScmInit1_Orig);
+        CodeInjector.ReplaceFunction(OnScmInit2, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM2), &ScmInit2_Orig);
+        CodeInjector.ReplaceFunction(OnScmInit3, VersionManager.TranslateMemoryAddress(MA_CALL_INIT_SCM3), &ScmInit3_Orig);
 
-        CodeInjector.ReplaceFunction(
-            OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown_Orig
-        );
+        CodeInjector.ReplaceFunction(OnGameShutdown, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_SHUTDOWN), &GameShutdown_Orig);
 
-        CodeInjector.ReplaceFunction(
-            OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1_Orig
-        );
-        CodeInjector.ReplaceFunction(
-            OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2_Orig
-        );
-        CodeInjector.ReplaceFunction(
-            OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3_Orig
-        );
+        CodeInjector.ReplaceFunction(OnGameRestart1, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_1), &GameRestart1_Orig);
+        CodeInjector.ReplaceFunction(OnGameRestart2, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_2), &GameRestart2_Orig);
+        CodeInjector.ReplaceFunction(OnGameRestart3, VersionManager.TranslateMemoryAddress(MA_CALL_GAME_RESTART_3), &GameRestart3_Orig);
 
         OpcodeSystem.Init();
         PluginSystem.LoadPlugins();
@@ -317,8 +299,7 @@ namespace CLEO
         }
     }
 
-    StringList WINAPI
-    CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
+    StringList WINAPI CLEO_ListDirectory(CLEO::CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles)
     {
         if (searchPath == nullptr) return {}; // invalid param
 

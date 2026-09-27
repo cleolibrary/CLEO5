@@ -9,8 +9,7 @@ namespace CLEO
     {
         TRACE("Injecting MenuStatusNotifier...");
         inj.ReplaceFunction(
-            HOOK_DrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT),
-            &DrawMenuBackground_Orig
+            HOOK_DrawMenuBackground, CleoInstance.VersionManager.TranslateMemoryAddress(MA_CALL_CTEXTURE_DRAW_BG_RECT), &DrawMenuBackground_Orig
         );
     }
 

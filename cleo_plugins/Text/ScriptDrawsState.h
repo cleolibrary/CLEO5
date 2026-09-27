@@ -48,23 +48,16 @@ struct ScriptDrawsState
 
     void Reset()
     {
-        CTheScripts::UseTextCommands = (useTextCommands == eUseTextCommandState::DISABLE_NEXT_FRAME)
-                                           ? eUseTextCommandState::DISABLED
-                                           : useTextCommands;
+        CTheScripts::UseTextCommands =
+            (useTextCommands == eUseTextCommandState::DISABLE_NEXT_FRAME) ? eUseTextCommandState::DISABLED : useTextCommands;
 
         // texts
         CTheScripts::NumberOfIntroTextLinesThisFrame = 0;
-        std::fill(
-            CTheScripts::IntroTextLines, CTheScripts::IntroTextLines + _countof(CTheScripts::IntroTextLines),
-            tScriptText()
-        );
+        std::fill(CTheScripts::IntroTextLines, CTheScripts::IntroTextLines + _countof(CTheScripts::IntroTextLines), tScriptText());
 
         // rectangles
         CTheScripts::NumberOfIntroRectanglesThisFrame = 0;
-        std::fill(
-            CTheScripts::IntroRectangles, CTheScripts::IntroRectangles + _countof(CTheScripts::IntroRectangles),
-            tScriptRectangle()
-        );
+        std::fill(CTheScripts::IntroRectangles, CTheScripts::IntroRectangles + _countof(CTheScripts::IntroRectangles), tScriptRectangle());
 
         // loaded textures
         RestoreScriptTextures();
@@ -102,8 +95,8 @@ struct ScriptDrawsState
         {
             slot = CTxdStore::AddTxdSlot("script");
             TRACE(
-                "Created script.txd in slot %d. Total slots = %d, free = %d", slot,
-                CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(), CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
+                "Created script.txd in slot %d. Total slots = %d, free = %d", slot, CTxdStore::ms_pTxdPool->GetNoOfUsedSpaces(),
+                CTxdStore::ms_pTxdPool->GetNoOfFreeSpaces()
             );
         }
         return CTxdStore::ms_pTxdPool->GetAt(slot);

@@ -8,10 +8,7 @@ namespace CLEO
     {
         std::vector<FuncScriptDeleteDelegateT> funcs;
 
-        template <class FuncScriptDeleteDelegateT> void operator+=(FuncScriptDeleteDelegateT mFunc)
-        {
-            funcs.push_back(mFunc);
-        }
+        template <class FuncScriptDeleteDelegateT> void operator+=(FuncScriptDeleteDelegateT mFunc) { funcs.push_back(mFunc); }
 
         template <class FuncScriptDeleteDelegateT> void operator-=(FuncScriptDeleteDelegateT mFunc)
         {

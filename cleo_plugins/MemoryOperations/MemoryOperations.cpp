@@ -29,8 +29,7 @@ class MemoryOperations
         if (!PluginCheckCleoVersion()) return;
 
         m_configLimitAllocationCount = CLEO_GetConfigInt("MemoryOperations.Limits.MemoryAllocations", 2000);
-        m_configLimitAllocationSize =
-            CLEO_GetConfigInt("MemoryOperations.Limits.MemoryTotalSize", 16) * 1024 * 1024; // megabytes
+        m_configLimitAllocationSize  = CLEO_GetConfigInt("MemoryOperations.Limits.MemoryTotalSize", 16) * 1024 * 1024; // megabytes
 
         // register opcodes
         CLEO_RegisterOpcode(0x0459, opcode_0459); // terminate_all_scripts_with_this_name
@@ -94,8 +93,8 @@ class MemoryOperations
             std::string str(128, '\0');
             CLEO_GetScriptInfoStr(entry.first, false, str.data(), str.length());
             TRACE(
-                " %d block%s (%0.2f kB) in script %s", entry.second.count, entry.second.count > 1 ? "s" : "",
-                float(entry.second.size) / 1024, str.c_str()
+                " %d block%s (%0.2f kB) in script %s", entry.second.count, entry.second.count > 1 ? "s" : "", float(entry.second.size) / 1024,
+                str.c_str()
             );
         }
         for (auto p : Instance.m_allocations)
@@ -104,9 +103,7 @@ class MemoryOperations
         Instance.m_scriptAllocationsInfo.clear();
 
         // release loaded dlls
-        size_t libCount = std::count_if(Instance.m_libraries.begin(), Instance.m_libraries.end(), [](auto& entry) {
-            return entry.second;
-        });
+        size_t libCount = std::count_if(Instance.m_libraries.begin(), Instance.m_libraries.end(), [](auto& entry) { return entry.second; });
         TRACE("");
         TRACE("Cleaning up %d loaded libraries:", libCount);
         for (auto& entry : Instance.m_libraries)
@@ -248,9 +245,7 @@ class MemoryOperations
     }
 
     // opcodes 0AA5 - 0AA8
-    static OpcodeResult CallFunctionGeneric(
-        CLEO::CRunningScript* thread, void* func, void* obj, int numArg, int numPop, bool returnArg
-    )
+    static OpcodeResult CallFunctionGeneric(CLEO::CRunningScript* thread, void* func, void* obj, int numArg, int numPop, bool returnArg)
     {
         auto inputArgCount = (int)CLEO_GetVarArgCount(thread) - returnArg; // return slot not counted as input argument
 
@@ -297,10 +292,7 @@ class MemoryOperations
                 {
                     if (currTextParam >= Max_Text_Params)
                     {
-                        SUSPEND(
-                            "Provided more (%d) than supported (%d) string arguments", currTextParam + 1,
-                            Max_Text_Params
-                        );
+                        SUSPEND("Provided more (%d) than supported (%d) string arguments", currTextParam + 1, Max_Text_Params);
                     }
 
                     OPCODE_READ_PARAM_STRING_LEN(str, MAX_STR_LEN);
@@ -328,7 +320,7 @@ class MemoryOperations
         {
             mov oriSp, esp
 
-             // transfer args to stack
+              // transfer args to stack
             lea ecx, arguments
             call_func_loop :
             cmp ecx, arguments_end
@@ -338,7 +330,7 @@ class MemoryOperations
                 jmp call_func_loop
                 call_func_loop_end :
 
-         // call function
+              // call function
             mov ecx, obj
                 xor eax, eax
                 call func
@@ -727,23 +719,18 @@ class MemoryOperations
             const auto& info = Instance.m_scriptAllocationsInfo[thread];
             if (Instance.m_configLimitAllocationSize > 0 && info.size > Instance.m_configLimitAllocationSize)
             {
-                LOG_WARNING(
-                    thread, "%d MB of memory currently allocated by script %s", info.size / (1024 * 1024),
-                    ScriptInfoStr(thread).c_str()
-                );
+                LOG_WARNING(thread, "%d MB of memory currently allocated by script %s", info.size / (1024 * 1024), ScriptInfoStr(thread).c_str());
             }
             else if (Instance.m_configLimitAllocationCount > 0 && info.count > Instance.m_configLimitAllocationCount)
             {
                 LOG_WARNING(
-                    thread, "More than %d memory blocks currently allocated by script %s",
-                    Instance.m_configLimitAllocationCount, ScriptInfoStr(thread).c_str()
+                    thread, "More than %d memory blocks currently allocated by script %s", Instance.m_configLimitAllocationCount,
+                    ScriptInfoStr(thread).c_str()
                 );
             }
         }
         else
-            LOG_WARNING(
-                thread, "Failed to allocate %d bytes of memory in script %s", size, ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "Failed to allocate %d bytes of memory in script %s", size, ScriptInfoStr(thread).c_str());
 
         OPCODE_WRITE_PARAM_PTR(mem);
         OPCODE_CONDITION_RESULT(mem != nullptr);
@@ -890,8 +877,7 @@ class MemoryOperations
         if (Instance.m_allocations.find(address) == Instance.m_allocations.end())
         {
             LOG_WARNING(
-                thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address,
-                ScriptInfoStr(thread).c_str()
+                thread, "Invalid '0x%X' pointer param to unknown or already freed memory in script %s", address, ScriptInfoStr(thread).c_str()
             );
             return OR_CONTINUE;
         }

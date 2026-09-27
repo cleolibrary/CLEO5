@@ -41,8 +41,7 @@ namespace CLEO
       public:
         static eStreamType LegacyModeDefaultStreamType;
 
-        CSoundSystem() =
-            default; // TODO: give to user an ability to force a sound device to use (ini-file or cmd-line?)
+        CSoundSystem() = default; // TODO: give to user an ability to force a sound device to use (ini-file or cmd-line?)
         ~CSoundSystem();
 
         bool Init();

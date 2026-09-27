@@ -79,17 +79,17 @@ template <typename T, typename U> T MemReadInstrucionDestination(U p)
     T dest = (T) nullptr;
     switch (opcode)
     {
-    case OP_CALL:
-        dest = MemReadOffsetPtr<DWORD>(ptr);
-        break;
+        case OP_CALL:
+            dest = MemReadOffsetPtr<DWORD>(ptr);
+            break;
 
-    case OP_JMP:
-        dest = MemReadOffsetPtr<DWORD>(ptr);
-        break;
+        case OP_JMP:
+            dest = MemReadOffsetPtr<DWORD>(ptr);
+            break;
 
-    case OP_JMPSHORT:
-        dest = MemReadOffsetPtr<BYTE>(ptr);
-        break;
+        case OP_JMPSHORT:
+            dest = MemReadOffsetPtr<BYTE>(ptr);
+            break;
     }
 
     return dest;

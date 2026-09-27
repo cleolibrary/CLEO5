@@ -90,18 +90,18 @@ void ScriptLog::LoadConfig(bool keepState)
     {
         switch (CLEO_GetConfigInt("DebugUtils.ScriptLog.Enabled", 0))
         {
-        case 0:
-            state = LoggingState::Disabled;
-            break;
+            case 0:
+                state = LoggingState::Disabled;
+                break;
 
-        case 1:
-        default:
-            state = LoggingState::OnCrash;
-            break;
+            case 1:
+            default:
+                state = LoggingState::OnCrash;
+                break;
 
-        case 2:
-            state = LoggingState::Full;
-            break;
+            case 2:
+                state = LoggingState::Full;
+                break;
         }
     }
 
@@ -150,22 +150,21 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         {
             switch (logCustomScriptsOnly)
             {
-            case -1:
-                m_currScriptLogging = m_customMain;
-                break; // automatic: log if not defaul main.scm
-            case 1:
-                m_currScriptLogging = false;
-                break; // only custom
-                // default: // log all
+                case -1:
+                    m_currScriptLogging = m_customMain;
+                    break; // automatic: log if not defaul main.scm
+                case 1:
+                    m_currScriptLogging = false;
+                    break; // only custom
+                    // default: // log all
             }
         }
 
         // debug mode scripts
         if (m_currScriptLogging && logDebugScriptsOnly)
         {
-            m_currScriptLogging =
-                CLEO_GetScriptDebugMode(script) ||                      // debug mode on
-                (*(WORD*)script->GetBytePointer()) == COMMAND_DEBUG_ON; // debug mode just about to be enabled
+            m_currScriptLogging = CLEO_GetScriptDebugMode(script) ||                      // debug mode on
+                                  (*(WORD*)script->GetBytePointer()) == COMMAND_DEBUG_ON; // debug mode just about to be enabled
         }
     }
     else
@@ -237,18 +236,18 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             LogAppend(hasFlags ? ", " : " - ");
             switch (ver)
             {
-            case eCLEO_Version::CLEO_VER_3:
-                LogAppend("CLEO3 compat mode");
-                break;
-            case eCLEO_Version::CLEO_VER_4:
-                LogAppend("CLEO4 compat mode");
-                break;
-            case eCLEO_Version::CLEO_VER_5:
-                LogAppend("CLEO5 compat mode");
-                break;
-            default:
-                LogAppendHex(ver);
-                break;
+                case eCLEO_Version::CLEO_VER_3:
+                    LogAppend("CLEO3 compat mode");
+                    break;
+                case eCLEO_Version::CLEO_VER_4:
+                    LogAppend("CLEO4 compat mode");
+                    break;
+                case eCLEO_Version::CLEO_VER_5:
+                    LogAppend("CLEO5 compat mode");
+                    break;
+                default:
+                    LogAppendHex(ver);
+                    break;
             }
         }
 
@@ -271,17 +270,13 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             bool wastedBustedCheck = script->IsMission() && script->bWastedBustedCheck;
             if (wastedBustedCheck && cleoStack)
             {
-                LogAppend(
-                    " \\ BUG: Mission death-arrest-check active. Executing death-arrest procedure during cleo_call "
-                    "would result in errors!"
-                );
+                LogAppend(" \\ BUG: Mission death-arrest-check active. Executing death-arrest procedure during cleo_call "
+                          "would result in errors!");
             }
             else if (wastedBustedCheck && script->SP == 0) // Rockstar's bug?
             {
-                LogAppend(
-                    " \\ BUG: Mission death-arrest-check requires at least one GOSUB level. Executing death-arrest "
-                    "procedure now would result in errors!"
-                );
+                LogAppend(" \\ BUG: Mission death-arrest-check requires at least one GOSUB level. Executing death-arrest "
+                          "procedure now would result in errors!");
             }
         }
 
@@ -393,8 +388,7 @@ inline void ScriptLog::LogNewLine()
 }
 
 bool ScriptLog::LogAppendScriptParam(
-    CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName,
-    bool logVariable, bool logValue
+    CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue
 )
 {
     bool hasName = false;
@@ -414,17 +408,17 @@ bool ScriptLog::LogAppendScriptParam(
     bool isGlobalVar;
     switch (paramInfo.type)
     {
-    case DT_VAR:
-    case DT_VAR_ARRAY:
-    case DT_VAR_TEXTLABEL:
-    case DT_VAR_TEXTLABEL_ARRAY:
-    case DT_VAR_STRING:
-    case DT_VAR_STRING_ARRAY:
-        isGlobalVar = true;
-        break;
+        case DT_VAR:
+        case DT_VAR_ARRAY:
+        case DT_VAR_TEXTLABEL:
+        case DT_VAR_TEXTLABEL_ARRAY:
+        case DT_VAR_STRING:
+        case DT_VAR_STRING_ARRAY:
+            isGlobalVar = true;
+            break;
 
-    default:
-        isGlobalVar = false;
+        default:
+            isGlobalVar = false;
     }
 
     bool hasVariable = false;
@@ -432,57 +426,57 @@ bool ScriptLog::LogAppendScriptParam(
     {
         switch (paramInfo.type)
         {
-        case DT_END:
-            /*hasVariable = true;
-            if (hasName) LogAppend(' ';
-            LogAppend("ArgsEnd";*/
-            break;
+            case DT_END:
+                /*hasVariable = true;
+                if (hasName) LogAppend(' ';
+                LogAppend("ArgsEnd";*/
+                break;
 
-        case DT_VAR:
-        case DT_VAR_ARRAY:
-        case DT_VAR_TEXTLABEL:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING:
-        case DT_VAR_STRING_ARRAY:
-        case DT_LVAR:
-        case DT_LVAR_ARRAY:
-        case DT_LVAR_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING:
-        case DT_LVAR_STRING_ARRAY:
-            hasVariable = true;
-            if (hasName) LogAppend(' ');
-            if (isGlobalVar) LogAppend('$');
-            LogAppendNum(paramInfo.varIndex);
-            if (!isGlobalVar) LogAppend('@');
+            case DT_VAR:
+            case DT_VAR_ARRAY:
+            case DT_VAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+            case DT_LVAR:
+            case DT_LVAR_ARRAY:
+            case DT_LVAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING:
+            case DT_LVAR_STRING_ARRAY:
+                hasVariable = true;
+                if (hasName) LogAppend(' ');
+                if (isGlobalVar) LogAppend('$');
+                LogAppendNum(paramInfo.varIndex);
+                if (!isGlobalVar) LogAppend('@');
 
-            if (paramInfo.arrayType != eArrayType::AT_NONE)
-            {
-                auto idxVar = GetScriptVar(script, paramInfo.arrayFlags & ATF_INDEX_GLOBAL, paramInfo.arrayIndexVar);
-
-                LogAppend("[ ");
-                if (paramInfo.arrayFlags & ATF_INDEX_GLOBAL) LogAppend('$');
-                LogAppendNum(paramInfo.arrayIndexVar);
-                if ((paramInfo.arrayFlags & ATF_INDEX_GLOBAL) == 0) LogAppend('@');
-                LogAppend('(');
-                if (abs(idxVar->nParam) >= MinValidAddress)
+                if (paramInfo.arrayType != eArrayType::AT_NONE)
                 {
-                    LogAppend("0x");
-                    LogAppendHex(idxVar->dwParam);
+                    auto idxVar = GetScriptVar(script, paramInfo.arrayFlags & ATF_INDEX_GLOBAL, paramInfo.arrayIndexVar);
+
+                    LogAppend("[ ");
+                    if (paramInfo.arrayFlags & ATF_INDEX_GLOBAL) LogAppend('$');
+                    LogAppendNum(paramInfo.arrayIndexVar);
+                    if ((paramInfo.arrayFlags & ATF_INDEX_GLOBAL) == 0) LogAppend('@');
+                    LogAppend('(');
+                    if (abs(idxVar->nParam) >= MinValidAddress)
+                    {
+                        LogAppend("0x");
+                        LogAppendHex(idxVar->dwParam);
+                    }
+                    else
+                        LogAppendNum(idxVar->nParam);
+                    LogAppend(") ]");
                 }
-                else
-                    LogAppendNum(idxVar->nParam);
-                LogAppend(") ]");
-            }
-            break;
+                break;
         }
     }
 
     // no value to print
     switch (paramInfo.type)
     {
-    case DT_END:
-        logValue = false;
+        case DT_END:
+            logValue = false;
     }
 
     if (logValue)
@@ -495,16 +489,39 @@ bool ScriptLog::LogAppendScriptParam(
         // pick presentation style according to param type declared in the mode
         switch (command->arguments[paramIdx].type)
         {
-        case OpcodeInfoDatabase::CommandArgumentType::Other: // enum or class
-        {
-            auto e = m_opcodeDatabase.GetEnum(command->arguments[paramIdx].typeNameLower.c_str());
-            if (e)
+            case OpcodeInfoDatabase::CommandArgumentType::Other: // enum or class
             {
-                if (e->IsNumeric())
+                auto e = m_opcodeDatabase.GetEnum(command->arguments[paramIdx].typeNameLower.c_str());
+                if (e)
                 {
-                    if (!IsImmString(paramInfo.type) && !IsVarString(paramInfo.type))
+                    if (e->IsNumeric())
                     {
-                        auto entry = e->GetEntryName(paramInfo.value.nParam);
+                        if (!IsImmString(paramInfo.type) && !IsVarString(paramInfo.type))
+                        {
+                            auto entry = e->GetEntryName(paramInfo.value.nParam);
+                            if (entry)
+                            {
+                                LogAppend(e->name);
+                                LogAppend('.');
+                                LogAppend(entry);
+                            }
+                            else
+                            {
+                                // TODO: thread lock
+                                paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                                // TODO: thread unlock
+                            }
+                        }
+                        else
+                        {
+                            // TODO: thread lock
+                            paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                            // TODO: thread unlock
+                        }
+                    }
+                    else // text enums
+                    {
+                        auto entry = e->GetEntryName(std::string(paramInfo.GetText()).c_str());
                         if (entry)
                         {
                             LogAppend(e->name);
@@ -518,106 +535,83 @@ bool ScriptLog::LogAppendScriptParam(
                             // TODO: thread unlock
                         }
                     }
-                    else
-                    {
-                        // TODO: thread lock
-                        paramInfo.ValueToString(m_logBuffer); // print according to param type in script
-                        // TODO: thread unlock
-                    }
                 }
-                else // text enums
+                else // class or unknown enum
                 {
-                    auto entry = e->GetEntryName(std::string(paramInfo.GetText()).c_str());
-                    if (entry)
-                    {
-                        LogAppend(e->name);
-                        LogAppend('.');
-                        LogAppend(entry);
-                    }
-                    else
-                    {
-                        // TODO: thread lock
-                        paramInfo.ValueToString(m_logBuffer); // print according to param type in script
-                        // TODO: thread unlock
-                    }
+                    // TODO: thread lock
+                    paramInfo.ValueToString(m_logBuffer); // print according to param type in script
+                    // TODO: thread unlock
                 }
+                break;
             }
-            else // class or unknown enum
-            {
+
+                // case OpcodeInfoDatabase::CommandArgumentType::Any:
+                // case OpcodeInfoDatabase::CommandArgumentType::Arguments:
+
+            case OpcodeInfoDatabase::CommandArgumentType::Bool:
+                switch (paramInfo.value.nParam)
+                {
+                    case 0:
+                        LogAppend("false");
+                        break;
+                    case 1:
+                        LogAppend("true");
+                        break;
+                    default:
+                        LogAppendNum(paramInfo.value.nParam);
+                        break;
+                }
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::Float:
+                LogAppendFloat(paramInfo.value.fParam);
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::GxtKey:
+            case OpcodeInfoDatabase::CommandArgumentType::ZoneKey:
+            case OpcodeInfoDatabase::CommandArgumentType::String:
+            case OpcodeInfoDatabase::CommandArgumentType::String128:
+                LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
+                LogAppend(paramInfo.GetText());
+                LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::Int:
+                if (paramInfo.GetBaseType() == DT_DWORD || paramInfo.GetBaseType() == DT_VAR)
+                {
+                    // TODO: thread lock
+                    paramInfo.ValueToString(m_logBuffer);
+                    // TODO: thread unlock
+                }
+                else // expected integer, got something else. Print as hex
+                {
+                    LogAppend("0x");
+                    LogAppendHex(paramInfo.value.nParam);
+                }
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::Label:
+                LogAppend("@LABEL_");
+                LogAppendNum(abs(paramInfo.value.nParam));
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::ModelAny:
+            case OpcodeInfoDatabase::CommandArgumentType::ModelChar:
+            case OpcodeInfoDatabase::CommandArgumentType::ModelObject:
+            case OpcodeInfoDatabase::CommandArgumentType::ModelVehicle:
+                LogAppendNum(paramInfo.value.nParam);
+                break;
+
+            case OpcodeInfoDatabase::CommandArgumentType::ScriptId:
+                LogAppend("0x");
+                LogAppendHex(paramInfo.value.nParam);
+                break;
+
+            default: {
                 // TODO: thread lock
                 paramInfo.ValueToString(m_logBuffer); // print according to param type in script
                 // TODO: thread unlock
             }
-            break;
-        }
-
-            // case OpcodeInfoDatabase::CommandArgumentType::Any:
-            // case OpcodeInfoDatabase::CommandArgumentType::Arguments:
-
-        case OpcodeInfoDatabase::CommandArgumentType::Bool:
-            switch (paramInfo.value.nParam)
-            {
-            case 0:
-                LogAppend("false");
-                break;
-            case 1:
-                LogAppend("true");
-                break;
-            default:
-                LogAppendNum(paramInfo.value.nParam);
-                break;
-            }
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::Float:
-            LogAppendFloat(paramInfo.value.fParam);
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::GxtKey:
-        case OpcodeInfoDatabase::CommandArgumentType::ZoneKey:
-        case OpcodeInfoDatabase::CommandArgumentType::String:
-        case OpcodeInfoDatabase::CommandArgumentType::String128:
-            LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
-            LogAppend(paramInfo.GetText());
-            LogAppend((paramInfo.GetBaseType() == DT_TEXTLABEL) ? '\'' : '"');
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::Int:
-            if (paramInfo.GetBaseType() == DT_DWORD || paramInfo.GetBaseType() == DT_VAR)
-            {
-                // TODO: thread lock
-                paramInfo.ValueToString(m_logBuffer);
-                // TODO: thread unlock
-            }
-            else // expected integer, got something else. Print as hex
-            {
-                LogAppend("0x");
-                LogAppendHex(paramInfo.value.nParam);
-            }
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::Label:
-            LogAppend("@LABEL_");
-            LogAppendNum(abs(paramInfo.value.nParam));
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::ModelAny:
-        case OpcodeInfoDatabase::CommandArgumentType::ModelChar:
-        case OpcodeInfoDatabase::CommandArgumentType::ModelObject:
-        case OpcodeInfoDatabase::CommandArgumentType::ModelVehicle:
-            LogAppendNum(paramInfo.value.nParam);
-            break;
-
-        case OpcodeInfoDatabase::CommandArgumentType::ScriptId:
-            LogAppend("0x");
-            LogAppendHex(paramInfo.value.nParam);
-            break;
-
-        default: {
-            // TODO: thread lock
-            paramInfo.ValueToString(m_logBuffer); // print according to param type in script
-            // TODO: thread unlock
-        }
         }
 
         if (hasVariable) LogAppend(')');
@@ -691,7 +685,7 @@ void ScriptLog::LogFileDelete()
 static void __declspec(naked) HOOK_SetConditionResult()
 {
     _asm
-        {
+    {
             push ecx // save ecx
             push dword ptr[esp + 8] // state
             push ecx // script
@@ -699,7 +693,7 @@ static void __declspec(naked) HOOK_SetConditionResult()
             add esp, 8
             pop ecx // restore ecx     
             retn 4
-        }
+    }
 }
 
 void ScriptLog::SetConditionResult(CLEO::CRunningScript* script, bool state)
@@ -712,8 +706,7 @@ void ScriptLog::SetConditionResult(CLEO::CRunningScript* script, bool state)
     // call original function
     ((::CRunningScript*)script)->UpdateCompareFlag(state);
     // reinstall our hook
-    g_Instance->m_patchSetConditionResult =
-        MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
+    g_Instance->m_patchSetConditionResult = MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
 }
 
 void ScriptLog::OnGameBegin(DWORD saveSlot)
@@ -728,10 +721,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
     SYSTEMTIME t;
     GetLocalTime(&t);
     char timeStamp[32];
-    sprintf_s(
-        timeStamp, "%02d/%02d/%04d %02d:%02d:%02d.%03d", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond,
-        t.wMilliseconds
-    );
+    sprintf_s(timeStamp, "%02d/%02d/%04d %02d:%02d:%02d.%03d", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
 
     LogSeparator();
     LogAppend("  Game started at: ");
@@ -763,8 +753,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
         const size_t Orig_Main_Code_Offset = 55976; // skip global variables
         const size_t Orig_Main_Hash        = 0xbd4e2fcf;
 
-        auto hash =
-            crc32((BYTE*)CTheScripts::ScriptSpace + Orig_Main_Code_Offset, Orig_Main_Size - Orig_Main_Code_Offset);
+        auto hash    = crc32((BYTE*)CTheScripts::ScriptSpace + Orig_Main_Code_Offset, Orig_Main_Size - Orig_Main_Code_Offset);
         m_customMain = hash != Orig_Main_Hash; // hash of original main.scm
 
         if (saveSlot != -1)
@@ -822,8 +811,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     // late initialization
     if (!m_initialized)
     {
-        m_patchSetConditionResult =
-            MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
+        m_patchSetConditionResult = MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
 
         m_initialized = true;
     }
@@ -834,8 +822,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
     m_currCommandReturnParams = nullptr;
     m_conditionResultUpdated  = false;
-    m_conditionResultExpected =
-        script->NotFlag || m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE;
+    m_conditionResultExpected = script->NotFlag || m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE;
     if (opcode == 0x0AB1) m_conditionResultExpected = false; // cleo_call: condition result set on return
 
     auto oriIP = script->CurrentIP;
@@ -927,8 +914,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
             }
             else
             {
-                if (i == command->inputArguments)
-                    m_currCommandReturnParams = script->CurrentIP; // keep pointer to return params start
+                if (i == command->inputArguments) m_currCommandReturnParams = script->CurrentIP; // keep pointer to return params start
 
                 LogAppendSpace();
                 LogAppendScriptParam(script, command, i, returnArgCount > 1, true, false);
@@ -976,8 +962,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
                 else if (command->inputArguments == 2 && i == 1) // param % param
                 {
                     LogAppend(command->oper);
-                    if (!command->IsComparison() && command->oper.find('=') == std::string::npos)
-                        LogAppend('='); // param %= param
+                    if (!command->IsComparison() && command->oper.find('=') == std::string::npos) LogAppend('='); // param %= param
                     LogAppend(" ");
                 }
             }
@@ -1009,9 +994,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     return OR_NONE;
 }
 
-CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(
-    CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result
-)
+CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result)
 {
     if (state == LoggingState::Disabled || !m_currScriptLogging) return result;
 
@@ -1072,8 +1055,7 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(
         LogAppend("NOP command");
     }
 
-    if (m_conditionResultExpected && !m_conditionResultUpdated &&
-        opcode != 0x0AB1) // assume cleo_call always sets condition result
+    if (m_conditionResultExpected && !m_conditionResultUpdated && opcode != 0x0AB1) // assume cleo_call always sets condition result
     {
         LogAppend(hasComment ? ", " : " // ");
         hasComment = true;

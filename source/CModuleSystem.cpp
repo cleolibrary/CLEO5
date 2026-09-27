@@ -153,8 +153,7 @@ bool CModuleSystem::CModule::LoadFromFile(const char* path)
         headerEndPos += header.size;
 
         // CLEO Module Exports
-        if (std::memcmp(header.signature, Header_Signature_Module_Exports, sizeof(Header_Signature_Module_Exports)) ==
-            0)
+        if (std::memcmp(header.signature, Header_Signature_Module_Exports, sizeof(Header_Signature_Module_Exports)) == 0)
         {
             if (headerEndPos > segment.jumpAddress)
             {

@@ -79,8 +79,7 @@ namespace CLEO
         AT_NONE = 0xFF // CLEO internal
     };
     static const BYTE ArrayTypeMask =
-        AT_INT | AT_FLOAT | AT_TEXTLABEL |
-        AT_STRING; // array flags byte contains other info too. Type needs to be masked when read
+        AT_INT | AT_FLOAT | AT_TEXTLABEL | AT_STRING; // array flags byte contains other info too. Type needs to be masked when read
     enum eArrayTypeFlags : BYTE
     {
         ATF_INDEX_GLOBAL = 0x80
@@ -90,68 +89,68 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_END:
-            return "VArgEnd";
-            break;
-        case DT_DWORD:
-            return "Int32";
-            break;
-        case DT_VAR:
-            return "GlobVar";
-            break;
-        case DT_LVAR:
-            return "LocVar";
-            break;
-        case DT_BYTE:
-            return "Int8";
-            break;
-        case DT_WORD:
-            return "Int16";
-            break;
-        case DT_FLOAT:
-            return "Float32";
-            break;
-        case DT_VAR_ARRAY:
-            return "GlobVarArr";
-            break;
-        case DT_LVAR_ARRAY:
-            return "LocVarArr";
-            break;
-        case DT_TEXTLABEL:
-            return "STxt";
-            break;
-        case DT_VAR_TEXTLABEL:
-            return "GlobVarSTxt";
-            break;
-        case DT_LVAR_TEXTLABEL:
-            return "LocVarSTxt";
-            break;
-        case DT_VAR_TEXTLABEL_ARRAY:
-            return "GlobVarSTxtArr";
-            break;
-        case DT_LVAR_TEXTLABEL_ARRAY:
-            return "LocVarSTxtArr";
-            break;
-        case DT_VARLEN_STRING:
-            return "Txt";
-            break;
-        case DT_STRING:
-            return "LTxt";
-            break;
-        case DT_VAR_STRING:
-            return "GlobVarLTxt";
-            break;
-        case DT_LVAR_STRING:
-            return "LocVarLTxt";
-            break;
-        case DT_VAR_STRING_ARRAY:
-            return "GlobVarLTxtArr";
-            break;
-        case DT_LVAR_STRING_ARRAY:
-            return "LocVarLTxtArr";
-            break;
-        default:
-            return "corrupted";
+            case DT_END:
+                return "VArgEnd";
+                break;
+            case DT_DWORD:
+                return "Int32";
+                break;
+            case DT_VAR:
+                return "GlobVar";
+                break;
+            case DT_LVAR:
+                return "LocVar";
+                break;
+            case DT_BYTE:
+                return "Int8";
+                break;
+            case DT_WORD:
+                return "Int16";
+                break;
+            case DT_FLOAT:
+                return "Float32";
+                break;
+            case DT_VAR_ARRAY:
+                return "GlobVarArr";
+                break;
+            case DT_LVAR_ARRAY:
+                return "LocVarArr";
+                break;
+            case DT_TEXTLABEL:
+                return "STxt";
+                break;
+            case DT_VAR_TEXTLABEL:
+                return "GlobVarSTxt";
+                break;
+            case DT_LVAR_TEXTLABEL:
+                return "LocVarSTxt";
+                break;
+            case DT_VAR_TEXTLABEL_ARRAY:
+                return "GlobVarSTxtArr";
+                break;
+            case DT_LVAR_TEXTLABEL_ARRAY:
+                return "LocVarSTxtArr";
+                break;
+            case DT_VARLEN_STRING:
+                return "Txt";
+                break;
+            case DT_STRING:
+                return "LTxt";
+                break;
+            case DT_VAR_STRING:
+                return "GlobVarLTxt";
+                break;
+            case DT_LVAR_STRING:
+                return "LocVarLTxt";
+                break;
+            case DT_VAR_STRING_ARRAY:
+                return "GlobVarLTxtArr";
+                break;
+            case DT_LVAR_STRING_ARRAY:
+                return "LocVarLTxtArr";
+                break;
+            default:
+                return "corrupted";
         }
     }
 
@@ -159,10 +158,10 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_BYTE:
-        case DT_WORD:
-        case DT_DWORD:
-            return true;
+            case DT_BYTE:
+            case DT_WORD:
+            case DT_DWORD:
+                return true;
         }
         return false;
     }
@@ -176,10 +175,10 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_STRING:
-        case DT_TEXTLABEL:
-        case DT_VARLEN_STRING:
-            return true;
+            case DT_STRING:
+            case DT_TEXTLABEL:
+            case DT_VARLEN_STRING:
+                return true;
         }
         return false;
     }
@@ -188,15 +187,15 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_LVAR_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING:
-        case DT_LVAR_STRING_ARRAY:
-        case DT_VAR_TEXTLABEL:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING:
-        case DT_VAR_STRING_ARRAY:
-            return true;
+            case DT_LVAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+                return true;
         }
         return false;
     }
@@ -205,11 +204,11 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_VAR:
-        case DT_VAR_ARRAY:
-        case DT_LVAR:
-        case DT_LVAR_ARRAY:
-            return true;
+            case DT_VAR:
+            case DT_VAR_ARRAY:
+            case DT_LVAR:
+            case DT_LVAR_ARRAY:
+                return true;
         }
         return false;
     }
@@ -218,13 +217,13 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING_ARRAY:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING_ARRAY:
-        case DT_VAR_ARRAY:
-        case DT_LVAR_ARRAY:
-            return true;
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING_ARRAY:
+            case DT_VAR_ARRAY:
+            case DT_LVAR_ARRAY:
+                return true;
         }
         return false;
     }
@@ -232,63 +231,63 @@ namespace CLEO
     {
         switch (type)
         {
-        case DT_BYTE:
-        case DT_WORD:
-        case DT_DWORD:
-            return "int";
-            break;
-
-        case DT_FLOAT:
-            return "float";
-            break;
-
-        case DT_STRING:
-        case DT_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL:
-        case DT_LVAR_TEXTLABEL_ARRAY:
-        case DT_LVAR_STRING:
-        case DT_LVAR_STRING_ARRAY:
-        case DT_VAR_TEXTLABEL:
-        case DT_VAR_TEXTLABEL_ARRAY:
-        case DT_VAR_STRING:
-        case DT_VAR_STRING_ARRAY:
-        case DT_VARLEN_STRING:
-            return "string";
-            break;
-
-        case DT_VAR:
-        case DT_LVAR:
-            return "variable";
-            break;
-
-        case DT_VAR_ARRAY:
-        case DT_LVAR_ARRAY:
-            switch (arrType)
-            {
-            case AT_INT:
+            case DT_BYTE:
+            case DT_WORD:
+            case DT_DWORD:
                 return "int";
                 break;
 
-            case AT_FLOAT:
+            case DT_FLOAT:
                 return "float";
                 break;
 
-            case AT_TEXTLABEL:
-            case AT_STRING:
+            case DT_STRING:
+            case DT_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_STRING:
+            case DT_LVAR_STRING_ARRAY:
+            case DT_VAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_VAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+            case DT_VARLEN_STRING:
                 return "string";
                 break;
 
-            default:
+            case DT_VAR:
+            case DT_LVAR:
                 return "variable";
-            }
+                break;
 
-        case DT_END:
-            return "varArgEnd";
-            break;
+            case DT_VAR_ARRAY:
+            case DT_LVAR_ARRAY:
+                switch (arrType)
+                {
+                    case AT_INT:
+                        return "int";
+                        break;
 
-        default:
-            return "corrupted";
-            break;
+                    case AT_FLOAT:
+                        return "float";
+                        break;
+
+                    case AT_TEXTLABEL:
+                    case AT_STRING:
+                        return "string";
+                        break;
+
+                    default:
+                        return "variable";
+                }
+
+            case DT_END:
+                return "varArgEnd";
+                break;
+
+            default:
+                return "corrupted";
+                break;
         }
     }
 
@@ -530,13 +529,10 @@ namespace CLEO
         // get info about the string opcode param, so it can be written latter. If
         // outNeedsTerminator is not 0 then whole bufSize can be used as text characters.
         // Advances script to next param
-        void WINAPI CLEO_ReadStringParamWriteBuffer(
-            CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator
-        );
+        void WINAPI CLEO_ReadStringParamWriteBuffer(CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator);
 
         // consumes all var-arg params and terminator
-        char* WINAPI
-        CLEO_ReadParamsFormatted(CRunningScript* thread, const char* format, char* buf = nullptr, int bufSize = 0);
+        char* WINAPI CLEO_ReadParamsFormatted(CRunningScript* thread, const char* format, char* buf = nullptr, int bufSize = 0);
         // get param value without advancing the script
         DWORD WINAPI CLEO_PeekIntOpcodeParam(CRunningScript* thread);
         float WINAPI CLEO_PeekFloatOpcodeParam(CRunningScript* thread);
@@ -566,8 +562,7 @@ namespace CLEO
         CRunningScript* WINAPI CLEO_GetLastCreatedCustomScript();
         // can be called multiple times to find more scripts named threadName.
         // resultIndex should be incremented until the method returns nullptr
-        CRunningScript* WINAPI
-        CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex = 0);
+        CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex = 0);
         // can be absolute, partial path or just filename
         CRunningScript* WINAPI CLEO_GetScriptByFilename(const char* path, DWORD resultIndex = 0);
 
@@ -590,8 +585,7 @@ namespace CLEO
 
         // thread can be null, searchPath can contain wildcards. After use CLEO_StringListFree must be
         // called on returned StringList to free its resources
-        StringList WINAPI
-        CLEO_ListDirectory(CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles);
+        StringList WINAPI CLEO_ListDirectory(CRunningScript* thread, const char* searchPath, BOOL listDirs, BOOL listFiles);
 
         // absolute game directory filepath without trailling path separator
         LPCSTR WINAPI CLEO_GetGameDirectory();
@@ -707,20 +701,14 @@ namespace CLEO
         void SetActive(bool b) { bIsActive = b; }
 
         SCRIPT_VAR* GetLocalVarPtr(int idx = 0) { return IsMission() ? &missionLocals[idx] : &LocalVar[idx]; }
-        const SCRIPT_VAR* GetLocalVarPtr(int idx = 0) const
-        {
-            return IsMission() ? &missionLocals[idx] : &LocalVar[idx];
-        }
+        const SCRIPT_VAR* GetLocalVarPtr(int idx = 0) const { return IsMission() ? &missionLocals[idx] : &LocalVar[idx]; }
         bool GetConditionResult() const { return bCondResult != false; }
         void SetConditionResult(bool result) { CLEO_SetThreadCondResult(this, result); }
         bool GetNotFlag() const { return NotFlag; }
         void SetNotFlag(bool state) { NotFlag = state; }
         eDataType PeekDataType() const { return *(eDataType*)CurrentIP; }
         eDataType ReadDataType() { return (eDataType)ReadByte(); }
-        eArrayType PeekArrayType() const
-        {
-            return (eArrayType)(!IsArray(PeekDataType()) ? AT_NONE : *(CurrentIP + 1 + 2 + 2 + 1) & ArrayTypeMask);
-        }
+        eArrayType PeekArrayType() const { return (eArrayType)(!IsArray(PeekDataType()) ? AT_NONE : *(CurrentIP + 1 + 2 + 2 + 1) & ArrayTypeMask); }
 
         WORD ReadVarIndex() { return ReadWord(); }
         WORD ReadArrayOffset() { return ReadWord(); }

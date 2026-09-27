@@ -89,10 +89,7 @@ namespace CLEO
             }
             else
             {
-                LOG_WARNING(
-                    0, "Failed to force select device #%d! Selecting default audio device #%d: %s", forceIndex,
-                    deviceIndex, info.name
-                );
+                LOG_WARNING(0, "Failed to force select device #%d! Selecting default audio device #%d: %s", forceIndex, deviceIndex, info.name);
             }
         }
         else
@@ -102,15 +99,12 @@ namespace CLEO
 
         BASS_SetConfig(BASS_CONFIG_FLOATDSP, TRUE);
 
-        if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) &&
-            BASS_Set3DFactors(1.0f, 0.0f, 1.0f))
+        if (BASS_Init(deviceIndex, 44100, BASS_DEVICE_3D, RsGlobal.ps->window, nullptr) && BASS_Set3DFactors(1.0f, 0.0f, 1.0f))
         {
             TRACE("SoundSystem initialized");
 
             // Can we use floating-point (HQ) audio streams?
-            DWORD floatable = BASS_StreamCreate(
-                44100, 1, BASS_SAMPLE_FLOAT, NULL, NULL
-            ); // floating-point channel support? 0 = no, else yes
+            DWORD floatable = BASS_StreamCreate(44100, 1, BASS_SAMPLE_FLOAT, NULL, NULL); // floating-point channel support? 0 = no, else yes
             if (floatable)
             {
                 TRACE("Floating-point audio supported!");
@@ -122,8 +116,7 @@ namespace CLEO
 
             if (BASS_GetInfo(&SoundDevice))
             {
-                if (SoundDevice.flags & DSCAPS_EMULDRIVER)
-                    TRACE("Audio drivers not installed - using DirectSound emulation");
+                if (SoundDevice.flags & DSCAPS_EMULDRIVER) TRACE("Audio drivers not installed - using DirectSound emulation");
             }
 
             initialized = true;
@@ -203,16 +196,14 @@ namespace CLEO
             if (paused) Resume();
 
             // update globals
-            timeStep          = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped -
-                                 CTimer::m_snPreviousTimeInMillisecondsNonClipped); // delta in seconds
-            masterSpeed       = CTimer::ms_fTimeScale;
+            timeStep    = 0.001f * (CTimer::m_snTimeInMillisecondsNonClipped - CTimer::m_snPreviousTimeInMillisecondsNonClipped); // delta in seconds
+            masterSpeed = CTimer::ms_fTimeScale;
             masterVolumeSfx   = AEAudioHardware.m_fEffectMasterScalingFactor * 0.5f; // fit to game's sfx volume
             masterVolumeMusic = AEAudioHardware.m_fMusicMasterScalingFactor * 0.5f;
 
             // prevent camera jump-cut glitches
             int skipFramePrev = skipFrame;
-            skipFrame =
-                TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd;
+            skipFrame         = TheCamera.m_bJust_Switched || TheCamera.m_bCameraJustRestored || CPad::GetPad(0)->JustOutOfFrontEnd;
 
             CVector prevPos = position;
             position        = TheCamera.GetPosition();
