@@ -129,6 +129,41 @@ void CPluginSystem::UnloadPlugins()
     exportsCache.clear();
 }
 
+std::string CPluginSystem::GetModulePath(HMODULE module)
+{
+    std::string path(512, '\0');
+    if (GetModuleFileName(module, path.data(), path.size()) == 0) return {};
+
+    path.resize(strlen(path.data()));
+    return path;
+}
+
+std::vector<HMODULE> CPluginSystem::GetLoadedPModules()
+{
+    auto process = GetCurrentProcess();
+
+    DWORD buffSize = 0;
+    if (!EnumProcessModules(process, nullptr, 0, &buffSize) || buffSize < sizeof(HMODULE)) return {};
+
+    std::vector<HMODULE> modules(buffSize / sizeof(HMODULE));
+    if (!EnumProcessModules(process, modules.data(), buffSize, &buffSize)) return {};
+    modules.resize(buffSize / sizeof(HMODULE));
+
+    std::vector<HMODULE> found;
+    for (const auto module : modules)
+    {
+        const auto path = GetModulePath(module);
+
+        if (StringStartsWith(path, GetGameDirectory(), false) || StringEndsWith(path, ".asi", false) ||
+            StringEndsWith(path, ".cleo", false))
+        {
+            found.push_back(module);
+        }
+    }
+
+    return found;
+}
+
 FARPROC CPluginSystem::FindPluginExport(const char* name)
 {
     if (name == nullptr || name[0] == '\0') return nullptr;
@@ -138,12 +173,13 @@ FARPROC CPluginSystem::FindPluginExport(const char* name)
     if (cached != exportsCache.end()) return cached->second;
 
     // otherwise search in loaded plugins
-    for (const auto& plugin : plugins)
+    for (const auto module : GetLoadedPModules())
     {
-        const auto proc = GetProcAddress(plugin.handle, name);
+        const auto proc = GetProcAddress(module, name);
         if (proc == nullptr) continue;
 
-        TRACE("Export '%s' found in '%s'", name, plugin.name.c_str());
+        const auto path = GetModulePath(module);
+        TRACE("Export '%s' found in '%s'", name, path.c_str());
         exportsCache[name] = proc;
         return proc;
     }
@@ -160,41 +196,16 @@ size_t CPluginSystem::GetNumPlugins() const
 
 void CLEO::CPluginSystem::LogLoadedPlugins() const
 {
-    auto process = GetCurrentProcess();
-
-    DWORD buffSize = 0;
-    if (!EnumProcessModules(process, nullptr, 0, &buffSize) || buffSize < sizeof(HMODULE))
-    {
-        return;
-    }
-
-    std::vector<HMODULE> modules(buffSize / sizeof(HMODULE));
-    if (!EnumProcessModules(process, modules.data(), buffSize, &buffSize))
-    {
-        return;
-    }
-
     TRACE(""); // separator
     TRACE("Loaded plugins summary:");
 
-    for (const auto& m : modules)
+    for (const auto module : GetLoadedPModules())
     {
-        std::string filename(512, '\0');
-        if (GetModuleFileName(m, filename.data(), filename.size()))
-        {
-            filename.resize(strlen(filename.data()));
-
-            if (StringStartsWith(filename, GetGameDirectory(), false) || StringEndsWith(filename, ".asi", false) ||
-                StringEndsWith(filename, ".cleo", false))
-            {
-                std::error_code err;
-                auto fileSize = (size_t)FS::file_size(filename, err);
-
-                FilepathRemoveParent(filename, GetGameDirectory());
-
-                TRACE(" %s (%zu bytes)", filename.c_str(), fileSize);
-            }
-        }
+        auto path = GetModulePath(module);
+        std::error_code err;
+        auto fileSize = (size_t)FS::file_size(path, err);
+        FilepathRemoveParent(path, GetGameDirectory());
+        TRACE(" %s (%zu bytes)", path.c_str(), fileSize);
     }
 
     TRACE(""); // separator
