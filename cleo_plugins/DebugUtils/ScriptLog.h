@@ -61,8 +61,7 @@ class ScriptLog
     inline void LogSeparator();
     inline void LogNewLine();
     bool LogAppendScriptParam(
-        CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName,
-        bool logVariable, bool logValue
+        CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue
     ); // return true if param was global variable
 
     void LogWriteFile(bool forceUpdate = false);
@@ -88,16 +87,10 @@ class ScriptLog
     static void __stdcall callbackGameProcessAfter() { g_Instance->OnGameProcessAfter(); };
 
     bool OnScriptProcessBefore(CLEO::CRunningScript* script);
-    static bool __stdcall callbackScriptProcessBefore(CLEO::CRunningScript* script)
-    {
-        return g_Instance->OnScriptProcessBefore(script);
-    };
+    static bool __stdcall callbackScriptProcessBefore(CLEO::CRunningScript* script) { return g_Instance->OnScriptProcessBefore(script); };
 
     void OnScriptProcessAfter(CLEO::CRunningScript* script);
-    static void __stdcall callbackScriptProcessAfter(CLEO::CRunningScript* script)
-    {
-        g_Instance->OnScriptProcessAfter(script);
-    };
+    static void __stdcall callbackScriptProcessAfter(CLEO::CRunningScript* script) { g_Instance->OnScriptProcessAfter(script); };
 
     CLEO::OpcodeResult OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script, DWORD opcode);
     static CLEO::OpcodeResult __stdcall callbackScriptOpcodeProcessBefore(CLEO::CRunningScript* script, DWORD opcode)
@@ -105,12 +98,8 @@ class ScriptLog
         return g_Instance->OnScriptOpcodeProcessBefore(script, opcode);
     };
 
-    CLEO::OpcodeResult OnScriptOpcodeProcessAfter(
-        CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result
-    );
-    static CLEO::OpcodeResult __stdcall callbackScriptOpcodeProcessAfter(
-        CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result
-    )
+    CLEO::OpcodeResult OnScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result);
+    static CLEO::OpcodeResult __stdcall callbackScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result)
     {
         return g_Instance->OnScriptOpcodeProcessAfter(script, opcode, result);
     };

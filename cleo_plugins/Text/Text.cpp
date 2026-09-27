@@ -115,10 +115,7 @@ class Text
         return true;
     }
 
-    static void __stdcall OnScriptAfterProcess(CLEO::CRunningScript* pScript)
-    {
-        scriptDrawing.ScriptProcessingEnd(pScript);
-    }
+    static void __stdcall OnScriptAfterProcess(CLEO::CRunningScript* pScript) { scriptDrawing.ScriptProcessingEnd(pScript); }
 
     static void __stdcall OnScriptUnregister(CLEO::CRunningScript* pScript) { scriptDrawing.ScriptUnregister(pScript); }
 
@@ -210,8 +207,7 @@ class Text
 
         auto display = true;
 
-        if (!now &&
-            std::none_of(std::begin(CMessages::BriefMessages), std::end(CMessages::BriefMessages), [](const auto& msg) {
+        if (!now && std::none_of(std::begin(CMessages::BriefMessages), std::end(CMessages::BriefMessages), [](const auto& msg) {
                 return msg.m_pText == nullptr;
             }))
         {
@@ -516,12 +512,11 @@ class Text
 
 #pragma warning(suppress : 4996) // sscanf_s would expect additional arg after each %s arg
         *readCount = sscanf(
-            src, format, outputParams[0], outputParams[1], outputParams[2], outputParams[3], outputParams[4],
-            outputParams[5], outputParams[6], outputParams[7], outputParams[8], outputParams[9], outputParams[10],
-            outputParams[11], outputParams[12], outputParams[13], outputParams[14], outputParams[15], outputParams[16],
-            outputParams[17], outputParams[18], outputParams[19], outputParams[20], outputParams[21], outputParams[22],
-            outputParams[23], outputParams[24], outputParams[25], outputParams[26], outputParams[27], outputParams[28],
-            outputParams[29], outputParams[30], outputParams[31], outputParams[32], outputParams[33], outputParams[34]
+            src, format, outputParams[0], outputParams[1], outputParams[2], outputParams[3], outputParams[4], outputParams[5], outputParams[6],
+            outputParams[7], outputParams[8], outputParams[9], outputParams[10], outputParams[11], outputParams[12], outputParams[13],
+            outputParams[14], outputParams[15], outputParams[16], outputParams[17], outputParams[18], outputParams[19], outputParams[20],
+            outputParams[21], outputParams[22], outputParams[23], outputParams[24], outputParams[25], outputParams[26], outputParams[27],
+            outputParams[28], outputParams[29], outputParams[30], outputParams[31], outputParams[32], outputParams[33], outputParams[34]
         );
 
         // transfer string params to target variables

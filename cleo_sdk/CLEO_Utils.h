@@ -240,9 +240,7 @@ namespace CLEO
         }
     }
 
-    static void StringSplit(
-        const std::string_view str, const std::string_view delimiters, std::vector<std::string>& output
-    )
+    static void StringSplit(const std::string_view str, const std::string_view delimiters, std::vector<std::string>& output)
     {
         size_t prevPos = 0;
         while (true)
@@ -275,8 +273,7 @@ namespace CLEO
         while (true)
         {
             pos = str.find('~', pos);
-            if (pos == std::string::npos ||
-                (pos + 2) >= str.length()) // not enought characters left for formatting sequence
+            if (pos == std::string::npos || (pos + 2) >= str.length()) // not enought characters left for formatting sequence
             {
                 break;
             }
@@ -309,18 +306,16 @@ namespace CLEO
     // remove white characters from left hand side of the string
     static void StringTrimLeft(std::string& str)
     {
-        auto it = std::find_if(str.begin(), str.end(), [](char c) {
-            return c != ' ' && c != '\t' && c != '\v' && c != '\r' && c != '\n' && c != '\f';
-        });
+        auto it =
+            std::find_if(str.begin(), str.end(), [](char c) { return c != ' ' && c != '\t' && c != '\v' && c != '\r' && c != '\n' && c != '\f'; });
         str.erase(str.begin(), it);
     }
 
     // remove white characters from right hand side of the string
     static void StringTrimRight(std::string& str)
     {
-        auto it = std::find_if(str.rbegin(), str.rend(), [](char c) {
-            return c != ' ' && c != '\t' && c != '\v' && c != '\r' && c != '\n' && c != '\f';
-        });
+        auto it =
+            std::find_if(str.rbegin(), str.rend(), [](char c) { return c != ' ' && c != '\t' && c != '\v' && c != '\r' && c != '\n' && c != '\f'; });
         str.erase(it.base(), str.end());
     }
 
@@ -380,9 +375,7 @@ namespace CLEO
                 break; // parent directory is reference to parent directory too
             }
 
-            path.replace(
-                parentPos, (refPos - parentPos) + ParentRefLen - 1, ""
-            ); // remove parent dir along with following \\..
+            path.replace(parentPos, (refPos - parentPos) + ParentRefLen - 1, ""); // remove parent dir along with following \\..
 
             refPos = path.find(ParentRef); // find next
         }
@@ -407,8 +400,7 @@ namespace CLEO
     {
         if (path.length() < base.length()) return; // can not hold that prefix
         if (!StringStartsWith(path, base, false)) return;
-        if (path.length() > base.length() && path[base.length()] != '\\' && path[base.length() - 1] != ':')
-            return; // just similar base
+        if (path.length() > base.length() && path[base.length()] != '\\' && path[base.length() - 1] != ':') return; // just similar base
 
         auto to = base.length();
         if (path[to] == '\\')
@@ -591,10 +583,8 @@ namespace CLEO
 
         if (canBeDisabled)
         {
-            const char* hint =
-                thread->IsCustom()
-                    ? "\n\nTo ignore this error in the future, change the script extension to '.cs4'"
-                    : "\n\nTo ignore this error in the future, set MainScmLegacyMode=4 in .cleo_config.ini";
+            const char* hint = thread->IsCustom() ? "\n\nTo ignore this error in the future, change the script extension to '.cs4'"
+                                                  : "\n\nTo ignore this error in the future, set MainScmLegacyMode=4 in .cleo_config.ini";
             msg += hint;
         }
 
@@ -616,8 +606,7 @@ namespace CLEO
         if (ver < CLEO_VERSION)
         {
             ShowError(
-                "%s.cleo plugin requires CLEO.asi version %s or later! \nCurrent version is %s", TARGET_NAME,
-                CLEO_VERSION_STR, CLEO_GetVersionStr()
+                "%s.cleo plugin requires CLEO.asi version %s or later! \nCurrent version is %s", TARGET_NAME, CLEO_VERSION_STR, CLEO_GetVersionStr()
             );
             return false;
         }
@@ -707,51 +696,47 @@ namespace CLEO
         return result;
     }
 
-#define TRACE(format, ...)                                                                                             \
-    {                                                                                                                  \
-        CLEO::Trace(CLEO::eLogLevel::Default, format, __VA_ARGS__);                                                    \
+#define TRACE(format, ...)                                                                                                                           \
+    {                                                                                                                                                \
+        CLEO::Trace(CLEO::eLogLevel::Default, format, __VA_ARGS__);                                                                                  \
     }
-#define LOG_WARNING(script, format, ...)                                                                               \
-    {                                                                                                                  \
-        CLEO::Trace(script, CLEO::eLogLevel::Error, format, __VA_ARGS__);                                              \
+#define LOG_WARNING(script, format, ...)                                                                                                             \
+    {                                                                                                                                                \
+        CLEO::Trace(script, CLEO::eLogLevel::Error, format, __VA_ARGS__);                                                                            \
     }
-#define SHOW_ERROR(a, ...)                                                                                             \
-    {                                                                                                                  \
-        CLEO::ShowError(a, __VA_ARGS__);                                                                               \
-    }
-
-#define SUSPEND(...)                                                                                                   \
-    {                                                                                                                  \
-        return CLEO::TrySuspendScript(thread, false, __VA_ARGS__);                                                     \
+#define SHOW_ERROR(a, ...)                                                                                                                           \
+    {                                                                                                                                                \
+        CLEO::ShowError(a, __VA_ARGS__);                                                                                                             \
     }
 
-#define SUSPEND_COMPAT(...)                                                                                            \
-    {                                                                                                                  \
-        if (IsStrictValidation(thread))                                                                                \
-        {                                                                                                              \
-            return CLEO::TrySuspendScript(thread, true, __VA_ARGS__);                                                  \
-        }                                                                                                              \
+#define SUSPEND(...)                                                                                                                                 \
+    {                                                                                                                                                \
+        return CLEO::TrySuspendScript(thread, false, __VA_ARGS__);                                                                                   \
     }
 
-#define SUSPEND_INPUT_TYPE(type)                                                                                       \
-    SUSPEND_COMPAT(                                                                                                    \
-        "Input argument %s expected to be " type ", got %s", GetParamInfo().c_str(),                                   \
-        CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                           \
-    );
+#define SUSPEND_COMPAT(...)                                                                                                                          \
+    {                                                                                                                                                \
+        if (IsStrictValidation(thread))                                                                                                              \
+        {                                                                                                                                            \
+            return CLEO::TrySuspendScript(thread, true, __VA_ARGS__);                                                                                \
+        }                                                                                                                                            \
+    }
 
-#define SUSPEND_OUTPUT_TYPE(type)                                                                                      \
-    SUSPEND_COMPAT(                                                                                                    \
-        "Output argument %s expected to be " type " variable, got %s", GetParamInfo().c_str(),                         \
-        CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                           \
+#define SUSPEND_INPUT_TYPE(type)                                                                                                                     \
+    SUSPEND_COMPAT("Input argument %s expected to be " type ", got %s", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType));
+
+#define SUSPEND_OUTPUT_TYPE(type)                                                                                                                    \
+    SUSPEND_COMPAT(                                                                                                                                  \
+        "Output argument %s expected to be " type " variable, got %s", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType)  \
     );
 
     // used for validation of pointers received from scripts. First 64kb are for sure reserved by Windows.
     const size_t MinValidAddress = 0x10000;
 
-#define OPCODE_VALIDATE_POINTER(x)                                                                                     \
-    if ((size_t)x <= MinValidAddress)                                                                                  \
-    {                                                                                                                  \
-        SUSPEND("Invalid '0x%X' pointer argument", x);                                                                 \
+#define OPCODE_VALIDATE_POINTER(x)                                                                                                                   \
+    if ((size_t)x <= MinValidAddress)                                                                                                                \
+    {                                                                                                                                                \
+        SUSPEND("Invalid '0x%X' pointer argument", x);                                                                                               \
     }
 
 #define OPCODE_CONDITION_RESULT(value) CLEO_SetThreadCondResult(thread, value);
@@ -885,14 +870,13 @@ namespace CLEO
 
         if (str == nullptr) // reading string failed
         {
-            auto isVariableInt = IsVariable(_lastParamType) && (_lastParamArrayType == eArrayType::AT_NONE ||
-                                                                _lastParamArrayType == eArrayType::AT_INT);
+            auto isVariableInt =
+                IsVariable(_lastParamType) && (_lastParamArrayType == eArrayType::AT_NONE || _lastParamArrayType == eArrayType::AT_INT);
             if ((IsImmInteger(_lastParamType) || isVariableInt) && // pointer argument type?
                 CLEO_GetOpcodeParamsArray()->dwParam <= MinValidAddress)
             {
                 TrySuspendScript(
-                    thread, false, "Invalid '0x%X' pointer of input string argument %s",
-                    CLEO_GetOpcodeParamsArray()->dwParam, GetParamInfo().c_str()
+                    thread, false, "Invalid '0x%X' pointer of input string argument %s", CLEO_GetOpcodeParamsArray()->dwParam, GetParamInfo().c_str()
                 );
             }
             else
@@ -912,19 +896,13 @@ namespace CLEO
     {
         if (str != nullptr && (size_t)str <= MinValidAddress)
         {
-            TrySuspendScript(
-                thread, false, "Invalid '0x%X' source pointer of output string argument %s", str,
-                GetParamInfo(1).c_str()
-            );
+            TrySuspendScript(thread, false, "Invalid '0x%X' source pointer of output string argument %s", str, GetParamInfo(1).c_str());
             return false;
         }
 
         if ((size_t)target.data <= MinValidAddress)
         {
-            TrySuspendScript(
-                thread, false, "Invalid '0x%X' target pointer of output string argument %s", target.data,
-                GetParamInfo(1).c_str()
-            );
+            TrySuspendScript(thread, false, "Invalid '0x%X' target pointer of output string argument %s", target.data, GetParamInfo(1).c_str());
             return false;
         }
 
@@ -954,8 +932,8 @@ namespace CLEO
         if (str != nullptr && (size_t)str <= MinValidAddress)
         {
             TrySuspendScript(
-                thread, false, "Invalid '0x%X' source pointer of output string argument %s in script %s", str,
-                GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str()
+                thread, false, "Invalid '0x%X' source pointer of output string argument %s in script %s", str, GetParamInfo(1).c_str(),
+                ScriptInfoStr(thread).c_str()
             );
             return false;
         }
@@ -963,8 +941,8 @@ namespace CLEO
         if (!_paramWasString(true))
         {
             TrySuspendScript(
-                thread, false, "Output argument %s expected to be variable string, got %s in script %s",
-                GetParamInfo(1).c_str(), ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str()
+                thread, false, "Output argument %s expected to be variable string, got %s in script %s", GetParamInfo(1).c_str(),
+                ToKindStr(_lastParamType, _lastParamArrayType), ScriptInfoStr(thread).c_str()
             );
             return false;
         }
@@ -976,8 +954,8 @@ namespace CLEO
             if ((size_t)ptr <= MinValidAddress)
             {
                 TrySuspendScript(
-                    thread, false, "Invalid '0x%X' pointer of output string argument %s in script %s", ptr,
-                    GetParamInfo(1).c_str(), ScriptInfoStr(thread).c_str()
+                    thread, false, "Invalid '0x%X' pointer of output string argument %s in script %s", ptr, GetParamInfo(1).c_str(),
+                    ScriptInfoStr(thread).c_str()
                 );
                 return false;
             }
@@ -997,247 +975,245 @@ namespace CLEO
     // macros for reading opcode input params. Performs type validation, throws error and suspends script if user
     // provided invalid argument type TOD: add range checks for limited size types?
 
-#define OPCODE_READ_PARAM_BOOL()                                                                                       \
-    _readParam(thread).dwParam != false;                                                                               \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer")                                                                                  \
+#define OPCODE_READ_PARAM_BOOL()                                                                                                                     \
+    _readParam(thread).dwParam != false;                                                                                                             \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer")                                                                                                                \
     }
 
-#define OPCODE_READ_PARAM_INT8()                                                                                       \
-    _readParam(thread).cParam;                                                                                         \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer")                                                                                  \
+#define OPCODE_READ_PARAM_INT8()                                                                                                                     \
+    _readParam(thread).cParam;                                                                                                                       \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer")                                                                                                                \
     }
 
-#define OPCODE_READ_PARAM_UINT8()                                                                                      \
-    _readParam(thread).ucParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer")                                                                                  \
+#define OPCODE_READ_PARAM_UINT8()                                                                                                                    \
+    _readParam(thread).ucParam;                                                                                                                      \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer")                                                                                                                \
     }
 
-#define OPCODE_READ_PARAM_INT16()                                                                                      \
-    _readParam(thread).wParam;                                                                                         \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer")                                                                                  \
+#define OPCODE_READ_PARAM_INT16()                                                                                                                    \
+    _readParam(thread).wParam;                                                                                                                       \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer")                                                                                                                \
     }
 
-#define OPCODE_READ_PARAM_UINT16()                                                                                     \
-    _readParam(thread).usParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer")                                                                                  \
+#define OPCODE_READ_PARAM_UINT16()                                                                                                                   \
+    _readParam(thread).usParam;                                                                                                                      \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer")                                                                                                                \
     }
 
-#define OPCODE_READ_PARAM_INT()                                                                                        \
-    _readParam(thread).nParam;                                                                                         \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer")                                                                                  \
+#define OPCODE_READ_PARAM_INT()                                                                                                                      \
+    _readParam(thread).nParam;                                                                                                                       \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer")                                                                                                                \
     }
 
-#define OPCODE_READ_PARAM_UINT()                                                                                       \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer")                                                                                  \
+#define OPCODE_READ_PARAM_UINT()                                                                                                                     \
+    _readParam(thread).dwParam;                                                                                                                      \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer")                                                                                                                \
     }
 
-#define OPCODE_READ_PARAM_FLOAT()                                                                                      \
-    _readParamFloat(thread).fParam;                                                                                    \
-    if (!_paramWasFloat())                                                                                             \
-    {                                                                                                                  \
-        SUSPEND_COMPAT(                                                                                                \
-            "Input argument %s expected to be float, got %s", GetParamInfo().c_str(),                                  \
-            CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                       \
-        );                                                                                                             \
+#define OPCODE_READ_PARAM_FLOAT()                                                                                                                    \
+    _readParamFloat(thread).fParam;                                                                                                                  \
+    if (!_paramWasFloat())                                                                                                                           \
+    {                                                                                                                                                \
+        SUSPEND_COMPAT(                                                                                                                              \
+            "Input argument %s expected to be float, got %s", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType)           \
+        );                                                                                                                                           \
     }
 
-#define OPCODE_READ_PARAM_ANY32()                                                                                      \
-    _readParam(thread);                                                                                                \
-    if (!_paramWasInt() && !_paramWasFloat())                                                                          \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("int or float")                                                                             \
+#define OPCODE_READ_PARAM_ANY32()                                                                                                                    \
+    _readParam(thread);                                                                                                                              \
+    if (!_paramWasInt() && !_paramWasFloat())                                                                                                        \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("int or float")                                                                                                           \
     }
 
-#define OPCODE_READ_PARAM_STRING(_varName)                                                                             \
-    char _buff_##_varName[MAX_STR_LEN + 1];                                                                            \
-    const char*##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1);                                 \
-    if (!_paramWasString())                                                                                            \
-    {                                                                                                                  \
-        return OpcodeResult::OR_INTERRUPT;                                                                             \
+#define OPCODE_READ_PARAM_STRING(_varName)                                                                                                           \
+    char _buff_##_varName[MAX_STR_LEN + 1];                                                                                                          \
+    const char*##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1);                                                               \
+    if (!_paramWasString())                                                                                                                          \
+    {                                                                                                                                                \
+        return OpcodeResult::OR_INTERRUPT;                                                                                                           \
     }
 
-#define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen)                                                                \
-    char _buff_##_varName[_maxLen + 1];                                                                                \
-    const char*##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1);                                     \
-    if (##_varName != nullptr) ##_varName = _buff_##_varName;                                                          \
-    if (!_paramWasString())                                                                                            \
-    {                                                                                                                  \
-        return OpcodeResult::OR_INTERRUPT;                                                                             \
+#define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen)                                                                                              \
+    char _buff_##_varName[_maxLen + 1];                                                                                                              \
+    const char*##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1);                                                                   \
+    if (##_varName != nullptr) ##_varName = _buff_##_varName;                                                                                        \
+    if (!_paramWasString())                                                                                                                          \
+    {                                                                                                                                                \
+        return OpcodeResult::OR_INTERRUPT;                                                                                                           \
     }
 
-#define OPCODE_READ_PARAM_STRING_FORMATTED(_varName)                                                                   \
-    char _buff_format_##_varName[MAX_STR_LEN + 1];                                                                     \
-    const char* _format_##_varName = _readParamText(thread, _buff_format_##_varName, MAX_STR_LEN + 1);                 \
-    if (!_paramWasString())                                                                                            \
-    {                                                                                                                  \
-        return OpcodeResult::OR_INTERRUPT;                                                                             \
-    }                                                                                                                  \
-    char _varName[2 * MAX_STR_LEN + 1];                                                                                \
-    char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName));        \
-    if (_varName##Ok == nullptr)                                                                                       \
-    {                                                                                                                  \
-        SUSPEND("Invalid formatted string");                                                                           \
+#define OPCODE_READ_PARAM_STRING_FORMATTED(_varName)                                                                                                 \
+    char _buff_format_##_varName[MAX_STR_LEN + 1];                                                                                                   \
+    const char* _format_##_varName = _readParamText(thread, _buff_format_##_varName, MAX_STR_LEN + 1);                                               \
+    if (!_paramWasString())                                                                                                                          \
+    {                                                                                                                                                \
+        return OpcodeResult::OR_INTERRUPT;                                                                                                           \
+    }                                                                                                                                                \
+    char _varName[2 * MAX_STR_LEN + 1];                                                                                                              \
+    char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _buff_format_##_varName, _varName, sizeof(_varName));                                      \
+    if (_varName##Ok == nullptr)                                                                                                                     \
+    {                                                                                                                                                \
+        SUSPEND("Invalid formatted string");                                                                                                         \
     }
 
-#define OPCODE_READ_PARAMS_FORMATTED(_format, _varName)                                                                \
-    char _varName[2 * MAX_STR_LEN + 1];                                                                                \
-    char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                        \
-    if (_varName##Ok == nullptr)                                                                                       \
-    {                                                                                                                  \
-        SUSPEND("Invalid formatted string");                                                                           \
+#define OPCODE_READ_PARAMS_FORMATTED(_format, _varName)                                                                                              \
+    char _varName[2 * MAX_STR_LEN + 1];                                                                                                              \
+    char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                                                      \
+    if (_varName##Ok == nullptr)                                                                                                                     \
+    {                                                                                                                                                \
+        SUSPEND("Invalid formatted string");                                                                                                         \
     }
 
-#define OPCODE_READ_PARAM_FILEPATH(_varName)                                                                           \
-    char _buff_##_varName[512];                                                                                        \
-    const char*##_varName = _readParamText(thread, _buff_##_varName, 512);                                             \
-    if (##_varName != nullptr) ##_varName = _buff_##_varName;                                                          \
-    if (_paramWasString())                                                                                             \
-        CLEO_ResolvePath(thread, _buff_##_varName, 512);                                                               \
-    else                                                                                                               \
-        return OpcodeResult::OR_INTERRUPT;                                                                             \
-    if (!FilepathIsSafe(thread, ##_varName))                                                                           \
-    {                                                                                                                  \
-        SUSPEND("Forbidden file path '%s' outside game directories", ##_varName);                                      \
+#define OPCODE_READ_PARAM_FILEPATH(_varName)                                                                                                         \
+    char _buff_##_varName[512];                                                                                                                      \
+    const char*##_varName = _readParamText(thread, _buff_##_varName, 512);                                                                           \
+    if (##_varName != nullptr) ##_varName = _buff_##_varName;                                                                                        \
+    if (_paramWasString())                                                                                                                           \
+        CLEO_ResolvePath(thread, _buff_##_varName, 512);                                                                                             \
+    else                                                                                                                                             \
+        return OpcodeResult::OR_INTERRUPT;                                                                                                           \
+    if (!FilepathIsSafe(thread, ##_varName))                                                                                                         \
+    {                                                                                                                                                \
+        SUSPEND("Forbidden file path '%s' outside game directories", ##_varName);                                                                    \
     }
 
-#define OPCODE_READ_PARAM_PTR()                                                                                        \
-    _readParam(thread).pParam;                                                                                         \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (_paramsArray[0].dwParam <= MinValidAddress)                                                               \
-    {                                                                                                                  \
-        SUSPEND("Invalid pointer '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());          \
+#define OPCODE_READ_PARAM_PTR()                                                                                                                      \
+    _readParam(thread).pParam;                                                                                                                       \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer");                                                                                                               \
+    }                                                                                                                                                \
+    else if (_paramsArray[0].dwParam <= MinValidAddress)                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND("Invalid pointer '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());                                        \
     }
 
-#define OPCODE_READ_PARAM_OBJECT_HANDLE()                                                                              \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (!IsObjectHandleValid(_paramsArray[0].dwParam))                                                            \
-    {                                                                                                                  \
-        SUSPEND("Invalid object handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());    \
+#define OPCODE_READ_PARAM_OBJECT_HANDLE()                                                                                                            \
+    _readParam(thread).dwParam;                                                                                                                      \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer");                                                                                                               \
+    }                                                                                                                                                \
+    else if (!IsObjectHandleValid(_paramsArray[0].dwParam))                                                                                          \
+    {                                                                                                                                                \
+        SUSPEND("Invalid object handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());                                  \
     }
 
-#define OPCODE_READ_PARAM_PED_HANDLE()                                                                                 \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (!IsPedHandleValid(_paramsArray[0].dwParam))                                                               \
-    {                                                                                                                  \
-        SUSPEND("Invalid character handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str()); \
+#define OPCODE_READ_PARAM_PED_HANDLE()                                                                                                               \
+    _readParam(thread).dwParam;                                                                                                                      \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer");                                                                                                               \
+    }                                                                                                                                                \
+    else if (!IsPedHandleValid(_paramsArray[0].dwParam))                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND("Invalid character handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());                               \
     }
 
-#define OPCODE_READ_PARAM_VEHICLE_HANDLE()                                                                             \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (!IsVehicleHandleValid(_paramsArray[0].dwParam))                                                           \
-    {                                                                                                                  \
-        SUSPEND("Invalid vehicle handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());   \
+#define OPCODE_READ_PARAM_VEHICLE_HANDLE()                                                                                                           \
+    _readParam(thread).dwParam;                                                                                                                      \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer");                                                                                                               \
+    }                                                                                                                                                \
+    else if (!IsVehicleHandleValid(_paramsArray[0].dwParam))                                                                                         \
+    {                                                                                                                                                \
+        SUSPEND("Invalid vehicle handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());                                 \
     }
 
-#define OPCODE_READ_PARAM_PLAYER_ID()                                                                                  \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (!IsPlayerIdValid(_paramsArray[0].dwParam))                                                                \
-    {                                                                                                                  \
-        SUSPEND("Invalid player id '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());        \
+#define OPCODE_READ_PARAM_PLAYER_ID()                                                                                                                \
+    _readParam(thread).dwParam;                                                                                                                      \
+    if (!_paramWasInt())                                                                                                                             \
+    {                                                                                                                                                \
+        SUSPEND_INPUT_TYPE("integer");                                                                                                               \
+    }                                                                                                                                                \
+    else if (!IsPlayerIdValid(_paramsArray[0].dwParam))                                                                                              \
+    {                                                                                                                                                \
+        SUSPEND("Invalid player id '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());                                      \
     }
 
-#define OPCODE_READ_PARAM_OUTPUT_VAR_ANY32()                                                                           \
-    _readParamVariable(thread);                                                                                        \
+#define OPCODE_READ_PARAM_OUTPUT_VAR_ANY32()                                                                                                         \
+    _readParamVariable(thread);                                                                                                                      \
     if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("int or float")
 
-#define OPCODE_READ_PARAM_OUTPUT_VAR_INT()                                                                             \
-    (int*)_readParamVariable(thread);                                                                                  \
-    if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("int")                                                               \
+#define OPCODE_READ_PARAM_OUTPUT_VAR_INT()                                                                                                           \
+    (int*)_readParamVariable(thread);                                                                                                                \
+    if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("int")                                                                                             \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT()                                                                           \
-    (float*)_readParamVariable(thread);                                                                                \
-    if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("float")                                                             \
-    if (!_paramWasFloat(true))                                                                                         \
-    {                                                                                                                  \
-        SUSPEND_COMPAT(                                                                                                \
-            "Output argument %s expected to be variable float, got %s", GetParamInfo().c_str(),                        \
-            CLEO::ToKindStr(_lastParamType, _lastParamArrayType)                                                       \
-        );                                                                                                             \
+#define OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT()                                                                                                         \
+    (float*)_readParamVariable(thread);                                                                                                              \
+    if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("float")                                                                                           \
+    if (!_paramWasFloat(true))                                                                                                                       \
+    {                                                                                                                                                \
+        SUSPEND_COMPAT(                                                                                                                              \
+            "Output argument %s expected to be variable float, got %s", GetParamInfo().c_str(), CLEO::ToKindStr(_lastParamType, _lastParamArrayType) \
+        );                                                                                                                                           \
     }
 
-#define OPCODE_READ_PARAM_OUTPUT_VAR_STRING()                                                                          \
-    _readParamStringInfo(thread);                                                                                      \
+#define OPCODE_READ_PARAM_OUTPUT_VAR_STRING()                                                                                                        \
+    _readParamStringInfo(thread);                                                                                                                    \
     if (!_paramWasString(true)) SUSPEND_OUTPUT_TYPE("string")
 
-#define OPCODE_WRITE_PARAM_BOOL(_value)                                                                                \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_BOOL(_value)                                                                                                              \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_WRITE_PARAM_INT8(_value)                                                                                \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_INT8(_value)                                                                                                              \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_WRITE_PARAM_UINT8(_value)                                                                               \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_UINT8(_value)                                                                                                             \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_WRITE_PARAM_INT16(_value)                                                                               \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_INT16(_value)                                                                                                             \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_WRITE_PARAM_UINT16(_value)                                                                              \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_UINT16(_value)                                                                                                            \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_WRITE_PARAM_INT(_value)                                                                                 \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_INT(_value)                                                                                                               \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_WRITE_PARAM_UINT(_value)                                                                                \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_UINT(_value)                                                                                                              \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
-#define OPCODE_WRITE_PARAM_ANY32(_value)                                                                               \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_ANY32(_value)                                                                                                             \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasInt(true) && !_paramWasFloat(true)) SUSPEND_OUTPUT_TYPE("int or float")
 
-#define OPCODE_WRITE_PARAM_FLOAT(_value)                                                                               \
-    _writeParam(thread, _value);                                                                                       \
+#define OPCODE_WRITE_PARAM_FLOAT(_value)                                                                                                             \
+    _writeParam(thread, _value);                                                                                                                     \
     if (!_paramWasFloat(true)) SUSPEND_OUTPUT_TYPE("float")
 
-#define OPCODE_WRITE_PARAM_STRING(_value)                                                                              \
+#define OPCODE_WRITE_PARAM_STRING(_value)                                                                                                            \
     if (!_writeParamText(thread, _value)) return OpcodeResult::OR_INTERRUPT;
 
-#define OPCODE_WRITE_PARAM_VAR_STRING(_info, _value)                                                                   \
+#define OPCODE_WRITE_PARAM_VAR_STRING(_info, _value)                                                                                                 \
     if (!_writeParamText(thread, _info, _value)) return OpcodeResult::OR_INTERRUPT;
 
-#define OPCODE_WRITE_PARAM_PTR(_value)                                                                                 \
-    _writeParamPtr(thread, (void*)_value);                                                                             \
+#define OPCODE_WRITE_PARAM_PTR(_value)                                                                                                               \
+    _writeParamPtr(thread, (void*)_value);                                                                                                           \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
 } // namespace CLEO

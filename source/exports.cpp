@@ -268,9 +268,7 @@ namespace CLEO
             return ReadStringParam(thread, buff, buffSize);
         }
 
-        void WINAPI CLEO_ReadStringParamWriteBuffer(
-            CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator
-        )
+        void WINAPI CLEO_ReadStringParamWriteBuffer(CLEO::CRunningScript* thread, char** outBuf, int* outBufSize, BOOL* outNeedsTerminator)
         {
             if (thread == nullptr || outBuf == nullptr || outBufSize == nullptr || outNeedsTerminator == nullptr)
             {
@@ -427,10 +425,7 @@ namespace CLEO
         void WINAPI CLEO_WriteStringOpcodeParam(CLEO::CRunningScript* thread, const char* str)
         {
             if (!WriteStringParam(thread, str))
-                LOG_WARNING(
-                    thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(),
-                    ((CCustomScript*)thread)->GetInfoStr().c_str()
-                );
+                LOG_WARNING(thread, "%s in script %s", CCustomOpcodeSystem::lastErrorMsg.c_str(), ((CCustomScript*)thread)->GetInfoStr().c_str());
         }
 
         BOOL WINAPI CLEO_GetScriptDebugMode(const CLEO::CRunningScript* thread)
@@ -443,8 +438,7 @@ namespace CLEO
             reinterpret_cast<CCustomScript*>(thread)->SetDebugMode(enabled);
         }
 
-        CLEO::CRunningScript* WINAPI
-        CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* filePath, int label)
+        CLEO::CRunningScript* WINAPI CLEO_CreateCustomScript(CLEO::CRunningScript* fromThread, const char* filePath, int label)
         {
             return (CLEO::CRunningScript*)CleoInstance.ScriptEngine.CreateCustomScript(fromThread, filePath, label);
         }
@@ -454,8 +448,7 @@ namespace CLEO
             return CleoInstance.ScriptEngine.LastScriptCreated;
         }
 
-        CLEO::CRunningScript* WINAPI
-        CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
+        CLEO::CRunningScript* WINAPI CLEO_GetScriptByName(const char* threadName, BOOL standardScripts, BOOL customScripts, DWORD resultIndex)
         {
             return CleoInstance.ScriptEngine.FindScriptNamed(threadName, standardScripts, customScripts, resultIndex);
         }
@@ -473,8 +466,7 @@ namespace CLEO
                 return (DWORD) nullptr;
             }
 
-            auto GetScriptTexture =
-                (RwTexture * (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
+            auto GetScriptTexture = (RwTexture * (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
             if (GetScriptTexture == nullptr)
             {
                 return (DWORD) nullptr;

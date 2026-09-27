@@ -375,10 +375,7 @@ class DebugUtils
             SYSTEMTIME t;
             GetLocalTime(&t);
             static char szBuf[64];
-            sprintf_s(
-                szBuf, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond,
-                t.wMilliseconds
-            );
+            sprintf_s(szBuf, "%02d/%02d/%04d %02d:%02d:%02d.%03d ", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
             file << szBuf;
         }
 

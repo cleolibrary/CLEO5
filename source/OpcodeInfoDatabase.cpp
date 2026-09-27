@@ -187,9 +187,7 @@ bool OpcodeInfoDatabase::LoadEnums(const char* filepath)
         CLEO::StringToLower(name);
         if (m_enums.find(name) != m_enums.end())
         {
-            TRACE(
-                "Failed to parse enums database '%s' file. Enum '%s' already defined!", filepath, currEnum.name.c_str()
-            );
+            TRACE("Failed to parse enums database '%s' file. Enum '%s' already defined!", filepath, currEnum.name.c_str());
             return false;
         }
 
@@ -205,10 +203,7 @@ bool OpcodeInfoDatabase::LoadEnums(const char* filepath)
                 {
                     if (!currEnum.IsEmpty() && !currEnum.IsNumeric())
                     {
-                        TRACE(
-                            "Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath,
-                            currEnum.name.c_str()
-                        );
+                        TRACE("Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath, currEnum.name.c_str());
                         return false;
                     }
 
@@ -222,10 +217,7 @@ bool OpcodeInfoDatabase::LoadEnums(const char* filepath)
                 {
                     if (!currEnum.IsEmpty() && !currEnum.IsNumeric())
                     {
-                        TRACE(
-                            "Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath,
-                            currEnum.name.c_str()
-                        );
+                        TRACE("Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath, currEnum.name.c_str());
                         return false;
                     }
 
@@ -240,10 +232,7 @@ bool OpcodeInfoDatabase::LoadEnums(const char* filepath)
                 {
                     if (!currEnum.IsEmpty() && currEnum.IsNumeric())
                     {
-                        TRACE(
-                            "Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath,
-                            currEnum.name.c_str()
-                        );
+                        TRACE("Failed to parse enums database '%s' file. Enum '%s' contains mixed type values!", filepath, currEnum.name.c_str());
                         return false;
                     }
 
@@ -251,10 +240,7 @@ bool OpcodeInfoDatabase::LoadEnums(const char* filepath)
                     continue;
                 }
 
-                TRACE(
-                    "Failed to parse enums database '%s' file. Enum '%s' contains invalid value type!", filepath,
-                    currEnum.name.c_str()
-                );
+                TRACE("Failed to parse enums database '%s' file. Enum '%s' contains invalid value type!", filepath, currEnum.name.c_str());
                 return false;
             }
         }

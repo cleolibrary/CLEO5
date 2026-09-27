@@ -163,9 +163,8 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         // debug mode scripts
         if (m_currScriptLogging && logDebugScriptsOnly)
         {
-            m_currScriptLogging =
-                CLEO_GetScriptDebugMode(script) ||                      // debug mode on
-                (*(WORD*)script->GetBytePointer()) == COMMAND_DEBUG_ON; // debug mode just about to be enabled
+            m_currScriptLogging = CLEO_GetScriptDebugMode(script) ||                      // debug mode on
+                                  (*(WORD*)script->GetBytePointer()) == COMMAND_DEBUG_ON; // debug mode just about to be enabled
         }
     }
     else
@@ -271,17 +270,13 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
             bool wastedBustedCheck = script->IsMission() && script->bWastedBustedCheck;
             if (wastedBustedCheck && cleoStack)
             {
-                LogAppend(
-                    " \\ BUG: Mission death-arrest-check active. Executing death-arrest procedure during cleo_call "
-                    "would result in errors!"
-                );
+                LogAppend(" \\ BUG: Mission death-arrest-check active. Executing death-arrest procedure during cleo_call "
+                          "would result in errors!");
             }
             else if (wastedBustedCheck && script->SP == 0) // Rockstar's bug?
             {
-                LogAppend(
-                    " \\ BUG: Mission death-arrest-check requires at least one GOSUB level. Executing death-arrest "
-                    "procedure now would result in errors!"
-                );
+                LogAppend(" \\ BUG: Mission death-arrest-check requires at least one GOSUB level. Executing death-arrest "
+                          "procedure now would result in errors!");
             }
         }
 
@@ -393,8 +388,7 @@ inline void ScriptLog::LogNewLine()
 }
 
 bool ScriptLog::LogAppendScriptParam(
-    CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName,
-    bool logVariable, bool logValue
+    CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName, bool logVariable, bool logValue
 )
 {
     bool hasName = false;
@@ -691,7 +685,7 @@ void ScriptLog::LogFileDelete()
 static void __declspec(naked) HOOK_SetConditionResult()
 {
     _asm
-        {
+    {
             push ecx // save ecx
             push dword ptr[esp + 8] // state
             push ecx // script
@@ -699,7 +693,7 @@ static void __declspec(naked) HOOK_SetConditionResult()
             add esp, 8
             pop ecx // restore ecx     
             retn 4
-        }
+    }
 }
 
 void ScriptLog::SetConditionResult(CLEO::CRunningScript* script, bool state)
@@ -712,8 +706,7 @@ void ScriptLog::SetConditionResult(CLEO::CRunningScript* script, bool state)
     // call original function
     ((::CRunningScript*)script)->UpdateCompareFlag(state);
     // reinstall our hook
-    g_Instance->m_patchSetConditionResult =
-        MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
+    g_Instance->m_patchSetConditionResult = MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
 }
 
 void ScriptLog::OnGameBegin(DWORD saveSlot)
@@ -728,10 +721,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
     SYSTEMTIME t;
     GetLocalTime(&t);
     char timeStamp[32];
-    sprintf_s(
-        timeStamp, "%02d/%02d/%04d %02d:%02d:%02d.%03d", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond,
-        t.wMilliseconds
-    );
+    sprintf_s(timeStamp, "%02d/%02d/%04d %02d:%02d:%02d.%03d", t.wDay, t.wMonth, t.wYear, t.wHour, t.wMinute, t.wSecond, t.wMilliseconds);
 
     LogSeparator();
     LogAppend("  Game started at: ");
@@ -763,8 +753,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
         const size_t Orig_Main_Code_Offset = 55976; // skip global variables
         const size_t Orig_Main_Hash        = 0xbd4e2fcf;
 
-        auto hash =
-            crc32((BYTE*)CTheScripts::ScriptSpace + Orig_Main_Code_Offset, Orig_Main_Size - Orig_Main_Code_Offset);
+        auto hash    = crc32((BYTE*)CTheScripts::ScriptSpace + Orig_Main_Code_Offset, Orig_Main_Size - Orig_Main_Code_Offset);
         m_customMain = hash != Orig_Main_Hash; // hash of original main.scm
 
         if (saveSlot != -1)
@@ -822,8 +811,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     // late initialization
     if (!m_initialized)
     {
-        m_patchSetConditionResult =
-            MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
+        m_patchSetConditionResult = MemPatchJump(gaddrof(::CRunningScript::UpdateCompareFlag), &HOOK_SetConditionResult);
 
         m_initialized = true;
     }
@@ -834,8 +822,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
 
     m_currCommandReturnParams = nullptr;
     m_conditionResultUpdated  = false;
-    m_conditionResultExpected =
-        script->NotFlag || m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE;
+    m_conditionResultExpected = script->NotFlag || m_prevCommand == COMMAND_ANDOR || script->LogicalOp != eLogicalOperation::NONE;
     if (opcode == 0x0AB1) m_conditionResultExpected = false; // cleo_call: condition result set on return
 
     auto oriIP = script->CurrentIP;
@@ -927,8 +914,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
             }
             else
             {
-                if (i == command->inputArguments)
-                    m_currCommandReturnParams = script->CurrentIP; // keep pointer to return params start
+                if (i == command->inputArguments) m_currCommandReturnParams = script->CurrentIP; // keep pointer to return params start
 
                 LogAppendSpace();
                 LogAppendScriptParam(script, command, i, returnArgCount > 1, true, false);
@@ -976,8 +962,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
                 else if (command->inputArguments == 2 && i == 1) // param % param
                 {
                     LogAppend(command->oper);
-                    if (!command->IsComparison() && command->oper.find('=') == std::string::npos)
-                        LogAppend('='); // param %= param
+                    if (!command->IsComparison() && command->oper.find('=') == std::string::npos) LogAppend('='); // param %= param
                     LogAppend(" ");
                 }
             }
@@ -1009,9 +994,7 @@ OpcodeResult ScriptLog::OnScriptOpcodeProcessBefore(CLEO::CRunningScript* script
     return OR_NONE;
 }
 
-CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(
-    CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result
-)
+CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(CLEO::CRunningScript* script, DWORD opcode, CLEO::OpcodeResult result)
 {
     if (state == LoggingState::Disabled || !m_currScriptLogging) return result;
 
@@ -1072,8 +1055,7 @@ CLEO::OpcodeResult ScriptLog::OnScriptOpcodeProcessAfter(
         LogAppend("NOP command");
     }
 
-    if (m_conditionResultExpected && !m_conditionResultUpdated &&
-        opcode != 0x0AB1) // assume cleo_call always sets condition result
+    if (m_conditionResultExpected && !m_conditionResultUpdated && opcode != 0x0AB1) // assume cleo_call always sets condition result
     {
         LogAppend(hasComment ? ", " : " // ");
         hasComment = true;

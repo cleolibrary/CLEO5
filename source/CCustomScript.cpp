@@ -9,8 +9,7 @@ using namespace CLEO;
 
 // TODO: Consider split into 2 classes: CCustomExternalScript, CCustomChildScript
 CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScript* parent, int label)
-    : CRunningScript(), m_ownedBuffer(nullptr), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR),
-      m_parentScript(nullptr)
+    : CRunningScript(), m_ownedBuffer(nullptr), m_saveEnabled(false), m_ok(false), m_compatVer(CLEO_VER_CUR), m_parentScript(nullptr)
 {
     TRACE(""); // separator
     TRACE("Loading custom script '%s'...", szFileName);
@@ -25,8 +24,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
         {
             if (!parent) throw std::logic_error("Trying to create external thread from label without parent thread");
 
-            if (!parent->IsCustom())
-                throw std::logic_error("Only custom threads can spawn children threads from label");
+            if (!parent->IsCustom()) throw std::logic_error("Only custom threads can spawn children threads from label");
 
             auto cs = (CCustomScript*)parent;
 
@@ -128,8 +126,7 @@ CCustomScript::CCustomScript(const char* szFileName, bool bIsMiss, CRunningScrip
 
             if (bIsMiss)
             {
-                if (CTheScripts::bAlreadyRunningAMissionScript)
-                    throw std::logic_error("Starting of custom mission when other mission loaded");
+                if (CTheScripts::bAlreadyRunningAMissionScript) throw std::logic_error("Starting of custom mission when other mission loaded");
 
                 CTheScripts::bAlreadyRunningAMissionScript = 1;
                 CleoInstance.ScriptEngine.missionIndex     = -1;
@@ -225,8 +222,7 @@ void CCustomScript::SetScriptFileDir(const char* directory)
 const char* CCustomScript::GetScriptFileName() const
 {
     if (bIsCustom) return m_scriptFileName.c_str();
-    return bIsExternal ? CleoInstance.ScriptEngine.ScriptImgFileName.c_str()
-                       : CleoInstance.ScriptEngine.MainScriptFileName.c_str();
+    return bIsExternal ? CleoInstance.ScriptEngine.ScriptImgFileName.c_str() : CleoInstance.ScriptEngine.MainScriptFileName.c_str();
 }
 
 void CCustomScript::SetScriptFileName(const char* filename)
@@ -263,8 +259,7 @@ const char* CCustomScript::GetWorkDir() const
 
 void CCustomScript::SetWorkDir(const char* directory)
 {
-    if (directory == nullptr || strlen(directory) == 0)
-        return; // Already done. Empty path is relative path starting at current work dir
+    if (directory == nullptr || strlen(directory) == 0) return; // Already done. Empty path is relative path starting at current work dir
 
     auto resolved = ResolvePath(directory); // resolve any virtual prefixes
 
@@ -381,8 +376,7 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
     auto threadName = GetName();
     auto fileName   = GetScriptFileName();
 
-    if (memcmp(threadName.c_str(), fileName, threadName.length()) !=
-        0) // thread name no longer same as filename (was set with 03A4)
+    if (memcmp(threadName.c_str(), fileName, threadName.length()) != 0) // thread name no longer same as filename (was set with 03A4)
     {
         ss << "'" << threadName << "' from ";
     }
@@ -402,9 +396,7 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
         }
         else
         {
-            auto offset = CLEO_GetScriptBaseRelativeOffset(
-                (CLEO::CRunningScript*)this, (BYTE*)CCustomOpcodeSystem::lastOpcodePtr
-            );
+            auto offset = CLEO_GetScriptBaseRelativeOffset((CLEO::CRunningScript*)this, (BYTE*)CCustomOpcodeSystem::lastOpcodePtr);
             ss << "offset {" << offset << "}"; // Sanny offsets style
             ss << " - ";
             ss << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::lastOpcode;
@@ -428,8 +420,7 @@ std::string CCustomScript::GetInfoStr(bool currLineInfo) const
                 if (commandName)
                     ss << commandName;
                 else
-                    ss << "[" << std::hex << std::uppercase << std::setw(4) << std::setfill('0')
-                       << CCustomOpcodeSystem::prevOpcode << "]";
+                    ss << "[" << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << CCustomOpcodeSystem::prevOpcode << "]";
             }
         }
     }

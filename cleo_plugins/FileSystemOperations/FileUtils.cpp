@@ -106,8 +106,7 @@ DWORD File::open(const char* filename, const char* mode, bool legacy)
     if (!legacy)
     {
         static char modeUpdated[12];
-        const std::string allowed =
-            "+abcnrtwxDRST"; // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen?view=msvc-170
+        const std::string allowed = "+abcnrtwxDRST"; // https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen?view=msvc-170
 
         bool valid   = false;
         bool binary  = false;
@@ -175,11 +174,11 @@ void File::close(DWORD handle)
     if (isLegacy(handle))
     {
         _asm
-            {
+        {
 			push file
 			call FUNC_fclose
 			add esp, 4
-            }
+        }
     }
     else
         fclose(file);
@@ -194,11 +193,11 @@ bool File::isOk(DWORD handle)
     if (isLegacy(handle))
     {
         _asm
-            {
+        {
 			push file
 			call FUNC_ferror
 			add esp, 0x4
-            }
+        }
     }
     else
         result = ferror(file);

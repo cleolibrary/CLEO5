@@ -9,10 +9,7 @@ using namespace CLEO;
 CAudioStream::CAudioStream(const char* filepath)
 {
     // see https://github.com/cleolibrary/CLEO5/pull/230
-    static_assert(
-        offsetof(CAudioStream, streamInternal) == 4 && alignof(CAudioStream) == 4,
-        "CAudioStream compatibility with CLEO4 broken!"
-    );
+    static_assert(offsetof(CAudioStream, streamInternal) == 4 && alignof(CAudioStream) == 4, "CAudioStream compatibility with CLEO4 broken!");
 
     if (isNetworkSource(filepath) && !CSoundSystem::allowNetworkSources)
     {

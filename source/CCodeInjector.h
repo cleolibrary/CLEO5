@@ -80,10 +80,7 @@ namespace CLEO
             }
             else
             {
-                TRACE(
-                    "Replaced jump at: 0x%08X, original destination was: 0x%08X", (DWORD)position,
-                    (DWORD)origJumpDest->address
-                );
+                TRACE("Replaced jump at: 0x%08X, original destination was: 0x%08X", (DWORD)position, (DWORD)origJumpDest->address);
             }
         }
 

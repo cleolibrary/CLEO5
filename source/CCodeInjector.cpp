@@ -25,15 +25,9 @@ namespace CLEO
             if (!strcmp((char*)pSection->Name, ".text") || !strcmp((char*)pSection->Name, ".rdata"))
             {
                 DWORD dwPhysSize = (pSection->Misc.VirtualSize + 4095) & ~4095;
-                TRACE(
-                    " Unprotecting memory region '%s': 0x%08X (size: 0x%08X)", pSection->Name,
-                    (DWORD)pSection->VirtualAddress, (DWORD)dwPhysSize
-                );
-                DWORD oldProtect, newProtect = (pSection->Characteristics & IMAGE_SCN_MEM_EXECUTE)
-                                                   ? PAGE_EXECUTE_READWRITE
-                                                   : PAGE_READWRITE;
-                if (!VirtualProtect(pImageBase + pSection->VirtualAddress, dwPhysSize, newProtect, &oldProtect))
-                    SHOW_ERROR("Virtual protect error");
+                TRACE(" Unprotecting memory region '%s': 0x%08X (size: 0x%08X)", pSection->Name, (DWORD)pSection->VirtualAddress, (DWORD)dwPhysSize);
+                DWORD oldProtect, newProtect = (pSection->Characteristics & IMAGE_SCN_MEM_EXECUTE) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
+                if (!VirtualProtect(pImageBase + pSection->VirtualAddress, dwPhysSize, newProtect, &oldProtect)) SHOW_ERROR("Virtual protect error");
             }
         }
         TRACE(""); // separator
@@ -58,15 +52,9 @@ namespace CLEO
             if (!strcmp((char*)pSection->Name, ".text") || !strcmp((char*)pSection->Name, ".rdata"))
             {
                 DWORD dwPhysSize = (pSection->Misc.VirtualSize + 4095) & ~4095;
-                TRACE(
-                    "Reprotecting memory region '%s': 0x%08X (size: 0x%08X)", pSection->Name,
-                    (DWORD)pSection->VirtualAddress, (DWORD)dwPhysSize
-                );
-                DWORD oldProtect, newProtect = (pSection->Characteristics & IMAGE_SCN_MEM_EXECUTE)
-                                                   ? PAGE_EXECUTE_READWRITE
-                                                   : PAGE_READWRITE;
-                if (!VirtualProtect(pImageBase + pSection->VirtualAddress, dwPhysSize, newProtect, &oldProtect))
-                    SHOW_ERROR("Virtual protect error");
+                TRACE("Reprotecting memory region '%s': 0x%08X (size: 0x%08X)", pSection->Name, (DWORD)pSection->VirtualAddress, (DWORD)dwPhysSize);
+                DWORD oldProtect, newProtect = (pSection->Characteristics & IMAGE_SCN_MEM_EXECUTE) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE;
+                if (!VirtualProtect(pImageBase + pSection->VirtualAddress, dwPhysSize, newProtect, &oldProtect)) SHOW_ERROR("Virtual protect error");
             }
         }
 

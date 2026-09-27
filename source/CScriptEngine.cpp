@@ -13,10 +13,9 @@ namespace CLEO
             return nullptr;
         }
 
-        auto paramType = thread->PeekDataType();
-        auto arrayType = thread->PeekArrayType();
-        auto isVariableInt =
-            IsVariable(paramType) && (arrayType == eArrayType::AT_NONE || arrayType == eArrayType::AT_INT);
+        auto paramType     = thread->PeekDataType();
+        auto arrayType     = thread->PeekArrayType();
+        auto isVariableInt = IsVariable(paramType) && (arrayType == eArrayType::AT_NONE || arrayType == eArrayType::AT_INT);
 
         // integer address to text buffer
         if (IsImmInteger(paramType) || isVariableInt)
@@ -27,8 +26,8 @@ namespace CLEO
             if ((size_t)str <= MinValidAddress)
             {
                 LOG_WARNING(
-                    thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str,
-                    GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()
+                    thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str, GetParamInfo().c_str(),
+                    ScriptInfoStr(thread).c_str()
                 );
                 return nullptr; // error
             }
@@ -105,8 +104,8 @@ namespace CLEO
 
         // unsupported param type
         LOG_WARNING(
-            thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(),
-            ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str()
+            thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(), ToKindStr(paramType, arrayType),
+            ScriptInfoStr(thread).c_str()
         );
         CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
         return nullptr;                   // error
@@ -135,11 +134,10 @@ namespace CLEO
         char threadName[8];
 
         ThreadSavingInfo(CCustomScript* cs)
-            : hash(cs->m_codeChecksum), condResult(cs->bCondResult), logicalOp(cs->LogicalOp),
-              notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
+            : hash(cs->m_codeChecksum), condResult(cs->bCondResult), logicalOp(cs->LogicalOp), notFlag(cs->NotFlag != false),
+              ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
         {
-            sleepTime =
-                cs->WakeTime >= CTimer::m_snTimeInMilliseconds ? 0 : cs->WakeTime - CTimer::m_snTimeInMilliseconds;
+            sleepTime = cs->WakeTime >= CTimer::m_snTimeInMilliseconds ? 0 : cs->WakeTime - CTimer::m_snTimeInMilliseconds;
             std::copy(cs->LocalVar, cs->LocalVar + 32, tls);
             std::copy(cs->Timers, cs->Timers + 2, timers);
             std::copy(cs->Name, cs->Name + 8, threadName);
@@ -283,20 +281,12 @@ namespace CLEO
         staticThreads = (CRunningScript*)CTheScripts::ScriptsArray;
 
         // Protect script dependencies
-        inj.ReplaceFunction(
-            HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig
-        );
+        inj.ReplaceFunction(HOOK_ProcessScript, gvm.TranslateMemoryAddress(MA_CALL_PROCESS_SCRIPT), &ProcessScript_Orig);
 
         inj.ReplaceJump(HOOK_CRunningScriptInit, addrof(::CRunningScript::Init));
 
-        inj.ReplaceFunction(
-            HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE),
-            &DrawScriptTextAfterFade_Orig
-        );
-        inj.ReplaceFunction(
-            HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE),
-            &DrawScriptTextBeforeFade_Orig
-        );
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_AFTER_FADE), &DrawScriptTextAfterFade_Orig);
+        inj.ReplaceFunction(HOOK_DrawScriptText, gvm.TranslateMemoryAddress(MA_CALL_DRAW_SCRIPT_TEXTS_BEFORE_FADE), &DrawScriptTextBeforeFade_Orig);
 
         inj.ReplaceFunction(HOOK_SaveScmData, gvm.TranslateMemoryAddress(MA_CALL_SAVE_SCM_DATA), &SaveScmData_Orig);
     }
@@ -317,9 +307,8 @@ namespace CLEO
         if (scriptsLoaded) return;                   // already loaded
         if (!CleoInstance.m_bGameInProgress) return; // game not finished loading yet
 
-        auto& activeScriptsListHead =
-            (CRunningScript*&)CTheScripts::pActiveScripts; // reference, but with type casted to CLEO's CRunningScript
-        if (activeScriptsListHead == nullptr) return;      // main gamescript not loaded yet
+        auto& activeScriptsListHead = (CRunningScript*&)CTheScripts::pActiveScripts; // reference, but with type casted to CLEO's CRunningScript
+        if (activeScriptsListHead == nullptr) return;                                // main gamescript not loaded yet
 
         scriptsLoaded = true;
 
@@ -546,8 +535,8 @@ namespace CLEO
                 for (size_t i = 0; i < safe_header.n_stopped_threads; ++i)
                     InactiveScriptHashes.insert(stopped_info[i]);
                 TRACE(
-                    "Finished. Loaded %u cleo variables, %u saved threads info, %u stopped threads info", 0x400,
-                    safe_header.n_saved_threads, safe_header.n_stopped_threads
+                    "Finished. Loaded %u cleo variables, %u saved threads info, %u stopped threads info", 0x400, safe_header.n_saved_threads,
+                    safe_header.n_stopped_threads
                 );
             }
             else
@@ -593,14 +582,9 @@ namespace CLEO
                     WriteBinary(ss, savingInfo);
                 });
 
-                std::for_each(InactiveScriptHashes.begin(), InactiveScriptHashes.end(), [&ss](unsigned long hash) {
-                    WriteBinary(ss, hash);
-                });
+                std::for_each(InactiveScriptHashes.begin(), InactiveScriptHashes.end(), [&ss](unsigned long hash) { WriteBinary(ss, hash); });
 
-                TRACE(
-                    "Done. Saved %u cleo variables, %u saved threads, %u stopped threads", 0x400,
-                    header.n_saved_threads, header.n_stopped_threads
-                );
+                TRACE("Done. Saved %u cleo variables, %u saved threads, %u stopped threads", 0x400, header.n_saved_threads, header.n_stopped_threads);
             }
             else
             {
@@ -613,9 +597,7 @@ namespace CLEO
         }
     }
 
-    CRunningScript* CScriptEngine::FindScriptNamed(
-        const char* threadName, bool standardScripts, bool customScripts, size_t resultIndex
-    )
+    CRunningScript* CScriptEngine::FindScriptNamed(const char* threadName, bool standardScripts, bool customScripts, size_t resultIndex)
     {
         if (standardScripts)
         {
@@ -747,8 +729,7 @@ namespace CLEO
             if (script == ptr) return true;
         }
 
-        for (auto script = (CLEO::CRunningScript*)CTheScripts::pIdleScripts; script != nullptr;
-             script      = script->GetNext())
+        for (auto script = (CLEO::CRunningScript*)CTheScripts::pIdleScripts; script != nullptr; script = script->GetNext())
         {
             if (script == ptr) return true;
         }

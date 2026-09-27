@@ -50,9 +50,7 @@ void CPluginSystem::LoadPlugins()
             }
 
             // case insensitive search in already listed plugin names
-            auto found = std::find_if(names.begin(), names.end(), [&](const std::string& s) {
-                return _stricmp(s.c_str(), name.c_str()) == 0;
-            });
+            auto found = std::find_if(names.begin(), names.end(), [&](const std::string& s) { return _stricmp(s.c_str(), name.c_str()) == 0; });
 
             // duplicated?
             if (found != names.end())
@@ -73,10 +71,8 @@ void CPluginSystem::LoadPlugins()
     TRACE(""); // separator
     TRACE("Listing CLEO plugins:");
     ScanPluginsDir(FS::path(GetCleoDirectory()).append("cleo_plugins").string(), "SA.", ".cleo");
-    ScanPluginsDir(
-        FS::path(GetCleoDirectory()).append("cleo_plugins").string(), "",
-        ".cleo"
-    );                                               // legacy plugins in new location
+    ScanPluginsDir(FS::path(GetCleoDirectory()).append("cleo_plugins").string(), "",
+                   ".cleo");                         // legacy plugins in new location
     ScanPluginsDir(GetCleoDirectory(), "", ".cleo"); // legacy plugins in old location
 
     // reverse order, so opcodes from CLEO5 plugins can overwrite opcodes from legacy plugins

@@ -41,8 +41,7 @@ namespace CLEO
         if (thread->bIsProcessing && !IsLegacyScript(thread))
         {
             auto result = TrySuspendScript(
-                thread, true,
-                "Unexpected opcode [%04X], likely caused by an error that was silently ignored (e.g. in SAMP)", opcode
+                thread, true, "Unexpected opcode [%04X], likely caused by an error that was silently ignored (e.g. in SAMP)", opcode
             );
             return OnOpcodeFinished(thread, result);
         }
@@ -54,13 +53,10 @@ namespace CLEO
         {
             auto cs     = (CCustomScript*)thread;
             auto endPos = cs->GetBasePointer() + cs->GetCodeSize();
-            if ((BYTE*)lastOpcodePtr == endPos ||
-                (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
+            if ((BYTE*)lastOpcodePtr == endPos || (BYTE*)lastOpcodePtr == (endPos - 1)) // consider script can end with incomplete opcode
             {
-                auto result = TrySuspendScript(
-                    thread, true,
-                    "Code execution reached end of script. This may be caused by missing TERMINATE_THIS_SCRIPT"
-                );
+                auto result =
+                    TrySuspendScript(thread, true, "Code execution reached end of script. This may be caused by missing TERMINATE_THIS_SCRIPT");
                 return OnOpcodeFinished(thread, result);
             }
         }
@@ -260,8 +256,7 @@ namespace CLEO
 
         if ((size_t)target.data <= MinValidAddress)
         {
-            CCustomOpcodeSystem::lastErrorMsg =
-                StringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
+            CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", target.data);
             return false;
         }
 
@@ -305,8 +300,7 @@ namespace CLEO
 
             if (opcodeParams[0].dwParam <= MinValidAddress)
             {
-                CCustomOpcodeSystem::lastErrorMsg =
-                    StringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
+                CCustomOpcodeSystem::lastErrorMsg = StringPrintf("Writing string into invalid '0x%X' pointer argument", opcodeParams[0].dwParam);
                 return result; // error
             }
 
@@ -491,10 +485,7 @@ namespace CLEO
                     if (thread->PeekDataType() == DT_END)
                     {
                     _ReadFormattedString_ArgMissing: // jump here on error
-                        LOG_WARNING(
-                            thread, "More tokens in format string than arguments in script %s",
-                            ScriptInfoStr(thread).c_str()
-                        );
+                        LOG_WARNING(thread, "More tokens in format string than arguments in script %s", ScriptInfoStr(thread).c_str());
                         thread->IncPtr(); // skip vararg terminator
                         outputStr[written] = '\0';
                         return nullptr; // error
@@ -565,9 +556,7 @@ namespace CLEO
                     // unrecognized or incomplete specifier - error
                     *fmta++ = *iter;
                     *fmta   = '\0';
-                    LOG_WARNING(
-                        thread, "Unknown format specifier '%s' in script %s", fmtbufa, ScriptInfoStr(thread).c_str()
-                    );
+                    LOG_WARNING(thread, "Unknown format specifier '%s' in script %s", fmtbufa, ScriptInfoStr(thread).c_str());
                     SkipUnusedVarArgs(thread);
                     outputStr[written] = '\0';
                     return nullptr; // error
@@ -590,10 +579,7 @@ namespace CLEO
         {
         _ReadFormattedString_OutOfMemory: // jump here on error
 
-            LOG_WARNING(
-                thread, "Target buffer too small (%d) to read whole formatted string in script %s", len,
-                ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "Target buffer too small (%d) to read whole formatted string in script %s", len, ScriptInfoStr(thread).c_str());
             SkipUnusedVarArgs(thread);
             outputStr[len - 1] = '\0';
             return nullptr; // error
@@ -602,9 +588,7 @@ namespace CLEO
         // still more var-args available
         if (thread->PeekDataType() != DT_END)
         {
-            LOG_WARNING(
-                thread, "More arguments than tokens in format string in script %s", ScriptInfoStr(thread).c_str()
-            );
+            LOG_WARNING(thread, "More arguments than tokens in format string in script %s", ScriptInfoStr(thread).c_str());
         }
         SkipUnusedVarArgs(thread); // skip terminator too
 
@@ -684,16 +668,13 @@ namespace CLEO
             {
                 if (strictArgCount)
                 {
-                    SUSPEND_COMPAT(
-                        "Opcode [%04X] returned %d params, while function caller expected %d", opcode, returnArgCount,
-                        returnSlotCount
-                    );
+                    SUSPEND_COMPAT("Opcode [%04X] returned %d params, while function caller expected %d", opcode, returnArgCount, returnSlotCount);
                 }
                 else
                 {
                     LOG_WARNING(
-                        thread, "Opcode [%04X] returned %d params, while function caller expected %d in script %s",
-                        opcode, returnArgCount, returnSlotCount, cs->GetInfoStr().c_str()
+                        thread, "Opcode [%04X] returned %d params, while function caller expected %d in script %s", opcode, returnArgCount,
+                        returnSlotCount, cs->GetInfoStr().c_str()
                     );
                 }
             }
@@ -726,10 +707,7 @@ namespace CLEO
                     lastOpcodePtr = (WORD*)callIP;
                     prevOpcode    = opcode;
                     lastOpcode    = 0x0AB1;
-                    SUSPEND(
-                        "Expected a variable to store the returned value, found %s in opcode [%04X]", ToStr(paramType),
-                        0x0AB1
-                    );
+                    SUSPEND("Expected a variable to store the returned value, found %s in opcode [%04X]", ToStr(paramType), 0x0AB1);
                 }
             }
         }
@@ -828,9 +806,7 @@ namespace CLEO
         // convert path from relative to CLEO directory to relative to game directory
         auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO);
 
-        TRACE(
-            "[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str()
-        );
+        TRACE("[0A92] Starting new custom script %s from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
         auto cs = new CCustomScript(filename.c_str(), false, thread);
         thread->SetConditionResult(cs && cs->IsOk());
@@ -881,10 +857,7 @@ namespace CLEO
         auto filename = reinterpret_cast<CCustomScript*>(thread)->ResolvePath(path, DIR_CLEO);
 
         filename += ".cm"; // add custom mission extension
-        TRACE(
-            "[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(),
-            thread->GetName().c_str()
-        );
+        TRACE("[0A94] Starting new custom mission '%s' from thread named '%s'", filename.c_str(), thread->GetName().c_str());
 
         auto cs = new CCustomScript(filename.c_str(), true, thread);
         thread->SetConditionResult(cs && cs->IsOk());
@@ -892,8 +865,7 @@ namespace CLEO
         {
             CleoInstance.ScriptEngine.AddCustomScript(cs);
             CTheScripts::WipeLocalVariableMemoryForMissionScript();
-            auto fakeScriptAddress =
-                (BYTE*)missionLocals - offsetof(CRunningScript, LocalVar); // TODO: maybe copy params ourself instead?
+            auto fakeScriptAddress = (BYTE*)missionLocals - offsetof(CRunningScript, LocalVar); // TODO: maybe copy params ourself instead?
             ((::CRunningScript*)thread)->ReadParametersForNewlyStartedScript((::CRunningScript*)fakeScriptAddress);
         }
         else
@@ -903,9 +875,7 @@ namespace CLEO
                 delete cs;
             }
             SkipUnusedVarArgs(thread);
-            LOG_WARNING(
-                0, "[0A94] Failed to load mission '%s' from script '%s'.", filename.c_str(), thread->GetName().c_str()
-            );
+            LOG_WARNING(0, "[0A94] Failed to load mission '%s' from script '%s'.", filename.c_str(), thread->GetName().c_str());
         }
 
         return OR_CONTINUE;
@@ -1020,10 +990,7 @@ namespace CLEO
             auto scriptRef = CleoInstance.ModuleSystem.GetExport(modulePath, strExport);
             if (!scriptRef.Valid())
             {
-                SUSPEND(
-                    "Not found module '%s' export '%s', requested by opcode [0AB1]", modulePath.c_str(),
-                    moduleTxt.c_str()
-                );
+                SUSPEND("Not found module '%s' export '%s', requested by opcode [0AB1]", modulePath.c_str(), moduleTxt.c_str());
             }
 
             auto cs = reinterpret_cast<CCustomScript*>(thread);
@@ -1132,24 +1099,20 @@ namespace CLEO
 
             if (returnParamCount - 1 < declaredParamCount) // minus 'num args' itself
             {
-                SUSPEND(
-                    "Opcode [0AB2] declared %d return args, but provided %d", declaredParamCount, returnParamCount - 1
-                );
+                SUSPEND("Opcode [0AB2] declared %d return args, but provided %d", declaredParamCount, returnParamCount - 1);
             }
             else if (returnParamCount - 1 > declaredParamCount) // more args than needed, not critical
             {
                 LOG_WARNING(
-                    thread, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount,
-                    returnParamCount - 1, ScriptInfoStr(thread).c_str()
+                    thread, "Opcode [0AB2] declared %d return args, but provided %d in script %s", declaredParamCount, returnParamCount - 1,
+                    ScriptInfoStr(thread).c_str()
                 );
             }
 
             returnParamCount = declaredParamCount;
         }
 
-        return CleoInstance.OpcodeSystem.CleoReturnGeneric(
-            0x0AB2, thread, true, returnParamCount, !IsLegacyScript(thread)
-        );
+        return CleoInstance.OpcodeSystem.CleoReturnGeneric(0x0AB2, thread, true, returnParamCount, !IsLegacyScript(thread));
     }
 
     // set_cleo_shared_var

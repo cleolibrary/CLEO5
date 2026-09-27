@@ -21,10 +21,8 @@ void ScreenLog::Init()
     fontSize  = 0.01f * CLEO_GetConfigInt("DebugUtils.ScreenLog.FontSize", 56);
     fontStyle = (eFontStyle)CLEO_GetConfigInt("DebugUtils.ScreenLog.FontStyle", eFontStyle::FONT_SUBTITLES);
 
-    fontColor[(size_t)eLogLevel::Error] =
-        CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorError", fontColor[(size_t)eLogLevel::Error].ToInt()));
-    fontColor[(size_t)eLogLevel::Debug] =
-        CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt()));
+    fontColor[(size_t)eLogLevel::Error] = CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorError", fontColor[(size_t)eLogLevel::Error].ToInt()));
+    fontColor[(size_t)eLogLevel::Debug] = CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorDebug", fontColor[(size_t)eLogLevel::Debug].ToInt()));
     fontColor[(size_t)eLogLevel::Default] =
         CRGBA(CLEO_GetConfigInt("DebugUtils.ScreenLog.ColorSystem", fontColor[(size_t)eLogLevel::Default].ToInt()));
 }

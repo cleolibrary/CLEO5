@@ -70,10 +70,7 @@ class OpcodeInfoDatabase
         bool IsNumeric() const { return valuesTxt.empty(); }
         bool IsEmpty() const { return valuesNum.empty() && valuesTxt.empty(); }
         const char* GetEntryName(int key) const { return valuesNum.count(key) ? valuesNum.at(key).c_str() : nullptr; }
-        const char* GetEntryName(const char* key) const
-        {
-            return valuesTxt.count(key) ? valuesTxt.at(key).c_str() : nullptr;
-        }
+        const char* GetEntryName(const char* key) const { return valuesTxt.count(key) ? valuesTxt.at(key).c_str() : nullptr; }
     };
 
     OpcodeInfoDatabase() = default;
@@ -95,9 +92,7 @@ class OpcodeInfoDatabase
 
     const char* GetArgumentName(uint16_t opcode, size_t paramIdx) const; // nullptr if not found
 
-    std::string GetExtensionMissingMessage(
-        uint16_t opcode
-    ) const; // extension "x" missing message if known, empty text otherwise
+    std::string GetExtensionMissingMessage(uint16_t opcode) const; // extension "x" missing message if known, empty text otherwise
 
     bool HasEnum(const char* name) const;        // lower case enum name
     const Enum* GetEnum(const char* name) const; // lower case enum name

@@ -56,7 +56,7 @@ namespace CLEO
            // until the method returns nullptr
         CRunningScript* FindScriptByFilename(
             const char* path, size_t resultIndex = 0
-        ); // if path is not absolute it will be resolved with cleo directory as root
+        );                                                   // if path is not absolute it will be resolved with cleo directory as root
         bool IsActiveScriptPtr(const CRunningScript*) const; // leads to active script? (regular or custom)
         bool IsValidScriptPtr(const CRunningScript*) const;  // leads to any script? (regular or custom)
         void AddCustomScript(CCustomScript*);

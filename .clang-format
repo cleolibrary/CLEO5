@@ -1,5 +1,5 @@
 BasedOnStyle: Microsoft
-ColumnLimit: 120
+ColumnLimit: 150
 AllowShortIfStatementsOnASingleLine: WithoutElse
 SortIncludes: false
 PointerAlignment: Left

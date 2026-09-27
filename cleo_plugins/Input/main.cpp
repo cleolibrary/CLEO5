@@ -136,9 +136,7 @@ class Input
         }
         if (key < 0 || key > Key_Code_Max)
         {
-            LOG_WARNING(
-                thread, "Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str()
-            ); // legacy opcode, just warning
+            LOG_WARNING(thread, "Invalid key code (%d) used in script %s", key, ScriptInfoStr(thread).c_str()); // legacy opcode, just warning
             OPCODE_CONDITION_RESULT(false);
             return OR_CONTINUE;
         }
@@ -331,8 +329,7 @@ class Input
             if (k.keyCode == 0 || k.priority == 0) // key not assigned
                 continue;
 
-            if (k.keyCode == rsMOUSEWHEELUPBUTTON || k.keyCode == rsMOUSEWHEELDOWNBUTTON)
-                continue; // there is no VK codes for mouse wheel rolling
+            if (k.keyCode == rsMOUSEWHEELUPBUTTON || k.keyCode == rsMOUSEWHEELDOWNBUTTON) continue; // there is no VK codes for mouse wheel rolling
 
             mapping[k.priority] = k.keyCode;
         }
