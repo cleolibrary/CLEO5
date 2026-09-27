@@ -1,0 +1,110 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name 'SDK@22'
+test("SDK: CLEO_GetInternalAudioStream", tests)
+terminate_this_custom_script
+
+const Test_File = "cleo\cleo_tests\Audio\Ding.mp3"
+
+
+function tests
+    it("should handle invalid stream handle", test1)
+    it("should return stream handle", test2)
+    return
+
+    function test1
+        int handle 
+        
+        handle = CLEO_GetInternalAudioStream(0)
+        assert_eq(handle, 0) // NULL
+        
+        handle = CLEO_GetInternalAudioStream(-1)
+        assert_eq(handle, 0) // NULL
+        
+        handle = CLEO_GetInternalAudioStream(0x12345678)
+        assert_eq(handle, 0) // NULL
+    end
+    
+    function test2
+        int cleoHandle = load_audio_stream Test_File
+        assert_result_true()
+        
+        int bassHandle = CLEO_GetInternalAudioStream(cleoHandle)
+        assert_neq(bassHandle, 0) // not NULL
+                
+        int flags = BASS_ChannelFlags(bassHandle, 0, 0) // get flags
+        is_bit_set {number} flags {bitIndex} 2 // BASS_SAMPLE_LOOP = 4
+        assert_result_false()
+        
+        set_audio_stream_looped cleoHandle {state} true
+        flags = BASS_ChannelFlags(bassHandle, 0, 0) // get flags
+        is_bit_set {number} flags {bitIndex} 2 // BASS_SAMPLE_LOOP = 4
+        assert_result_true()
+        
+        remove_audio_stream cleoHandle
+    end
+end
+
+
+// get native BASS stream handle for specified CLEO audio stream. NULL if streamHandle is not valid
+function CLEO_GetInternalAudioStream(streamHandle: int): int
+    if
+        _CLEO_GetInternalAudioStream fn = GetCLEOSDK("_CLEO_GetInternalAudioStream@8")
+    then
+        int result = fn(0, streamHandle)
+        return result
+    end
+    return -1
+
+    function _CLEO_GetInternalAudioStream<stdcall>(scriptPtr: int, streamHandle: int): int
+end
+
+
+// Returns a pointer to a function exported from CLEO.asi
+function GetCLEOSDK(name: string): optional int
+    if
+        int cleo = load_dynamic_library {fileName} "CLEO.asi"
+    then
+        if
+            int func = get_dynamic_library_procedure {procName} name cleo
+        then
+            free_dynamic_library cleo
+            return func
+        else
+            free_dynamic_library cleo
+            return
+        end
+    end
+end
+
+// BASS library
+
+function BASS_ChannelFlags(streamHandle: int, flags: int, mask: int): int
+    if
+        _BASS_ChannelFlags fn = GetBASS("BASS_ChannelFlags")
+    then
+        int result = fn(streamHandle, flags, mask)
+        return result
+    end
+    return -1
+
+    function _BASS_ChannelFlags<stdcall>(streamHandle: int, flags: int, mask: int): int
+end
+
+
+function GetBASS(name: string): optional int
+    if 
+        int bass = load_dynamic_library {fileName} "bass.dll"
+    then
+        if
+            int func = get_dynamic_library_procedure {procName} name bass
+        then
+            free_dynamic_library bass
+            return func
+        else
+            free_dynamic_library bass
+            return
+        end
+    end
+end
