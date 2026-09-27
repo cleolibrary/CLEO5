@@ -13,6 +13,17 @@ namespace CLEO
             return nullptr;
         }
 
+        // copy as much as can fit into destination. Always null terminate
+        auto CopyResult = [buff, buffLen](const char* src, int srcSize) {
+            if (buffLen <= 0) return; // nothing to do
+
+            const auto size = std::min(buffLen, srcSize);
+            memcpy(buff, src, size);
+
+            const auto endPos = std::min(buffLen - 1, srcSize);
+            buff[endPos]      = '\0';
+        };
+
         auto paramType = thread->PeekDataType();
         auto arrayType = thread->PeekArrayType();
         auto isVariableInt =
@@ -30,13 +41,12 @@ namespace CLEO
                     thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str,
                     GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()
                 );
+                CopyResult("", 0);
                 return nullptr; // error
             }
 
-            auto len = std::min((int)strlen(str), buffLen);
-            memcpy(buff, str, len);
-            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
-            return str;                          // pointer to original data
+            CopyResult(str, (int)strlen(str));
+            return str; // pointer to original data
         }
         else if (paramType == DT_VARLEN_STRING)
         {
@@ -48,9 +58,7 @@ namespace CLEO
 
             char* str = (char*)thread->GetBytePointer();
             thread->IncPtr(length); // text data
-
-            memcpy(buff, str, std::min(buffLen, (int)length));
-            if ((int)length < buffLen) buff[length] = '\0'; // add terminator if possible
+            CopyResult(str, (int)length);
             return buff;
         }
         else if (IsImmString(paramType))
@@ -62,15 +70,15 @@ namespace CLEO
             {
             case DT_TEXTLABEL: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 8));
+                CopyResult(str, 8);
                 thread->IncPtr(8); // text data
                 return buff;
             }
 
             case DT_STRING: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 16));
-                thread->IncPtr(16); // ext data
+                CopyResult(str, 16);
+                thread->IncPtr(16); // text data
                 return buff;
             }
             }
@@ -85,8 +93,7 @@ namespace CLEO
             case DT_VAR_TEXTLABEL_ARRAY:
             case DT_LVAR_TEXTLABEL_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 8));
-                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
+                CopyResult(str, 8);
                 return buff;
             }
 
@@ -96,8 +103,7 @@ namespace CLEO
             case DT_VAR_STRING_ARRAY:
             case DT_LVAR_STRING_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 16));
-                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
+                CopyResult(str, 16);
                 return buff;
             }
             }
@@ -109,7 +115,8 @@ namespace CLEO
             ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str()
         );
         CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
-        return nullptr;                   // error
+        CopyResult("", 0);
+        return nullptr; // error
     }
 
     struct CleoSafeHeader
