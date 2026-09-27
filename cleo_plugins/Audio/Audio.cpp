@@ -516,3 +516,12 @@ class Audio
 } audioInstance;
 
 CSoundSystem Audio::soundSystem;
+
+// exports
+
+// get native BASS stream handle for specified CLEO audio stream. NULL if streamHandle is not valid
+extern "C" __declspec(dllexport) DWORD GetInternalAudioStream(DWORD streamHandle)
+{
+    auto stream = reinterpret_cast<CAudioStream*>(streamHandle);
+    return audioInstance.soundSystem.HasStream(stream) ? stream->GetInternal() : NULL;
+}

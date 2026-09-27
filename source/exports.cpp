@@ -468,7 +468,7 @@ namespace CLEO
         DWORD WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
         {
             HMODULE textPlugin = GetModuleHandleA("SA.Text.cleo");
-            if (textPlugin == nullptr)
+            if (textPlugin == NULL)
             {
                 return (DWORD) nullptr;
             }
@@ -483,9 +483,21 @@ namespace CLEO
             return (DWORD)GetScriptTexture(thread, id);
         }
 
-        DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD audioStreamPtr)
+        DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD streamHandle)
         {
-            return *(DWORD*)(audioStreamPtr + 0x4); // CAudioStream->streamInternal
+            HMODULE audioPlugin = GetModuleHandleA("SA.Audio.cleo");
+            if (audioPlugin == NULL)
+            {
+                return NULL;
+            }
+
+            auto GetHandle = (DWORD(__cdecl*)(DWORD))GetProcAddress(audioPlugin, "GetInternalAudioStream");
+            if (GetHandle == nullptr)
+            {
+                return NULL;
+            }
+
+            return GetHandle(streamHandle);
         }
 
         // void WINAPI CLEO_StringListFree(StringList list)
