@@ -40,7 +40,11 @@ CAudioStream::CAudioStream(const char* filepath)
 
 CAudioStream::~CAudioStream()
 {
-    if (streamInternal) BASS_StreamFree(streamInternal);
+    if (streamInternal)
+    {
+        BASS_StreamFree(streamInternal);
+        streamInternal = NULL; // prevent use after free
+    }
 }
 
 void CAudioStream::Play()
