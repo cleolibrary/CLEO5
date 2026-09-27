@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <list>
 #include <string>
+#include <unordered_map>
 
 namespace CLEO
 {
@@ -17,6 +18,7 @@ namespace CLEO
         };
         std::list<PluginEntry> plugins;
         bool pluginsLoaded = false;
+        std::unordered_map<std::string, FARPROC> exportsCache;
 
       public:
         CPluginSystem()                     = default;
@@ -26,6 +28,9 @@ namespace CLEO
         void LoadPlugins();
         void UnloadPlugins();
         size_t GetNumPlugins() const;
+
+        // Find an exported function by name in .cleo plugins
+        FARPROC FindPluginExport(const char* name);
 
         void LogLoadedPlugins() const;
     };
