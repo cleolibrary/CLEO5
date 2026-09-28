@@ -129,9 +129,9 @@ void CPluginSystem::UnloadPlugins()
     exportsCache.clear();
 }
 
-FARPROC CPluginSystem::FindPluginExport(const char* name)
+void* CPluginSystem::FindPluginExport(const char* name)
 {
-    if (name == nullptr || name[0] == '\0') return nullptr;
+    if (!pluginsLoaded || name == nullptr || name[0] == '\0') return nullptr;
 
     // return from cache if exists
     const auto cached = exportsCache.find(name);
@@ -143,12 +143,11 @@ FARPROC CPluginSystem::FindPluginExport(const char* name)
         const auto proc = GetProcAddress(plugin.handle, name);
         if (proc == nullptr) continue;
 
-        TRACE("Export '%s' found in '%s'", name, plugin.name.c_str());
         exportsCache[name] = proc;
         return proc;
     }
 
-    TRACE("Export '%s' not found in any of the loaded plugins", name);
+    SHOW_ERROR("Export '%s' not found in any of the loaded plugins", name);
     exportsCache[name] = nullptr; // cache to prevent rescanning
     return nullptr;
 }

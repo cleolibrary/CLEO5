@@ -18,7 +18,7 @@ namespace CLEO
         };
         std::list<PluginEntry> plugins;
         bool pluginsLoaded = false;
-        std::unordered_map<std::string, FARPROC> exportsCache;
+        std::unordered_map<std::string, void*> exportsCache;
 
       public:
         CPluginSystem()                     = default;
@@ -30,7 +30,7 @@ namespace CLEO
         size_t GetNumPlugins() const;
 
         // Find an exported function by name in .cleo plugins
-        FARPROC FindPluginExport(const char* name);
+        void* FindPluginExport(const char* name);
 
         void LogLoadedPlugins() const;
     };
