@@ -143,6 +143,7 @@ void* CPluginSystem::FindPluginExport(const char* name)
         const auto proc = GetProcAddress(plugin.handle, name);
         if (proc == nullptr) continue;
 
+        TRACE("Export '%s' found in '%s'", name, plugin.name.c_str());
         exportsCache[name] = proc;
         return proc;
     }
