@@ -467,14 +467,10 @@ namespace CLEO
 
         DWORD WINAPI CLEO_GetScriptTextureById(CLEO::CRunningScript* thread, int id)
         {
-            HMODULE textPlugin = GetModuleHandleA("SA.Text.cleo");
-            if (textPlugin == NULL)
-            {
-                return (DWORD) nullptr;
-            }
+            using GetScriptTexture_t = RwTexture*(__cdecl*)(CLEO::CRunningScript*, DWORD);
 
-            auto GetScriptTexture =
-                (RwTexture * (__cdecl*)(CLEO::CRunningScript*, DWORD)) GetProcAddress(textPlugin, "GetScriptTexture");
+            const auto GetScriptTexture =
+                reinterpret_cast<GetScriptTexture_t>(CleoInstance.PluginSystem.FindPluginExport("GetScriptTexture"));
             if (GetScriptTexture == nullptr)
             {
                 return (DWORD) nullptr;
@@ -485,19 +481,17 @@ namespace CLEO
 
         DWORD WINAPI CLEO_GetInternalAudioStream(CLEO::CRunningScript* unused, DWORD streamHandle)
         {
-            HMODULE audioPlugin = GetModuleHandleA("SA.Audio.cleo");
-            if (audioPlugin == NULL)
+            using GetInternalAudioStream_t = DWORD(__cdecl*)(DWORD);
+
+            const auto GetInternalAudioStream = reinterpret_cast<GetInternalAudioStream_t>(
+                CleoInstance.PluginSystem.FindPluginExport("GetInternalAudioStream")
+            );
+            if (GetInternalAudioStream == nullptr)
             {
                 return NULL;
             }
 
-            auto GetHandle = (DWORD(__cdecl*)(DWORD))GetProcAddress(audioPlugin, "GetInternalAudioStream");
-            if (GetHandle == nullptr)
-            {
-                return NULL;
-            }
-
-            return GetHandle(streamHandle);
+            return GetInternalAudioStream(streamHandle);
         }
 
         // void WINAPI CLEO_StringListFree(StringList list)

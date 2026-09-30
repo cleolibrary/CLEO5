@@ -103,4 +103,4 @@ does_file_exist "root:\..\test.txt"
 does_file_exist "root:/../test.txt"
 
 :suspend9
-does_file_exist "user:/../test.txt"
+does_file_exist "user:/../../test.txt"

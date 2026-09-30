@@ -9,11 +9,17 @@ const Test_File = "cleo\cleo_tests\Audio\Ding.mp3"
 
 
 function tests
-    it("should handle invalid stream handle", test1)
-    it("should return stream handle", test2)
+    it("should export GetInternalAudioStream from SA.Audio", test1)
+    it("should handle invalid stream handle", test2)
+    it("should return stream handle", test3)
     return
 
     function test1
+        int proc = GetAudioSDK("GetInternalAudioStream")
+        assert(proc)
+    end
+
+    function test2
         int handle 
         
         handle = CLEO_GetInternalAudioStream(0)
@@ -26,13 +32,17 @@ function tests
         assert_eq(handle, 0) // NULL
     end
     
-    function test2
+    function test3
         int cleoHandle = load_audio_stream Test_File
         assert_result_true()
         
         int bassHandle = CLEO_GetInternalAudioStream(cleoHandle)
         assert_neq(bassHandle, 0) // not NULL
-                
+
+        // CLEO resolves the same SA.Audio export
+        int pluginHandle = SA_GetInternalAudioStream(cleoHandle)
+        assert_eq(pluginHandle, bassHandle)
+
         int flags = BASS_ChannelFlags(bassHandle, 0, 0) // get flags
         is_bit_set {number} flags {bitIndex} 2 // BASS_SAMPLE_LOOP = 4
         assert_result_false()
@@ -77,6 +87,38 @@ function GetCLEOSDK(name: string): optional int
         end
     end
 end
+
+// get native BASS stream handle read directly from SA.Audio.cleo export
+function SA_GetInternalAudioStream(streamHandle: int): int
+    if
+        _SA_GetInternalAudioStream fn = GetAudioSDK("GetInternalAudioStream")
+    then
+        int result = fn(streamHandle)
+        return result
+    end
+    return 0
+
+    function _SA_GetInternalAudioStream<cdecl>(streamHandle: int): int
+end
+
+
+// Returns a pointer to a function exported from SA.Audio.cleo
+function GetAudioSDK(name: string): optional int
+    if
+        int lib = load_dynamic_library {fileName} "SA.Audio.cleo"
+    then
+        if
+            int func = get_dynamic_library_procedure {procName} name lib
+        then
+            free_dynamic_library lib
+            return func
+        else
+            free_dynamic_library lib
+            return
+        end
+    end
+end
+
 
 // BASS library
 

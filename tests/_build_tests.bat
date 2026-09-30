@@ -127,8 +127,8 @@ ROBOCOPY "%REPO_TESTS%" "%DST_TESTS%" /MIR /NFL /NDL /NJH /NJS /NP >NUL
 IF ERRORLEVEL 8 GOTO :COPY_FAILED
 
 REM --- 2. compile every test script in place ----------------------------------
-DIR /B /S /A-D "%DST_TESTS%\*.txt" | SORT > "%FILELIST%"
-FOR /F %%C IN ('TYPE "%FILELIST%" ^| FIND /C /V ""') DO SET "TOTAL=%%C"
+DIR /B /S /A-D "%DST_TESTS%\*.txt" | %SystemRoot%\System32\sort.exe > "%FILELIST%"
+FOR /F %%C IN ('TYPE "%FILELIST%" ^| %SystemRoot%\System32\find.exe /C /V ""') DO SET "TOTAL=%%C"
 ECHO:
 ECHO ==^> Compiling !TOTAL! scripts in place
 ECHO:
