@@ -21,14 +21,25 @@ workspace "CLEO5"
     }
 
     buildoptions {
+        "/Zc:__cplusplus",
+        "/utf-8",
+        "/EHsc",
+        "/Gw",
+        "/GF",
         "/Zc:threadSafeInit-",
+        "/Zc:throwingNew",
+        "/volatile:iso",
+        "/diagnostics:caret",
         "/sdl",
         "/we26815",
         '/D"TARGET_NAME=R\\"($(TargetName))\\""'
     }
 
     linkoptions {
-        "/SAFESEH:NO"
+        "/SAFESEH:NO",
+        "/FORCE:MULTIPLE",
+        "/LARGEADDRESSAWARE",
+        "/DYNAMICBASE:NO"
     }
 
     debugcommand "$(GTA_SA_DIR)\\gta_sa.exe"
@@ -44,6 +55,15 @@ workspace "CLEO5"
         optimize "Speed"
         linktimeoptimization "On"
         symbols "Off"
+        buildoptions {
+            "/Ob3",
+            "/Oy-"
+        }
+        linkoptions {
+            "/OPT:REF",
+            "/OPT:ICF",
+            "/INCREMENTAL:NO"
+        }
 
     filter {}
 
