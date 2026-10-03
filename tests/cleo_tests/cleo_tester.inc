@@ -46,18 +46,21 @@ end
 function it(spec_name: string, callback: int)
     _run_with_compat_mode(spec_name, callback, DEFAULT_COMPAT)
     _run_with_compat_mode(spec_name, callback, CLEO4_COMPAT)
+    _increment_test_index()
 end
 
 /// registers new unit test in a test suite - runs in CS4 mode
 /// use assert_*(...) to validate result
 function it_cs4(spec_name: string, callback: int)
     _run_with_compat_mode(spec_name, callback, CLEO4_COMPAT)
+    _increment_test_index()
 end
 
 /// registers new unit test in a test suite - runs in CLEO5 mode
 /// use assert_*(...) to validate result
 function it_cs5(spec_name: string, callback: int)
     _run_with_compat_mode(spec_name, callback, CLEO5_COMPAT)
+    _increment_test_index()
 end
 
 /// registers new unit test in a test suite
@@ -84,9 +87,6 @@ function _run_with_compat_mode(spec_name: string, callback: int, compat: int)
     run_spec()
 
     //trace "~g~~h~~h~Test #%d PASSED" index
-    index++
-    _cleo_tester_write_var(VAR_TEST_INDEX, index)
-
     return
 
     function run_spec
@@ -114,6 +114,12 @@ function _run_with_compat_mode(spec_name: string, callback: int, compat: int)
         int location = get_label_pointer label
         write_memory_with_offset {address} location {offset - opcode + datatype} 3 {size} 4 {value} function_offset
     end
+end
+
+function _increment_test_index()
+    int index = _cleo_tester_read_var(VAR_TEST_INDEX)
+    index++
+    _cleo_tester_write_var(VAR_TEST_INDEX, index)
 end
 
 :_cleo_tester_stub
