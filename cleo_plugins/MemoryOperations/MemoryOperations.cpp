@@ -17,8 +17,9 @@ class MemoryOperations
     // keep track of per-script memory allocations
     struct AllocationInfo
     {
-        int count;
-        int size;
+        char scriptName[sizeof(CLEO::CRunningScript::Name) + 1] = {0}; // and terminator
+        int count                                               = 0;
+        int size                                                = 0;
     };
     std::unordered_map<CLEO::CRunningScript*, AllocationInfo> m_scriptAllocationsInfo;
     int m_configLimitAllocationCount;
@@ -87,17 +88,22 @@ class MemoryOperations
         // release memory allocations
         TRACE("");
         TRACE("Cleaning up %d allocated memory block(s):", Instance.m_allocations.size());
+        std::string str(128, '\0');
         for (auto entry : Instance.m_scriptAllocationsInfo) // list remaining allocations per script
         {
             if (entry.second.count == 0) continue;
 
-            std::string str(128, '\0');
-            CLEO_GetScriptInfoStr(entry.first, false, str.data(), str.length());
+            if (CLEO_IsValidScriptPtr(entry.first))
+                CLEO_GetScriptInfoStr(entry.first, false, str.data(), str.length());
+            else
+                str = entry.second.scriptName;
+
             TRACE(
                 " %d block%s (%0.2f kB) in script %s", entry.second.count, entry.second.count > 1 ? "s" : "",
                 float(entry.second.size) / 1024, str.c_str()
             );
         }
+
         for (auto p : Instance.m_allocations)
             free(p.first);
         Instance.m_allocations.clear();
@@ -130,9 +136,18 @@ class MemoryOperations
     void RegisterMemoryAllocation(CLEO::CRunningScript* thread, void* address, size_t size)
     {
         m_allocations[address] = size;
-        auto& info             = m_scriptAllocationsInfo[thread];
-        info.count++;
-        info.size += size;
+
+        AllocationInfo* info = nullptr;
+        if (!m_scriptAllocationsInfo.contains(thread))
+        {
+            info = &m_scriptAllocationsInfo[thread]; // emplace new
+            memcpy(info->scriptName, thread->Name, sizeof(CLEO::CRunningScript::Name));
+        }
+        else
+            info = &m_scriptAllocationsInfo[thread]; // get existing
+
+        info->count++;
+        info->size += size;
     }
 
     void UnregisterMemoryAllocation(CLEO::CRunningScript* thread, void* address)
