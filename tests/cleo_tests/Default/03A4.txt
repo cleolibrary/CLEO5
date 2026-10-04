@@ -1,0 +1,32 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '03A4'
+test("03A4 (script_name)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should set script name", test1)
+    return
+
+
+    function test1()
+        int str = allocate_memory {size} 9
+        
+        int namePtr = get_this_script_struct
+        namePtr += 0x8 // offset of CRunningScript::Name
+        
+        script_name "@azAZ["
+        copy_memory {src} namePtr {dest} str {size} 8
+        assert_eqs(str, "@azaz[") // converted to lower case
+        
+        int nextByte = read_memory_with_offset {address} namePtr {offset} 9 {size} 1 // byte after CRunningScript::Name field
+        script_name "some longer string here"
+        int currNextByte = read_memory_with_offset {address} namePtr {offset} 9 {size} 1 // byte after CRunningScript::Name field
+        assert_eq(currNextByte, nextByte) // string should not go past its member in the script struct
+        
+        copy_memory {src} namePtr {dest} str {size} 8
+        assert_eqs(str, "some lon") // 8 characters without terminator were copied
+    end
+end

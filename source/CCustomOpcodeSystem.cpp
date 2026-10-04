@@ -142,6 +142,7 @@ namespace CLEO
         CLEO_RegisterOpcode(0x004E, opcode_004E);
         CLEO_RegisterOpcode(0x0050, opcode_0050);
         CLEO_RegisterOpcode(0x0051, opcode_0051);
+        CLEO_RegisterOpcode(0x03A4, opcode_03A4);
         CLEO_RegisterOpcode(0x0417, opcode_0417);
         CLEO_RegisterOpcode(0x0A92, opcode_0A92);
         CLEO_RegisterOpcode(0x0A93, opcode_0A93);
@@ -804,6 +805,26 @@ namespace CLEO
         }
 
         return CallNativeOpcode(thread, 0x0051); // call game's original
+    }
+
+    // script_name - support 8 character long unterminated strings
+    // script_name {name} [string]
+    OpcodeResult __stdcall CCustomOpcodeSystem::opcode_03A4(CRunningScript* thread)
+    {
+        OPCODE_READ_PARAM_STRING_LEN(name, sizeof(CRunningScript::Name));
+
+        for (size_t i = 0; i < sizeof(CRunningScript::Name); i++)
+        {
+            thread->Name[i] = name[i];
+
+            // convert to lower case the same way the game do
+            if (thread->Name[i] >= 'A' && thread->Name[i] <= 'Z')
+            {
+                thread->Name[i] += 32;
+            }
+        }
+
+        return OR_CONTINUE;
     }
 
     // load_and_launch_mission_internal
