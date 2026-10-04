@@ -11,6 +11,8 @@ function tests
     return
     
     function test1
+        script_name '0AAA'
+        
         int thisPtr = get_this_script_struct
         assert_ptr(thisPtr)
         
@@ -29,5 +31,28 @@ function tests
         ptr = get_script_struct_named {scriptName} "CleoTest" // test runner
         assert_ptr(ptr)
         assert_neq(ptr, thisPtr)
+                
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "I1Ctq@akBY" // not existing long
+        assert_eq(ptr, 0)
+        
+        // rename this script
+        script_name {name} "I1Ctq@akBY" // 10 characters, mixed case
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "I1Ctq@akBY" // longer than possible - truncaded same way as during setting
+        assert_eq(ptr, thisPtr)
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "I1Ctq@ak" // truncated to max supported length
+        assert_eq(ptr, thisPtr)
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "i1ctQ@Ak" // different letter cases
+        assert_eq(ptr, thisPtr)
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "I1Ctq@a" // truncated to 7
+        assert_eq(ptr, 0)
     end
 end

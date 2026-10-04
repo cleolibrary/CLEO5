@@ -624,7 +624,7 @@ namespace CLEO
       public:
         CRunningScript* Next;        // 0x00 next script in queue
         CRunningScript* Previous;    // 0x04 previous script in queue
-        char Name[8];                // 0x08 name of script, given by 03A4 opcode
+        char Name[8];                // 0x08 name of script, given by 03A4 opcode. Use GetName to access!
         void* BaseIP;                // 0x10 pointer to begin of script in memory
         BYTE* CurrentIP;             // 0x14 current instruction pointer
         BYTE* Stack[8];              // 0x18 return stack for 0050, 0051
