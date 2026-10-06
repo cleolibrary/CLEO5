@@ -88,13 +88,16 @@ class MemoryOperations
         // release memory allocations
         TRACE("");
         TRACE("Cleaning up %d allocated memory block(s):", Instance.m_allocations.size());
-        std::string str(128, '\0');
+        std::string str;
         for (auto entry : Instance.m_scriptAllocationsInfo) // list remaining allocations per script
         {
             if (entry.second.count == 0) continue;
 
             if (CLEO_IsValidScriptPtr(entry.first))
-                CLEO_GetScriptInfoStr(entry.first, false, str.data(), str.length());
+            {
+                str.resize(128);
+                CLEO_GetScriptInfoStr(entry.first, false, str.data(), 128);
+            }
             else
                 str = entry.second.scriptName;
 
@@ -137,25 +140,20 @@ class MemoryOperations
     {
         m_allocations[address] = size;
 
-        AllocationInfo* info = nullptr;
-        if (!m_scriptAllocationsInfo.contains(thread))
-        {
-            info = &m_scriptAllocationsInfo[thread]; // emplace new
-            memcpy(info->scriptName, thread->Name, sizeof(CLEO::CRunningScript::Name));
-        }
-        else
-            info = &m_scriptAllocationsInfo[thread]; // get existing
-
-        info->count++;
-        info->size += size;
+        auto [info, inserted] = m_scriptAllocationsInfo.try_emplace(thread);
+        if (inserted) memcpy(info->second.scriptName, thread->Name, sizeof(CLEO::CRunningScript::Name));
+        info->second.count++;
+        info->second.size += size;
     }
 
     void UnregisterMemoryAllocation(CLEO::CRunningScript* thread, void* address)
     {
+        m_allocations.erase(address);
+
         auto& info = m_scriptAllocationsInfo[thread];
         info.count--;
         info.size -= m_allocations[address];
-        m_allocations.erase(address);
+        if (info.count <= 0) m_scriptAllocationsInfo.erase(thread);
     }
 
     // opcodes 0A8C, 2402 - write_memory and write_memory_with_offset
