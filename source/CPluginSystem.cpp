@@ -126,6 +126,69 @@ void CPluginSystem::UnloadPlugins()
 
     plugins.clear();
     pluginsLoaded = false;
+    exportsCache.clear();
+}
+
+std::string CPluginSystem::GetModulePath(HMODULE module)
+{
+    std::string path(512, '\0');
+    if (GetModuleFileName(module, path.data(), path.size()) == 0) return {};
+
+    path.resize(strlen(path.data()));
+    return path;
+}
+
+std::vector<HMODULE> CPluginSystem::GetProcessModules()
+{
+    auto process = GetCurrentProcess();
+
+    DWORD buffSize = 0;
+    if (!EnumProcessModules(process, nullptr, 0, &buffSize) || buffSize < sizeof(HMODULE)) return {};
+
+    std::vector<HMODULE> modules(buffSize / sizeof(HMODULE));
+    if (!EnumProcessModules(process, modules.data(), buffSize, &buffSize)) return {};
+    modules.resize(buffSize / sizeof(HMODULE));
+
+    return modules;
+}
+
+void* CPluginSystem::FindPluginExport(const char* name)
+{
+    if (!pluginsLoaded || name == nullptr || name[0] == '\0') return nullptr;
+
+    // return from cache if exists
+    const auto cached = exportsCache.find(name);
+    if (cached != exportsCache.end()) return cached->second;
+
+    // check the plugins loaded by CLEO first
+    for (const auto& plugin : plugins)
+    {
+        const auto proc = GetProcAddress(plugin.handle, name);
+        if (proc == nullptr) continue;
+
+        TRACE("Export '%s' found in '%s'", name, plugin.name.c_str());
+        exportsCache[name] = proc;
+        return proc;
+    }
+
+    // Try to scan all loaded modules - perhaps needed .cleo plugin was loaded by modloader?
+    for (const auto module : GetProcessModules())
+    {
+        const auto path = GetModulePath(module);
+
+        if (!StringEndsWith(path, ".cleo", false)) continue;
+
+        const auto proc = GetProcAddress(module, name);
+        if (proc == nullptr) continue;
+
+        TRACE("Export '%s' found in '%s'", name, path.c_str());
+        exportsCache[name] = proc;
+        return proc;
+    }
+
+    SHOW_ERROR("Export '%s' not found in any of the loaded plugins", name);
+    exportsCache[name] = nullptr; // cache to prevent rescanning
+    return nullptr;
 }
 
 size_t CPluginSystem::GetNumPlugins() const
@@ -133,42 +196,25 @@ size_t CPluginSystem::GetNumPlugins() const
     return plugins.size();
 }
 
-void CLEO::CPluginSystem::LogLoadedPlugins() const
+void CPluginSystem::LogLoadedPlugins() const
 {
-    auto process = GetCurrentProcess();
-
-    DWORD buffSize = 0;
-    if (!EnumProcessModules(process, nullptr, 0, &buffSize) || buffSize < sizeof(HMODULE))
-    {
-        return;
-    }
-
-    std::vector<HMODULE> modules(buffSize / sizeof(HMODULE));
-    if (!EnumProcessModules(process, modules.data(), buffSize, &buffSize))
-    {
-        return;
-    }
-
     TRACE(""); // separator
     TRACE("Loaded plugins summary:");
 
-    for (const auto& m : modules)
+    for (const auto module : GetProcessModules())
     {
-        std::string filename(512, '\0');
-        if (GetModuleFileName(m, filename.data(), filename.size()))
+        auto path = GetModulePath(module);
+        if (path.empty()) continue;
+
+        if (StringStartsWith(path, GetGameDirectory(), false) || StringEndsWith(path, ".asi", false) ||
+            StringEndsWith(path, ".cleo", false))
         {
-            filename.resize(strlen(filename.data()));
+            std::error_code err;
+            auto fileSize = (size_t)FS::file_size(path, err);
 
-            if (StringStartsWith(filename, GetGameDirectory(), false) || StringEndsWith(filename, ".asi", false) ||
-                StringEndsWith(filename, ".cleo", false))
-            {
-                std::error_code err;
-                auto fileSize = (size_t)FS::file_size(filename, err);
+            FilepathRemoveParent(path, GetGameDirectory());
 
-                FilepathRemoveParent(filename, GetGameDirectory());
-
-                TRACE(" %s (%zu bytes)", filename.c_str(), fileSize);
-            }
+            TRACE(" %s (%zu bytes)", path.c_str(), fileSize);
         }
     }
 

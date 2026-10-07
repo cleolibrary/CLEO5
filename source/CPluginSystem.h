@@ -2,6 +2,8 @@
 #include <windows.h>
 #include <list>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace CLEO
 {
@@ -17,6 +19,10 @@ namespace CLEO
         };
         std::list<PluginEntry> plugins;
         bool pluginsLoaded = false;
+        std::unordered_map<std::string, void*> exportsCache;
+
+        static std::vector<HMODULE> GetProcessModules();
+        static std::string GetModulePath(HMODULE module);
 
       public:
         CPluginSystem()                     = default;
@@ -26,6 +32,9 @@ namespace CLEO
         void LoadPlugins();
         void UnloadPlugins();
         size_t GetNumPlugins() const;
+
+        // Find an exported function by name in .cleo plugins
+        void* FindPluginExport(const char* name);
 
         void LogLoadedPlugins() const;
     };
