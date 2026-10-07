@@ -542,7 +542,7 @@ class Math
         return OR_CONTINUE;
     }
 
-    // 2709=3,%3d% = %1d% + %2d% ; int
+    // 2709=3,%3d% = %1d% + %2d% ; FLOAT
     static OpcodeResult __stdcall opcode_2709(CRunningScript* thread)
     {
         auto a = OPCODE_READ_PARAM_FLOAT();
