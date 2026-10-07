@@ -1,0 +1,55 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '08FA'
+test("08FA (is_lvar_text_label16_equal_to_text_label)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should compare two string variables", test1)
+    return
+
+
+    function test1()
+	    longString longA
+	    longString longB
+	    shortString short
+	    
+	    string_format {result} longA {format} "one"
+	    assert_eqs(longA, "one")
+		is_lvar_text_label16_equal_to_text_label {var} longA {string} "one"
+		assert_result_true()
+		
+		string_format {result} longA {format} "one"
+		is_lvar_text_label16_equal_to_text_label {var} longA {string} "two"
+		assert_result_false()
+		
+		string_format {result} longA {format} "one"
+	    string_format {result} longB {format} "one"
+		is_lvar_text_label16_equal_to_text_label {var} longA {string} longB
+		assert_result_true()
+		
+		string_format {result} longA {format} "one"
+	    string_format {result} longB {format} "onetwo"
+		is_lvar_text_label16_equal_to_text_label {var} longA {string} longB
+		assert_result_false()
+		
+		string_format {result} longA {format} "full length text" // 16 characters
+		string_format {result} longB {format} "second variable"
+		assert_eqs(longA, "full length text")
+		assert_eqs(longB, "second variable")
+		is_lvar_text_label16_equal_to_text_label {var} longA {string} "full length text"
+		assert_result_true()
+		
+		string_format {result} longA {format} "full length text and more" // truncated to 16 characters
+		string_format {result} longB {format} "second variable"
+		is_lvar_text_label16_equal_to_text_label {var} longA {string} "full length text"
+		assert_result_true()
+		
+		string_format {result} longA {format} "full length text"
+		string_format {result} longB {format} "second variable"
+		is_lvar_text_label16_equal_to_text_label {var} longA {string} "full length text and more" // truncated to 16 characters
+		assert_result_true()
+    end
+end

@@ -43,6 +43,7 @@ namespace CLEO
         static OpcodeResult __stdcall opcode_0051(CRunningScript* thread); // GOSUB return
         static OpcodeResult __stdcall opcode_03A4(CRunningScript* thread); // script_name
         static OpcodeResult __stdcall opcode_0417(CRunningScript* thread); // load_and_launch_mission_internal
+        static OpcodeResult __stdcall opcode_08FA(CRunningScript* thread); // is_lvar_text_label16_equal_to_text_label
 
         // new opcodes
         static OpcodeResult __stdcall opcode_0A92(CRunningScript* thread); // stream_custom_script

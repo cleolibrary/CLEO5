@@ -144,6 +144,7 @@ namespace CLEO
         CLEO_RegisterOpcode(0x0051, opcode_0051);
         CLEO_RegisterOpcode(0x03A4, opcode_03A4);
         CLEO_RegisterOpcode(0x0417, opcode_0417);
+        CLEO_RegisterOpcode(0x08FA, opcode_08FA);
         CLEO_RegisterOpcode(0x0A92, opcode_0A92);
         CLEO_RegisterOpcode(0x0A93, opcode_0A93);
         CLEO_RegisterOpcode(0x0A94, opcode_0A94);
@@ -834,6 +835,19 @@ namespace CLEO
         CleoInstance.ScriptEngine.missionIndex = CLEO_PeekIntOpcodeParam(thread);
 
         return CallNativeOpcode(thread, 0x0417); // call game's original
+    }
+
+    // is_lvar_text_label16_equal_to_text_label - support 16 character long unterminated strings
+    // is_lvar_text_label16_equal_to_text_label {variable} [string] {value} [string] (logical)
+    OpcodeResult __stdcall CCustomOpcodeSystem::opcode_08FA(CRunningScript* thread)
+    {
+        OPCODE_READ_PARAM_STRING(a);
+        OPCODE_READ_PARAM_STRING(b);
+
+        bool equal = !strncmp(a, b, 16);
+
+        OPCODE_CONDITION_RESULT(equal);
+        return OR_CONTINUE;
     }
 
     // stream_custom_script
