@@ -7,7 +7,7 @@ terminate_this_custom_script
 
 
 function tests
-    it("should substract two floats", test1)
+    it("should subtract two floats", test1)
     return
     
     function test1
