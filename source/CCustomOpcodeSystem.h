@@ -80,8 +80,7 @@ namespace CLEO
     };
 
     // Read always null-terminated string into the buffer and return pointer to the string, or nullptr
-    // on failure. Text that fills the buffer is capped at buffSize - 1 characters so the terminator
-    // always fits.
+    // on failure. Text is capped at buffSize - 1 characters.
     // WARNING:
     // returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source)
     const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize);

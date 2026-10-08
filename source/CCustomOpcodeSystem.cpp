@@ -234,8 +234,7 @@ namespace CLEO
 
     const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize)
     {
-        // GetScriptStringParam() always null-terminates the destination, keeping the last byte of the
-        // buffer for the terminator, so the whole buffSize can be passed through.
+        // GetScriptStringParam() always null-terminates the destination
         return GetScriptStringParam(thread, 0, buff, buffSize);
     }
 

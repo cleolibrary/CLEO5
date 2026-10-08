@@ -13,10 +13,8 @@ namespace CLEO
             return nullptr;
         }
 
-        // Copy text into the caller's buffer and always null-terminate it, as promised by the CLEO SDK
-        // string read functions. The terminator goes into the last byte the caller owns, so text that
-        // fills the buffer is cut by one character instead of running past it. Never writes past
-        // buffLen.
+        // Copy text into the caller's buffer and always null-terminate it at last byte.
+        // Never write past buffLen.
         auto CopyResult = [buff, buffLen](const char* src, int srcSize) {
             if (buffLen <= 0) return; // nothing to do
 
@@ -96,7 +94,7 @@ namespace CLEO
             case DT_VAR_TEXTLABEL_ARRAY:
             case DT_LVAR_TEXTLABEL_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                CopyResult(str, 8); // text field is max 8 bytes, may be unterminated in the script
+                CopyResult(str, 8);
                 return buff;
             }
 
@@ -106,7 +104,7 @@ namespace CLEO
             case DT_VAR_STRING_ARRAY:
             case DT_LVAR_STRING_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                CopyResult(str, 16); // text field is max 16 bytes, may be unterminated in the script
+                CopyResult(str, 16);
                 return buff;
             }
             }
