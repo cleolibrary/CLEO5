@@ -97,6 +97,7 @@ namespace CLEO
 
     // reimplemented hook of original game's procedure
     // returns buff or pointer provided by script, nullptr on fail
-    // WARNING: Null terminator ommited if not enought space in the buffer!
+    // Always null-terminates the destination buffer: text that fills buffLen is capped at buffLen - 1
+    // characters, so nothing is ever written past the caller's buffer.
     const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen);
 } // namespace CLEO

@@ -1,0 +1,41 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '03A4'
+test("03A4 (script_name)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should set a null-terminated script name", test1)
+    return
+
+
+    function test1()
+        int str = allocate_memory {size} 9
+
+        int namePtr = get_this_script_struct
+        namePtr += 0x8 // offset of CRunningScript::Name
+
+        script_name "@azaz["
+        copy_memory {src} namePtr {dest} str {size} 8
+        assert_eqs(str, "@azaz[")
+
+        // an 8th character would leave no room for the terminator, so it is dropped
+        script_name "abcdefgh"
+        copy_memory {src} namePtr {dest} str {size} 8
+        assert_eqs(str, "abcdefg")
+
+        int terminator = read_memory_with_offset {address} namePtr {offset} 7 {size} 1
+        assert_eq(terminator, 0) // Name[7] is the terminator
+
+        // the byte after the Name field is not touched
+        int nextByte = read_memory_with_offset {address} namePtr {offset} 8 {size} 1
+        script_name "some longer string here"
+        int currNextByte = read_memory_with_offset {address} namePtr {offset} 8 {size} 1
+        assert_eq(currNextByte, nextByte)
+
+        copy_memory {src} namePtr {dest} str {size} 8
+        assert_eqs(str, "some lo") // 7 characters + terminator
+    end
+end

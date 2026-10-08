@@ -13,6 +13,18 @@ namespace CLEO
             return nullptr;
         }
 
+        // Copy text into the caller's buffer and always null-terminate it, as promised by the CLEO SDK
+        // string read functions. The terminator goes into the last byte the caller owns, so text that
+        // fills the buffer is cut by one character instead of running past it. Never writes past
+        // buffLen.
+        auto CopyResult = [buff, buffLen](const char* src, int srcSize) {
+            if (buffLen <= 0) return; // nothing to do
+
+            const int size = std::min(buffLen, srcSize);
+            memcpy(buff, src, size);
+            buff[std::min(buffLen - 1, srcSize)] = '\0';
+        };
+
         auto paramType = thread->PeekDataType();
         auto arrayType = thread->PeekArrayType();
         auto isVariableInt =
@@ -30,13 +42,12 @@ namespace CLEO
                     thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str,
                     GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()
                 );
+                CopyResult("", 0);
                 return nullptr; // error
             }
 
-            auto len = std::min((int)strlen(str), buffLen);
-            memcpy(buff, str, len);
-            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
-            return str;                          // pointer to original data
+            CopyResult(str, (int)strlen(str));
+            return str; // pointer to original data
         }
         else if (paramType == DT_VARLEN_STRING)
         {
@@ -49,8 +60,8 @@ namespace CLEO
             char* str = (char*)thread->GetBytePointer();
             thread->IncPtr(length); // text data
 
-            memcpy(buff, str, std::min(buffLen, (int)length));
-            if ((int)length < buffLen) buff[length] = '\0'; // add terminator if possible
+            // variable-length strings carry no terminator in the script
+            CopyResult(str, (int)length);
             return buff;
         }
         else if (IsImmString(paramType))
@@ -62,15 +73,15 @@ namespace CLEO
             {
             case DT_TEXTLABEL: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 8));
+                CopyResult(str, 8);
                 thread->IncPtr(8); // text data
                 return buff;
             }
 
             case DT_STRING: {
                 CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 16));
-                thread->IncPtr(16); // ext data
+                CopyResult(str, 16);
+                thread->IncPtr(16); // text data
                 return buff;
             }
             }
@@ -85,8 +96,7 @@ namespace CLEO
             case DT_VAR_TEXTLABEL_ARRAY:
             case DT_LVAR_TEXTLABEL_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 8));
-                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
+                CopyResult(str, 8); // text field is max 8 bytes, may be unterminated in the script
                 return buff;
             }
 
@@ -96,8 +106,7 @@ namespace CLEO
             case DT_VAR_STRING_ARRAY:
             case DT_LVAR_STRING_ARRAY: {
                 auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 16));
-                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
+                CopyResult(str, 16); // text field is max 16 bytes, may be unterminated in the script
                 return buff;
             }
             }
@@ -109,7 +118,8 @@ namespace CLEO
             ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str()
         );
         CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
-        return nullptr;                   // error
+        CopyResult("", 0);
+        return nullptr; // error
     }
 
     struct CleoSafeHeader
@@ -626,7 +636,7 @@ namespace CLEO
                     // skip custom scripts in the queue, they are handled separately
                     continue;
                 }
-                if (_strnicmp(threadName, script->Name, sizeof(script->Name)) == 0)
+                if (_strnicmp(threadName, script->Name, sizeof(script->Name) - 1) == 0)
                 {
                     if (resultIndex == 0)
                         return script;
@@ -640,7 +650,7 @@ namespace CLEO
         {
             if (CustomMission)
             {
-                if (_strnicmp(threadName, CustomMission->Name, sizeof(CustomMission->Name)) == 0)
+                if (_strnicmp(threadName, CustomMission->Name, sizeof(CustomMission->Name) - 1) == 0)
                 {
                     if (resultIndex == 0)
                         return CustomMission;
@@ -652,7 +662,7 @@ namespace CLEO
             for (auto it = CustomScripts.begin(); it != CustomScripts.end(); ++it)
             {
                 auto cs = *it;
-                if (_strnicmp(threadName, cs->Name, sizeof(cs->Name)) == 0)
+                if (_strnicmp(threadName, cs->Name, sizeof(cs->Name) - 1) == 0)
                 {
                     if (resultIndex == 0)
                         return cs;
