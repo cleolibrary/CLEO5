@@ -29,5 +29,28 @@ function tests
         ptr = get_script_struct_named {scriptName} "CleoTest" // test runner
         assert_ptr(ptr)
         assert_neq(ptr, thisPtr)
+        
+        // script names are plain text fields: 7 characters + terminator
+        script_name {name} "I1Ctq@akBY" // 10 characters, mixed case
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "I1Ctq@a" // truncated to 7 characters
+        assert_eq(ptr, thisPtr)
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "i1ctQ@A" // different letter cases
+        assert_eq(ptr, thisPtr)
+        
+        // a lookup longer than the 7 character name limit clamps to its 7 character prefix
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "I1Ctq@ak" // clamped to "I1Ctq@a"
+        assert_eq(ptr, thisPtr)
+        
+        ptr = -1
+        ptr = get_script_struct_named {scriptName} "I1Ctq@akBY" // clamped to "I1Ctq@a"
+        assert_eq(ptr, thisPtr)
+        
+        // it() runs the spec once per compat mode - put the name back for the second run
+        script_name {name} '0AAA'
     end
 end

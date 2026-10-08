@@ -34,7 +34,7 @@ function tests
     return
 
     function test1
-        shortString a = 'From AD1' // 8 characters
+        shortString a = 'From AD1' // 8 characters, clamped to 7 on assignment
         shortString b = '12345678'
 
         print_formatted_now {format} a {time} 100
@@ -42,11 +42,11 @@ function tests
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "From AD1")
+        assert_eqs(str, "From AD")
     end
 
     function test2
-        longString a = "Message from AD1" // 16 characters
+        longString a = "Message from AD1" // 16 characters, clamped to 15 on assignment
         shortString b = '12345678'
 
         print_formatted_now {format} a {time} 100
@@ -54,7 +54,7 @@ function tests
         wait {time} 0
 
         int str = getCurrSubtitleText()
-        assert_eqs(str, "Message from AD1")
+        assert_eqs(str, "Message from AD")
     end
 
     function test3

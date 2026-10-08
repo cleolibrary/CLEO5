@@ -79,7 +79,8 @@ namespace CLEO
         static CustomOpcodeHandler customOpcodeProc[Opcode_Max + 1]; // procedure for each opcode
     };
 
-    // Read null-terminated string into the buffer and returns pointer to string or nullptr on fail
+    // Read always null-terminated string into the buffer and return pointer to the string, or nullptr
+    // on failure. Text is capped at buffSize - 1 characters.
     // WARNING:
     // returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source)
     const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize);
