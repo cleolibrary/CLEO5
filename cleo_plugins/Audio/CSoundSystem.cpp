@@ -62,11 +62,17 @@ namespace CLEO
         TRACE(""); // separator
         TRACE("Initializing SoundSystem...");
 
-        auto ver = HIWORD(BASS_GetVersion());
-        TRACE("BASS library version is %d (required %d or newer)", ver, BASSVERSION);
-        if (ver < BASSVERSION)
+        auto ver = BASS_GetVersion();
+        TRACE(
+            "BASS library version is %s (required %s or newer)", bassVerToStr(ver).c_str(),
+            bassVerToStr(BASS_VER_MIN).c_str()
+        );
+        if (ver < BASS_VER_MIN)
         {
-            SHOW_ERROR("Invalid BASS library version! Expected at least %d, found %d.", BASSVERSION, ver);
+            SHOW_ERROR(
+                "Invalid BASS library version! Expected at least %s, found %s.", bassVerToStr(ver).c_str(),
+                bassVerToStr(BASS_VER_MIN).c_str()
+            );
         }
 
         LegacyModeDefaultStreamType = (eStreamType)CLEO_GetConfigInt("Audio.General.LegacyModeDefaultStreamType", 0);
