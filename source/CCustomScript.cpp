@@ -179,6 +179,13 @@ CCustomScript::~CCustomScript()
 
     if (CleoInstance.ScriptEngine.LastScriptCreated == this) CleoInstance.ScriptEngine.LastScriptCreated = nullptr;
     if (m_ownedBuffer) delete[] m_ownedBuffer;
+
+    // prevent use after free
+    memset(this, 0, sizeof(CRunningScript)); // clear base script struct
+    strcpy_s(Name, "DELETED");               // upper case
+    m_ownedBuffer  = nullptr;
+    m_parentScript = nullptr;
+    m_childScripts.clear();
 }
 
 void CCustomScript::AddScriptToList(CRunningScript** queuelist)
