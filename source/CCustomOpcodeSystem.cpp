@@ -249,8 +249,7 @@ namespace CLEO
             memcpy(buff, src, size);
 
             const int terminatorPos = std::min(buffSize - 1, srcSize);
-            if (terminatorPos >= srcSize || forceTerminate)
-                buff[terminatorPos] = '\0';
+            if (terminatorPos >= srcSize || forceTerminate) buff[terminatorPos] = '\0';
         };
 
         auto paramType = thread->PeekDataType();

@@ -80,7 +80,9 @@ namespace CLEO
 
         // reimplemented original game's procedure. Adds support for string pointers
         static const char* __fastcall HOOK_ReadStringParam(CRunningScript* thread, int dummy, char* buff, int buffSize);
-        static const char* __fastcall HOOK_ReadStringParamSafe(CRunningScript* thread, int dummy, char* buff, int buffSize);
+        static const char* __fastcall HOOK_ReadStringParamSafe(
+            CRunningScript* thread, int dummy, char* buff, int buffSize
+        );
 
       private:
         void RemoveCustomScript(CCustomScript*);

@@ -165,7 +165,9 @@ namespace CLEO
         CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
     }
 
-    const char* __fastcall CScriptEngine::HOOK_ReadStringParam(CRunningScript* thread, int dummy, char* buff, int buffSize)
+    const char* __fastcall CScriptEngine::HOOK_ReadStringParam(
+        CRunningScript* thread, int dummy, char* buff, int buffSize
+    )
     {
         return ReadStringParam(thread, buff, buffSize, false); // null terminated when possible
     }
