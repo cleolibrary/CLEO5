@@ -232,13 +232,122 @@ namespace CLEO
         return _CallNativeOpcode(thread, originalOpcodeHandlers[tableIdx], opcode);
     }
 
-    const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize)
+    const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize, bool forceTerminate)
     {
-        if (buffSize > 0)
+        if ((size_t)buff < MinValidAddress || buffSize < 0)
         {
-            buff[buffSize - 1] = '\0'; // buffer always terminated
+            LOG_WARNING(0, "Invalid ReadStringParam input argument! Ptr: 0x%08X, Size: %d", buff, buffSize);
+            CLEO_SkipOpcodeParams(thread, 1);
+            return nullptr;
         }
-        return GetScriptStringParam(thread, 0, buff, buffSize - 1); // minus terminator
+
+        // copy text into the caller's buffer
+        auto CopyResult = [buff, buffSize, forceTerminate](const char* src, int srcSize) {
+            if (buffSize <= 0) return; // nothing to do
+
+            const int size = std::min(buffSize, srcSize);
+            memcpy(buff, src, size);
+
+            const int terminatorPos = std::min(buffSize - 1, srcSize);
+            if (terminatorPos >= srcSize || forceTerminate)
+                buff[terminatorPos] = '\0';
+        };
+
+        auto paramType = thread->PeekDataType();
+        auto arrayType = thread->PeekArrayType();
+        auto isVariableInt =
+            IsVariable(paramType) && (arrayType == eArrayType::AT_NONE || arrayType == eArrayType::AT_INT);
+
+        // integer address to text buffer
+        if (IsImmInteger(paramType) || isVariableInt)
+        {
+            auto str = (char*)CLEO_PeekIntOpcodeParam(thread);
+            CLEO_SkipOpcodeParams(thread, 1);
+
+            if ((size_t)str <= MinValidAddress)
+            {
+                LOG_WARNING(
+                    thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str,
+                    GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()
+                );
+                CopyResult("", 0);
+                return nullptr; // error
+            }
+
+            CopyResult(str, (int)strlen(str));
+            return str; // pointer to original data
+        }
+        else if (paramType == DT_VARLEN_STRING)
+        {
+            CleoInstance.OpcodeSystem.handledParamCount++;
+            thread->IncPtr(1); // already processed paramType
+
+            DWORD length = *thread->GetBytePointer(); // as unsigned byte!
+            thread->IncPtr(1);                        // length info
+
+            char* str = (char*)thread->GetBytePointer();
+            thread->IncPtr(length); // text data
+
+            // variable-length strings carry no terminator in the script
+            CopyResult(str, (int)length);
+            return buff;
+        }
+        else if (IsImmString(paramType))
+        {
+            thread->IncPtr(1); // already processed paramType
+            auto str = (char*)thread->GetBytePointer();
+
+            switch (paramType)
+            {
+            case DT_TEXTLABEL: {
+                CleoInstance.OpcodeSystem.handledParamCount++;
+                CopyResult(str, 8);
+                thread->IncPtr(8); // text data
+                return buff;
+            }
+
+            case DT_STRING: {
+                CleoInstance.OpcodeSystem.handledParamCount++;
+                CopyResult(str, 16);
+                thread->IncPtr(16); // text data
+                return buff;
+            }
+            }
+        }
+        else if (IsVarString(paramType))
+        {
+            switch (paramType)
+            {
+            // short string variable
+            case DT_VAR_TEXTLABEL:
+            case DT_LVAR_TEXTLABEL:
+            case DT_VAR_TEXTLABEL_ARRAY:
+            case DT_LVAR_TEXTLABEL_ARRAY: {
+                auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
+                CopyResult(str, 8);
+                return buff;
+            }
+
+            // long string variable
+            case DT_VAR_STRING:
+            case DT_LVAR_STRING:
+            case DT_VAR_STRING_ARRAY:
+            case DT_LVAR_STRING_ARRAY: {
+                auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
+                CopyResult(str, 16);
+                return buff;
+            }
+            }
+        }
+
+        // unsupported param type
+        LOG_WARNING(
+            thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(),
+            ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str()
+        );
+        CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
+        CopyResult("", 0);
+        return nullptr; // error
     }
 
     // write output\result string parameter

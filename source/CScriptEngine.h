@@ -78,6 +78,10 @@ namespace CLEO
 
         static void DrawScriptText_Orig(char beforeFade);
 
+        // reimplemented original game's procedure. Adds support for string pointers
+        static const char* __fastcall HOOK_ReadStringParam(CRunningScript* thread, int dummy, char* buff, int buffSize);
+        static const char* __fastcall HOOK_ReadStringParamSafe(CRunningScript* thread, int dummy, char* buff, int buffSize);
+
       private:
         void RemoveCustomScript(CCustomScript*);
         void DeleteWaitingScripts();
@@ -94,9 +98,4 @@ namespace CLEO
         static void __cdecl HOOK_SaveScmData();
         void(__cdecl* SaveScmData_Orig)() = nullptr;
     };
-
-    // reimplemented hook of original game's procedure
-    // returns buff or pointer provided by script, nullptr on fail
-    // WARNING: Null terminator ommited if not enought space in the buffer!
-    const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen);
 } // namespace CLEO
