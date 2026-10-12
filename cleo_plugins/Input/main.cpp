@@ -3,6 +3,7 @@
 #include <CCheat.h>
 #include <CControllerConfigManager.h>
 #include <CMessages.h>
+#include <CPad.h>
 #include <CText.h>
 #include <CTimer.h>
 #include <map>
@@ -14,16 +15,13 @@ class Input
 {
     static constexpr int Key_Code_None   = -1;
     static constexpr size_t Key_Code_Max = 0xFF;
-    static constexpr BYTE Key_Flag_Down  = 0x80; // top bit
 
   public:
-    std::array<BYTE, Key_Code_Max + 1>*keyStatesCurr, *keyStatesPrev;
+    RsInputEventHandler oriKeyboardHandler = nullptr;
+    std::array<bool, Key_Code_Max + 1> keyStatesCurr, keyStatesPrev;
 
     Input()
     {
-        keyStatesCurr = new std::array<BYTE, Key_Code_Max + 1>();
-        keyStatesPrev = new std::array<BYTE, Key_Code_Max + 1>();
-
         if (!PluginCheckCleoVersion()) return;
 
         // register opcodes
@@ -38,27 +36,60 @@ class Input
         CLEO_RegisterOpcode(0x2086, opcode_2086); // get_key_name
 
         // register event callbacks
-        CLEO_RegisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
         CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
     }
 
     ~Input()
     {
-        delete keyStatesCurr;
-        delete keyStatesPrev;
-
-        CLEO_UnregisterCallback(eCallbackId::GameProcessBefore, OnGameProcessBefore);
         CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
     }
 
     // refresh keys info
     void CheckKeyboard()
     {
-        std::swap(keyStatesCurr, keyStatesPrev);
+        // install keyboard event handler
+        if (!oriKeyboardHandler && RsGlobal.keyboard.inputEventHandler)
+        {
+            oriKeyboardHandler = RsGlobal.keyboard.inputEventHandler;
+            RsGlobal.keyboard.inputEventHandler = Input::KeyboardHandler;
+        }
+
+        keyStatesPrev = keyStatesCurr; // copy
+
         if (GetForegroundWindow() == RsGlobal.ps->window)
-            GetKeyboardState(keyStatesCurr->data());
+        {
+            if (RsGlobal.ps && RsGlobal.ps->diMouse)
+            {
+                const auto& ms = CPad::NewMouseControllerState;
+                constexpr uint8_t flag = 0x80; // key down flag
+
+                keyStatesCurr[VK_LBUTTON] = ms.lmb & flag;
+                keyStatesCurr[VK_MBUTTON] = ms.mmb & flag;
+                keyStatesCurr[VK_RBUTTON] = ms.rmb & flag;
+                keyStatesCurr[VK_XBUTTON1] = ms.bmx1 & flag;
+                keyStatesCurr[VK_XBUTTON2] = ms.bmx2 & flag;
+            }
+        }
         else
-            keyStatesCurr->fill(0); // no inputs if window inactive
+            keyStatesCurr.fill(false); // no inputs if window inactive
+    }
+
+    static RsEventStatus KeyboardHandler(RsEvent event, void* param)
+    {
+        if (!g_instance.oriKeyboardHandler) return RsEventStatus::rsEVENTNOTPROCESSED; // not initialized yet
+
+        if (param && (event == RsEvent::rsKEYDOWN || event == RsEvent::rsKEYUP))
+        {
+            auto info = reinterpret_cast<RsKeyStatus*>(param);
+            auto vKey = RsKeyCodeToVirtualKey(info->keyScanCode);
+
+            if (vKey > Key_Code_None && vKey <= Key_Code_Max)
+            {
+                g_instance.keyStatesCurr[vKey] = event == RsEvent::rsKEYDOWN;
+            }
+        }
+
+        return g_instance.oriKeyboardHandler(event, param);
     }
 
     static void SendKeyEvent(BYTE vKey, bool down)
@@ -113,14 +144,153 @@ class Input
         SendInput(1, &input, sizeof(input));
     }
 
-    static void __stdcall OnGameProcessBefore() { g_instance.CheckKeyboard(); }
+    // translate RsKeyCode to VirtualKey
+    static int RsKeyCodeToVirtualKey(DWORD keyCode)
+    {
+        switch (keyCode)
+        {
+        case rsMOUSELEFTBUTTON:
+            return VK_LBUTTON;
+        case rsMOUSEMIDDLEBUTTON:
+            return VK_MBUTTON;
+        case rsMOUSERIGHTBUTTON:
+            return VK_RBUTTON;
+        // case rsMOUSEWHEELUPBUTTON:
+        // case rsMOUSEWHEELDOWNBUTTON:
+        case rsMOUSEX1BUTTON:
+            return VK_XBUTTON1;
+        case rsMOUSEX2BUTTON:
+            return VK_XBUTTON2;
+
+        case rsESC:
+            return VK_ESCAPE;
+
+        case rsF1:
+            return VK_F1;
+        case rsF2:
+            return VK_F2;
+        case rsF3:
+            return VK_F3;
+        case rsF4:
+            return VK_F4;
+        case rsF5:
+            return VK_F5;
+        case rsF6:
+            return VK_F6;
+        case rsF7:
+            return VK_F7;
+        case rsF8:
+            return VK_F8;
+        case rsF9:
+            return VK_F9;
+        case rsF10:
+            return VK_F10;
+        case rsF11:
+            return VK_F11;
+        case rsF12:
+            return VK_F12;
+
+        case rsINS:
+            return VK_INSERT;
+        case rsDEL:
+            return VK_DELETE;
+        case rsHOME:
+            return VK_HOME;
+        case rsEND:
+            return VK_END;
+        case rsPGUP:
+            return VK_PRIOR;
+        case rsPGDN:
+            return VK_NEXT;
+
+        case rsUP:
+            return VK_UP;
+        case rsDOWN:
+            return VK_DOWN;
+        case rsLEFT:
+            return VK_LEFT;
+        case rsRIGHT:
+            return VK_RIGHT;
+
+        case rsDIVIDE:
+            return VK_DIVIDE;
+        case rsTIMES:
+            return VK_MULTIPLY;
+        case rsPLUS:
+            return VK_ADD;
+        case rsMINUS:
+            return VK_SUBTRACT;
+        case rsPADDEL:
+            return VK_DECIMAL;
+        case rsPADEND:
+            return VK_NUMPAD1;
+        case rsPADDOWN:
+            return VK_NUMPAD2;
+        case rsPADPGDN:
+            return VK_NUMPAD3;
+        case rsPADLEFT:
+            return VK_NUMPAD4;
+        case rsPAD5:
+            return VK_NUMPAD5;
+        case rsNUMLOCK:
+            return VK_NUMLOCK;
+        case rsPADRIGHT:
+            return VK_NUMPAD6;
+        case rsPADHOME:
+            return VK_NUMPAD7;
+        case rsPADUP:
+            return VK_NUMPAD8;
+        case rsPADPGUP:
+            return VK_NUMPAD9;
+        case rsPADINS:
+            return VK_NUMPAD0;
+        case rsPADENTER:
+            return VK_RETURN; // not quite the same
+
+        case rsSCROLL:
+            return VK_SCROLL;
+        case rsPAUSE:
+            return VK_PAUSE;
+
+        case rsBACKSP:
+            return VK_BACK;
+        case rsTAB:
+            return VK_TAB;
+        case rsCAPSLK:
+            return VK_CAPITAL;
+        case rsENTER:
+            return VK_RETURN;
+        case rsLSHIFT:
+            return VK_LSHIFT;
+        case rsRSHIFT:
+            return VK_RSHIFT;
+        case rsSHIFT:
+            return VK_SHIFT;
+        case rsLCTRL:
+            return VK_LCONTROL;
+        case rsRCTRL:
+            return VK_RCONTROL;
+        case rsLALT:
+            return VK_LMENU;
+        case rsRALT:
+            return VK_RMENU;
+        case rsLWIN:
+            return VK_LWIN;
+        case rsRWIN:
+            return VK_RWIN;
+        case rsAPPS:
+            return VK_APPS;
+
+        default:
+            if (keyCode <= Key_Code_Max) return keyCode;
+        }
+
+        return Key_Code_None;
+    }
 
     static void __stdcall OnDrawingFinished()
     {
-        if (CTimer::m_UserPause) // main menu visible
-        {
-            g_instance.CheckKeyboard(); // update for ambient scripts running in menu
-        }
+        g_instance.CheckKeyboard();
     }
 
     // is_key_pressed
@@ -143,7 +313,7 @@ class Input
             return OR_CONTINUE;
         }
 
-        bool isDown = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
+        bool isDown = g_instance.keyStatesCurr.at(key);
 
         thread->SetConditionResult(isDown);
         return OR_CONTINUE;
@@ -190,8 +360,8 @@ class Input
             SUSPEND("Invalid key code (%d) used", key);
         }
 
-        bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Flag_Down;
-        bool isDown  = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
+        bool wasDown = g_instance.keyStatesPrev.at(key);
+        bool isDown  = g_instance.keyStatesCurr.at(key);
 
         OPCODE_CONDITION_RESULT(!wasDown && isDown);
         return OR_CONTINUE;
@@ -215,7 +385,7 @@ class Input
 
         for (auto key = keyMin; key <= keyMax; key++)
         {
-            bool isDown = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
+            bool isDown = g_instance.keyStatesCurr.at(key);
 
             if (isDown)
             {
@@ -248,8 +418,8 @@ class Input
 
         for (auto key = keyMin; key <= keyMax; key++)
         {
-            bool wasDown = g_instance.keyStatesPrev->at(key) & Key_Flag_Down;
-            bool isDown  = g_instance.keyStatesCurr->at(key) & Key_Flag_Down;
+            bool wasDown = g_instance.keyStatesPrev.at(key);
+            bool isDown  = g_instance.keyStatesCurr.at(key);
 
             if (!wasDown && isDown)
             {
@@ -348,204 +518,9 @@ class Input
         auto it      = std::next(mapping.begin(), altKeyIdx);
         auto keyCode = it->second;
 
-        // translate RsKeyCode to VirtualKey
-        switch (keyCode)
-        {
-        case rsMOUSELEFTBUTTON:
-            keyCode = VK_LBUTTON;
-            break;
-        case rsMOUSEMIDDLEBUTTON:
-            keyCode = VK_MBUTTON;
-            break;
-        case rsMOUSERIGHTBUTTON:
-            keyCode = VK_RBUTTON;
-            break;
-        // case rsMOUSEWHEELUPBUTTON:
-        // case rsMOUSEWHEELDOWNBUTTON:
-        case rsMOUSEX1BUTTON:
-            keyCode = VK_XBUTTON1;
-            break;
-        case rsMOUSEX2BUTTON:
-            keyCode = VK_XBUTTON2;
-            break;
+        auto vKey = RsKeyCodeToVirtualKey(keyCode);
 
-        case rsESC:
-            keyCode = VK_ESCAPE;
-            break;
-
-        case rsF1:
-            keyCode = VK_F1;
-            break;
-        case rsF2:
-            keyCode = VK_F2;
-            break;
-        case rsF3:
-            keyCode = VK_F3;
-            break;
-        case rsF4:
-            keyCode = VK_F4;
-            break;
-        case rsF5:
-            keyCode = VK_F5;
-            break;
-        case rsF6:
-            keyCode = VK_F6;
-            break;
-        case rsF7:
-            keyCode = VK_F7;
-            break;
-        case rsF8:
-            keyCode = VK_F8;
-            break;
-        case rsF9:
-            keyCode = VK_F9;
-            break;
-        case rsF10:
-            keyCode = VK_F10;
-            break;
-        case rsF11:
-            keyCode = VK_F11;
-            break;
-        case rsF12:
-            keyCode = VK_F12;
-            break;
-
-        case rsINS:
-            keyCode = VK_INSERT;
-            break;
-        case rsDEL:
-            keyCode = VK_DELETE;
-            break;
-        case rsHOME:
-            keyCode = VK_HOME;
-            break;
-        case rsEND:
-            keyCode = VK_END;
-            break;
-        case rsPGUP:
-            keyCode = VK_PRIOR;
-            break;
-        case rsPGDN:
-            keyCode = VK_NEXT;
-            break;
-
-        case rsUP:
-            keyCode = VK_UP;
-            break;
-        case rsDOWN:
-            keyCode = VK_DOWN;
-            break;
-        case rsLEFT:
-            keyCode = VK_LEFT;
-            break;
-        case rsRIGHT:
-            keyCode = VK_RIGHT;
-            break;
-
-        case rsDIVIDE:
-            keyCode = VK_DIVIDE;
-            break;
-        case rsTIMES:
-            keyCode = VK_MULTIPLY;
-            break;
-        case rsPLUS:
-            keyCode = VK_ADD;
-            break;
-        case rsMINUS:
-            keyCode = VK_SUBTRACT;
-            break;
-        case rsPADDEL:
-            keyCode = VK_DECIMAL;
-            break;
-        case rsPADEND:
-            keyCode = VK_NUMPAD1;
-            break;
-        case rsPADDOWN:
-            keyCode = VK_NUMPAD2;
-            break;
-        case rsPADPGDN:
-            keyCode = VK_NUMPAD3;
-            break;
-        case rsPADLEFT:
-            keyCode = VK_NUMPAD4;
-            break;
-        case rsPAD5:
-            keyCode = VK_NUMPAD5;
-            break;
-        case rsNUMLOCK:
-            keyCode = VK_NUMLOCK;
-            break;
-        case rsPADRIGHT:
-            keyCode = VK_NUMPAD6;
-            break;
-        case rsPADHOME:
-            keyCode = VK_NUMPAD7;
-            break;
-        case rsPADUP:
-            keyCode = VK_NUMPAD8;
-            break;
-        case rsPADPGUP:
-            keyCode = VK_NUMPAD9;
-            break;
-        case rsPADINS:
-            keyCode = VK_NUMPAD0;
-            break;
-        case rsPADENTER:
-            keyCode = VK_RETURN;
-            break; // not quite same
-
-        case rsSCROLL:
-            keyCode = VK_SCROLL;
-            break;
-        case rsPAUSE:
-            keyCode = VK_PAUSE;
-            break;
-
-        case rsBACKSP:
-            keyCode = VK_BACK;
-            break;
-        case rsTAB:
-            keyCode = VK_TAB;
-            break;
-        case rsCAPSLK:
-            keyCode = VK_CAPITAL;
-            break;
-        case rsENTER:
-            keyCode = VK_RETURN;
-            break;
-        case rsLSHIFT:
-            keyCode = VK_LSHIFT;
-            break;
-        case rsRSHIFT:
-            keyCode = VK_RSHIFT;
-            break;
-        case rsSHIFT:
-            keyCode = VK_SHIFT;
-            break;
-        case rsLCTRL:
-            keyCode = VK_LCONTROL;
-            break;
-        case rsRCTRL:
-            keyCode = VK_RCONTROL;
-            break;
-        case rsLALT:
-            keyCode = VK_LMENU;
-            break;
-        case rsRALT:
-            keyCode = VK_RMENU;
-            break;
-        case rsLWIN:
-            keyCode = VK_LWIN;
-            break;
-        case rsRWIN:
-            keyCode = VK_RWIN;
-            break;
-        case rsAPPS:
-            keyCode = VK_APPS;
-            break;
-        }
-
-        OPCODE_WRITE_PARAM_INT(keyCode);
+        OPCODE_WRITE_PARAM_INT(vKey);
         OPCODE_CONDITION_RESULT(true);
         return OR_CONTINUE;
     }
