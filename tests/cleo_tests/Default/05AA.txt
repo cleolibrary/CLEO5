@@ -13,7 +13,7 @@ function tests
 
     function test1()
 	    shortString a
-	    longString b
+	    shortString b
 	    
 	    string_format {result} a {format} "DefaultA"
 	    string_format {result} b {format} "DefaultB"
