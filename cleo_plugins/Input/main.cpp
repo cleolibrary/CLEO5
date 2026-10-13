@@ -39,10 +39,7 @@ class Input
         CLEO_RegisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
     }
 
-    ~Input()
-    {
-        CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished);
-    }
+    ~Input() { CLEO_UnregisterCallback(eCallbackId::DrawingFinished, OnDrawingFinished); }
 
     // refresh keys info
     void CheckKeyboard()
@@ -50,7 +47,7 @@ class Input
         // install keyboard event handler
         if (!oriKeyboardHandler && RsGlobal.keyboard.inputEventHandler)
         {
-            oriKeyboardHandler = RsGlobal.keyboard.inputEventHandler;
+            oriKeyboardHandler                  = RsGlobal.keyboard.inputEventHandler;
             RsGlobal.keyboard.inputEventHandler = Input::KeyboardHandler;
         }
 
@@ -60,12 +57,12 @@ class Input
         {
             if (RsGlobal.ps && RsGlobal.ps->diMouse)
             {
-                const auto& ms = CPad::NewMouseControllerState;
+                const auto& ms         = CPad::NewMouseControllerState;
                 constexpr uint8_t flag = 0x80; // key down flag
 
-                keyStatesCurr[VK_LBUTTON] = ms.lmb & flag;
-                keyStatesCurr[VK_MBUTTON] = ms.mmb & flag;
-                keyStatesCurr[VK_RBUTTON] = ms.rmb & flag;
+                keyStatesCurr[VK_LBUTTON]  = ms.lmb & flag;
+                keyStatesCurr[VK_MBUTTON]  = ms.mmb & flag;
+                keyStatesCurr[VK_RBUTTON]  = ms.rmb & flag;
                 keyStatesCurr[VK_XBUTTON1] = ms.bmx1 & flag;
                 keyStatesCurr[VK_XBUTTON2] = ms.bmx2 & flag;
             }
@@ -288,10 +285,7 @@ class Input
         return Key_Code_None;
     }
 
-    static void __stdcall OnDrawingFinished()
-    {
-        g_instance.CheckKeyboard();
-    }
+    static void __stdcall OnDrawingFinished() { g_instance.CheckKeyboard(); }
 
     // is_key_pressed
     // is_key_pressed {keyCode} [KeyCode] (logical)
