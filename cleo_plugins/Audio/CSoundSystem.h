@@ -1,4 +1,5 @@
 #pragma once
+#include "CLEO_Utils.h"
 #include "bass.h"
 #include "CVector.h"
 #include <set>
@@ -20,6 +21,8 @@ namespace CLEO
     {
         friend class CAudioStream;
         friend class C3DAudioStream;
+
+        static constexpr DWORD BASS_VER_MIN = 0x02041203; // 2.4.18.3 from 2025.12.15
 
         std::set<CAudioStream*> streams;
         BASS_INFO SoundDevice = {0};
@@ -63,20 +66,31 @@ namespace CLEO
     {
         return _strnicmp("http:", path, 5) == 0 || _strnicmp("https:", path, 6) == 0;
     }
+
     static float dot(CVector a, CVector b)
     {
         return a.x * b.x + a.y * b.y + a.z * b.z;
     }
+
     static float lerp(float a, float b, float progress)
     {
         return a * (1.0f - progress) + b * progress;
     }
+
     static CVector lerp(CVector a, CVector b, float progress)
     {
         return a * (1.0f - progress) + b * progress;
     }
+
+    // convert GTA to BASS coordinate system
     static BASS_3DVECTOR toBass(const CVector& v)
     {
         return BASS_3DVECTOR(v.x, v.z, v.y);
-    } // convert GTA to BASS coordinate system
+    }
+
+    static std::string bassVerToStr(DWORD version)
+    {
+        auto v = reinterpret_cast<uint8_t*>(&version);
+        return StringPrintf("%hhu.%hhu.%hhu.%hhu", v[3], v[2], v[1], v[0]);
+    }
 } // namespace CLEO
