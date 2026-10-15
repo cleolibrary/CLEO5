@@ -123,9 +123,24 @@ inline const std::string& GetAsiDirectory()
     return path;
 }
 
+// Is there a directory (not a file) under this path?
+inline bool DirectoryExists(const std::string& path)
+{
+    std::error_code ec;
+    return FS::is_directory(path, ec) && !ec;
+}
+
 inline const std::string& GetCleoDirectory()
 {
-    static std::string path = GetAsiDirectory() + "\\cleo";
+    static std::string path = [] {
+        const std::string nextToAsi = GetAsiDirectory() + "\\cleo";
+        if (DirectoryExists(nextToAsi)) return nextToAsi;
+
+        const std::string inGameRoot = GetGameDirectory() + "\\cleo";
+        if (DirectoryExists(inGameRoot)) return inGameRoot;
+
+        return nextToAsi;
+    }();
     return path;
 }
 

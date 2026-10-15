@@ -173,6 +173,10 @@ namespace CLEO
     {
         TRACE("CLEO initialization: Phase 1");
 
+        // cleo.asi and cleo folder locations are not necessarily the game root, so report them
+        TRACE("cleo.asi directory: '%s'", GetAsiDirectory().c_str());
+        TRACE("CLEO directory: '%s'", GetCleoDirectory().c_str());
+
         EnsureDirectory(GetCleoDirectory());
         EnsureDirectory(GetCleoDirectory() + "\\cleo_modules");
         EnsureDirectory(GetCleoDirectory() + "\\cleo_plugins");
