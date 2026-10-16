@@ -82,6 +82,10 @@ void CPluginSystem::LoadPlugins()
     // reverse order, so opcodes from CLEO5 plugins can overwrite opcodes from legacy plugins
     if (!paths.empty())
     {
+        // Preload bass.dll from cleo.asi folder (e.g., scripts) if user moved it there
+        // Otherwise expect it loaded from the game root.
+        LoadLibrary((FS::path(GetAsiDirectory()) / "bass.dll").string().c_str());
+
         for (auto it = paths.crbegin(); it != paths.crend(); it++)
         {
             std::string filename = *it;
