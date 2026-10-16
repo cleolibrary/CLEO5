@@ -1,0 +1,22 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '270C'
+test("270C (float_div)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should divide two floats", test1)
+    return
+    
+    function test1
+        float a = 10.0
+        float b = 40.0
+        float c = 80.0
+        270C: c = a / b
+        assert_eqf(a, 10.0)
+        assert_eqf(b, 40.0)
+        assert_eqf(c, 0.25)
+    end
+end
