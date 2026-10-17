@@ -148,12 +148,18 @@ class MemoryOperations
 
     void UnregisterMemoryAllocation(CLEO::CRunningScript* thread, void* address)
     {
-        m_allocations.erase(address);
+        auto alloc = m_allocations.find(address);
+        if (alloc == m_allocations.end()) return; // unknown or already unregistered block
 
-        auto& info = m_scriptAllocationsInfo[thread];
-        info.count--;
-        info.size -= m_allocations[address];
-        if (info.count <= 0) m_scriptAllocationsInfo.erase(thread);
+        const size_t size = alloc->second;
+        m_allocations.erase(alloc);
+
+        auto info = m_scriptAllocationsInfo.find(thread);
+        if (info == m_scriptAllocationsInfo.end()) return;
+
+        info->second.count--;
+        info->second.size -= size;
+        if (info->second.count <= 0) m_scriptAllocationsInfo.erase(info);
     }
 
     // opcodes 0A8C, 2402 - write_memory and write_memory_with_offset
