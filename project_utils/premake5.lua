@@ -296,7 +296,6 @@ define_cleo_plugin {
         "../third-party/plugin-sdk/plugin_sa/game_sa/CCheat.cpp",
         "../third-party/plugin-sdk/plugin_sa/game_sa/CControllerConfigManager.cpp",
         "../third-party/plugin-sdk/plugin_sa/game_sa/CMessages.cpp",
-		"../third-party/plugin-sdk/plugin_sa/game_sa/CPad.cpp",
         "../third-party/plugin-sdk/plugin_sa/game_sa/CText.cpp",
         "../third-party/plugin-sdk/plugin_sa/game_sa/CTimer.cpp",
         "../third-party/plugin-sdk/shared/DynAddress.cpp",
