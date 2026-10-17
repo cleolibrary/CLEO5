@@ -148,12 +148,12 @@ class MemoryOperations
 
     void UnregisterMemoryAllocation(CLEO::CRunningScript* thread, void* address)
     {
-        m_allocations.erase(address);
-
         auto& info = m_scriptAllocationsInfo[thread];
         info.count--;
         info.size -= m_allocations[address];
         if (info.count <= 0) m_scriptAllocationsInfo.erase(thread);
+
+        m_allocations.erase(address);
     }
 
     // opcodes 0A8C, 2402 - write_memory and write_memory_with_offset
