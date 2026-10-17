@@ -79,10 +79,10 @@ namespace CLEO
         static CustomOpcodeHandler customOpcodeProc[Opcode_Max + 1]; // procedure for each opcode
     };
 
-    // Read null-terminated string into the buffer and returns pointer to string or nullptr on fail
-    // WARNING:
+    // reads script string param into the buffer and returns pointer to string or nullptr on fail
     // returned pointer may differ from buff and contain string longer than buffSize (ptr to original data source)
-    const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize);
+    // forceTerminate - add null terminator, even if it means replacing last character in the buffer
+    const char* ReadStringParam(CRunningScript* thread, char* buff, int buffSize, bool forceTerminate = true);
 
     StringParamBufferInfo GetStringParamWriteBuffer(CRunningScript* thread); // consumes the param
     char* ReadFormattedString(CRunningScript* thread, const char* format, char* buf, DWORD bufSize);
