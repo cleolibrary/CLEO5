@@ -1,0 +1,46 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '08F9'
+test("08F9 (is_var_text_label16_equal_to_text_label)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should compare global var long strings", test1)
+    return
+
+
+    function test1()
+	    longString a
+	    longString b
+	    
+	    string_format {result} a {format} "one"
+	    assert_eqs(a, "one")
+		is_var_text_label16_equal_to_text_label {var} a {string} "one"
+		assert_result_true()
+		
+		string_format {result} a {format} "one"
+		is_var_text_label16_equal_to_text_label {var} a {string} "two"
+		assert_result_false()
+		
+		string_format {result} a {format} "one"
+	    string_format {result} b {format} "one"
+		is_var_text_label16_equal_to_text_label {var} a {string} b
+		assert_result_true()
+		
+		string_format {result} a {format} "one"
+	    string_format {result} b {format} "onetwo"
+		is_var_text_label16_equal_to_text_label {var} a {string} b
+		assert_result_false()
+		
+		string_format {result} a {format} "full length text" // 16 characters
+		string_format {result} b {format} "second v"
+		is_var_text_label16_equal_to_text_label {var} a {string} "full length text"
+		assert_result_true()
+		is_var_text_label16_equal_to_text_label {var} a {string} "full length text and more" // up to 16 characters (prefix)
+		assert_result_true()
+		is_var_text_label16_equal_to_text_label {var} b {string} "second v"
+		assert_result_true()
+    end
+end

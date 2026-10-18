@@ -1,0 +1,55 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '05AA'
+test("05AA (set_lvar_text_label)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should set global var short string", test1)
+    return
+
+
+    function test1()
+	    shortString a
+	    shortString b
+	    
+	    string_format {result} a {format} "DefaultA"
+	    string_format {result} b {format} "DefaultB"
+	    assert_eqs(a, "DefaultA")
+	    assert_eqs(b, "DefaultB")
+	    set_lvar_text_label {dest} a {src} "NEW" // length 3
+	    assert_eqs(a, "NEW")
+	    assert_eqs(b, "DefaultB") // unchanged
+	    
+	    string_format {result} a {format} "DefaultA"
+	    string_format {result} b {format} "DefaultB"
+	    assert_eqs(a, "DefaultA")
+	    assert_eqs(b, "DefaultB")
+	    set_lvar_text_label {dest} a {src} "NewValue" // length 8
+	    assert_eqs(a, "NewValue")
+	    assert_eqs(b, "DefaultB") // unchanged
+	    
+	    string_format {result} a {format} "DefaultA"
+	    string_format {result} b {format} "DefaultB"
+	    assert_eqs(a, "DefaultA")
+	    assert_eqs(b, "DefaultB")
+	    set_lvar_text_label {dest} a {src} "NewValueGoesHere" // length 16
+	    assert_eqs(a, "NewValue") // truncated to max capacity of short string
+	    assert_eqs(b, "DefaultB") // unchanged
+	    
+	    // assert if variable memory is as expected
+	    int ptr1 = get_var_pointer a
+	    int ptr2 = get_var_pointer 0@s
+	    assert_eq(ptr1, ptr2)
+	    ptr1 = get_var_pointer b
+	    ptr2 = get_var_pointer 2@s
+	    assert_eq(ptr1, ptr2)
+	    
+	    // reinterpret two consecutive short strings as long one
+	    set_lvar_text_label {dest} a {src} "Brown fo" // 8
+	    set_lvar_text_label {dest} b {src} "x jump" // 6
+	    assert_eqs(0@v, "Brown fox jump") // as long string
+    end
+end

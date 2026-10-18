@@ -4,114 +4,6 @@
 
 namespace CLEO
 {
-    const char* __fastcall GetScriptStringParam(CRunningScript* thread, int dummy, char* buff, int buffLen)
-    {
-        if (buff == nullptr || buffLen < 0)
-        {
-            LOG_WARNING(0, "Invalid ReadStringParam input argument! Ptr: 0x%08X, Size: %d", buff, buffLen);
-            CLEO_SkipOpcodeParams(thread, 1);
-            return nullptr;
-        }
-
-        auto paramType = thread->PeekDataType();
-        auto arrayType = thread->PeekArrayType();
-        auto isVariableInt =
-            IsVariable(paramType) && (arrayType == eArrayType::AT_NONE || arrayType == eArrayType::AT_INT);
-
-        // integer address to text buffer
-        if (IsImmInteger(paramType) || isVariableInt)
-        {
-            auto str = (char*)CLEO_PeekIntOpcodeParam(thread);
-            CLEO_SkipOpcodeParams(thread, 1);
-
-            if ((size_t)str <= MinValidAddress)
-            {
-                LOG_WARNING(
-                    thread, "Invalid '0x%X' pointer of input string argument %s in script %s", str,
-                    GetParamInfo().c_str(), ScriptInfoStr(thread).c_str()
-                );
-                return nullptr; // error
-            }
-
-            auto len = std::min((int)strlen(str), buffLen);
-            memcpy(buff, str, len);
-            if (len < buffLen) buff[len] = '\0'; // add terminator if possible
-            return str;                          // pointer to original data
-        }
-        else if (paramType == DT_VARLEN_STRING)
-        {
-            CleoInstance.OpcodeSystem.handledParamCount++;
-            thread->IncPtr(1); // already processed paramType
-
-            DWORD length = *thread->GetBytePointer(); // as unsigned byte!
-            thread->IncPtr(1);                        // length info
-
-            char* str = (char*)thread->GetBytePointer();
-            thread->IncPtr(length); // text data
-
-            memcpy(buff, str, std::min(buffLen, (int)length));
-            if ((int)length < buffLen) buff[length] = '\0'; // add terminator if possible
-            return buff;
-        }
-        else if (IsImmString(paramType))
-        {
-            thread->IncPtr(1); // already processed paramType
-            auto str = (char*)thread->GetBytePointer();
-
-            switch (paramType)
-            {
-            case DT_TEXTLABEL: {
-                CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 8));
-                thread->IncPtr(8); // text data
-                return buff;
-            }
-
-            case DT_STRING: {
-                CleoInstance.OpcodeSystem.handledParamCount++;
-                memcpy(buff, str, std::min(buffLen, 16));
-                thread->IncPtr(16); // ext data
-                return buff;
-            }
-            }
-        }
-        else if (IsVarString(paramType))
-        {
-            switch (paramType)
-            {
-            // short string variable
-            case DT_VAR_TEXTLABEL:
-            case DT_LVAR_TEXTLABEL:
-            case DT_VAR_TEXTLABEL_ARRAY:
-            case DT_LVAR_TEXTLABEL_ARRAY: {
-                auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 8));
-                if (buffLen > 8) buff[8] = '\0'; // add terminator if possible
-                return buff;
-            }
-
-            // long string variable
-            case DT_VAR_STRING:
-            case DT_LVAR_STRING:
-            case DT_VAR_STRING_ARRAY:
-            case DT_LVAR_STRING_ARRAY: {
-                auto str = (char*)CScriptEngine::GetScriptParamPointer(thread);
-                memcpy(buff, str, std::min(buffLen, 16));
-                if (buffLen > 16) buff[16] = '\0'; // add terminator if possible
-                return buff;
-            }
-            }
-        }
-
-        // unsupported param type
-        LOG_WARNING(
-            thread, "Argument %s expected to be string, got %s in script %s", GetParamInfo().c_str(),
-            ToKindStr(paramType, arrayType), ScriptInfoStr(thread).c_str()
-        );
-        CLEO_SkipOpcodeParams(thread, 1); // try skip unhandled param
-        return nullptr;                   // error
-    }
-
     struct CleoSafeHeader
     {
         const static unsigned sign;
@@ -271,6 +163,20 @@ namespace CLEO
         CleoInstance.ScriptEngine.UnregisterAllCustomScripts();
         CleoInstance.ScriptEngine.SaveScmData_Orig();
         CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
+    }
+
+    const char* __fastcall CScriptEngine::HOOK_ReadStringParam(
+        CRunningScript* thread, int dummy, char* buff, int buffSize
+    )
+    {
+        return ReadStringParam(thread, buff, buffSize, false); // null terminated when possible
+    }
+
+    const char* __fastcall CScriptEngine::HOOK_ReadStringParamSafe(
+        CRunningScript* thread, int dummy, char* buff, int buffSize
+    )
+    {
+        return ReadStringParam(thread, buff, buffSize, true); // forced null terminator
     }
 
     void CScriptEngine::Inject(CCodeInjector& inj)

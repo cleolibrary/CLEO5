@@ -75,7 +75,24 @@ namespace CLEO
         CGameVersionManager& gvm = CleoInstance.VersionManager;
         auto& inj                = CleoInstance.CodeInjector;
 
-        inj.InjectFunction(GetScriptStringParam, gaddrof(::CRunningScript::ReadTextLabelFromScript));
+        // read string param with fix of missing text terminator
+        inj.InjectFunction(CScriptEngine::HOOK_ReadStringParamSafe, gaddrof(::CRunningScript::ReadTextLabelFromScript));
+
+        // keep terminator-less behavior for some script commands
+        inj.ReplaceFunction(CScriptEngine::HOOK_ReadStringParam, 0x004846AD); // 03A4: script_name
+        inj.ReplaceFunction(
+            CScriptEngine::HOOK_ReadStringParam, 0x0048A50C
+        ); // 0459: terminate_all_scripts_with_this_name
+        inj.ReplaceFunction(CScriptEngine::HOOK_ReadStringParam, 0x0048F796); // 05A9: set_var_text_label
+        inj.ReplaceFunction(CScriptEngine::HOOK_ReadStringParam, 0x0048F7CC); // 05AA: set_lvar_text_label
+        inj.ReplaceFunction(
+            CScriptEngine::HOOK_ReadStringParam, 0x0048F806
+        ); // 05AE: is_lvar_text_label_equal_to_text_label
+        inj.ReplaceFunction(CScriptEngine::HOOK_ReadStringParam, 0x00497DFF); // 06D1: set_var_text_label16
+        inj.ReplaceFunction(CScriptEngine::HOOK_ReadStringParam, 0x00497E35); // 06D2: set_lvar_text_label16
+        inj.ReplaceFunction(
+            CScriptEngine::HOOK_ReadStringParam, 0x004760C6
+        ); // 08FA: is_lvar_text_label16_equal_to_text_label
 
         inj.ReplaceFunction(
             OnDebugDisplayTextBuffer_Idle, gvm.TranslateMemoryAddress(MA_CALL_DEBUG_DISPLAY_TEXT_BUFFER_IDLE),
