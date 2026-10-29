@@ -61,6 +61,8 @@ namespace CLEO
     void CCleoInstance::OnScmInit1()
     {
         CleoInstance.ScmInit1_Orig();
+        ReadScriptSpacePointers();
+
         if (!FrontEndMenuManager.m_bWantToLoad)
         {
             // if it's a new game, we can call GameBegin right now.
@@ -95,8 +97,8 @@ namespace CLEO
         UpdateUserDirectoryPath();
 
         CleoInstance.ScmInit2_Orig();
-
         ReadScriptSpacePointers();
+
         if (!FrontEndMenuManager.m_bWantToLoad)
         {
             // if it's a new game, we can call GameBegin right now.
@@ -108,8 +110,8 @@ namespace CLEO
     void CCleoInstance::OnScmInit3()
     {
         CleoInstance.ScmInit3_Orig();
-
         ReadScriptSpacePointers();
+
         CleoInstance.GameBegin(FrontEndMenuManager.m_nSelectedSaveGame);
     }
 
