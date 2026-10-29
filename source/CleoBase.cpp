@@ -238,6 +238,8 @@ namespace CLEO
 
     void CCleoInstance::Stop()
     {
+        if (!m_isStarted) return; // nothing was initialized
+
         m_isStarted = false;
         GameEnd();
         PluginSystem.UnloadPlugins();
