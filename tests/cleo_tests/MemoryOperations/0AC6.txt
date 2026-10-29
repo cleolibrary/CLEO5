@@ -8,6 +8,7 @@ terminate_this_custom_script
 function tests
 
     it("should return valid pointer", test1)
+    it("should use the live script space", test2)
     return
     
     function test1
@@ -17,6 +18,15 @@ function tests
         number = read_memory ptr {size} 4 {vp} false
         assert_ptr(ptr)
         assert_eq(number, 0x11223344)
+    end
+
+    function test2
+        // non-negative labels are offsets in main.scm, so they must resolve against the
+        // script space the game currently uses. 0x44CA44 is that pointer's operand (SA 1.0);
+        // a limit adjuster enlarging main.scm relocates it.
+        int liveScriptSpace = read_memory {address} 0x44CA44 {size} 4 {vp} false
+        int ptr = get_label_pointer 0
+        assert_eq(ptr, liveScriptSpace)
     end
 
     :DATA

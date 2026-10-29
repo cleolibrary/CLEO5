@@ -61,6 +61,8 @@ namespace CLEO
     void CCleoInstance::OnScmInit1()
     {
         CleoInstance.ScmInit1_Orig();
+        ReadScriptSpacePointers();
+
         if (!FrontEndMenuManager.m_bWantToLoad)
         {
             // if it's a new game, we can call GameBegin right now.
@@ -91,14 +93,12 @@ namespace CLEO
 
         CleoInstance.PluginSystem.LogLoadedPlugins();
 
-        // limit adjusters support: get adresses from (possibly) patched references
-        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), CleoInstance.ScriptEngine.scmBlock);
-        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_MISSION_BLOCK_REF), CleoInstance.ScriptEngine.missionBlock);
-
         // re-read User directory path, as it could be modified by PortableGTA.asi
         UpdateUserDirectoryPath();
 
         CleoInstance.ScmInit2_Orig();
+        ReadScriptSpacePointers();
+
         if (!FrontEndMenuManager.m_bWantToLoad)
         {
             // if it's a new game, we can call GameBegin right now.
@@ -110,7 +110,19 @@ namespace CLEO
     void CCleoInstance::OnScmInit3()
     {
         CleoInstance.ScmInit3_Orig();
+        ReadScriptSpacePointers();
+
         CleoInstance.GameBegin(FrontEndMenuManager.m_nSelectedSaveGame);
+    }
+
+    // limit adjusters support: read the addresses from (possibly) patched references
+    void CCleoInstance::ReadScriptSpacePointers()
+    {
+        CGameVersionManager& gvm = CleoInstance.VersionManager;
+        auto& inj                = CleoInstance.CodeInjector;
+
+        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_SCM_BLOCK_REF), CleoInstance.ScriptEngine.scmBlock);
+        inj.MemoryRead(gvm.TranslateMemoryAddress(MA_MISSION_BLOCK_REF), CleoInstance.ScriptEngine.missionBlock);
     }
 
     void __declspec(naked) CCleoInstance::OnGameShutdown()

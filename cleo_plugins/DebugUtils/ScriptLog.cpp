@@ -763,8 +763,7 @@ void ScriptLog::OnGameBegin(DWORD saveSlot)
         const size_t Orig_Main_Code_Offset = 55976; // skip global variables
         const size_t Orig_Main_Hash        = 0xbd4e2fcf;
 
-        auto hash =
-            crc32((BYTE*)CTheScripts::ScriptSpace + Orig_Main_Code_Offset, Orig_Main_Size - Orig_Main_Code_Offset);
+        auto hash    = crc32(CLEO_GetScmMainData() + Orig_Main_Code_Offset, Orig_Main_Size - Orig_Main_Code_Offset);
         m_customMain = hash != Orig_Main_Hash; // hash of original main.scm
 
         if (saveSlot != -1)

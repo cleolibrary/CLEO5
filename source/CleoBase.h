@@ -64,6 +64,7 @@ namespace CLEO
         static void OnScmInit1();
         static void OnScmInit2();
         static void OnScmInit3();
+        static void ReadScriptSpacePointers();
 
         // call for Game::Shutdown
         void(__cdecl* GameShutdown_Orig)() = nullptr;

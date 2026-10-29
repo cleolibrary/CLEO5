@@ -701,7 +701,7 @@ class MemoryOperations
         if (label < 0)
             ptr = thread->GetBasePointer() - label;
         else
-            ptr = CTheScripts::ScriptSpace + label;
+            ptr = CLEO_GetScmMainData() + label; // live script space; a limit adjuster may have relocated it
 
         OPCODE_WRITE_PARAM_PTR(ptr);
         return OR_CONTINUE;
