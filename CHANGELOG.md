@@ -1,6 +1,6 @@
 ## 5.5.0
 
-- the CLEO folder is no longer required to be in the root of the game installation. It can be placed in the same folder as `cleo.asi` (e.g. `scripts\cleo.asi` + `scripts\cleo`), along with all subfolders (`CLEO_PLUGINS`, `CLEO_TEXT`, etc). `bass.dll` can also be placed in the same folder as `cleo.asi` (e.g. `scripts\bass.dll`)
+- the CLEO folder is no longer required to be in the root of the game installation. It can be placed in the same folder as `cleo.asi` (e.g. `scripts\cleo.asi` + `scripts\cleo`), along with all subfolders (`scripts\cleo\cleo_plugins`, `scripts\cleo\cleo_text`, etc). `bass.dll` can also be placed in the same folder as `cleo.asi` (e.g. `scripts\bass.dll`)
 - fixed an issue causing script sprites to show as white/broken quads under certain conditions
 - fixed an issue with CLEO function variables not being properly reset when called in a mission
 - fixed an issue causing custom scripts with `save_this_custom_script` never run again after a specific sequence of save/load actions
