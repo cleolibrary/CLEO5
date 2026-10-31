@@ -166,6 +166,14 @@ inline const std::string& GetLogDirectory()
 
 inline const std::string& GetLogPath()
 {
-    static std::string path = GetLogDirectory() + "\\cleo.log";
+    static std::string path = [] {
+        const std::string& dir = GetLogDirectory();
+
+        // ensure log directory exists
+        std::error_code ec;
+        FS::create_directories(dir, ec);
+
+        return dir + "\\cleo.log";
+    }();
     return path;
 }
