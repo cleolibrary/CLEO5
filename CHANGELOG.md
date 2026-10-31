@@ -1,3 +1,16 @@
+## 5.5.0
+
+- the CLEO folder is no longer required to be in the game root. It can be placed in the same folder as `cleo.asi` (e.g. `scripts\cleo.asi` + `scripts\cleo`), along with all subfolders (`scripts\cleo\cleo_plugins`, `scripts\cleo\cleo_text`, etc). `bass.dll` can also be placed in the same folder as `cleo.asi` (e.g. `scripts\bass.dll`)
+- fixed an issue causing script sprites to show as white/broken quads under certain conditions
+- fixed an issue with CLEO function variables not being properly reset when called in a mission
+- fixed an issue causing custom scripts with `save_this_custom_script` never run again after a specific sequence of save/load actions
+- fixed **0AC6 ([get_label_pointer](https://library.sannybuilder.com/#/sa/memory/0AC6))** returning wrong address when used with relocated `main.scm` (OLA, FLA)
+- fixed multiple edge cases that could cause game crashes
+- new SDK method: `CLEO_GetCleoDirectory`
+- [NewOpcodes plugin](https://github.com/cleolibrary/NewOpcodes) v2.5.1 (updated Sep-2026) is now packaged with CLEO 5
+- migrate the project to Premake 5, with project generation for Visual Studio 2022 and 2026
+- the minimum required BASS library version is now `2.4.18.3` or higher
+
 ## 5.4.0
 
 - fixed discrepancy between CLEO and native subtitles behavior:
