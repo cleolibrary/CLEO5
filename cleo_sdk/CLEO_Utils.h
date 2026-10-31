@@ -27,7 +27,8 @@ namespace CLEO
     /*
     TRACE(format,...) // log to file. Can be displayed on screen with change in .cleo_config.ini
     LOG_WARNING(script, format, ...) // warning text on screen and in log file. Not displayed for scripts in 'legacy'
-    mode SHOW_ERROR(a,...) // message box, log to file
+    mode SHOW_ERROR(a,...) // message box, log to file. Skipped (log only) when error dialogs are suppressed, see
+    AreErrorDialogsSuppressed
 
     Macros to use inside opcode handler functions. Performs types validation, printing warnings and suspending script on
     critical errors. Please mind those expand into multiple lines, so CAN NOT be used in places where single code line
@@ -545,6 +546,16 @@ namespace CLEO
         va_end(args);
     }
 
+    // Suppress error boxes for automated runs (CI, e2e, unit tests)
+    // Run the game with env variable CLEO_NO_ERROR_DIALOGS=1, e.g. CLEO_NO_ERROR_DIALOGS=1 gta_sa.exe
+    static bool AreErrorDialogsSuppressed()
+    {
+        char value[8] = {};
+        if (GetEnvironmentVariableA("CLEO_NO_ERROR_DIALOGS", value, sizeof(value)) == 0) return false;
+
+        return value[0] == '1' && value[1] == '\0';
+    }
+
     static void ShowError(const char* format, ...)
     {
         va_list args;
@@ -552,14 +563,15 @@ namespace CLEO
         auto msg = TraceVArg(CLEO::eLogLevel::Error, format, args);
         va_end(args);
 
-        auto mainWnd    = (HWND*)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
-        auto style      = GetWindowLong(*mainWnd, GWL_STYLE);
-        bool fullscreen = (style & (WS_BORDER | WS_CAPTION)) == 0;
+        if (AreErrorDialogsSuppressed()) return; // error is already in the log file
+
+        auto mainWnd = *(HWND*)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
+        bool fullscreen = mainWnd != nullptr && (GetWindowLong(mainWnd, GWL_STYLE) & (WS_BORDER | WS_CAPTION)) == 0;
 
         if (fullscreen)
         {
-            PostMessage(*mainWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-            ShowWindow(*mainWnd, SW_MINIMIZE);
+            PostMessage(mainWnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+            ShowWindow(mainWnd, SW_MINIMIZE);
         }
 
         auto caption = StringPrintf("CLEO v%s", CLEO_GetVersionStr());
@@ -567,8 +579,8 @@ namespace CLEO
 
         if (fullscreen)
         {
-            PostMessage(*mainWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
-            ShowWindow(*mainWnd, SW_RESTORE);
+            PostMessage(mainWnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+            ShowWindow(mainWnd, SW_RESTORE);
         }
     }
 
