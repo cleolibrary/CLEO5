@@ -549,10 +549,10 @@ namespace CLEO
     // Run the game with env variable CLEO_NO_ERROR_DIALOGS=1, e.g. CLEO_NO_ERROR_DIALOGS=1 gta_sa.exe
     static bool AreErrorDialogsSuppressed()
     {
-        char value[8] = {};
-        if (GetEnvironmentVariableA("CLEO_NO_ERROR_DIALOGS", value, sizeof(value)) == 0) return false;
+        char value[2] = {}; // "1" + null terminator
+        auto len = GetEnvironmentVariableA("CLEO_NO_ERROR_DIALOGS", value, sizeof(value));
 
-        return value[0] == '1' && value[1] == '\0';
+        return len == 1 && value[0] == '1';
     }
 
     static void ShowError(const char* format, ...)
@@ -562,7 +562,7 @@ namespace CLEO
         auto msg = TraceVArg(CLEO::eLogLevel::Error, format, args);
         va_end(args);
 
-        if (AreErrorDialogsSuppressed()) return; // error is already in the log file
+        if (AreErrorDialogsSuppressed()) return; // log file only
 
         auto mainWnd = *(HWND*)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
         bool fullscreen = mainWnd != nullptr && (GetWindowLong(mainWnd, GWL_STYLE) & (WS_BORDER | WS_CAPTION)) == 0;
