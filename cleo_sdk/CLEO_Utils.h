@@ -27,8 +27,7 @@ namespace CLEO
     /*
     TRACE(format,...) // log to file. Can be displayed on screen with change in .cleo_config.ini
     LOG_WARNING(script, format, ...) // warning text on screen and in log file. Not displayed for scripts in 'legacy'
-    mode SHOW_ERROR(a,...) // message box, log to file. Skipped (log only) when error dialogs are suppressed, see
-    AreErrorDialogsSuppressed
+    mode SHOW_ERROR(a,...) // log to file and show message box (could be suppressed)
 
     Macros to use inside opcode handler functions. Performs types validation, printing warnings and suspending script on
     critical errors. Please mind those expand into multiple lines, so CAN NOT be used in places where single code line
