@@ -550,7 +550,7 @@ namespace CLEO
     static bool AreErrorDialogsSuppressed()
     {
         char value[2] = {}; // "1" + null terminator
-        auto len = GetEnvironmentVariableA("CLEO_NO_ERROR_DIALOGS", value, sizeof(value));
+        auto len      = GetEnvironmentVariableA("CLEO_NO_ERROR_DIALOGS", value, sizeof(value));
 
         return len == 1 && value[0] == '1';
     }
@@ -564,7 +564,7 @@ namespace CLEO
 
         if (AreErrorDialogsSuppressed()) return; // log file only
 
-        auto mainWnd = *(HWND*)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
+        auto mainWnd    = *(HWND*)0x00C8CF88; // PluginSDK: RsGlobal.ps->window
         bool fullscreen = mainWnd != nullptr && (GetWindowLong(mainWnd, GWL_STYLE) & (WS_BORDER | WS_CAPTION)) == 0;
 
         if (fullscreen)
