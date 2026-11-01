@@ -328,7 +328,9 @@ define_cleo_plugin {
 define_cleo_plugin {
     name = "Text",
     extra_links = { "Shlwapi.lib" },
+    extra_includedirs = { "../source" },
     extra_files = {
+        "../source/crc32.cpp",
         "../third-party/plugin-sdk/plugin_sa/game_sa/CMenuManager.cpp",
         "../third-party/plugin-sdk/plugin_sa/game_sa/CMissionCleanup.cpp",
         "../third-party/plugin-sdk/plugin_sa/game_sa/CRect.cpp",
