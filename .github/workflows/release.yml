@@ -134,10 +134,11 @@ jobs:
           rmdir /s /q .output\Release_with_Silent_ASI_Loader\scripts
 
           @echo Install Ultimate ASI Loader
-          curl -fL https://github.com/cleolibrary/Ultimate-ASI-Loader/releases/download/v9.7.0/vorbisFile-Win32.zip -o ual.zip
-          powershell.exe -NoP -NonI -Command "$hash = (Get-FileHash '.\ual.zip' -Algorithm SHA256).Hash.ToLowerInvariant(); if ($hash -ne '623b1592d5fae767c06c47b77e6ec01b23dc452e7116dba5f1af2c7cbdf4d800') { throw 'Ultimate ASI Loader checksum mismatch' }"
+          curl -fL https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.0/Ultimate-ASI-Loader.zip -o ual.zip
+          powershell.exe -NoP -NonI -Command "$hash = (Get-FileHash '.\ual.zip' -Algorithm SHA256).Hash.ToLowerInvariant(); if ($hash -ne '768d3ad612b8bbf16189c8dddd9626bb8d26eb7626a90339703ae0adb2c71390') { throw 'Ultimate ASI Loader checksum mismatch' }"
           powershell.exe -NoP -NonI -Command "Expand-Archive '.\ual.zip' '.\.output\Release_with_Ultimate_ASI_Loader'"
-          rm .\.output\Release_with_Ultimate_ASI_Loader\vorbisFile-Win32.SHA512
+          powershell.exe -NoP -NonI -Command "$hash = (Get-FileHash '.\.output\Release_with_Ultimate_ASI_Loader\dinput8.dll' -Algorithm SHA256).Hash.ToLowerInvariant(); if ($hash -ne 'ad5d8d449ce305caf62cb17d8698ebf17e94f9120ee993d0dd85211dfe14f8dd') { throw 'Ultimate ASI Loader binary checksum mismatch' }"
+          move .output\Release_with_Ultimate_ASI_Loader\dinput8.dll .output\Release_with_Ultimate_ASI_Loader\vorbisFile.dll
 
       - name: Pack archive - CLEO
         uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
