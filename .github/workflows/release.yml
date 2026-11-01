@@ -146,7 +146,7 @@ jobs:
           path: ./.output/Release/*
           type: "zip"
           filename: SA.CLEO-${{ github.ref_name }}.zip
-          exclusions: "*.pdb *.lib *.exp"
+          recursive_exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO + Silent's ASI Loader
         uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
@@ -154,7 +154,7 @@ jobs:
           path: ./.output/Release_with_Silent_ASI_Loader/*
           type: "zip"
           filename: SA.CLEO-${{ github.ref_name }}+Silent_ASI_Loader.zip
-          exclusions: "*.pdb *.lib *.exp"
+          recursive_exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO + UAL
         uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
@@ -162,7 +162,7 @@ jobs:
           path: ./.output/Release_with_Ultimate_ASI_Loader/*
           type: "zip"
           filename: SA.CLEO-${{ github.ref_name }}+Ultimate_ASI_Loader.zip
-          exclusions: "*.pdb *.lib *.exp"
+          recursive_exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO SDK
         uses: thedoctor0/zip-release@b57d897cb5d60cb78b51a507f63fa184cfe35554 # 0.7.6
