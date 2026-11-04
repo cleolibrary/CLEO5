@@ -21,14 +21,18 @@ workspace "CLEO5"
     }
 
     buildoptions {
-        "/Zc:threadSafeInit-",
-        "/sdl",
-        "/we26815",
-        '/D"TARGET_NAME=R\\"($(TargetName))\\""'
+        "/Brepro",                               -- reproducible output
+        "/Zc:threadSafeInit-",                   -- no thread-safe static-init guard
+        "/sdl",                                  -- extra security checks plus stricter warnings
+        "/we26815",                              -- dangling reference to a temporary is an error
+        '/D"TARGET_NAME=R\\"($(TargetName))\\""' -- output name visible to the code
     }
 
     linkoptions {
-        "/SAFESEH:NO"
+        "/Brepro",            -- reproducible output: no wall-clock timestamp in the PE header
+        "/LARGEADDRESSAWARE", -- no effect on a DLL; without it one ML engine (APEX) flags the build
+        "/MANIFEST:NO",       -- an embedded manifest triggers lots of AV
+        "/IGNORE:4075"        -- silence LNK4075, which /MANIFEST:NO always triggers
     }
 
     debugcommand "$(GTA_SA_DIR)\\gta_sa.exe"
@@ -42,8 +46,11 @@ workspace "CLEO5"
     filter "configurations:Release"
         defines { "_NDEBUG" }
         optimize "Speed"
-        linktimeoptimization "On"
+        linktimeoptimization "On" -- enables /GL + /LTCG - whole program optimization
         symbols "Off"
+        linkoptions {
+            "/RELEASE"            -- load-config checksum; without it one ML engine (APEX) flags the build
+        }
 
     filter {}
 
