@@ -1,0 +1,46 @@
+{$CLEO .s}
+{$INCLUDE_ONCE ../cleo_tester.inc}
+
+script_name '05AE'
+test("05AE (is_lvar_text_label_equal_to_text_label)", tests)
+terminate_this_custom_script
+
+
+function tests
+    it("should compare local var short strings", test1)
+    return
+
+
+    function test1()
+	    shortString a
+	    shortString b
+	    
+	    string_format {result} a {format} "one"
+	    assert_eqs(a, "one")
+		is_lvar_text_label_equal_to_text_label {var} a {string} "one"
+		assert_result_true()
+		
+		string_format {result} a {format} "one"
+		is_lvar_text_label_equal_to_text_label {var} a {string} "two"
+		assert_result_false()
+		
+		string_format {result} a {format} "one"
+	    string_format {result} b {format} "one"
+		is_lvar_text_label_equal_to_text_label {var} a {string} b
+		assert_result_true()
+		
+		string_format {result} a {format} "one"
+	    string_format {result} b {format} "onetwo"
+		is_lvar_text_label_equal_to_text_label {var} a {string} b
+		assert_result_false()
+		
+		string_format {result} a {format} "full len" // 8 characters
+		string_format {result} b {format} "second v"
+		is_lvar_text_label_equal_to_text_label {var} a {string} "full len"
+		assert_result_true()
+		is_lvar_text_label_equal_to_text_label {var} a {string} "full len and more" // up to 8 characters (prefix)
+		assert_result_true()
+		is_lvar_text_label_equal_to_text_label {var} b {string} "second v"
+		assert_result_true()
+    end
+end
