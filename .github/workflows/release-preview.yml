@@ -74,9 +74,7 @@ jobs:
           msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Compilation"
 
-      # Same gate as the branch builds: waits for VirusTotal and fails when a file
-      # is flagged by more than VT_MAX_DETECTIONS (2) engines. Runs before the
-      # archive is packed, so a regression keeps the 'preview' release untouched.
+      # Scan new files and fail the job on 2+ detections
       - name: VirusTotal scan
         if: ${{ hashFiles('preview_changes.md') != '' }}
         timeout-minutes: 30
