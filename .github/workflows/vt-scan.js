@@ -14,8 +14,9 @@
 //   VT_KEY              VirusTotal API key (required - the gate fails closed)
 //   VT_MAX_DETECTIONS   allowed detections per file (default 2, fails above it)
 //   VT_TIMEOUT_MS       time budget for the whole scan (default 30 minutes)
-//   VT_MIN_INTERVAL_MS  minimum gap between API calls (default 0 = no pacing
-//                       until VirusTotal answers 429, then self-throttle)
+//   VT_MIN_INTERVAL_MS  minimum gap between API calls (default 16000 = 3.75
+//                       calls/min, just under the free tier's 4/min; set 0 to
+//                       go unpaced on a premium key)
 
 const fs = require('fs');
 const path = require('path');
@@ -24,19 +25,75 @@ const crypto = require('crypto');
 
 const API_HOST = 'www.virustotal.com';
 const UPLOAD_LIMIT = 32 * 1024 * 1024; // direct upload endpoint cap
+const GUI_URL = 'https://www.virustotal.com/gui/file/'; // human report page for a sha256
 const MAX_DETECTIONS = Number(process.env.VT_MAX_DETECTIONS || 2);
 const TIMEOUT_MS = Number(process.env.VT_TIMEOUT_MS || 30 * 60 * 1000);
 const DEADLINE = Date.now() + TIMEOUT_MS;
 const KEY = (process.env.VT_KEY || '').trim();
 
-if (!KEY) {
-  console.log('::error title=VirusTotal::VT_KEY is not set, the VirusTotal gate cannot run (failing closed). Add the repository secret VT_KEY.');
-  process.exit(1);
+// Main flow first, helpers below. Function declarations are hoisted and
+// `main()` is only invoked on the last line, so the top-level constants and the
+// rate-limit state below it are already initialised by the time this runs.
+async function main() {
+  if (!KEY) {
+    console.log('::error title=VirusTotal::VT_KEY is not set, the VirusTotal gate cannot run (failing closed). Add the repository secret VT_KEY.');
+    process.exit(1);
+  }
+
+  const patterns = process.argv.slice(2);
+  if (patterns.length === 0) {
+    console.log('::error title=VirusTotal::no files given, usage: node vt-scan.js <file-or-glob> [...]');
+    process.exit(1);
+  }
+
+  const files = patterns.flatMap(expand);
+  const missing = patterns.filter((pattern) => expand(pattern).length === 0);
+
+  const rows = [];
+  let failed = false;
+
+  for (const pattern of missing) {
+    console.log(`::error title=VirusTotal::no files matched ${pattern}`);
+    rows.push({ file: pattern, error: 'not found' });
+    failed = true;
+  }
+
+  for (const file of files) {
+    try {
+      const row = await scan(file);
+      rows.push(row);
+
+      const verdict = row.hits > MAX_DETECTIONS ? 'FAIL' : 'OK';
+      console.log(
+        `${row.file}: ${row.hits}/${row.total} detections (${row.source}) -> ${verdict}  ${GUI_URL}${row.sha}`,
+      );
+
+      if (row.hits > MAX_DETECTIONS) {
+        failed = true;
+        console.log(
+          `::error title=VirusTotal ${row.file}::${row.hits} of ${row.total} engines flag ${row.file}, ` +
+            `more than the ${MAX_DETECTIONS} allowed: ${row.engines.join(', ')}`,
+        );
+      }
+    } catch (error) {
+      failed = true;
+      rows.push({ file: path.basename(file), error: error.message });
+      console.log(`::error title=VirusTotal ${path.basename(file)}::${error.message}`);
+    }
+  }
+
+  writeSummary(rows, failed);
+  process.exit(failed ? 1 : 0);
 }
 
-// Rate limiting. The public API allows 4 requests/minute, premium keys far
-// more, so start unpaced and only throttle once VirusTotal pushes back.
-let minIntervalMs = Number(process.env.VT_MIN_INTERVAL_MS || 0);
+// --- helpers ---------------------------------------------------------------
+
+// Rate limiting. The free public API allows 4 requests/minute, 500/day and
+// 15.5K/month; a 16 s gap keeps us at 3.75/min, so we pace proactively instead
+// of burning the budget (and wall-clock time) on 429 backoff. Premium keys can
+// override with VT_MIN_INTERVAL_MS (0 = unpaced).
+const pacEnv = process.env.VT_MIN_INTERVAL_MS;
+let minIntervalMs = pacEnv === undefined || pacEnv === '' ? 16000 : Number(pacEnv);
 let lastCallAt = 0;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -92,6 +149,15 @@ async function api(method, urlPath, opts = {}) {
       continue;
     }
 
+    if (res.status === 429) {
+      // Quota exhaustion (500/day, 15.5K/month on the free tier) answers with
+      // the same 429 as a plain rate limit, but no amount of waiting clears it
+      // within this run - fail fast instead of burning six 30 s retries.
+      const code = res.json?.error?.code || '';
+      if (/quota/i.test(code) || /quota/i.test(res.text || '')) {
+        throw new Error(`VirusTotal quota exhausted, the scan cannot continue (${describe(res)})`);
+      }
+    }
     if (res.status === 429 || res.status === 503) {
       if (attempt >= 6) throw new Error(`still rate limited (HTTP ${res.status}) on ${method} ${urlPath}`);
       const retryAfter = Number(res.headers['retry-after']);
@@ -221,11 +287,9 @@ async function scan(file) {
 
 function writeSummary(rows, failed) {
   const lines = [
-    '## VirusTotal gate',
+    '## VirusTotal Scan Results',
     '',
-    `Allowed detections per file: **${MAX_DETECTIONS}** (baseline 0 - every \`malicious\` or \`suspicious\` verdict counts as new)`,
-    '',
-    '| file | detections | verdict | flagged by | sha256 |',
+    '| file | detections | verdict | flagged by | sha256 (VirusTotal report) |',
     '| --- | --- | --- | --- | --- |',
   ];
 
@@ -236,7 +300,8 @@ function writeSummary(rows, failed) {
     }
     const verdict = row.hits > MAX_DETECTIONS ? '**FAIL**' : 'OK';
     lines.push(
-      `| \`${row.file}\` | ${row.hits}/${row.total} | ${verdict} | ${row.engines.join(', ') || '-'} | \`${row.sha.slice(0, 12)}\` |`,
+      `| \`${row.file}\` | ${row.hits}/${row.total} | ${verdict} | ${row.engines.join(', ') || '-'} | ` +
+        `[\`${row.sha.slice(0, 12)}\`](${GUI_URL}${row.sha}) |`,
     );
   }
 
@@ -247,47 +312,4 @@ function writeSummary(rows, failed) {
   console.log('\n' + summary);
 }
 
-(async () => {
-  const patterns = process.argv.slice(2);
-  if (patterns.length === 0) {
-    console.log('::error title=VirusTotal::no files given, usage: node vt-scan.js <file-or-glob> [...]');
-    process.exit(1);
-  }
-
-  const files = patterns.flatMap(expand);
-  const missing = patterns.filter((pattern) => expand(pattern).length === 0);
-
-  const rows = [];
-  let failed = false;
-
-  for (const pattern of missing) {
-    console.log(`::error title=VirusTotal::no files matched ${pattern}`);
-    rows.push({ file: pattern, error: 'not found' });
-    failed = true;
-  }
-
-  for (const file of files) {
-    try {
-      const row = await scan(file);
-      rows.push(row);
-
-      const verdict = row.hits > MAX_DETECTIONS ? 'FAIL' : 'OK';
-      console.log(`${row.file}: ${row.hits}/${row.total} detections (${row.source}) -> ${verdict}`);
-
-      if (row.hits > MAX_DETECTIONS) {
-        failed = true;
-        console.log(
-          `::error title=VirusTotal ${row.file}::${row.hits} of ${row.total} engines flag ${row.file}, ` +
-            `more than the ${MAX_DETECTIONS} allowed: ${row.engines.join(', ')}`,
-        );
-      }
-    } catch (error) {
-      failed = true;
-      rows.push({ file: path.basename(file), error: error.message });
-      console.log(`::error title=VirusTotal ${path.basename(file)}::${error.message}`);
-    }
-  }
-
-  writeSummary(rows, failed);
-  process.exit(failed ? 1 : 0);
-})();
+main();
