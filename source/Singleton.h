@@ -25,10 +25,7 @@ static void CleoSingletonCheck()
                     if (count > 1)
                     {
                         CloseHandle(snapshot);
-                        MessageBox(
-                            NULL, "Another copy of CLEO.asi is already loaded!\nPlease remove duplicated files.",
-                            "CLEO error", MB_SYSTEMMODAL | MB_TOPMOST | MB_ICONERROR | MB_OK
-                        );
+                        CLEO::ShowError("Another copy of CLEO.asi is already loaded!\nPlease remove duplicated files.");
                         exit(1); // terminate the game
                         break;
                     }
