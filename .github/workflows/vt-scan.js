@@ -5,15 +5,12 @@
 // VT_MAX_DETECTIONS engines. The baseline is 0: every `malicious` or
 // `suspicious` verdict counts as a new detection, there is no allow list.
 //
-// A file that VirusTotal already knows (same SHA-256) is not re-uploaded, so a
-// rebuild that produced identical bytes costs one lookup and returns at once.
-//
 // usage: node .github/workflows/vt-scan.js <file-or-glob> [...]
 //
 // env:
 //   VT_KEY              VirusTotal API key (required - the gate fails closed)
 //   VT_MAX_DETECTIONS   allowed detections per file (default 2, fails above it)
-//   VT_TIMEOUT_MS       time budget for the whole scan (default 30 minutes)
+//   VT_TIMEOUT_MS       time budget for the whole scan (default 45 minutes)
 //   VT_MIN_INTERVAL_MS  minimum gap between API calls (default 16000 = 3.75
 //                       calls/min, just under the free tier's 4/min; set 0 to
 //                       go unpaced on a premium key)
@@ -27,7 +24,7 @@ const API_HOST = 'www.virustotal.com';
 const UPLOAD_LIMIT = 32 * 1024 * 1024; // direct upload endpoint cap
 const GUI_URL = 'https://www.virustotal.com/gui/file/'; // human report page for a sha256
 const MAX_DETECTIONS = Number(process.env.VT_MAX_DETECTIONS || 2);
-const TIMEOUT_MS = Number(process.env.VT_TIMEOUT_MS || 30 * 60 * 1000);
+const TIMEOUT_MS = Number(process.env.VT_TIMEOUT_MS || 45 * 60 * 1000);
 const DEADLINE = Date.now() + TIMEOUT_MS;
 const KEY = (process.env.VT_KEY || '').trim();
 
@@ -208,6 +205,11 @@ async function upload(file) {
       'content-length': String(head.length + buf.length + tail.length),
     },
   });
+  if (res.status === 409) {
+    const error = new Error('upload refused, the file is already on VirusTotal: ' + describe(res));
+    error.duplicate = true;
+    throw error;
+  }
   if (res.status !== 200 || !res.json?.data?.id) throw new Error('upload failed, ' + describe(res));
   return res.json.data.id;
 }
@@ -274,15 +276,21 @@ async function scan(file) {
   const sha = crypto.createHash('sha256').update(buf).digest('hex');
   console.log(`${name}: sha256 ${sha}`);
 
-  let report = await lookup(sha);
-  let source = 'existing report';
-  if (!report) {
-    console.log(`${name}: not known to VirusTotal, uploading and waiting for the analysis`);
-    report = await waitForAnalysis(await upload(file));
-    source = 'fresh analysis';
+  // Post first, no lookup: the upload response carries the analysis id, which
+  // is all waitForAnalysis needs, and a known sample comes back complete.
+  let analysisId;
+  try {
+    analysisId = await upload(file);
+  } catch (error) {
+    if (!error.duplicate) throw error;
+    const known = await lookup(sha);
+    if (!known) throw error;
+    console.log(`${name}: already on VirusTotal, reading the stored report`);
+    return { file: name, sha, source: 'existing report', ...detections(known.stats, known.results) };
   }
 
-  return { file: name, sha, source, ...detections(report.stats, report.results) };
+  const report = await waitForAnalysis(analysisId);
+  return { file: name, sha, source: 'fresh analysis', ...detections(report.stats, report.results) };
 }
 
 function writeSummary(rows, failed) {

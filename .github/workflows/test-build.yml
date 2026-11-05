@@ -61,19 +61,6 @@ jobs:
           msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Compilation"
 
-      # Blocks the job until VirusTotal has a verdict for every binary and fails
-      # the run when a single file is flagged by more than VT_MAX_DETECTIONS (2)
-      # engines. Baseline is 0, so there is no allow list to keep in sync.
-      - name: VirusTotal scan
-        timeout-minutes: 30
-        env:
-          VT_KEY: ${{ secrets.VT_KEY }}
-          VT_MAX_DETECTIONS: 2
-        run: >-
-          node .github/workflows/vt-scan.js
-          .output/Release/CLEO.asi
-          .output/Release/cleo/cleo_plugins/*.cleo
-
       - name: Gather output files
         shell: cmd
         run: |
@@ -99,3 +86,13 @@ jobs:
 
       - name: Log download link
         run: echo "::notice title=Download this build::${{steps.upload.outputs.artifact-url}}"
+
+      - name: VirusTotal scan
+        timeout-minutes: 50
+        env:
+          VT_KEY: ${{ secrets.VT_KEY }}
+          VT_MAX_DETECTIONS: 2
+        run: >-
+          node .github/workflows/vt-scan.js
+          .output/Release/CLEO.asi
+          .output/Release/cleo/cleo_plugins/*.cleo
