@@ -61,33 +61,18 @@ jobs:
           msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Compilation"
 
-      - name: Core - VirusTotal scan
-        id: scan_core
+      # Blocks the job until VirusTotal has a verdict for every binary and fails
+      # the run when a single file is flagged by more than VT_MAX_DETECTIONS (2)
+      # engines. Baseline is 0, so there is no allow list to keep in sync.
+      - name: VirusTotal scan
+        timeout-minutes: 30
         env:
-          vt_key: ${{secrets.VT_KEY}}
-        if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@936d8c5c00afe97d3d9a1af26d017cfdf26800a2 # 5.0.0
-        with:
-          vt_api_key: ${{ secrets.VT_KEY }}
-          files: './.output/Release/CLEO.asi'
-
-      - name: Core - VirusTotal log
-        if: steps.scan_core.outcome == 'success'
-        run: echo "::notice title=CLEO Core virus scan::${{steps.scan_core.outputs.analysis}}"
-
-      - name: Plugins - VirusTotal scan
-        id: scan_plugins
-        env:
-          vt_key: ${{secrets.VT_KEY}}
-        if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@936d8c5c00afe97d3d9a1af26d017cfdf26800a2 # 5.0.0
-        with:
-          vt_api_key: ${{ secrets.VT_KEY }}
-          files: './.output/Release/cleo/cleo_plugins/*.cleo'
-
-      - name: Plugins - VirusTotal log
-        if: steps.scan_plugins.outcome == 'success'
-        run: echo "::notice title=CLEO Plugins virus scan::${{steps.scan_plugins.outputs.analysis}}"
+          VT_KEY: ${{ secrets.VT_KEY }}
+          VT_MAX_DETECTIONS: 2
+        run: >-
+          node .github/workflows/vt-scan.js
+          .output/Release/CLEO.asi
+          .output/Release/cleo/cleo_plugins/*.cleo
 
       - name: Gather output files
         shell: cmd
