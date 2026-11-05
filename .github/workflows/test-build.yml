@@ -61,34 +61,6 @@ jobs:
           msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Compilation"
 
-      - name: Core - VirusTotal scan
-        id: scan_core
-        env:
-          vt_key: ${{secrets.VT_KEY}}
-        if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@936d8c5c00afe97d3d9a1af26d017cfdf26800a2 # 5.0.0
-        with:
-          vt_api_key: ${{ secrets.VT_KEY }}
-          files: './.output/Release/CLEO.asi'
-
-      - name: Core - VirusTotal log
-        if: steps.scan_core.outcome == 'success'
-        run: echo "::notice title=CLEO Core virus scan::${{steps.scan_core.outputs.analysis}}"
-
-      - name: Plugins - VirusTotal scan
-        id: scan_plugins
-        env:
-          vt_key: ${{secrets.VT_KEY}}
-        if: ${{env.vt_key != ''}}
-        uses: crazy-max/ghaction-virustotal@936d8c5c00afe97d3d9a1af26d017cfdf26800a2 # 5.0.0
-        with:
-          vt_api_key: ${{ secrets.VT_KEY }}
-          files: './.output/Release/cleo/cleo_plugins/*.cleo'
-
-      - name: Plugins - VirusTotal log
-        if: steps.scan_plugins.outcome == 'success'
-        run: echo "::notice title=CLEO Plugins virus scan::${{steps.scan_plugins.outputs.analysis}}"
-
       - name: Gather output files
         shell: cmd
         run: |
@@ -114,3 +86,13 @@ jobs:
 
       - name: Log download link
         run: echo "::notice title=Download this build::${{steps.upload.outputs.artifact-url}}"
+
+      - name: VirusTotal scan
+        timeout-minutes: 50
+        env:
+          VT_KEY: ${{ secrets.VT_KEY }}
+          VT_MAX_DETECTIONS: 2
+        run: >-
+          node .github/workflows/vt-scan.js
+          .output/Release/CLEO.asi
+          .output/Release/cleo/cleo_plugins/*.cleo

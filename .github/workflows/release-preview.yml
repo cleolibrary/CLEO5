@@ -74,6 +74,18 @@ jobs:
           msbuild CLEO5.slnx /property:Configuration=Release /property:Platform=Win32 /m /fileLogger1 /fileLoggerParameters1:warningsOnly;errorsOnly;logfile=output.log
           node .github/workflows/analyze-build-log.js "Compilation"
 
+      # Scan new files and fail the job on 2+ detections
+      - name: VirusTotal scan
+        if: ${{ hashFiles('preview_changes.md') != '' }}
+        timeout-minutes: 30
+        env:
+          VT_KEY: ${{ secrets.VT_KEY }}
+          VT_MAX_DETECTIONS: 2
+        run: >-
+          node .github/workflows/vt-scan.js
+          .output/Release/CLEO.asi
+          .output/Release/cleo/cleo_plugins/*.cleo
+
       - name: Gather output files
         if: ${{ hashFiles('preview_changes.md') != '' }}
         id: prepare_archive
