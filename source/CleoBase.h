@@ -45,6 +45,7 @@ namespace CLEO
         const std::set<void*>& GetCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id);
         void CallCallbacks(eCallbackId id, DWORD arg);
+        void CallCallbacks(eCallbackId id, const char* arg1, const char* arg2);
 
         void(__cdecl* OnGameProcess_Orig)() = nullptr;
         static void __cdecl OnGameProcess();

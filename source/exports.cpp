@@ -2,6 +2,7 @@
 #include "CleoBase.h"
 #include "ScmFunction.h"
 #include "CConfigManager.h"
+#include <iterator>
 
 namespace CLEO
 {
@@ -552,6 +553,45 @@ namespace CLEO
         BOOL WINAPI CLEO_SetConfigText(const char* key, const char* value)
         {
             return CConfigManager::WriteString("Plugins", key, value);
+        }
+
+        DWORD WINAPI CLEO_GetNumberOfCustomScripts()
+        {
+            return (DWORD)CleoInstance.ScriptEngine.CustomScripts.size();
+        }
+
+        CRunningScript* WINAPI CLEO_GetCustomScriptByIndex(DWORD index)
+        {
+            if (index >= CleoInstance.ScriptEngine.CustomScripts.size())
+            {
+                return nullptr;
+            }
+
+            auto it = CleoInstance.ScriptEngine.CustomScripts.begin();
+            std::advance(it, (size_t)index);
+            return *it;
+        }
+
+        DWORD WINAPI CLEO_GetScriptSize(const CRunningScript* thread)
+        {
+            if (!thread || !CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
+            {
+                return 0;
+            }
+
+            return ((CCustomScript*)thread)->GetCodeSize();
+        }
+
+        bool WINAPI CLEO_GetScriptFileFullPath(const CRunningScript* thread, char* buf, DWORD bufSize)
+        {
+            if (!thread || !buf || !bufSize || !CleoInstance.ScriptEngine.IsValidScriptPtr(thread))
+            {
+                return false;
+            }
+
+            auto path = ((CCustomScript*)thread)->GetScriptFileFullPath();
+            strncpy_s(buf, bufSize, path.c_str(), _TRUNCATE);
+            return true;
         }
     }
 } // namespace CLEO

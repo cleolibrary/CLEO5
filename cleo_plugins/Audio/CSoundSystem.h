@@ -60,6 +60,7 @@ namespace CLEO
         void Pause();
         void Resume();
         void Process();
+        const std::set<CAudioStream*>& GetStreams() const { return streams; }
     };
 
     static bool isNetworkSource(const char* path)

@@ -115,6 +115,8 @@ namespace CLEO
         if (!SaveIni()) return false;
 
         cache[cacheKey] = value;
+
+        NotifyConfigChanged(section, key);
         return true;
     }
 

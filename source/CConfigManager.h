@@ -5,6 +5,9 @@
 
 namespace CLEO
 {
+    // implemented in CleoBase.cpp
+    void NotifyConfigChanged(const char* section, const char* key);
+
     class CConfigManager
     {
       public:

@@ -72,3 +72,7 @@ EXPORTS
 	_CLEO_IsValidScriptPtr@4				@69
 	_CLEO_GetLogDirectory@0					@70
 	_CLEO_GetCleoDirectory@0				@71
+	_CLEO_GetNumberOfCustomScripts@0		@72
+	_CLEO_GetCustomScriptByIndex@4			@73
+	_CLEO_GetScriptSize@4					@74
+	_CLEO_GetScriptFileFullPath@12			@75
