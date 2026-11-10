@@ -405,6 +405,15 @@ namespace CLEO
 
         // void WINAPI OnMainWindowFocus(bool active);
         MainWindowFocus = 13, // called when game main window focus changes
+
+        // void WINAPI OnConfigUpdate(const char* section, const char* key);
+        ConfigUpdate = 16,
+
+        // void WINAPI OnBeforeSave(DWORD saveSlot);
+        BeforeSave = 17, // game save is about to be written. saveSlot is 0-based
+
+        // void WINAPI OnAfterSave(DWORD saveSlot);
+        AfterSave = 18, // game save has been written. saveSlot is 0-based
     };
 
     // used by CLEO_Log and Log callback
@@ -606,6 +615,14 @@ namespace CLEO
         LPCSTR WINAPI CLEO_GetCleoDirectory();
 
         void WINAPI CLEO_Log(eLogLevel level, const char* msg); // add message to log
+
+        // Custom script enumeration and inspection
+        DWORD WINAPI CLEO_GetNumberOfCustomScripts();                    // number of currently running custom scripts
+        CRunningScript* WINAPI CLEO_GetCustomScriptByIndex(DWORD index); // nullptr if out of range
+        DWORD WINAPI CLEO_GetScriptSize(const CRunningScript* thread);   // size of the script in bytes, 0 if unknown
+        bool WINAPI CLEO_GetScriptFileFullPath(
+            const CRunningScript* thread, char* buf, DWORD bufSize
+        ); // full absolute path to script file
 
         // Config file (.cleo_config.ini) management for plugins
         // All values are stored in [Plugins] section

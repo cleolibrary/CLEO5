@@ -318,6 +318,20 @@ namespace CLEO
         }
     }
 
+    void CCleoInstance::CallCallbacks(eCallbackId id, const char* arg1, const char* arg2)
+    {
+        for (void* func : GetCallbacks(id))
+        {
+            typedef void WINAPI callback(const char*, const char*);
+            ((callback*)func)(arg1, arg2);
+        }
+    }
+
+    void NotifyConfigChanged(const char* section, const char* key)
+    {
+        CleoInstance.CallCallbacks(eCallbackId::ConfigUpdate, section, key);
+    }
+
     void WINAPI CLEO_ResolvePath(CLEO::CRunningScript* thread, char* inOutPath, DWORD pathMaxLen)
     {
         if (thread == nullptr || inOutPath == nullptr || pathMaxLen < 2)

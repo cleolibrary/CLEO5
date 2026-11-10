@@ -5,6 +5,7 @@
 #include <ctime>
 #include <fstream>
 #include <deque>
+#include <optional>
 #include <string>
 
 class ScriptLog
@@ -13,9 +14,6 @@ class ScriptLog
     ScriptLog();
     ScriptLog(const ScriptLog&) = delete; // no copying!
     ~ScriptLog();
-
-    // config
-    void LoadConfig(bool keepState = false);
 
     enum LoggingState
     {
@@ -29,12 +27,23 @@ class ScriptLog
     bool logOffsets          = true;
     bool logOpcodes          = false;
 
+    static LoggingState GetConfiguredState();
+    void SetState(LoggingState newState);
+    void LoadConfig(bool keepState = false);
+
   private:
-    static constexpr size_t Initial_Buff_Size = 16 * 1024 * 1024; // 16 MB
+    // One frame worth of tracing data
+    static constexpr size_t Initial_Buff_Size = 256 * 1024; // 256 KB
     const char* Script_Indent                 = "    ";
 
-    bool m_initialized = false;
     static ScriptLog* g_Instance;
+
+    bool m_hookInstalled = false; // CRunningScript::UpdateCompareFlag is currently hooked
+    // state requested by the config, applied at the next safe point (DrawingFinished)
+    std::optional<LoggingState> m_pendingState;
+
+    bool m_databaseLoaded = false;
+    void EnsureDatabaseLoaded();
 
     OpcodeInfoDatabase m_opcodeDatabase;
 
@@ -44,22 +53,30 @@ class ScriptLog
     BYTE* m_currCommandReturnParams    = nullptr;
     void SetCurrScript(CLEO::CRunningScript* script);
 
+    void RegisterCallbacks();
+    void UnregisterCallbacks();
+    void ApplyPendingState();
+
+    // UpdateCompareFlag hook machinery. Needed for backward compatibility with ScrLog
+    void InstallConditionHook();
+    void UninstallConditionHook();
+
     std::string m_logBuffer;
     std::string m_logFilePath;
     std::ofstream m_logFile;
 
-    inline void LogLine(const std::string_view& str);
+    void LogLine(const std::string_view& str);
     void LogFormattedLine(const char* format, ...); // slow!
 
     // extend last log line
-    inline void LogAppend(char ch);
-    inline void LogAppend(const std::string_view& str);
-    inline void LogAppendNum(int number, int padLen = 0);
-    inline void LogAppendHex(int number, int padLen = 0);
-    inline void LogAppendFloat(float number, int padLen = 0);
-    inline void LogAppendSpace(); // add white char separator at end of the line if not present
-    inline void LogSeparator();
-    inline void LogNewLine();
+    void LogAppend(char ch);
+    void LogAppend(const std::string_view& str);
+    void LogAppendNum(int number, int padLen = 0);
+    void LogAppendHex(int number, int padLen = 0);
+    void LogAppendFloat(float number, int padLen = 0);
+    void LogAppendSpace(); // add white char separator at end of the line if not present
+    void LogSeparator();
+    void LogNewLine();
     bool LogAppendScriptParam(
         CLEO::CRunningScript* script, const OpcodeInfoDatabase::Command* command, size_t paramIdx, bool logName,
         bool logVariable, bool logValue
@@ -113,6 +130,12 @@ class ScriptLog
     )
     {
         return g_Instance->OnScriptOpcodeProcessAfter(script, opcode, result);
+    };
+
+    void OnConfigUpdate(const char* section, const char* key);
+    static void __stdcall callbackConfigUpdate(const char* section, const char* key)
+    {
+        g_Instance->OnConfigUpdate(section, key);
     };
 
     void OnDrawingFinished();

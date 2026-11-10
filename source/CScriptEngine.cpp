@@ -266,11 +266,16 @@ namespace CLEO
 
     void __cdecl CScriptEngine::HOOK_SaveScmData()
     {
+        const int saveSlot = FrontEndMenuManager.m_nSelectedSaveGame;
+        CleoInstance.CallCallbacks(eCallbackId::BeforeSave, (DWORD)saveSlot);
+
         TRACE("Saving scripts save data...");
         CleoInstance.ScriptEngine.SaveState();
         CleoInstance.ScriptEngine.UnregisterAllCustomScripts();
         CleoInstance.ScriptEngine.SaveScmData_Orig();
         CleoInstance.ScriptEngine.ReregisterAllCustomScripts();
+
+        CleoInstance.CallCallbacks(eCallbackId::AfterSave, (DWORD)saveSlot);
     }
 
     void CScriptEngine::Inject(CCodeInjector& inj)
