@@ -138,8 +138,9 @@ namespace CLEO
             : hash(cs->m_codeChecksum), condResult(cs->bCondResult), logicalOp(cs->LogicalOp),
               notFlag(cs->NotFlag != false), ip_diff(cs->CurrentIP - reinterpret_cast<BYTE*>(cs->BaseIP))
         {
-            sleepTime =
-                cs->WakeTime >= CTimer::m_snTimeInMilliseconds ? 0 : cs->WakeTime - CTimer::m_snTimeInMilliseconds;
+            // store the remaining wait (never negative), so a sleeping script resumes with the time it had left
+            const auto now = CTimer::m_snTimeInMilliseconds;
+            sleepTime      = (cs->WakeTime > now) ? (cs->WakeTime - now) : 0;
             std::copy(cs->LocalVar, cs->LocalVar + 32, tls);
             std::copy(cs->Timers, cs->Timers + 2, timers);
             std::copy(cs->Name, cs->Name + 8, threadName);
