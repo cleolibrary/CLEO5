@@ -31,7 +31,7 @@ namespace CLEO
 
             if (!dynamic || fxt->second->is_static)
             {
-                LOG_WARNING(0, "Attempting to add FXT \'%s\' - FAILED (GXT conflict)", key, value);
+                LOG_WARNING(0, "Attempting to add FXT \'%s\' - FAILED (GXT conflict)", key);
                 return false;
             }
 

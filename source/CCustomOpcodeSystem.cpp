@@ -846,7 +846,7 @@ namespace CLEO
                 delete cs;
             }
             SkipUnusedVarArgs(thread);
-            LOG_WARNING(0, "Failed to load script '%s' in script ", filename.c_str(), ScriptInfoStr(thread).c_str());
+            LOG_WARNING(0, "Failed to load script '%s' in script %s", filename.c_str(), ScriptInfoStr(thread).c_str());
         }
 
         return OR_CONTINUE;
