@@ -51,7 +51,12 @@ namespace CLEO
     {
         std::string str = key;
         std::transform(str.begin(), str.end(), str.begin(), ::toupper);
-        return fxts.erase(str) != 0;
+        auto found = fxts.find(str);
+        if (found == fxts.end()) return false;
+
+        delete found->second; // free the entry, not just the map node
+        fxts.erase(found);
+        return true;
     }
 
     const char* CTextManager::LocateFxt(const char* key)
@@ -122,6 +127,10 @@ namespace CLEO
 
     void CTextManager::Clear()
     {
+        for (auto& fxt : fxts)
+        {
+            delete fxt.second;
+        }
         fxts.clear();
     }
 
