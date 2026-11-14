@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "CLEO.h"
 #include "CLEO_Utils.h"
+#include "CLEO_PoolUtils.h"
 #include <string>
 
 using namespace CLEO;
