@@ -1,19 +1,11 @@
 // Some optional utilities usefull when creating CLEO plugins
 //
-// Add following lines to "Additional Include Directories" in project config:
-//   $(PLUGIN_SDK_DIR)\plugin_sa\
-//   $(PLUGIN_SDK_DIR)\shared\game\
-//   $(PLUGIN_SDK_DIR)\plugin_sa\game_sa\
-//
 // Add following lines to "Preprocesor Definitions":
-//   GTASA
 //   TARGET_NAME=R"($(TargetName))"
 //
-// Depending on used functions, may require adding "CPools.cpp" from GTA Plugin SDK to the project files
 
 #pragma once
 #include "CLEO.h"
-#include "CPools.h"   // from GTA Plugin SDK
 #include "shellapi.h" // game window minimize/maximize support
 #include <algorithm>
 #include <filesystem>
@@ -24,67 +16,6 @@
 
 namespace CLEO
 {
-    /*
-    TRACE(format,...) // log to file. Can be displayed on screen with change in .cleo_config.ini
-    LOG_WARNING(script, format, ...) // warning text on screen and in log file. Not displayed for scripts in 'legacy'
-    mode SHOW_ERROR(a,...) // log to file and show message box (could be suppressed)
-
-    Macros to use inside opcode handler functions. Performs types validation, printing warnings and suspending script on
-    critical errors. Please mind those expand into multiple lines, so CAN NOT be used in places where single code line
-    is expected! (like 'if' condition body without brackets)
-
-    OPCODE_CONDITION_RESULT(value) // set command logical result
-
-    OPCODE_SKIP_PARAMS(count) // ignore X params
-    OPCODE_SKIP_VARARG_PARAMS(count) // ignore remaining variable arguments, including varArg terminator
-
-    OPCODE_PEEK_PARAM_TYPE() // get param type without advancing the script
-    OPCODE_PEEK_VARARG_COUNT() // get count of remaining variable arguments (not including varArg terminator)
-
-    // reading opcode input arguments
-    OPCODE_READ_PARAM_BOOL()
-    OPCODE_READ_PARAM_INT8()
-    OPCODE_READ_PARAM_UINT8()
-    OPCODE_READ_PARAM_INT16()
-    OPCODE_READ_PARAM_UINT16()
-    OPCODE_READ_PARAM_INT()
-    OPCODE_READ_PARAM_UINT()
-    OPCODE_READ_PARAM_FLOAT()
-    OPCODE_READ_PARAM_ANY32() // get raw data of any simple-type value (practically integers and floats)
-    OPCODE_READ_PARAM_STRING(varName) // reads param and creates const char* variable named 'varName' with pointer to
-    null-terminated string OPCODE_READ_PARAM_STRING_LEN(varName, maxLength) // same as above, but text length is clamped
-    to maxLength OPCODE_READ_PARAM_STRING_FORMATTED(varName) // reads "format" string argument, then all var-args.
-    Creates variable named 'varName' containing formatted text. Creates 'varNameOk' variable with pointer to the text,
-    or nullptr if user provided invalid arguments OPCODE_READ_PARAMS_FORMATTED(format, varName) // reads all var-args
-    and tries to put them into formatted string. Creates variable named 'varName' containing formatted text. Creates
-    'varNameOk' variable with pointer to the text, or nullptr if user provided invalid arguments
-    OPCODE_READ_PARAM_FILEPATH(varName) // reads param and creates const char* variable named 'varName' with pointer to
-    resolved, null-terminated, filepath OPCODE_READ_PARAM_PTR() // read and validate memory address argument
-    OPCODE_READ_PARAM_OBJECT_HANDLE() // read and validate game object handle
-    OPCODE_READ_PARAM_PED_HANDLE() // read and validate character (ped/actor) handle
-    OPCODE_READ_PARAM_PLAYER_ID() // read and validate player id
-    OPCODE_READ_PARAM_VEHICLE_HANDLE() // read and validate vehicle handle
-
-    // for opcodes with mixed params order, where 'strore_to' occurs before input arguments
-    OPCODE_READ_PARAM_OUTPUT_VAR_INT() // get pointer to integer variable param to write result later
-    OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT() // get pointer to float variable param to write result later
-    OPCODE_READ_PARAM_OUTPUT_VAR_ANY32() // get pointer to simple-type variable param to write result later
-    OPCODE_READ_PARAM_OUTPUT_VAR_STRING() // returns instance of StringParamBufferInfo used to write string param later
-
-    // writing opcode output/result data
-    OPCODE_WRITE_PARAM_BOOL(value)
-    OPCODE_WRITE_PARAM_INT8(value)
-    OPCODE_WRITE_PARAM_UINT8(value)
-    OPCODE_WRITE_PARAM_INT16(value)
-    OPCODE_WRITE_PARAM_UINT16(value)
-    OPCODE_WRITE_PARAM_INT(value)
-    OPCODE_WRITE_PARAM_UINT(value)
-    OPCODE_WRITE_PARAM_FLOAT(value)
-    OPCODE_WRITE_PARAM_ANY32(value) // write raw data into simple-type variable (practically integers and floats)
-    OPCODE_WRITE_PARAM_STRING(value)
-    OPCODE_WRITE_PARAM_STRING_INFO(info, value) // write param using info object revceived from
-    OPCODE_READ_PARAM_OUTPUT_VAR_STRING OPCODE_WRITE_PARAM_PTR(value) // memory address
-    */
 
     static bool IsLegacyScript(CLEO::CRunningScript* script)
     {
@@ -464,45 +395,6 @@ namespace CLEO
         return (checkDir(CLEO_GetGameDirectory()) || checkDir(CLEO_GetUserDirectory()));
     }
 
-    static bool IsObjectHandleValid(DWORD handle)
-    {
-        // get handle info
-        auto flags = handle & 0xFF;
-        auto index = handle >> 8;
-
-        if (index >= (DWORD)CPools::ms_pObjectPool->m_nSize) return false; // index out of bounds
-
-        if (CPools::ms_pObjectPool->m_byteMap[index].IntValue() != flags) return false; // flags mismatch
-
-        return true;
-    }
-
-    static bool IsPedHandleValid(DWORD handle)
-    {
-        // get handle info
-        auto flags = handle & 0xFF;
-        auto index = handle >> 8;
-
-        if (index >= (DWORD)CPools::ms_pPedPool->m_nSize) return false; // index out of bounds
-
-        if (CPools::ms_pPedPool->m_byteMap[index].IntValue() != flags) return false; // flags mismatch
-
-        return true;
-    }
-
-    static bool IsVehicleHandleValid(DWORD handle)
-    {
-        // get handle info
-        auto flags = handle & 0xFF;
-        auto index = handle >> 8;
-
-        if (index >= (DWORD)CPools::ms_pVehiclePool->m_nSize) return false; // index out of bounds
-
-        if (CPools::ms_pVehiclePool->m_byteMap[index].IntValue() != flags) return false; // flags mismatch
-
-        return true;
-    }
-
     static bool IsPlayerIdValid(int id)
     {
         switch (id)
@@ -718,14 +610,17 @@ namespace CLEO
         return result;
     }
 
+// Log to file. Can be displayed on screen with change in .cleo_config.ini.
 #define TRACE(format, ...)                                                                                             \
     {                                                                                                                  \
         CLEO::Trace(CLEO::eLogLevel::Default, format, __VA_ARGS__);                                                    \
     }
+// Warning text on screen and in log file. Not displayed for scripts in 'legacy' mode.
 #define LOG_WARNING(script, format, ...)                                                                               \
     {                                                                                                                  \
         CLEO::Trace(script, CLEO::eLogLevel::Error, format, __VA_ARGS__);                                              \
     }
+// Log to file and show message box (could be suppressed).
 #define SHOW_ERROR(a, ...)                                                                                             \
     {                                                                                                                  \
         CLEO::ShowError(a, __VA_ARGS__);                                                                               \
@@ -765,6 +660,11 @@ namespace CLEO
         SUSPEND("Invalid '0x%X' pointer argument", x);                                                                 \
     }
 
+// Macros to use inside opcode handler functions. They perform type validation, print warnings and suspend the
+// script on critical errors. Most expand to multiple lines, so they CAN NOT be used where a single code line is
+// expected (like a brace-less 'if' body).
+//
+// Set command logical result.
 #define OPCODE_CONDITION_RESULT(value) CLEO_SetThreadCondResult(thread, value);
 
     // opcode param handling utils internal
@@ -999,15 +899,19 @@ namespace CLEO
         return _writeParamText(thread, info, str); // done
     }
 
+// Ignore X params.
 #define OPCODE_SKIP_PARAMS(_count) CLEO_SkipOpcodeParams(thread, _count)
+// Ignore remaining variable arguments, including varArg terminator.
 #define OPCODE_SKIP_VARARG_PARAMS() CLEO_SkipUnusedVarArgs(thread)
 
+// Get param type without advancing the script.
 #define OPCODE_PEEK_PARAM_TYPE() thread->PeekDataType()
+// Get count of remaining variable arguments (not including varArg terminator).
 #define OPCODE_PEEK_VARARG_COUNT() CLEO_GetVarArgCount(thread)
 
-    // macros for reading opcode input params. Performs type validation, throws error and suspends script if user
-    // provided invalid argument type TOD: add range checks for limited size types?
+    // reading opcode input params. TODO: add range checks for limited size types?
 
+// Read bool value.
 #define OPCODE_READ_PARAM_BOOL()                                                                                       \
     _readParam(thread).dwParam != false;                                                                               \
     if (!_paramWasInt())                                                                                               \
@@ -1015,6 +919,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
+// Read signed 8-bit integer.
 #define OPCODE_READ_PARAM_INT8()                                                                                       \
     _readParam(thread).cParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
@@ -1022,6 +927,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
+// Read unsigned 8-bit integer.
 #define OPCODE_READ_PARAM_UINT8()                                                                                      \
     _readParam(thread).ucParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
@@ -1029,6 +935,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
+// Read signed 16-bit integer.
 #define OPCODE_READ_PARAM_INT16()                                                                                      \
     _readParam(thread).wParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
@@ -1036,6 +943,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
+// Read unsigned 16-bit integer.
 #define OPCODE_READ_PARAM_UINT16()                                                                                     \
     _readParam(thread).usParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
@@ -1043,6 +951,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
+// Read signed 32-bit integer.
 #define OPCODE_READ_PARAM_INT()                                                                                        \
     _readParam(thread).nParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
@@ -1050,6 +959,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
+// Read unsigned 32-bit integer.
 #define OPCODE_READ_PARAM_UINT()                                                                                       \
     _readParam(thread).dwParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
@@ -1057,6 +967,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("integer")                                                                                  \
     }
 
+// Read float value.
 #define OPCODE_READ_PARAM_FLOAT()                                                                                      \
     _readParamFloat(thread).fParam;                                                                                    \
     if (!_paramWasFloat())                                                                                             \
@@ -1067,6 +978,7 @@ namespace CLEO
         );                                                                                                             \
     }
 
+// Get raw data of any simple-type value (practically integers and floats).
 #define OPCODE_READ_PARAM_ANY32()                                                                                      \
     _readParam(thread);                                                                                                \
     if (!_paramWasInt() && !_paramWasFloat())                                                                          \
@@ -1074,6 +986,7 @@ namespace CLEO
         SUSPEND_INPUT_TYPE("int or float")                                                                             \
     }
 
+// Reads param and creates const char* variable named 'varName' with pointer to null-terminated string.
 #define OPCODE_READ_PARAM_STRING(_varName)                                                                             \
     char _buff_##_varName[MAX_STR_LEN + 1];                                                                            \
     const char*##_varName = _readParamText(thread, _buff_##_varName, MAX_STR_LEN + 1);                                 \
@@ -1082,6 +995,7 @@ namespace CLEO
         return OpcodeResult::OR_INTERRUPT;                                                                             \
     }
 
+// Same as above, but text length is clamped to maxLength.
 #define OPCODE_READ_PARAM_STRING_LEN(_varName, _maxLen)                                                                \
     char _buff_##_varName[_maxLen + 1];                                                                                \
     const char*##_varName = _readParamText(thread, _buff_##_varName, _maxLen + 1);                                     \
@@ -1091,6 +1005,8 @@ namespace CLEO
         return OpcodeResult::OR_INTERRUPT;                                                                             \
     }
 
+// Reads "format" string argument, then all var-args. Creates variable named 'varName' containing formatted
+// text. Creates 'varNameOk' variable with pointer to the text, or nullptr if user provided invalid arguments.
 #define OPCODE_READ_PARAM_STRING_FORMATTED(_varName)                                                                   \
     char _buff_format_##_varName[MAX_STR_LEN + 1];                                                                     \
     const char* _format_##_varName = _readParamText(thread, _buff_format_##_varName, MAX_STR_LEN + 1);                 \
@@ -1105,6 +1021,9 @@ namespace CLEO
         SUSPEND("Invalid formatted string");                                                                           \
     }
 
+// Reads all var-args and tries to put them into formatted string. Creates variable named 'varName' containing
+// formatted text. Creates 'varNameOk' variable with pointer to the text, or nullptr if user provided invalid
+// arguments.
 #define OPCODE_READ_PARAMS_FORMATTED(_format, _varName)                                                                \
     char _varName[2 * MAX_STR_LEN + 1];                                                                                \
     char* _varName##Ok = CLEO_ReadParamsFormatted(thread, _format, _varName, sizeof(_varName));                        \
@@ -1113,6 +1032,8 @@ namespace CLEO
         SUSPEND("Invalid formatted string");                                                                           \
     }
 
+// Reads param and creates const char* variable named 'varName' with pointer to resolved, null-terminated,
+// filepath.
 #define OPCODE_READ_PARAM_FILEPATH(_varName)                                                                           \
     char _buff_##_varName[512];                                                                                        \
     const char*##_varName = _readParamText(thread, _buff_##_varName, 512);                                             \
@@ -1126,6 +1047,7 @@ namespace CLEO
         SUSPEND("Forbidden file path '%s' outside game directories", ##_varName);                                      \
     }
 
+// Read and validate memory address argument.
 #define OPCODE_READ_PARAM_PTR()                                                                                        \
     _readParam(thread).pParam;                                                                                         \
     if (!_paramWasInt())                                                                                               \
@@ -1137,39 +1059,7 @@ namespace CLEO
         SUSPEND("Invalid pointer '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());          \
     }
 
-#define OPCODE_READ_PARAM_OBJECT_HANDLE()                                                                              \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (!IsObjectHandleValid(_paramsArray[0].dwParam))                                                            \
-    {                                                                                                                  \
-        SUSPEND("Invalid object handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());    \
-    }
-
-#define OPCODE_READ_PARAM_PED_HANDLE()                                                                                 \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (!IsPedHandleValid(_paramsArray[0].dwParam))                                                               \
-    {                                                                                                                  \
-        SUSPEND("Invalid character handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str()); \
-    }
-
-#define OPCODE_READ_PARAM_VEHICLE_HANDLE()                                                                             \
-    _readParam(thread).dwParam;                                                                                        \
-    if (!_paramWasInt())                                                                                               \
-    {                                                                                                                  \
-        SUSPEND_INPUT_TYPE("integer");                                                                                 \
-    }                                                                                                                  \
-    else if (!IsVehicleHandleValid(_paramsArray[0].dwParam))                                                           \
-    {                                                                                                                  \
-        SUSPEND("Invalid vehicle handle '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());   \
-    }
-
+// Read and validate player id.
 #define OPCODE_READ_PARAM_PLAYER_ID()                                                                                  \
     _readParam(thread).dwParam;                                                                                        \
     if (!_paramWasInt())                                                                                               \
@@ -1181,15 +1071,20 @@ namespace CLEO
         SUSPEND("Invalid player id '0x%X' input argument %s", _paramsArray[0].dwParam, GetParamInfo().c_str());        \
     }
 
+// For opcodes with mixed params order, where 'store_to' occurs before input arguments.
+//
+// Get pointer to simple-type variable param to write result later.
 #define OPCODE_READ_PARAM_OUTPUT_VAR_ANY32()                                                                           \
     _readParamVariable(thread);                                                                                        \
     if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("int or float")
 
+// Get pointer to integer variable param to write result later.
 #define OPCODE_READ_PARAM_OUTPUT_VAR_INT()                                                                             \
     (int*)_readParamVariable(thread);                                                                                  \
     if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("int")                                                               \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Get pointer to float variable param to write result later.
 #define OPCODE_READ_PARAM_OUTPUT_VAR_FLOAT()                                                                           \
     (float*)_readParamVariable(thread);                                                                                \
     if (!_paramWasVariable()) SUSPEND_OUTPUT_TYPE("float")                                                             \
@@ -1201,52 +1096,67 @@ namespace CLEO
         );                                                                                                             \
     }
 
+// Returns instance of StringParamBufferInfo used to write string param later.
 #define OPCODE_READ_PARAM_OUTPUT_VAR_STRING()                                                                          \
     _readParamStringInfo(thread);                                                                                      \
     if (!_paramWasString(true)) SUSPEND_OUTPUT_TYPE("string")
 
+// Writing opcode output/result data.
+//
+// Write bool value.
 #define OPCODE_WRITE_PARAM_BOOL(_value)                                                                                \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Write signed 8-bit integer.
 #define OPCODE_WRITE_PARAM_INT8(_value)                                                                                \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Write unsigned 8-bit integer.
 #define OPCODE_WRITE_PARAM_UINT8(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Write signed 16-bit integer.
 #define OPCODE_WRITE_PARAM_INT16(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Write unsigned 16-bit integer.
 #define OPCODE_WRITE_PARAM_UINT16(_value)                                                                              \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Write signed 32-bit integer.
 #define OPCODE_WRITE_PARAM_INT(_value)                                                                                 \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Write unsigned 32-bit integer.
 #define OPCODE_WRITE_PARAM_UINT(_value)                                                                                \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")
 
+// Write raw data into simple-type variable (practically integers and floats).
 #define OPCODE_WRITE_PARAM_ANY32(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasInt(true) && !_paramWasFloat(true)) SUSPEND_OUTPUT_TYPE("int or float")
 
+// Write float value.
 #define OPCODE_WRITE_PARAM_FLOAT(_value)                                                                               \
     _writeParam(thread, _value);                                                                                       \
     if (!_paramWasFloat(true)) SUSPEND_OUTPUT_TYPE("float")
 
+// Write string value.
 #define OPCODE_WRITE_PARAM_STRING(_value)                                                                              \
     if (!_writeParamText(thread, _value)) return OpcodeResult::OR_INTERRUPT;
 
+// Write param using info object received from OPCODE_READ_PARAM_OUTPUT_VAR_STRING.
 #define OPCODE_WRITE_PARAM_VAR_STRING(_info, _value)                                                                   \
     if (!_writeParamText(thread, _info, _value)) return OpcodeResult::OR_INTERRUPT;
 
+// Write memory address.
 #define OPCODE_WRITE_PARAM_PTR(_value)                                                                                 \
     _writeParamPtr(thread, (void*)_value);                                                                             \
     if (!_paramWasInt(true)) SUSPEND_OUTPUT_TYPE("int")

@@ -1,5 +1,6 @@
 #include "CLEO.h"
 #include "CLEO_Utils.h"
+#include "CLEO_PoolUtils.h"
 #include "plugin.h"
 #include "CTheScripts.h"
 #include "CSoundSystem.h"
