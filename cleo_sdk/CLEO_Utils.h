@@ -16,6 +16,9 @@
 
 namespace CLEO
 {
+    // WakeTime value that parks a script forever.
+    // Set by TrySuspendScript and preserved across save/load
+    constexpr DWORD Suspended_Wake_Time = 0xFFFFFFFF;
 
     static bool IsLegacyScript(CLEO::CRunningScript* script)
     {
@@ -502,7 +505,7 @@ namespace CLEO
         }
 
         ShowError(msg.c_str());
-        thread->WakeTime = 0xFFFFFFFF;
+        thread->WakeTime = Suspended_Wake_Time;
         if (thread->bIsMission)
         {
             const auto CTheScripts_bAlreadyRunningAMissionScript = (BYTE*)0xA444B1;
