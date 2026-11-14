@@ -99,6 +99,14 @@ void ScriptLog::SetCurrScript(CLEO::CRunningScript* script)
         LogAppend(" -|-- Script ");
         LogAppendNum(scriptIdx);
         LogAppend(": ");
+
+        const auto scriptName = script->GetName();
+        if (!scriptName.empty())
+        {
+            LogAppend("'");
+            LogAppend(scriptName);
+            LogAppend("' from ");
+        }
         LogAppend(filename);
 
         // Add flags in parentheses
