@@ -115,6 +115,7 @@ jobs:
           filename: 'SA.CLEO-v${{steps.custom_build.outputs.version}}-${{steps.custom_build.outputs.sha}}.zip'
           directory: '.output/Release'
           exclusions: '*.pdb *.exp *.lib'
+          recursive_exclusions: '*.pdb *.exp *.lib'
           custom: '-mm=Deflate -mfb=258 -mpass=15'
 
       - name: Delete 'preview' release

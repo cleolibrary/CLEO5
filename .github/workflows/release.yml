@@ -146,6 +146,9 @@ jobs:
           path: ./.output/Release/*
           type: "zip"
           filename: SA.CLEO-${{ github.ref_name }}.zip
+          # NOTE: zip-release only applies `recursive_exclusions` when `exclusions` is non-empty,
+          # so both inputs must be set for the build intermediates (.lib/.exp) to be filtered out.
+          exclusions: "*.pdb *.lib *.exp"
           recursive_exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO + Silent's ASI Loader
@@ -154,6 +157,7 @@ jobs:
           path: ./.output/Release_with_Silent_ASI_Loader/*
           type: "zip"
           filename: SA.CLEO-${{ github.ref_name }}+Silent_ASI_Loader.zip
+          exclusions: "*.pdb *.lib *.exp"
           recursive_exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO + UAL
@@ -162,6 +166,7 @@ jobs:
           path: ./.output/Release_with_Ultimate_ASI_Loader/*
           type: "zip"
           filename: SA.CLEO-${{ github.ref_name }}+Ultimate_ASI_Loader.zip
+          exclusions: "*.pdb *.lib *.exp"
           recursive_exclusions: "*.pdb *.lib *.exp"
 
       - name: Pack archive - CLEO SDK
@@ -171,6 +176,7 @@ jobs:
           type: "zip"
           filename: SA.CLEO_SDK-${{ github.ref_name }}.zip
           exclusions: "*.pdb *.exp"
+          recursive_exclusions: "*.pdb *.exp"
 
       - name: Create release
         uses: ncipollo/release-action@339a81892b84b4eeb0f6e744e4574d79d0d9b8dd # 1.21.0
