@@ -1,3 +1,11 @@
+## 5.5.1
+
+- fixed a possible game crash on load if the script was suspended before save
+- fixed a memory leak on a FXT key deletion
+- updated SDK with new methods to get script information and new callbacks (`ConfigUpdate`, `BeforeSave`, `AfterSave`)
+- internal refactoring to address false-positive virus detections
+- CLEO error boxes can be suppressed when the game runs with the environment variable `CLEO_NO_ERROR_DIALOGS=1`
+
 ## 5.5.0
 
 - the CLEO folder is no longer required to be in the game root. It can be placed in the same folder as `cleo.asi` (e.g. `scripts\cleo.asi` + `scripts\cleo`), along with all subfolders (`scripts\cleo\cleo_plugins`, `scripts\cleo\cleo_text`, etc). `bass.dll` can also be placed in the same folder as `cleo.asi` (e.g. `scripts\bass.dll`)
