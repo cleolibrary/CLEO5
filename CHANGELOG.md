@@ -4,7 +4,7 @@
 - fixed a memory leak on a FXT key deletion
 - updated SDK with new methods to get script information and new callbacks (`ConfigUpdate`, `BeforeSave`, `AfterSave`)
 - internal refactoring to address false-positive virus detections
-- CLEO error boxes can be suppressed when the game runs with the environment variable `CLEO_NO_ERROR_DIALOGS=1`
+- CLEO error boxes are suppressed if the game runs with the environment variable `CLEO_NO_ERROR_DIALOGS=1`
 
 ## 5.5.0
 
