@@ -40,6 +40,7 @@ class Starter
             }
 
             CConfigManager::WriteInt("Internal", "ReportedGameVersion", gv);
+            return;
         }
 
         CleoInstance.Start();
