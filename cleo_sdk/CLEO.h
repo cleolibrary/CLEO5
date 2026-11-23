@@ -353,7 +353,7 @@ namespace CLEO
     const char DIR_USER[]    = "user:";    // game save directory
     const char DIR_SCRIPT[]  = ".";        // current script directory
     const char DIR_CLEO[]    = "cleo:";    // game\cleo directory
-    const char DIR_MODULES[] = "modules:"; // game\cleo\modules directory
+    const char DIR_MODULES[] = "modules:"; // game\cleo\cleo_modules directory
 
     // argument of CLEO_RegisterCallback
     enum class eCallbackId : DWORD
@@ -445,7 +445,7 @@ namespace CLEO
 
         BOOL WINAPI CLEO_RegisterOpcode(WORD opcode, CustomOpcodeHandler callback);
 
-        // uses cleo\.CONFIG\sa.json to obtain opcode number from name
+        // uses cleo\.config\sa.json to obtain opcode number from name
         BOOL WINAPI CLEO_RegisterCommand(const char* commandName, CustomOpcodeHandler callback);
 
         // call original unhooked opcode handler
