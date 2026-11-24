@@ -414,7 +414,8 @@ namespace CLEO
     static const char* TraceVArg(CLEO::eLogLevel level, const char* format, va_list args)
     {
         static char szBuf[1024];
-        vsprintf_s(szBuf, format, args); // put params into format
+        // Format and truncate the message if needed to avoid the game crashing.
+        _vsnprintf_s(szBuf, sizeof(szBuf), _TRUNCATE, format, args);
         CLEO_Log(level, szBuf);
         return szBuf;
     }
